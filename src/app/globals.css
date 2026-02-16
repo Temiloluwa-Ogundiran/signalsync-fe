@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+/* ===== Light Theme (default) ===== */
+:root {
+  /* Backgrounds */
+  --bg-primary: #f8fafc; /* slate-50 */
+  --bg-secondary: #ffffff; /* white */
+  --bg-tertiary: #f1f5f9; /* slate-100 */
+  --bg-hover: #e2e8f0; /* slate-200 */
+  --bg-input: #ffffff;
+
+  /* Borders */
+  --border-primary: #e2e8f0; /* slate-200 */
+  --border-secondary: #cbd5e1; /* slate-300 */
+
+  /* Text */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #475569; /* slate-600 */
+  --text-tertiary: #94a3b8; /* slate-400 */
+  --text-muted: #cbd5e1; /* slate-300 */
+
+  /* Brand / Accent — Blue (matches original Vite codebase) */
+  --accent: #2563eb; /* blue-600 */
+  --accent-hover: #1d4ed8; /* blue-700 */
+  --accent-light: rgba(37, 99, 235, 0.08);
+
+  /* Semantic */
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.08);
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.08);
+  --warning: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.08);
+  --info: #3b82f6;
+  --info-light: rgba(59, 130, 246, 0.08);
+
+  /* Specific surfaces */
+  --sidebar-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8fafc;
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.3);
+
+  /* Gradients */
+  --gradient-accent: linear-gradient(135deg, #2563eb, #1d4ed8);
+  --gradient-card: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.06),
+    rgba(59, 130, 246, 0.03)
+  );
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Dark Theme ===== */
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-hover: #334155;
+  --bg-input: #1e293b;
+
+  --border-primary: #334155;
+  --border-secondary: #475569;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-muted: #475569;
+
+  --accent: #3b82f6; /* blue-500 — slightly brighter for dark bg contrast */
+  --accent-hover: #2563eb; /* blue-600 */
+  --accent-light: rgba(59, 130, 246, 0.12);
+
+  --success: #10b981;
+  --success-light: rgba(16, 185, 129, 0.1);
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+  --warning: #f59e0b;
+  --warning-light: rgba(245, 158, 11, 0.1);
+  --info: #3b82f6;
+  --info-light: rgba(59, 130, 246, 0.1);
+
+  --sidebar-bg: #0f172a;
+  --card-bg: #1e293b;
+  --card-bg-hover: #263348;
+  --modal-bg: #1e293b;
+  --modal-overlay: rgba(0, 0, 0, 0.6);
+
+  --gradient-accent: linear-gradient(135deg, #3b82f6, #2563eb);
+  --gradient-card: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(37, 99, 235, 0.05)
+  );
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== Register tokens for Tailwind v4 ===== */
+@theme inline {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-input: var(--bg-input);
+
+  --color-border-primary: var(--border-primary);
+  --color-border-secondary: var(--border-secondary);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-card-bg: var(--card-bg);
+  --color-card-bg-hover: var(--card-bg-hover);
+  --color-modal-bg: var(--modal-bg);
+
+  --font-sans: var(--font-inter);
+}
+
+/* ===== Global resets ===== */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* ===== Scrollbar hiding utility ===== */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Custom scrollbar (thin) ===== */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--bg-tertiary);
+  border-radius: 9999px;
+}
