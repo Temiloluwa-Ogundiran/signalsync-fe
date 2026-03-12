@@ -1,15 +1,15 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { LoginForm } from "@/features/auth/components/login-form";
+import { RegisterForm } from "@/features/auth/components/register-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Login | SyncTrades",
-  description: "Login to your account",
+  title: "Create an Account | SyncTrades",
+  description: "Join SyncTrades today",
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md border-0 sm:border border-border/50 bg-background/60 sm:bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl shadow-border/5">
       <CardHeader className="space-y-3 pb-6 text-center">
@@ -19,21 +19,21 @@ export default function LoginPage() {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">
-          Welcome to Syncgram Trades
+          Join Syncgram Trades
         </CardTitle>
         <CardDescription className="text-sm">
-          Enter your email and password to access your account
+          Enter your information below to sign up
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 pb-8">
-        <LoginForm />
+        <RegisterForm />
         <div className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="font-semibold text-primary hover:text-primary/90 underline-offset-4 hover:underline transition-all"
           >
-            Sign up
+            Sign in
           </Link>
         </div>
       </CardContent>

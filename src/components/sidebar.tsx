@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   Home,
   Compass,
@@ -24,6 +25,8 @@ const navItems = [
   { label: "Tools", icon: Wrench, href: "/tools" },
 ];
 
+import { StreamSwitcher } from "./stream-switcher";
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -41,6 +44,9 @@ export function Sidebar() {
         </span>
         <span className="ml-1 text-text-tertiary font-medium">Trades</span>
       </div>
+
+      {/* Active Stream Switcher */}
+      <StreamSwitcher />
 
       {/* Navigation Items */}
       <nav className="flex-1 px-3 py-6 space-y-1">
@@ -78,7 +84,10 @@ export function Sidebar() {
           <User className="mr-3 h-5 w-5 text-text-tertiary" />
           Profile
         </Link>
-        <button className="flex items-center w-full px-3 py-2.5 text-sm font-medium text-text-secondary rounded-lg hover:bg-bg-tertiary transition-colors mt-1">
+        <button 
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex items-center w-full px-3 py-2.5 text-sm font-medium text-text-secondary rounded-lg hover:bg-bg-tertiary transition-colors mt-1"
+        >
           <LogOut className="mr-3 h-5 w-5 text-text-tertiary" />
           Log Out
         </button>
