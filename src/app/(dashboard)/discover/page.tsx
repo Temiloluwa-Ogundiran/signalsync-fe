@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -8,17 +8,76 @@ import {
   Users,
   Copy,
   Plus,
-  BarChart3,
   Lock,
   Globe,
+  DollarSign,
   Loader2,
   AlertCircle,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
-import { useDiscoverStreams } from "@/features/stream/hooks/use-streams";
+import { toast } from "sonner";
+import {
+  useDiscoverStreams,
+  useFollowStream,
+  useUnfollowStream,
+} from "@/features/stream/hooks/use-streams";
+import { CreateStreamModal } from "@/features/stream/components/CreateStreamModal";
 import type { StreamDiscoverItem } from "@/features/stream/api/stream.api";
+
+function getErrorMessage(err: unknown): string {
+  if (typeof err === "object" && err && "message" in err) {
+    const msg = (err as { message?: string }).message;
+    if (msg) return msg;
+  }
+  return "Something went wrong.";
+}
 
 function StreamCard({ stream }: { stream: StreamDiscoverItem }) {
   const isPrivate = stream.privacy === "private";
+  const isPaid = stream.privacy === "paid";
+
+  const [membershipStatus, setMembershipStatus] = useState<
+    "none" | "active" | "pending"
+  >(
+    stream.membership_status === "pending"
+      ? "pending"
+      : stream.is_following
+        ? "active"
+        : "none",
+  );
+  const followMutation = useFollowStream();
+  const unfollowMutation = useUnfollowStream();
+  const isPending = followMutation.isPending || unfollowMutation.isPending;
+
+  async function handleFollowToggle(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      if (membershipStatus === "active" || membershipStatus === "pending") {
+        await unfollowMutation.mutateAsync(stream.id);
+        setMembershipStatus("none");
+        toast.success(
+          membershipStatus === "pending"
+            ? `Request canceled for "${stream.name}"`
+            : `Unfollowed "${stream.name}"`,
+        );
+      } else {
+        const result = await followMutation.mutateAsync(stream.id);
+        if (result.status === "pending") {
+          setMembershipStatus("pending");
+          toast.info("Join request sent", {
+            description: "Waiting for the stream owner to approve.",
+          });
+        } else {
+          setMembershipStatus("active");
+          toast.success(`Following "${stream.name}"`);
+        }
+      }
+    } catch (err: unknown) {
+      toast.error("Action failed", { description: getErrorMessage(err) });
+    }
+  }
 
   return (
     <Link
@@ -26,7 +85,7 @@ function StreamCard({ stream }: { stream: StreamDiscoverItem }) {
       className="relative overflow-hidden rounded-2xl bg-card-bg border border-border-primary shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col h-full"
     >
       {/* Visual Header */}
-      <div className="h-28 bg-gradient-to-br from-bg-tertiary to-bg-secondary relative overflow-hidden">
+      <div className="h-28 bg-linear-to-br from-bg-tertiary to-bg-secondary relative overflow-hidden">
         {stream.banner_url && (
           <img
             src={stream.banner_url}
@@ -35,7 +94,11 @@ function StreamCard({ stream }: { stream: StreamDiscoverItem }) {
           />
         )}
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          {isPrivate ? (
+          {isPaid ? (
+            <span className="bg-yellow-500/80 backdrop-blur-sm text-white border border-yellow-400/30 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide flex items-center gap-1">
+              <DollarSign className="h-2.5 w-2.5" /> Paid
+            </span>
+          ) : isPrivate ? (
             <span className="bg-black/30 backdrop-blur-sm text-white border border-white/10 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide flex items-center gap-1">
               <Lock className="h-2.5 w-2.5" /> Private
             </span>
@@ -58,7 +121,7 @@ function StreamCard({ stream }: { stream: StreamDiscoverItem }) {
       {/* Main Section */}
       <div className="px-5 pb-5 flex-1 flex flex-col">
         <div className="flex items-end -mt-8 mb-3 relative z-10">
-          <div className="w-14 h-14 rounded-xl border-4 border-card-bg shadow-md bg-accent/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-14 h-14 rounded-xl border-4 border-card-bg shadow-md bg-accent/20 flex items-center justify-center overflow-hidden shrink-0">
             {stream.avatar_url ? (
               <img
                 src={stream.avatar_url}
@@ -108,10 +171,38 @@ function StreamCard({ stream }: { stream: StreamDiscoverItem }) {
 
         {/* Action Buttons */}
         <div className="mt-auto flex gap-2">
-          <button className="flex-1 bg-card-bg border border-border-primary text-text-secondary py-2 rounded-lg text-xs font-bold hover:bg-bg-tertiary hover:text-text-primary transition-colors">
-            Follow
+          <button
+            onClick={handleFollowToggle}
+            disabled={isPending}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              membershipStatus === "active" || membershipStatus === "pending"
+                ? "bg-danger-light text-danger border border-danger/30 hover:bg-danger hover:text-white"
+                : "bg-accent text-white hover:bg-accent-hover shadow-sm"
+            } disabled:opacity-60`}
+          >
+            {isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : membershipStatus === "active" ? (
+              <>
+                <UserMinus className="h-3 w-3" />
+                Unfollow
+              </>
+            ) : membershipStatus === "pending" ? (
+              <>
+                <UserMinus className="h-3 w-3" />
+                Cancel request
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-3 w-3" />
+                Follow
+              </>
+            )}
           </button>
-          <button className="flex-1 bg-text-primary text-bg-primary py-2 rounded-lg text-xs font-bold hover:opacity-80 transition-opacity flex items-center justify-center">
+          <button
+            onClick={(e) => e.preventDefault()}
+            className="flex-1 bg-card-bg border border-border-primary text-text-secondary py-2 rounded-lg text-xs font-bold hover:bg-bg-tertiary hover:text-text-primary transition-colors flex items-center justify-center"
+          >
             <Copy className="h-3 w-3 mr-1.5" /> Copy
           </button>
         </div>
@@ -138,11 +229,12 @@ function StreamCardSkeleton() {
   );
 }
 
-const discoverFilters = ["All", "Public", "Private"];
+const discoverFilters = ["All", "Public", "Private", "Paid"];
 
 export default function DiscoverPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const { data: streams, isLoading, error } = useDiscoverStreams();
 
@@ -184,7 +276,10 @@ export default function DiscoverPage() {
               className="w-full bg-card-bg border border-border-primary rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all shadow-sm"
             />
           </div>
-          <button className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-accent-hover transition-colors shadow-lg flex items-center whitespace-nowrap">
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-accent-hover transition-colors shadow-lg flex items-center whitespace-nowrap"
+          >
             <Plus className="h-4 w-4 mr-2" /> Create Stream
           </button>
         </div>
@@ -196,7 +291,7 @@ export default function DiscoverPage() {
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
               activeFilter === filter
                 ? "bg-text-primary text-bg-primary border-text-primary shadow-md"
                 : "bg-card-bg text-text-secondary border-border-primary hover:border-accent/30 hover:text-accent"
@@ -241,25 +336,13 @@ export default function DiscoverPage() {
           {filteredStreams.map((stream) => (
             <StreamCard key={stream.id} stream={stream} />
           ))}
-
-          {/* Promo Card */}
-          {/* <div className="relative overflow-hidden rounded-2xl bg-bg-secondary border border-border-primary shadow-xl flex flex-col items-center justify-center p-8 text-center group cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="h-14 w-14 bg-bg-tertiary rounded-full flex items-center justify-center mb-4 text-text-tertiary group-hover:text-text-primary group-hover:scale-110 transition-all">
-              <BarChart3 className="h-7 w-7" />
-            </div>
-            <h3 className="text-text-primary font-bold text-lg mb-2">
-              Start Streaming
-            </h3>
-            <p className="text-text-secondary text-sm mb-6 max-w-[200px]">
-              Share your trades, build a following, and earn from copiers.
-            </p>
-            <button className="bg-text-primary text-bg-primary px-6 py-2.5 rounded-xl text-sm font-bold hover:opacity-80 transition-opacity">
-              Apply Now
-            </button>
-          </div> */}
         </div>
       )}
+
+      <CreateStreamModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </div>
   );
 }

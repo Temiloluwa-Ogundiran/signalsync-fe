@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, Bell, Menu } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { ThemeToggle } from "./theme-toggle";
 
 interface HeaderProps {
@@ -8,6 +9,11 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const displayName = user?.displayName || user?.name || user?.username || "";
+  const avatarUrl = user?.avatarUrl;
+
   return (
     <header className="h-16 bg-bg-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-all">
       <div className="flex items-center flex-1">
@@ -45,21 +51,37 @@ export function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         <div className="flex items-center space-x-3 pl-2 border-l border-border-primary">
-          <div className="text-right hidden md:block">
-            <p className="text-sm font-medium text-text-primary leading-none">
-              Alex Trader
-            </p>
-            <p className="text-xs text-text-tertiary mt-1">Pro Member</p>
-          </div>
-          <button className="h-9 w-9 rounded-full bg-gradient-to-tr from-accent to-blue-400 p-[2px] cursor-pointer hover:shadow-md transition-shadow">
-            <div className="h-full w-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
-              <img
-                src="https://picsum.photos/100/100"
-                alt="User Avatar"
-                className="h-full w-full rounded-full object-cover"
-              />
-            </div>
-          </button>
+          {status === "authenticated" && displayName ? (
+            <>
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-medium text-text-primary leading-none">
+                  {displayName}
+                </p>
+                {user?.username && (
+                  <p className="text-xs text-text-tertiary mt-1">
+                    @{user.username}
+                  </p>
+                )}
+              </div>
+              <button className="h-9 w-9 rounded-full bg-linear-to-tr from-accent to-blue-400 p-0.5 cursor-pointer hover:shadow-md transition-shadow">
+                <div className="h-full w-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="User Avatar"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-sm font-bold text-accent">
+                      {displayName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </button>
+            </>
+          ) : (
+            <div className="h-9 w-9 rounded-full bg-bg-tertiary" />
+          )}
         </div>
       </div>
     </header>

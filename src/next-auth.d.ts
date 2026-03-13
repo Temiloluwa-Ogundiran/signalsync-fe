@@ -5,6 +5,8 @@ declare module "next-auth" {
     user: {
       id: string;
       username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
       isEmailVerified: boolean;
     } & DefaultSession["user"];
     accessToken: string;
@@ -14,6 +16,8 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     username?: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
     isEmailVerified?: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -30,6 +34,8 @@ declare module "next-auth/jwt" {
     expiresAt?: number;
     id?: string;
     username?: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
     isEmailVerified?: boolean;
     error?: string;
   }

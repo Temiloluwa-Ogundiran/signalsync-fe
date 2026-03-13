@@ -24,7 +24,7 @@
   --text-muted: #cbd5e1; /* slate-300 */
 
   /* Brand / Accent — Blue (matches original Vite codebase) */
-  --accent: oklch(0.97 0 0); /* blue-600 */
+  --accent: #2563eb; /* blue-600 */
   --accent-hover: #1d4ed8; /* blue-700 */
   --accent-light: rgba(37, 99, 235, 0.08);
 
@@ -63,17 +63,17 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.488 0.243 264.376); /* blue-600 */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.488 0.243 264.376); /* blue-600 */
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
@@ -106,7 +106,7 @@
   --text-tertiary: #64748b;
   --text-muted: #475569;
 
-  --accent: oklch(0.269 0 0); /* blue-500 — slightly brighter for dark bg contrast */
+  --accent: #3b82f6; /* blue-500 — slightly brighter for dark bg contrast */
   --accent-hover: #2563eb; /* blue-600 */
   --accent-light: rgba(59, 130, 246, 0.12);
 

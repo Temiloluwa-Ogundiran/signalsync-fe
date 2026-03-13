@@ -1,12 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 
 import {
   Form,
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginAction } from "../actions";
 import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
@@ -27,7 +26,7 @@ const loginSchema = z.object({
 });
 
 export function LoginForm() {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
@@ -39,19 +38,28 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("email", values.email);
-      formData.append("password", values.password);
-      formData.append("redirectTo", "/overview"); // Default NextAuth redirect
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    setIsPending(true);
+    form.clearErrors("root");
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      });
 
-      const res = await loginAction(formData);
-
-      if (res?.error) {
-        form.setError("root", { message: res.error });
+      if (result?.error) {
+        form.setError("root", { message: result.error });
+        return;
       }
-    });
+
+      router.replace("/overview");
+      router.refresh();
+    } catch {
+      form.setError("root", { message: "Something went wrong." });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

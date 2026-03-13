@@ -20,7 +20,9 @@ export const authConfig = {
         pathname.startsWith("/spaces") ||
         pathname.startsWith("/tools") ||
         pathname.startsWith("/settings") ||
-        pathname.startsWith("/stream");
+        pathname.startsWith("/stream") ||
+        pathname.startsWith("/profile") ||
+        pathname.startsWith("/post");
 
       const isAuthRoute =
         pathname.startsWith("/login") || pathname.startsWith("/register");
@@ -44,6 +46,8 @@ export const authConfig = {
         token.expiresAt = user.expiresAt;
         token.id = user.id;
         token.username = user.username;
+        token.displayName = user.displayName;
+        token.avatarUrl = user.avatarUrl;
         token.email = user.email;
         token.isEmailVerified = user.isEmailVerified;
         return token;
@@ -98,6 +102,8 @@ export const authConfig = {
           id: token.id as string,
           email: token.email as string,
           username: token.username as string,
+          displayName: (token.displayName as string) ?? null,
+          avatarUrl: (token.avatarUrl as string) ?? null,
           isEmailVerified: token.isEmailVerified as boolean,
           emailVerified: null,
         };

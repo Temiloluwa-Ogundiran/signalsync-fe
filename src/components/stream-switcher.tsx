@@ -4,18 +4,27 @@ import { useState, useRef, useEffect } from "react";
 import { Check, ChevronsUpDown, Radio } from "lucide-react";
 import { useMyStreams } from "@/features/stream/hooks/use-streams";
 import { useStreamStore } from "@/features/stream/store";
+import { CreateStreamModal } from "@/features/stream/components/CreateStreamModal";
 
 export function StreamSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: streams, isLoading, error } = useMyStreams();
-  const { activeStream, setActiveStream } = useStreamStore();
+  const { activeStream, setActiveStream, clearActiveStream } = useStreamStore();
 
-  // Set initial active stream if not set
+  // Validate activeStream belongs to current user's streams; reset if not
   useEffect(() => {
-    if (streams && streams.length > 0 && !activeStream) {
-      // Find default stream or take the first one
+    if (!streams || streams.length === 0) return;
+
+    if (activeStream) {
+      const belongsToUser = streams.some((s) => s.id === activeStream.id);
+      if (!belongsToUser) {
+        const defaultStream = streams.find((s) => s.is_default) || streams[0];
+        setActiveStream(defaultStream);
+      }
+    } else {
       const defaultStream = streams.find((s) => s.is_default) || streams[0];
       setActiveStream(defaultStream);
     }
@@ -47,8 +56,38 @@ export function StreamSwitcher() {
     );
   }
 
-  if (error || !streams || streams.length === 0) {
-    return null; // Silent fail or empty
+  if (error) {
+    return null;
+  }
+
+  if (!streams || streams.length === 0) {
+    return (
+      <div className="px-3 pt-3 pb-1" ref={dropdownRef}>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-bg-tertiary hover:bg-bg-tertiary/80 border border-dashed border-border-primary rounded-xl transition-all text-sm font-medium text-text-secondary hover:text-text-primary"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Create your first stream
+        </button>
+        <CreateStreamModal
+          open={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+        />
+      </div>
+    );
   }
 
   const currentStream = activeStream || streams[0];
@@ -82,7 +121,7 @@ export function StreamSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-[calc(16rem-1.5rem)] bg-card-bg border border-border-primary rounded-xl shadow-lg max-h-60 overflow-y-auto no-scrollbar">
+        <div className="absolute z-50 mt-1 w-58 bg-card-bg border border-border-primary rounded-xl shadow-lg max-h-60 overflow-y-auto no-scrollbar">
           <div className="p-1">
             <div className="px-2 py-1.5 text-xs font-semibold text-text-tertiary uppercase tracking-wider">
               Your Streams
@@ -117,20 +156,29 @@ export function StreamSwitcher() {
                 )}
               </button>
             ))}
-            
+
             {/* Create New Stream Button */}
             <div className="mt-2 pt-2 border-t border-border-primary px-1 pb-1">
               <button
                 className="w-full flex items-center px-2 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-tertiary rounded-lg transition-colors group"
                 onClick={() => {
                   setIsOpen(false);
-                  // TODO: Wire up actual routing or modal
-                  console.log("Create new stream clicked");
+                  setShowCreateModal(true);
                 }}
               >
                 <div className="w-6 h-6 bg-bg-secondary border border-border-primary border-dashed rounded relative flex items-center justify-center mr-2 shrink-0 group-hover:bg-bg-tertiary transition-colors">
-                  <svg className="w-3 h-3 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg
+                    className="w-3 h-3 text-text-tertiary"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
                   </svg>
                 </div>
                 <span className="font-medium">Create new stream</span>
@@ -139,6 +187,11 @@ export function StreamSwitcher() {
           </div>
         </div>
       )}
+
+      <CreateStreamModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
     </div>
   );
 }

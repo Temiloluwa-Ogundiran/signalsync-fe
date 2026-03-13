@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { MobileNav } from "@/components/mobile-nav";
+import { Feather } from "lucide-react";
+import { CreatePostModal } from "@/features/post/components/CreatePostModal";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [postModalOpen, setPostModalOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-bg-primary overflow-hidden">
@@ -39,6 +42,20 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Floating Action Button — Create Post */}
+      <button
+        onClick={() => setPostModalOpen(true)}
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-30 h-14 w-14 rounded-full bg-accent text-white shadow-lg hover:bg-accent-hover hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
+        aria-label="Create post"
+      >
+        <Feather className="h-6 w-6" />
+      </button>
+
+      <CreatePostModal
+        open={postModalOpen}
+        onClose={() => setPostModalOpen(false)}
+      />
 
       {/* Mobile Bottom Nav */}
       <MobileNav />
