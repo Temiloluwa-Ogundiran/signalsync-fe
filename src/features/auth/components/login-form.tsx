@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Link from "next/link";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -24,6 +23,26 @@ const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied: "You are not allowed to sign in.",
+};
+
+function getAuthErrorMessage(error?: string | null, code?: string | null) {
+  if (!error) {
+    return "Unable to sign in. Please try again.";
+  }
+
+  if (error === "CredentialsSignin") {
+    if (code && code !== "credentials") {
+      return code;
+    }
+
+    return "Incorrect email or password.";
+  }
+
+  return AUTH_ERROR_MESSAGES[error] ?? "Unable to sign in. Please try again.";
+}
 
 export function LoginForm() {
   const [isPending, setIsPending] = useState(false);
@@ -49,7 +68,14 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        form.setError("root", { message: result.error });
+        form.setError("root", {
+          message: getAuthErrorMessage(result.error, result.code),
+        });
+        return;
+      }
+
+      if (!result?.ok) {
+        form.setError("root", { message: "Unable to sign in. Please try again." });
         return;
       }
 
@@ -89,15 +115,7 @@ export function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm font-medium text-primary hover:underline hover:text-primary/90"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
