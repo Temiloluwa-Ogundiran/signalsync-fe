@@ -1,6 +1,14 @@
 import NextAuth from "next-auth";
+import { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
+
+class BackendCredentialsSigninError extends CredentialsSignin {
+  constructor(message: string) {
+    super();
+    this.code = message;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -44,8 +52,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 : (errorData.detail.message || errorMessage);
             }
             
-            // NextAuth expects us to throw an Error to bubble it up
-            throw new Error(errorMessage);
+            // Throw a credentials error so `signIn(..., { redirect: false })` returns
+            // the backend message in `result.code`.
+            throw new BackendCredentialsSigninError(errorMessage);
           }
 
           const data = await res.json();
@@ -77,7 +86,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         } catch (error) {
           console.error("Auth error:", error);
-          return null;
+
+          // Preserve credential failures so the UI can map provider error codes consistently.
+          if (error instanceof Error) {
+            throw error;
+          }
+
+          throw new Error("Authentication failed. Please try again.");
         }
       },
     }),
