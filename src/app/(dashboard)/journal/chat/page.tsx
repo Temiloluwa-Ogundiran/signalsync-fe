@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -20,7 +20,7 @@ import type { JournalMessage } from "@/features/journal/types";
 
 type ChatContext = "day" | "trade";
 
-export default function JournalChatPage() {
+function JournalChatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -370,5 +370,22 @@ export default function JournalChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function JournalChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center p-4 md:p-6">
+          <div className="inline-flex items-center gap-2 text-sm text-text-secondary">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading chat...
+          </div>
+        </div>
+      }
+    >
+      <JournalChatContent />
+    </Suspense>
   );
 }
