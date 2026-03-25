@@ -7,6 +7,8 @@ import { MobileNav } from "@/components/mobile-nav";
 import { Feather } from "lucide-react";
 import { CreatePostModal } from "@/features/post/components/CreatePostModal";
 
+const SIDEBAR_COLLAPSED_KEY = "dashboard-sidebar-collapsed";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -14,12 +16,27 @@ export default function DashboardLayout({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  });
+
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-screen bg-bg-primary overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex">
-        <Sidebar />
+        <Sidebar collapsed={sidebarCollapsed} />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -37,7 +54,11 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
+        <Header
+          onMenuClick={() => setMobileMenuOpen((prev) => !prev)}
+          onToggleSidebar={handleToggleSidebar}
+          isSidebarCollapsed={sidebarCollapsed}
+        />
         <main className="flex-1 overflow-y-auto scrollbar-thin pb-20 md:pb-0">
           {children}
         </main>

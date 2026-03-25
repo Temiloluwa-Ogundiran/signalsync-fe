@@ -1,14 +1,20 @@
 "use client";
 
-import { Search, Bell, Menu } from "lucide-react";
+import { Bell, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { ThemeToggle } from "./theme-toggle";
 
 interface HeaderProps {
   onMenuClick: () => void;
+  onToggleSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-export function Header({ onMenuClick }: HeaderProps) {
+export function Header({
+  onMenuClick,
+  onToggleSidebar,
+  isSidebarCollapsed = false,
+}: HeaderProps) {
   const { data: session, status } = useSession();
   const user = session?.user;
   const displayName = user?.displayName || user?.name || user?.username || "";
@@ -25,21 +31,17 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Menu className="h-6 w-6" />
         </button>
 
-        {/* Search Bar */}
-        <div className="relative w-full max-w-md hidden md:block group">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-text-tertiary group-focus-within:text-accent transition-colors" />
-          </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-border-primary rounded-xl leading-5 bg-bg-input text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent sm:text-sm transition-all"
-            placeholder="Search streams, traders, or strategies..."
-          />
-        </div>
-
-        {/* Mobile Search Icon */}
-        <button className="md:hidden text-text-secondary mr-auto">
-          <Search className="h-5 w-5" />
+        <button
+          onClick={onToggleSidebar}
+          className="hidden md:inline-flex items-center gap-2 rounded-xl border border-border-primary bg-bg-input px-3 py-2 text-sm font-medium text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSidebarCollapsed ? (
+            <PanelLeftOpen className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
+          {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         </button>
       </div>
 
