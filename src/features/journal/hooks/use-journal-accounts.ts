@@ -33,3 +33,24 @@ export function useConnectJournalAccount() {
     },
   });
 }
+
+export function useSyncJournalAccount() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (accountId: string) =>
+      journalAccountApi.syncAccount(accountId, session?.accessToken as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: JOURNAL_ACCOUNT_KEYS.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["journal-analytics"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["journal-day"],
+      });
+    },
+  });
+}

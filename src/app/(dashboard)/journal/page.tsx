@@ -14,7 +14,10 @@ import type {
   JournalCalendarDayStat,
   JournalMonthHeaderStats,
 } from "@/features/journal/types";
-import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import {
+  useJournalAccounts,
+  useSyncJournalAccount,
+} from "@/features/journal/hooks/use-journal-accounts";
 import { ConnectAccountForm } from "@/features/journal/components/connect-account-form";
 import {
   useJournalCalendarAnalytics,
@@ -27,6 +30,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ApiException } from "@/lib/api/types";
+import { toast } from "sonner";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -72,6 +77,7 @@ export default function JournalPage() {
     isError: isAccountsError,
     refetch: refetchAccounts,
   } = useJournalAccounts();
+  const syncAccountMutation = useSyncJournalAccount();
 
   const activeAccountId = selectedAccountId || accounts[0]?.id || "";
   const activeAccount = accounts.find(
@@ -175,6 +181,41 @@ export default function JournalPage() {
     setIsDayModalOpen(true);
   };
 
+  const handleRefreshAccounts = async () => {
+    if (!activeAccountId) {
+      await refetchAccounts();
+      return;
+    }
+
+    try {
+      const result = await syncAccountMutation.mutateAsync(activeAccountId);
+      await refetchAccounts();
+      if (result.inserted_trades === 0) {
+        toast.info("No new trades found", {
+          description:
+            "Sync completed successfully, but there were no new closed trades to ingest.",
+        });
+      } else {
+        toast.success("Account sync complete", {
+          description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
+        });
+      }
+    } catch (error) {
+      await refetchAccounts();
+      if (error instanceof ApiException && error.status === 503) {
+        toast.error("Sync failed (MetaAPI timeout)", {
+          description: error.message,
+        });
+      } else {
+        const description =
+          error instanceof ApiException
+            ? error.message
+            : "Unable to sync this account right now.";
+        toast.error("Account sync failed", { description });
+      }
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 pb-20 md:pb-8">
       <div className="flex flex-col xl:flex-row gap-6 mb-8">
@@ -217,12 +258,23 @@ export default function JournalPage() {
 
                       {accounts.length ? (
                         <button
-                          onClick={() => void refetchAccounts()}
+                          onClick={() => void handleRefreshAccounts()}
+                          disabled={syncAccountMutation.isPending}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-text-tertiary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-                          title="Refresh accounts"
-                          aria-label="Refresh accounts"
+                          title={
+                            syncAccountMutation.isPending
+                              ? "Syncing account"
+                              : "Sync active account"
+                          }
+                          aria-label={
+                            syncAccountMutation.isPending
+                              ? "Syncing account"
+                              : "Sync active account"
+                          }
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw
+                            className={`h-4 w-4 ${syncAccountMutation.isPending ? "animate-spin" : ""}`}
+                          />
                         </button>
                       ) : null}
                     </div>

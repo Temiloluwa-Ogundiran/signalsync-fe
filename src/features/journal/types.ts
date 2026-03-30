@@ -40,6 +40,11 @@ export interface JournalAccount {
   created_at: string;
 }
 
+export interface JournalAccountSyncResult {
+  inserted_trades: number;
+  touched_trading_dates: number;
+}
+
 export interface JournalAnalyticsCalendarDay {
   date: string;
   trade_count: number;
@@ -130,6 +135,7 @@ export interface JournalDailyTradeChip {
 export interface JournalDailyResponse {
   id: string;
   trading_date: string;
+  account_timezone: string;
   trade_chips: JournalDailyTradeChip[];
   messages: JournalMessage[];
 }
@@ -146,6 +152,8 @@ export interface JournalTrade {
   net_profit: number;
   opened_at: string;
   closed_at: string;
+  balance_before_trade?: number | string | null;
+  net_roi_percent?: number | string | null;
 }
 
 export interface JournalTradeListResponse {

@@ -31,30 +31,15 @@ function asNumber(value: number | string | null | undefined) {
 }
 
 function formatCurrency(value: number) {
-  return `${value >= 0 ? "+" : "-"}$${Math.abs(value).toLocaleString(
-    undefined,
-    {
-      maximumFractionDigits: 2,
-    },
-  )}`;
+  return `${value >= 0 ? "+" : "-"}$${Math.abs(value).toFixed(2)}`;
 }
 
 function formatClock(iso: string) {
   const date = new Date(iso);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-function inferContractSize(symbol: string) {
-  const normalized = symbol.toUpperCase();
-
-  // Standard FX lot size fallback.
-  if (/^[A-Z]{6}$/.test(normalized)) return 100_000;
-
-  // Common CFD metals lot size fallback.
-  if (normalized.startsWith("XAU") || normalized.startsWith("XAG")) return 100;
-
-  // Conservative default for unknown instruments.
-  return 1;
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function JournalDayModal({
@@ -85,6 +70,9 @@ export function JournalDayModal({
     const losers = trades.filter(
       (trade) => asNumber(trade.net_profit) < 0,
     ).length;
+    const breakeven = totalTrades - winners - losers;
+    const decisionTrades = winners + losers;
+    const winRate = decisionTrades ? (winners / decisionTrades) * 100 : 0;
     const grossPnl = trades.reduce(
       (sum, trade) => sum + asNumber(trade.net_profit),
       0,
@@ -98,7 +86,16 @@ export function JournalDayModal({
       0,
     );
 
-    return { totalTrades, winners, losers, grossPnl, commissions, volume };
+    return {
+      totalTrades,
+      winners,
+      losers,
+      breakeven,
+      winRate,
+      grossPnl,
+      commissions,
+      volume,
+    };
   }, [trades]);
 
   const dayTitle = useMemo(() => {
@@ -114,22 +111,9 @@ export function JournalDayModal({
 
   const isLoading = dayQuery.isLoading || tradesQuery.isLoading;
 
-  const getNetRoi = (trade: {
-    symbol: string;
-    open_price?: number | string;
-    volume?: number | string;
-    net_profit?: number | string;
-  }) => {
-    const open = asNumber(trade.open_price);
-    const volume = asNumber(trade.volume);
-    const netProfit = asNumber(trade.net_profit);
-
-    if (!open || !volume) return 0;
-
-    const notional = open * volume * inferContractSize(trade.symbol);
-    if (!notional) return 0;
-
-    return (netProfit / notional) * 100;
+  const getNetRoi = (trade: { net_roi_percent?: number | string | null }) => {
+    if (trade.net_roi_percent == null) return null;
+    return asNumber(trade.net_roi_percent);
   };
 
   return (
@@ -169,7 +153,7 @@ export function JournalDayModal({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border-primary bg-bg-tertiary/30 p-3 text-sm md:grid-cols-6">
+              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border-primary bg-bg-tertiary/30 p-3 text-sm md:grid-cols-8">
                 <div>
                   <p className="text-xs uppercase text-text-tertiary">
                     Total Trades
@@ -190,6 +174,22 @@ export function JournalDayModal({
                   <p className="text-xs uppercase text-text-tertiary">Losers</p>
                   <p className="font-semibold text-text-primary">
                     {summary.losers}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-text-tertiary">
+                    Breakeven
+                  </p>
+                  <p className="font-semibold text-text-primary">
+                    {summary.breakeven}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-text-tertiary">
+                    Win Rate
+                  </p>
+                  <p className="font-semibold text-text-primary">
+                    {summary.winRate.toFixed(1)}%
                   </p>
                 </div>
                 <div>
@@ -236,6 +236,7 @@ export function JournalDayModal({
                     {trades.length ? (
                       trades.map((trade) => {
                         const net = asNumber(trade.net_profit);
+                        const roi = getNetRoi(trade);
                         const journalCount =
                           chipByTradeId.get(trade.id)?.journal_message_count ??
                           0;
@@ -266,9 +267,15 @@ export function JournalDayModal({
                               {formatCurrency(net)}
                             </td>
                             <td
-                              className={`px-3 py-2 font-semibold ${getNetRoi(trade) >= 0 ? "text-success" : "text-danger"}`}
+                              className={`px-3 py-2 font-semibold ${
+                                roi == null
+                                  ? "text-text-tertiary"
+                                  : roi >= 0
+                                    ? "text-success"
+                                    : "text-danger"
+                              }`}
                             >
-                              {getNetRoi(trade).toFixed(3)}%
+                              {roi == null ? "--" : `${roi.toFixed(2)}%`}
                             </td>
                             <td className="px-3 py-2 text-center">
                               <button
