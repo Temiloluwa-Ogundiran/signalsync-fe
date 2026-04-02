@@ -1,8 +1,4 @@
-import type {
-  JournalAnalyticsSummaryResponse,
-  JournalTradesPanelRow,
-  JournalTrade,
-} from "../types";
+import type { JournalTradesPanelRow, JournalTrade } from "../types";
 
 function formatMoney(value: number) {
   return `$${Math.abs(value).toLocaleString(undefined, {
@@ -19,28 +15,29 @@ export function formatPercent(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
-/** Values for KPI cards not yet redesigned (Profit Factor, Avg Win/Loss). */
-export function getJournalKpiLegacyCardModels(
-  summary: JournalAnalyticsSummaryResponse | undefined,
-) {
-  const profitFactor = summary?.profit_factor ?? 0;
-  const avgWin = summary?.avg_win ?? 0;
-  const avgLoss = Math.abs(summary?.avg_loss ?? 0);
-  const avgRatio = avgLoss > 0 ? avgWin / avgLoss : 0;
+/** Compact currency for KPI sub-labels (e.g. `$4.1K`, `$350`). */
+export function formatCompactMoney(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `$${(abs / 1_000).toFixed(1)}K`;
+  return `$${abs.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
 
-  return {
-    profitFactor: {
-      label: "Profit Factor" as const,
-      value: profitFactor.toFixed(2),
-      ratio: Math.min(1, Math.max(0, profitFactor / 3)),
-    },
-    avgRatio: {
-      label: "Avg Win/Loss Trade" as const,
-      value: avgRatio.toFixed(2),
-      helper: `${formatMoney(avgWin)} / ${formatMoney(avgLoss)}`,
-      ratio: Math.min(1, Math.max(0, avgRatio / 5)),
-    },
-  };
+export function formatAvgWinLossRatioDisplay(avgWin: number, avgLoss: number): string {
+  const loss = Math.abs(avgLoss);
+  if (loss === 0) {
+    return avgWin > 0 ? "∞" : "0.00";
+  }
+  return (avgWin / loss).toFixed(2);
+}
+
+/** Share of |avg win| in (avg win + |avg loss|) for the dual-tone bar width. */
+export function winLossShare(avgWin: number, avgLoss: number): number {
+  const w = Math.max(0, avgWin);
+  const l = Math.max(0, Math.abs(avgLoss));
+  const t = w + l;
+  if (t === 0) return 0;
+  return w / t;
 }
 
 export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow[] {

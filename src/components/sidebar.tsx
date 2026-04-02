@@ -57,19 +57,19 @@ const navGroups: NavEntry[][] = [
     {
       label: "Profile",
       href: "/profile",
-      iconSrc: "/icons/sidebar/notification.svg",
+      iconSrc: "/icons/sidebar/profile.svg",
     },
-    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/report.svg" },
+    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/tools.svg" },
     {
       label: "Notifications",
       href: "/notifications",
       iconSrc: "/icons/sidebar/notification.svg",
     },
-    {
-      label: "Settings",
-      href: "/settings",
-      iconSrc: "/icons/sidebar/report.svg",
-    },
+    // {
+    //   label: "Settings",
+    //   href: "/settings",
+    //   iconSrc: "/icons/sidebar/report.svg",
+    // },
   ],
 ];
 
@@ -135,9 +135,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                     )}
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                      {item.label === "Tools" ? (
-                        <IconSettings active={isActive} />
-                      ) : item.label === "Feed" ? (
+                      {item.label === "Feed" ? (
                         <IconFeed active={isActive} />
                       ) : (
                         <Image
