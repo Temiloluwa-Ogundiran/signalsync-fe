@@ -1,14 +1,19 @@
 import { cn } from "@/lib/utils";
 
-import type { TradeOutcomeCounts } from "../lib/journal-kpi-aggregates";
+import type {
+  DailyOutcomeCounts,
+  TradeOutcomeCounts,
+} from "../lib/journal-kpi-aggregates";
 import { getJournalKpiLegacyCardModels } from "../lib/journal-widget-mappers";
 import type { JournalAnalyticsSummaryResponse } from "../types";
+import { JournalKpiDailyWin } from "./journal-kpi-daily-win";
 import { JournalKpiNetPnl } from "./journal-kpi-net-pnl";
 import { JournalKpiTradeWin } from "./journal-kpi-trade-win";
 
 interface JournalKpiStripProps {
   summary: JournalAnalyticsSummaryResponse | undefined;
   tradeOutcomeCounts: TradeOutcomeCounts;
+  dailyOutcomeCounts: DailyOutcomeCounts;
   className?: string;
 }
 
@@ -30,6 +35,7 @@ function LegacySemicircleGauge({ ratio = 0 }: { ratio?: number }) {
 export function JournalKpiStrip({
   summary,
   tradeOutcomeCounts,
+  dailyOutcomeCounts,
   className,
 }: JournalKpiStripProps) {
   const legacy = getJournalKpiLegacyCardModels(summary);
@@ -62,17 +68,7 @@ export function JournalKpiStrip({
         <LegacySemicircleGauge ratio={legacy.profitFactor.ratio} />
       </article>
 
-      <article className="flex min-h-[7.625rem] min-w-0 items-center justify-between rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-4 py-3 shadow-sm ring-1 ring-border-primary/40">
-        <div className="mb-2 flex min-w-0 flex-col items-start gap-1">
-          <p className="font-sans text-xs font-semibold text-text-secondary">
-            {legacy.dailyWin.label}
-          </p>
-          <p className="font-heading text-3xl font-bold tracking-tight text-text-primary">
-            {legacy.dailyWin.value}
-          </p>
-        </div>
-        <LegacySemicircleGauge ratio={legacy.dailyWin.ratio} />
-      </article>
+      <JournalKpiDailyWin dailyOutcomeCounts={dailyOutcomeCounts} />
 
       <article className="flex min-h-[7.625rem] min-w-0 items-center justify-between rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-4 py-3 shadow-sm ring-1 ring-border-primary/40">
         <div className="mb-2 flex min-w-0 flex-col items-start gap-1">

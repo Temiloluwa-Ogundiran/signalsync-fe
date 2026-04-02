@@ -25,7 +25,10 @@ import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
 import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
-import { aggregateTradeOutcomes } from "@/features/journal/lib/journal-kpi-aggregates";
+import {
+  aggregateDailyOutcomes,
+  aggregateTradeOutcomes,
+} from "@/features/journal/lib/journal-kpi-aggregates";
 import { toTradesPanelRows } from "@/features/journal/lib/journal-widget-mappers";
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
 import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
@@ -210,6 +213,7 @@ function JournalPageContent() {
   };
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
+  const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
   const tradesRows = toTradesPanelRows(dayTradesQuery.data?.items ?? []);
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
@@ -228,6 +232,7 @@ function JournalPageContent() {
         <JournalKpiStrip
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
+          dailyOutcomeCounts={dailyOutcomeCounts}
         />
       ) : null}
 

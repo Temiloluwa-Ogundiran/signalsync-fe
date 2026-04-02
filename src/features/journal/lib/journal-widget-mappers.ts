@@ -19,12 +19,11 @@ export function formatPercent(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
-/** Values for the three KPI cards that are not yet redesigned (Profit Factor, Daily Win %, Avg Win/Loss). */
+/** Values for KPI cards not yet redesigned (Profit Factor, Avg Win/Loss). */
 export function getJournalKpiLegacyCardModels(
   summary: JournalAnalyticsSummaryResponse | undefined,
 ) {
   const profitFactor = summary?.profit_factor ?? 0;
-  const winRate = summary?.win_rate ?? 0;
   const avgWin = summary?.avg_win ?? 0;
   const avgLoss = Math.abs(summary?.avg_loss ?? 0);
   const avgRatio = avgLoss > 0 ? avgWin / avgLoss : 0;
@@ -34,11 +33,6 @@ export function getJournalKpiLegacyCardModels(
       label: "Profit Factor" as const,
       value: profitFactor.toFixed(2),
       ratio: Math.min(1, Math.max(0, profitFactor / 3)),
-    },
-    dailyWin: {
-      label: "Daily Win %" as const,
-      value: formatPercent(winRate),
-      ratio: Math.min(1, Math.max(0, winRate / 100)),
     },
     avgRatio: {
       label: "Avg Win/Loss Trade" as const,
