@@ -93,15 +93,6 @@ export interface JournalWidgetConfig {
   visible: boolean;
 }
 
-export interface JournalKpiItem {
-  id: string;
-  label: string;
-  value: string;
-  tone: "default" | "win" | "loss";
-  helper?: string;
-  ratio?: number;
-}
-
 export interface JournalTradesPanelRow {
   id: string;
   closeDate: string;

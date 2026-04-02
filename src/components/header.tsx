@@ -1,9 +1,7 @@
 "use client";
 
 import { Menu, Plus } from "lucide-react";
-import {
-  IconChevronDown,
-} from "@/components/icons/syncgram-nav-icons";
+import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
 import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -23,7 +21,9 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { data: accounts = [] } = useJournalAccounts();
 
   const activeAccountId = searchParams.get("accountId") || "";
-  const activeAccount = accounts.find((account) => account.id === activeAccountId);
+  const activeAccount = accounts.find(
+    (account) => account.id === activeAccountId,
+  );
   const title = useMemo(() => {
     if (pathname.includes("/journal")) return "Journal";
     if (pathname.includes("/tools")) return "Tools";
@@ -47,7 +47,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px]">
+    <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px] font-sans">
       <div className="flex w-full min-w-0 items-center gap-3">
         <div className="flex shrink-0 items-center gap-2 md:hidden">
           <button
@@ -67,7 +67,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               className="shrink-0"
               priority
             />
-            <span className="truncate font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">
+            <span className="truncate hidden md:inline-block font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">
               SyncTrade
             </span>
           </div>
@@ -87,21 +87,36 @@ export function Header({ onMenuClick }: HeaderProps) {
             className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
             aria-label="Currency"
           >
-            <Image src="/icons/navbar/currency.svg" alt="" width={24} height={24} />
+            <Image
+              src="/icons/navbar/currency.svg"
+              alt=""
+              width={24}
+              height={24}
+            />
           </button>
           <button
             type="button"
             className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
             aria-label="Filters"
           >
-            <Image src="/icons/navbar/filter.svg" alt="" width={24} height={24} />
+            <Image
+              src="/icons/navbar/filter.svg"
+              alt=""
+              width={24}
+              height={24}
+            />
           </button>
           <div className="relative hidden items-stretch lg:flex">
             <button
               type="button"
               className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
             >
-              <Image src="/icons/navbar/calendar.svg" alt="" width={24} height={24} />
+              <Image
+                src="/icons/navbar/calendar.svg"
+                alt=""
+                width={24}
+                height={24}
+              />
               <span>Date range</span>
               <IconChevronDown />
             </button>
@@ -110,9 +125,16 @@ export function Header({ onMenuClick }: HeaderProps) {
               onClick={() => setIsAccountsMenuOpen((prev) => !prev)}
               className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
             >
-              <Image src="/icons/navbar/accounts.svg" alt="" width={24} height={24} />
+              <Image
+                src="/icons/navbar/accounts.svg"
+                alt=""
+                width={24}
+                height={24}
+              />
               <span>
-                {activeAccount?.display_name || activeAccount?.broker_login || "All accounts"}
+                {activeAccount?.display_name ||
+                  activeAccount?.broker_login ||
+                  "All accounts"}
               </span>
               <IconChevronDown />
             </button>
@@ -129,7 +151,10 @@ export function Header({ onMenuClick }: HeaderProps) {
                           onClick={() => selectAccount(account.id)}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-sidebar-nav-active-bg"
                         >
-                          <span>{account.display_name || `Account ${account.broker_login}`}</span>
+                          <span>
+                            {account.display_name ||
+                              `Account ${account.broker_login}`}
+                          </span>
                           {account.id === activeAccountId ? (
                             <span className="text-xs text-(--calendar-selected-ring)">
                               Active

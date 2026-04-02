@@ -90,7 +90,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const avatarUrl = user?.avatarUrl;
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col bg-sidebar-chrome-bg">
+    <aside className="flex h-full w-[240px] shrink-0 flex-col bg-sidebar-chrome-bg font-sans">
       <div className="flex h-[60px] shrink-0 items-center px-4">
         <Link
           href="/overview"

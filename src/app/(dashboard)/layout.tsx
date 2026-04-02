@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { MobileNav } from "@/components/mobile-nav";
@@ -26,7 +26,16 @@ export default function DashboardLayout({
 
         {/* Main column: header (top bar) + scrollable content — to the right of sidebar on md+ */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
+          <Suspense
+            fallback={
+              <div
+                className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px]"
+                aria-hidden
+              />
+            }
+          >
+            <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
+          </Suspense>
 
           <main className="scrollbar-thin flex-1 overflow-y-auto pb-20 md:pb-0">
             {children}

@@ -1,6 +1,5 @@
 import type {
   JournalAnalyticsSummaryResponse,
-  JournalKpiItem,
   JournalTradesPanelRow,
   JournalTrade,
 } from "../types";
@@ -11,59 +10,43 @@ function formatMoney(value: number) {
   })}`;
 }
 
+export function formatNetPnlDisplay(totalNet: number): string {
+  const formatted = formatMoney(totalNet);
+  return totalNet >= 0 ? formatted : `-${formatted}`;
+}
+
 export function formatPercent(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
-export function toJournalKpis(
+/** Values for the three KPI cards that are not yet redesigned (Profit Factor, Daily Win %, Avg Win/Loss). */
+export function getJournalKpiLegacyCardModels(
   summary: JournalAnalyticsSummaryResponse | undefined,
-): JournalKpiItem[] {
-  const totalNet = summary?.total_net_pnl ?? 0;
-  const winRate = summary?.win_rate ?? 0;
+) {
   const profitFactor = summary?.profit_factor ?? 0;
-  const dailyWin = winRate;
+  const winRate = summary?.win_rate ?? 0;
   const avgWin = summary?.avg_win ?? 0;
   const avgLoss = Math.abs(summary?.avg_loss ?? 0);
   const avgRatio = avgLoss > 0 ? avgWin / avgLoss : 0;
 
-  return [
-    {
-      id: "net-pnl",
-      label: "Net P&L",
-      value: `${totalNet >= 0 ? "+" : "-"}${formatMoney(totalNet)}`,
-      tone: totalNet >= 0 ? "win" : "loss",
-      helper: `${summary?.total_trades ?? 0}`,
-    },
-    {
-      id: "trade-win",
-      label: "Trade Win %",
-      value: formatPercent(winRate),
-      tone: "default",
-      ratio: Math.min(1, Math.max(0, winRate / 100)),
-    },
-    {
-      id: "profit-factor",
-      label: "Profit Factor",
+  return {
+    profitFactor: {
+      label: "Profit Factor" as const,
       value: profitFactor.toFixed(2),
-      tone: "default",
       ratio: Math.min(1, Math.max(0, profitFactor / 3)),
     },
-    {
-      id: "daily-win",
-      label: "Daily Win %",
-      value: formatPercent(dailyWin),
-      tone: "default",
-      ratio: Math.min(1, Math.max(0, dailyWin / 100)),
+    dailyWin: {
+      label: "Daily Win %" as const,
+      value: formatPercent(winRate),
+      ratio: Math.min(1, Math.max(0, winRate / 100)),
     },
-    {
-      id: "avg-ratio",
-      label: "Avg Win/Loss Trade",
+    avgRatio: {
+      label: "Avg Win/Loss Trade" as const,
       value: avgRatio.toFixed(2),
-      tone: "default",
       helper: `${formatMoney(avgWin)} / ${formatMoney(avgLoss)}`,
       ratio: Math.min(1, Math.max(0, avgRatio / 5)),
     },
-  ];
+  };
 }
 
 export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow[] {

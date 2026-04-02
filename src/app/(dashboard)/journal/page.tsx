@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import type { JournalCalendarDayStat } from "@/features/journal/types";
@@ -25,10 +25,8 @@ import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
 import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
-import {
-  toJournalKpis,
-  toTradesPanelRows,
-} from "@/features/journal/lib/journal-widget-mappers";
+import { aggregateTradeOutcomes } from "@/features/journal/lib/journal-kpi-aggregates";
+import { toTradesPanelRows } from "@/features/journal/lib/journal-widget-mappers";
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
 import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
 import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
@@ -42,7 +40,7 @@ function formatDateParam(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export default function JournalPage() {
+function JournalPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedDay, setSelectedDay] = useState<number | null>(() =>
@@ -211,14 +209,14 @@ export default function JournalPage() {
     }
   };
 
-  const kpiItems = toJournalKpis(summaryAnalytics);
+  const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const tradesRows = toTradesPanelRows(dayTradesQuery.data?.items ?? []);
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
 
   return (
-    <div className="space-y-4 p-4 pb-20 md:p-8 md:pb-8">
+    <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
       <JournalToolbar
         isSyncPending={syncAccountMutation.isPending}
         lastSyncedAt={activeAccount?.last_synced_at}
@@ -227,7 +225,10 @@ export default function JournalPage() {
       />
 
       {widgetRegistry.some((widget) => widget.id === "kpiStrip") ? (
-        <JournalKpiStrip items={kpiItems} />
+        <JournalKpiStrip
+          summary={summaryAnalytics}
+          tradeOutcomeCounts={tradeOutcomeCounts}
+        />
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
@@ -279,5 +280,24 @@ export default function JournalPage() {
         tradingDate={selectedTradingDate}
       />
     </div>
+  );
+}
+
+export default function JournalPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+          <div className="h-12 max-w-2xl animate-pulse rounded-lg bg-bg-tertiary" />
+          <div className="h-28 animate-pulse rounded-xl bg-bg-tertiary" />
+          <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
+            <div className="min-h-[320px] animate-pulse rounded-xl bg-bg-tertiary" />
+            <div className="min-h-[200px] animate-pulse rounded-xl bg-bg-tertiary" />
+          </div>
+        </div>
+      }
+    >
+      <JournalPageContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,3 @@
-@import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -24,6 +23,22 @@
   --text-tertiary: #94a3b8; /* slate-400 */
   --text-muted: #cbd5e1; /* slate-300 */
   --footnote-online: #64748b;
+
+  /* Journal KPI (light — aligned with dark tokens until light pass) */
+  --kpi-card-bg: var(--card-bg);
+  --kpi-metric-positive: #059669;
+  --kpi-metric-neutral: var(--text-primary);
+  --kpi-badge-border: var(--border-primary);
+  --kpi-trend-bg: #d1fae5;
+  --kpi-trend-fg: #065f46;
+  --kpi-trend-loss-bg: #fee2e2;
+  --kpi-trend-loss-fg: #991b1b;
+  --kpi-legend-win-bg: #d1fae5;
+  --kpi-legend-win-fg: #065f46;
+  --kpi-legend-be-bg: #e0e7ff;
+  --kpi-legend-be-fg: #3730a3;
+  --kpi-legend-loss-bg: #fee2e2;
+  --kpi-legend-loss-fg: #b91c1c;
 
   /* Brand / Accent — Blue (matches original Vite codebase) */
   --accent: #2563eb; /* blue-600 */
@@ -180,6 +195,22 @@
   --ask-sync-gradient: linear-gradient(262.75deg, #818cf8 1.94%, #393b8b 97.07%);
   --footnote-online: #d4d4d4;
 
+  /* Journal KPI row — Figma 523:5256 (Net P&L) / 523:5265 (Trade Win %) */
+  --kpi-card-bg: #181818;
+  --kpi-metric-positive: #3fc487;
+  --kpi-metric-neutral: #fafafa;
+  --kpi-badge-border: #333333;
+  --kpi-trend-bg: #0d5233;
+  --kpi-trend-fg: #a9e6c6;
+  --kpi-trend-loss-bg: #7f1d1d;
+  --kpi-trend-loss-fg: #fca5a5;
+  --kpi-legend-win-bg: #0d5233;
+  --kpi-legend-win-fg: #3fc487;
+  --kpi-legend-be-bg: #312e81;
+  --kpi-legend-be-fg: #818cf8;
+  --kpi-legend-loss-bg: #7f1d1d;
+  --kpi-legend-loss-fg: #f87171;
+
   /* shadcn tokens (oklch from hex) */
   --background: oklch(0.159 0 0);
   --foreground: oklch(0.985 0 0);
@@ -248,7 +279,7 @@
   --color-modal-bg: var(--modal-bg);
 
   --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: "Cabinet Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-cabinet), ui-sans-serif, system-ui, sans-serif;
 
   --color-chrome-bar-bg: var(--chrome-bar-bg);
   --color-sidebar-chrome-bg: var(--sidebar-chrome-bg);
@@ -260,6 +291,21 @@
   --color-sidebar-bottom-border: var(--sidebar-bottom-border);
   --color-chrome-control-border: var(--chrome-control-border);
   --color-footnote-online: var(--footnote-online);
+
+  --color-kpi-card-bg: var(--kpi-card-bg);
+  --color-kpi-metric-positive: var(--kpi-metric-positive);
+  --color-kpi-metric-neutral: var(--kpi-metric-neutral);
+  --color-kpi-badge-border: var(--kpi-badge-border);
+  --color-kpi-trend-bg: var(--kpi-trend-bg);
+  --color-kpi-trend-fg: var(--kpi-trend-fg);
+  --color-kpi-trend-loss-bg: var(--kpi-trend-loss-bg);
+  --color-kpi-trend-loss-fg: var(--kpi-trend-loss-fg);
+  --color-kpi-legend-win-bg: var(--kpi-legend-win-bg);
+  --color-kpi-legend-win-fg: var(--kpi-legend-win-fg);
+  --color-kpi-legend-be-bg: var(--kpi-legend-be-bg);
+  --color-kpi-legend-be-fg: var(--kpi-legend-be-fg);
+  --color-kpi-legend-loss-bg: var(--kpi-legend-loss-bg);
+  --color-kpi-legend-loss-fg: var(--kpi-legend-loss-fg);
 
   --color-sidebar-ring: var(--sidebar-ring);
 

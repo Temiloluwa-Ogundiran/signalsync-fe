@@ -35,7 +35,10 @@ export function JournalCalendarWidget({
     }),
   );
   const weeklyTotals = weekRows.map((week) =>
-    week.reduce((acc, day) => acc + (day ? (dayStats[day]?.pnl ?? 0) : 0), 0),
+    week.reduce<number>(
+      (acc, day) => acc + (day ? (dayStats[day]?.pnl ?? 0) : 0),
+      0,
+    ),
   );
   const monthlyPnl = Object.values(dayStats).reduce((acc, day) => acc + day.pnl, 0);
   const activeDays = Object.values(dayStats).filter((day) => day.trades > 0).length;
