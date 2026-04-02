@@ -1,89 +1,96 @@
 "use client";
 
-import { Bell, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { ThemeToggle } from "./theme-toggle";
+import { Menu } from "lucide-react";
+import {
+  IconCalendar,
+  IconChevronDown,
+  IconWallet,
+  IconCurrency,
+  IconFilter,
+  IconAskSync,
+} from "@/components/icons/syncgram-nav-icons";
+import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
+import Image from "next/image";
 
 interface HeaderProps {
   onMenuClick: () => void;
-  onToggleSidebar?: () => void;
-  isSidebarCollapsed?: boolean;
 }
 
-export function Header({
-  onMenuClick,
-  onToggleSidebar,
-  isSidebarCollapsed = false,
-}: HeaderProps) {
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const displayName = user?.displayName || user?.name || user?.username || "";
-  const avatarUrl = user?.avatarUrl;
+export function Header({ onMenuClick }: HeaderProps) {
+  const { open: openAi } = useAiInsightModal();
 
   return (
-    <header className="h-16 bg-bg-secondary/80 backdrop-blur-md border-b border-border-primary flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-all">
-      <div className="flex items-center flex-1">
-        {/* Mobile Menu Trigger */}
+    <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px]">
+      <div className="flex w-full min-w-0 items-center gap-3">
+        <div className="flex shrink-0 items-center justify-center gap-2 px-0 pb-2 pt-2">
+          <Image
+            src="/syncgram/logo-mark.svg"
+            alt=""
+            width={32}
+            height={40}
+            className="shrink-0"
+            priority
+          />
+          <span className="hidden md:inline-block font-heading text-2xl font-bold leading-tight tracking-tight text-text-primary">
+            SyncTrade
+          </span>
+        </div>
         <button
+          type="button"
           onClick={onMenuClick}
-          className="mr-4 md:hidden text-text-secondary hover:text-text-primary"
+          className="shrink-0 text-sidebar-nav-inactive-text hover:text-sidebar-nav-active-text md:hidden"
+          aria-label="Open menu"
         >
           <Menu className="h-6 w-6" />
         </button>
 
-        <button
-          onClick={onToggleSidebar}
-          className="hidden md:inline-flex items-center gap-2 rounded-xl border border-border-primary bg-bg-input px-3 py-2 text-sm font-medium text-text-secondary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isSidebarCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4" />
-          ) : (
-            <PanelLeftClose className="h-4 w-4" />
-          )}
-          {isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-        </button>
-      </div>
+        <div className="min-w-0 flex-1 text-center md:absolute md:left-1/2 md:top-1/2 md:max-w-[min(90vw,560px)] md:-translate-x-1/2 md:-translate-y-1/2 md:px-4" />
 
-      <div className="flex items-center space-x-2 md:space-x-4">
-        <ThemeToggle />
-        <button className="relative p-2 text-text-tertiary hover:text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-danger ring-2 ring-bg-secondary transform translate-x-1/2 -translate-y-1/2" />
-        </button>
+        <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3">
+          <button
+            type="button"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-chrome-control-border bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
+            aria-label="Currency"
+          >
+            <IconCurrency />
+          </button>
+          <button
+            type="button"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-chrome-control-border bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
+            aria-label="Filters"
+          >
+            <IconFilter />
+          </button>
+          <div className="hidden items-stretch lg:flex">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+            >
+              <IconCalendar />
+              <span>Date range</span>
+              <IconChevronDown />
+            </button>
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+            >
+              <IconWallet />
+              <span>All accounts</span>
+              <IconChevronDown />
+            </button>
+          </div>
 
-        <div className="flex items-center space-x-3 pl-2 border-l border-border-primary">
-          {status === "authenticated" && displayName ? (
-            <>
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-medium text-text-primary leading-none">
-                  {displayName}
-                </p>
-                {user?.username && (
-                  <p className="text-xs text-text-tertiary mt-1">
-                    @{user.username}
-                  </p>
-                )}
-              </div>
-              <button className="h-9 w-9 rounded-full bg-linear-to-tr from-accent to-blue-400 p-0.5 cursor-pointer hover:shadow-md transition-shadow">
-                <div className="h-full w-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="User Avatar"
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm font-bold text-accent">
-                      {displayName.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              </button>
-            </>
-          ) : (
-            <div className="h-9 w-9 rounded-full bg-bg-tertiary" />
-          )}
+          <button
+            type="button"
+            onClick={() => openAi(null)}
+            className="flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-opacity hover:opacity-95"
+            style={{
+              background: "var(--ask-sync-gradient)",
+            }}
+          >
+            <IconAskSync />
+            <span className="hidden sm:inline">Ask Sync</span>
+          </button>
         </div>
       </div>
     </header>

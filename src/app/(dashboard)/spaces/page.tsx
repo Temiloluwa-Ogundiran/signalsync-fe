@@ -510,7 +510,7 @@ export default function SpacesPage() {
                   <Shield className="h-6 w-6 text-accent ml-2 fill-accent/20" />
                 )}
               </h1>
-              <div className="flex items-center text-slate-200 text-sm gap-4">
+              <div className="flex items-center text-text-secondary text-sm gap-4">
                 <span className="flex items-center">
                   <Users className="h-4 w-4 mr-1.5" /> {selectedSpace?.members}{" "}
                   Members

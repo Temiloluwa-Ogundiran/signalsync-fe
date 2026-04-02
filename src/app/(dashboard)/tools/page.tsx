@@ -18,6 +18,7 @@ import {
   Zap,
   BookOpen,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // --- Types ---
 
@@ -306,7 +307,7 @@ function PositionSizeCalculator() {
                 {
                   label: "Dollar Risk",
                   value: `-$${results.dollarRisk}`,
-                  extra: "text-rose-200",
+                  extra: "text-danger",
                 },
                 {
                   label: "Stop Loss Distance",
@@ -402,13 +403,21 @@ export default function ToolsPage() {
 
   return (
     <div className="p-4 md:p-8 pb-20 md:pb-8">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
-          Tools
-        </h1>
-        <p className="text-text-secondary mt-1">
-          Quick tools for sizing, risk management, and trade planning.
-        </p>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
+            Tools
+          </h1>
+          <p className="text-text-secondary mt-1">
+            Quick tools for sizing, risk management, and trade planning.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3 rounded-xl border border-border-primary bg-card-bg px-3 py-2 self-start">
+          <span className="text-xs font-medium text-text-secondary">
+            Theme
+          </span>
+          <ThemeToggle />
+        </div>
       </div>
       <div className="mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex space-x-2 min-w-max">

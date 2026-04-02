@@ -1,3 +1,4 @@
+@import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -22,6 +23,7 @@
   --text-secondary: #475569; /* slate-600 */
   --text-tertiary: #94a3b8; /* slate-400 */
   --text-muted: #cbd5e1; /* slate-300 */
+  --footnote-online: #64748b;
 
   /* Brand / Accent — Blue (matches original Vite codebase) */
   --accent: #2563eb; /* blue-600 */
@@ -101,92 +103,114 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* ===== Dark Theme ===== */
+/* ===== Dark Theme (Syncgram Trades Figma — node 460:2163, dashboard screenshot) ===== */
 .dark {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-hover: #334155;
-  --bg-input: #1e293b;
+  /* Surfaces: canvas #0D0D0D, cards/sidebar #161616, hover/pill #2A2A2A (Figma greyscale + screenshot) */
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #161616;
+  --bg-tertiary: #2a2a2a;
+  --bg-hover: #2a2a2a;
+  --bg-input: #1f1f1f;
 
-  --border-primary: #334155;
-  --border-secondary: #475569;
+  /* Borders: subtle UI rails; Figma greyscale default #737373 reserved for stronger strokes */
+  --border-primary: #333333;
+  --border-secondary: #525252;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --text-muted: #475569;
+  /* Text: primary #FFF, secondary #9CA3AF (screenshot) */
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #737373;
+  --text-muted: #525252;
 
-  --accent: #3b82f6; /* blue-500 — slightly brighter for dark bg contrast */
-  --accent-hover: #2563eb; /* blue-600 */
-  --accent-light: rgba(59, 130, 246, 0.12);
+  /* Accent: indigo #6366F1 / #8B5CF6 range (Figma “Ask Sync” / primary actions) */
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-light: rgba(99, 102, 241, 0.15);
 
-  --success: #10b981;
-  --success-light: rgba(16, 185, 129, 0.1);
-  --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.1);
+  /* Semantic: mint green / coral red (screenshot KPI + charts) */
+  --success: #4ade80;
+  --success-light: rgba(74, 222, 128, 0.12);
+  --danger: #f87171;
+  --danger-light: rgba(248, 113, 113, 0.12);
   --warning: #f59e0b;
-  --warning-light: rgba(245, 158, 11, 0.1);
+  --warning-light: rgba(245, 158, 11, 0.12);
   --info: #3b82f6;
-  --info-light: rgba(59, 130, 246, 0.1);
+  --info-light: rgba(59, 130, 246, 0.12);
 
-  --sidebar-bg: #0f172a;
-  --card-bg: #1e293b;
-  --card-bg-hover: #263348;
-  --modal-bg: #1e293b;
-  --modal-overlay: rgba(0, 0, 0, 0.6);
+  --sidebar-bg: #161616;
+  --card-bg: #161616;
+  --card-bg-hover: #2a2a2a;
+  --modal-bg: #161616;
+  --modal-overlay: rgba(0, 0, 0, 0.65);
 
-  --gradient-accent: linear-gradient(135deg, #3b82f6, #2563eb);
+  --gradient-accent: linear-gradient(135deg, #6366f1, #8b5cf6);
   --gradient-card: linear-gradient(
     135deg,
-    rgba(59, 130, 246, 0.1),
-    rgba(37, 99, 235, 0.05)
+    rgba(99, 102, 241, 0.08),
+    rgba(139, 92, 246, 0.04)
   );
 
-  /* Calendar surfaces */
-  --calendar-cell-neutral: #22262e;
-  --calendar-cell-win-bg: #1f3832;
-  --calendar-cell-loss-bg: #3a2428;
-  --calendar-selected-ring: #7c8cff;
-  --calendar-selected-fill: #2a3042;
-  --calendar-cell-date: #adb7c4;
-  --calendar-cell-subtle: #8792a2;
-  --calendar-pnl-win-text: #99ddc7;
-  --calendar-pnl-loss-text: #ffb1ba;
+  /* Calendar / heatmap on neutral dark base */
+  --calendar-cell-neutral: #1e1e1e;
+  --calendar-cell-win-bg: rgba(74, 222, 128, 0.14);
+  --calendar-cell-loss-bg: rgba(248, 113, 113, 0.14);
+  --calendar-selected-ring: #818cf8;
+  --calendar-selected-fill: #2a2a2a;
+  --calendar-cell-date: #9ca3af;
+  --calendar-cell-subtle: #737373;
+  --calendar-pnl-win-text: #4ade80;
+  --calendar-pnl-loss-text: #f87171;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
-  --background: oklch(0.145 0 0);
+  /* Elevation/S-style (Figma design context) */
+  --shadow-sm:
+    0 2px 4px rgba(22, 26, 32, 0.04), 0 16px 32px -4px rgba(22, 26, 32, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.45);
+
+  /* Dashboard chrome — Figma sidebar 504:5116 / top bar 497:5078 */
+  --chrome-bar-bg: #181818;
+  --sidebar-chrome-bg: #181818;
+  --sidebar-nav-active-bg: #2a2a2a;
+  --sidebar-nav-active-border: #e5e5e5;
+  --sidebar-nav-inactive-text: #737373;
+  --sidebar-nav-active-text: #f5f5f5;
+  --sidebar-divider: rgba(115, 115, 115, 0.2);
+  --sidebar-bottom-border: #737373;
+  --chrome-control-border: #737373;
+  --ask-sync-gradient: linear-gradient(262.75deg, #818cf8 1.94%, #393b8b 97.07%);
+  --footnote-online: #d4d4d4;
+
+  /* shadcn tokens (oklch from hex) */
+  --background: oklch(0.159 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.2 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.2 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.585 0.204 277.1);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.285 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted: oklch(0.285 0 0);
+  --muted-foreground: oklch(0.714 0.019 261.3);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
+  --destructive: oklch(0.711 0.166 22.2);
+  --border: oklch(0.321 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.68 0.158 276.9);
+  --chart-1: oklch(0.585 0.204 277.1);
+  --chart-2: oklch(0.8 0.182 151.7);
+  --chart-3: oklch(0.711 0.166 22.2);
+  --chart-4: oklch(0.623 0.188 259.8);
+  --chart-5: oklch(0.606 0.219 292.7);
+  --sidebar: oklch(0.2 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.585 0.204 277.1);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.285 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border: oklch(0.321 0 0);
+  --sidebar-ring: oklch(0.68 0.158 276.9);
 }
 
 /* ===== Register tokens for Tailwind v4 ===== */
@@ -223,7 +247,19 @@
   --color-card-bg-hover: var(--card-bg-hover);
   --color-modal-bg: var(--modal-bg);
 
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Cabinet Grotesk", ui-sans-serif, system-ui, sans-serif;
+
+  --color-chrome-bar-bg: var(--chrome-bar-bg);
+  --color-sidebar-chrome-bg: var(--sidebar-chrome-bg);
+  --color-sidebar-nav-active-bg: var(--sidebar-nav-active-bg);
+  --color-sidebar-nav-active-border: var(--sidebar-nav-active-border);
+  --color-sidebar-nav-inactive-text: var(--sidebar-nav-inactive-text);
+  --color-sidebar-nav-active-text: var(--sidebar-nav-active-text);
+  --color-sidebar-divider: var(--sidebar-divider);
+  --color-sidebar-bottom-border: var(--sidebar-bottom-border);
+  --color-chrome-control-border: var(--chrome-control-border);
+  --color-footnote-online: var(--footnote-online);
 
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -305,7 +341,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family:
-    var(--font-inter),
+    var(--font-onest),
     system-ui,
     -apple-system,
     sans-serif;

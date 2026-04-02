@@ -1,115 +1,133 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
 import {
-  Home,
-  Compass,
-  Copy,
-  BookOpen,
-  Radio,
-  Wrench,
-  User,
-  LogOut,
-  Activity,
-} from "lucide-react";
+  IconHome,
+  IconJournal,
+  IconCopyTrading,
+  IconDiscover,
+  IconSpace,
+  IconFeed,
+  IconNotification,
+  IconSettings,
+  IconReport,
+} from "@/components/icons/syncgram-nav-icons";
+// import { StreamSwitcher } from "./stream-switcher";
 
-const navItems = [
-  { label: "Home", icon: Home, href: "/overview" },
-  { label: "Discover", icon: Compass, href: "/discover" },
-  { label: "Feed", icon: Activity, href: "/feed" },
-  { label: "Copy Trading", icon: Copy, href: "/copy-trading" },
-  { label: "Journal", icon: BookOpen, href: "/journal" },
-  { label: "Spaces", icon: Radio, href: "/spaces" },
-  { label: "Tools", icon: Wrench, href: "/tools" },
+type NavEntry = {
+  label: string;
+  href: string;
+  Icon: ComponentType<{ active?: boolean; className?: string }>;
+};
+
+const navGroups: NavEntry[][] = [
+  [
+    { label: "Home", href: "/overview", Icon: IconHome },
+    { label: "Journal", href: "/journal", Icon: IconJournal },
+    { label: "Report", href: "/stream", Icon: IconReport },
+    { label: "Copy Trading", href: "/copy-trading", Icon: IconCopyTrading },
+  ],
+  [
+    { label: "Discover", href: "/discover", Icon: IconDiscover },
+    { label: "Feed", href: "/feed", Icon: IconFeed },
+    { label: "Space", href: "/spaces", Icon: IconSpace },
+  ],
+  [
+    { label: "Profile", href: "/profile", Icon: IconNotification },
+    { label: "Tools", href: "/tools", Icon: IconSettings },
+  ],
 ];
 
-import { StreamSwitcher } from "./stream-switcher";
-
-interface SidebarProps {
-  collapsed?: boolean;
+function NavDivider() {
+  return <div className="my-3 h-px w-full bg-sidebar-divider" aria-hidden />;
 }
 
-export function Sidebar({ collapsed = false }: SidebarProps) {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const displayName =
+    user?.displayName || user?.name || user?.username || "Trader";
+  const avatarUrl = user?.avatarUrl;
 
   return (
-    <aside
-      className={`bg-bg-secondary border-r border-border-primary flex flex-col h-full z-20 transition-[width] duration-300 ${collapsed ? "w-20" : "w-64"}`}
-    >
-      {/* Brand Logo */}
-      <div className={`h-16 flex items-center border-b border-border-primary ${collapsed ? "justify-center px-2" : "px-6"}`}>
-        <div
-          className={`w-8 h-8 bg-accent rounded-lg flex items-center justify-center shadow-sm ${collapsed ? "mr-0" : "mr-3"}`}
-        >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current">
-            <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
-          </svg>
-        </div>
+    <aside className="flex h-full w-[240px] shrink-0 flex-col bg-sidebar-chrome-bg">
+      {/* {!collapsed && <StreamSwitcher />} */}
 
-        {!collapsed && (
-          <>
-            <span className="font-bold text-lg tracking-tight text-text-primary">
-              Syncgram
-            </span>
-            <span className="ml-1 text-text-tertiary font-medium">Trades</span>
-          </>
-        )}
-      </div>
-
-      {/* Active Stream Switcher */}
-      {!collapsed && <StreamSwitcher />}
-
-      {/* Navigation Items */}
-      <nav className={`flex-1 py-6 space-y-1 ${collapsed ? "px-2" : "px-3"}`}>
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`w-full flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${collapsed ? "justify-center px-2" : "px-3"} ${
-                isActive
-                  ? "bg-accent-light text-accent"
-                  : "text-text-secondary hover:bg-bg-tertiary hover:text-text-primary"
-              }`}
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon
-                className={`h-5 w-5 transition-colors ${
-                  isActive
-                    ? "text-accent"
-                    : "text-text-tertiary group-hover:text-text-secondary"
-                } ${collapsed ? "mr-0" : "mr-3"}`}
-              />
-              {!collapsed && item.label}
-            </Link>
-          );
-        })}
+      <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-6">
+        {navGroups.map((group, gi) => (
+          <div key={gi}>
+            {gi > 0 && <NavDivider />}
+            <div className="flex flex-col gap-1">
+              {group.map((item) => {
+                const isActive =
+                  item.href === "/overview"
+                    ? pathname === "/overview"
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.label + item.href}
+                    href={item.href}
+                    onClick={() => onNavigate?.()}
+                    className={cn(
+                      "flex min-h-[44px] items-center gap-3 rounded-full px-4 py-2.5 text-base font-semibold leading-snug transition-colors",
+                      isActive
+                        ? "border border-sidebar-nav-active-border bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
+                        : "border border-transparent bg-transparent text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/40 hover:text-sidebar-nav-active-text",
+                    )}
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                      <item.Icon active={isActive} />
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom Profile Section */}
-      <div className={`border-t border-border-primary ${collapsed ? "p-2" : "p-4"}`}>
-        <Link
-          href="/profile"
-          className={`flex items-center w-full py-2.5 text-sm font-medium text-text-secondary rounded-lg hover:bg-bg-tertiary transition-colors ${collapsed ? "justify-center px-2" : "px-3"}`}
-          title={collapsed ? "Profile" : undefined}
-        >
-          <User
-            className={`h-5 w-5 text-text-tertiary ${collapsed ? "mr-0" : "mr-3"}`}
-          />
-          {!collapsed && "Profile"}
-        </Link>
+      <div className="shrink-0 border-t border-sidebar-bottom-border bg-sidebar-chrome-bg px-3 pb-4 pt-5">
+        <div className="flex items-center gap-3 px-1">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-indigo-600 ring-1 ring-white/10">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-sans text-base font-normal text-sidebar-nav-active-text">
+              {status === "authenticated" ? displayName : "—"}
+            </p>
+            <p className="text-[10px] leading-normal text-footnote-online">
+              Online
+            </p>
+          </div>
+        </div>
         <button
+          type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className={`flex items-center w-full py-2.5 text-sm font-medium text-text-secondary rounded-lg hover:bg-bg-tertiary transition-colors mt-1 ${collapsed ? "justify-center px-2" : "px-3"}`}
-          title={collapsed ? "Log Out" : undefined}
+          className="mt-4 w-full rounded-full px-4 py-2.5 text-center text-sm font-medium text-sidebar-nav-inactive-text transition-colors hover:bg-sidebar-nav-active-bg hover:text-sidebar-nav-active-text"
         >
-          <LogOut
-            className={`h-5 w-5 text-text-tertiary ${collapsed ? "mr-0" : "mr-3"}`}
-          />
-          {!collapsed && "Log Out"}
+          Log out
         </button>
       </div>
     </aside>

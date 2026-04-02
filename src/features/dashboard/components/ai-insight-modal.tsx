@@ -30,7 +30,7 @@ export function AiInsightModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-4 flex items-center justify-between text-white shrink-0">
+        <div className="bg-gradient-to-r from-accent to-purple-500 p-4 flex items-center justify-between text-white shrink-0">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
             <span className="font-bold text-sm tracking-wide">Syncgram AI</span>
@@ -55,7 +55,7 @@ export function AiInsightModal({
           {isLoading ? (
             <div className="space-y-4 animate-pulse">
               <div className="flex gap-3">
-                <div className="h-8 w-8 bg-indigo-500/20 rounded-full shrink-0" />
+                <div className="h-8 w-8 bg-accent/20 rounded-full shrink-0" />
                 <div className="space-y-2 flex-1">
                   <div className="h-4 bg-bg-tertiary rounded w-3/4" />
                   <div className="h-4 bg-bg-tertiary rounded w-1/2" />
@@ -65,15 +65,15 @@ export function AiInsightModal({
             </div>
           ) : (
             <div className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white mt-1">
+              <div className="h-8 w-8 bg-gradient-to-br from-accent to-purple-500 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white mt-1">
                 <Sparkles className="h-4 w-4" />
               </div>
 
               <div className="space-y-6 flex-1">
                 {/* TLDR Section */}
-                <div className="bg-gradient-to-br from-indigo-500/10 to-violet-500/10 border border-indigo-500/20 rounded-xl p-5 relative overflow-hidden">
-                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wide mb-2">
-                    <Zap className="h-3 w-3 fill-indigo-400" /> TLDR
+                <div className="bg-gradient-to-br from-accent/10 to-purple-500/10 border border-accent/20 rounded-xl p-5 relative overflow-hidden">
+                  <div className="flex items-center gap-2 text-accent font-bold text-xs uppercase tracking-wide mb-2">
+                    <Zap className="h-3 w-3 fill-accent" /> TLDR
                   </div>
                   <p className="text-text-primary text-sm leading-relaxed font-medium">
                     The market is currently{" "}
@@ -83,10 +83,10 @@ export function AiInsightModal({
                     while the Dollar (DXY) faces rejection at key resistance.
                   </p>
                   <div className="mt-3 flex gap-2">
-                    <span className="text-[10px] bg-bg-tertiary border border-indigo-500/20 text-indigo-400 px-2 py-1 rounded-md font-bold">
+                    <span className="text-[10px] bg-bg-tertiary border border-accent/20 text-accent px-2 py-1 rounded-md font-bold">
                       Institutional Buy-side
                     </span>
-                    <span className="text-[10px] bg-bg-tertiary border border-indigo-500/20 text-indigo-400 px-2 py-1 rounded-md font-bold">
+                    <span className="text-[10px] bg-bg-tertiary border border-accent/20 text-accent px-2 py-1 rounded-md font-bold">
                       Dovish Fed
                     </span>
                   </div>
@@ -142,9 +142,9 @@ export function AiInsightModal({
             <input
               type="text"
               placeholder="Ask follow-up question..."
-              className="w-full bg-card-bg border border-border-primary rounded-xl pl-4 pr-12 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all"
+              className="w-full bg-card-bg border border-border-primary rounded-xl pl-4 pr-12 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors shadow-sm">
               <Send className="h-4 w-4" />
             </button>
           </div>

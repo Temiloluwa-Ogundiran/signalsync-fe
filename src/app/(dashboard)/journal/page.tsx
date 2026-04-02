@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import {
   Calendar as CalendarIcon,
-  Activity,
   Plus,
   Loader2,
   RefreshCw,
@@ -38,26 +37,6 @@ function formatDateParam(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-// --- Equity Curve ---
-function EquityCurve() {
-  const bars = [20, 35, 30, 50, 45, 60, 55, 75, 70, 90, 85, 100];
-  return (
-    <div className="h-24 flex items-end space-x-1 mt-4 px-2">
-      {bars.map((h, i) => (
-        <div
-          key={i}
-          className="flex-1 bg-bg-tertiary rounded-t-sm relative group cursor-pointer hover:opacity-80 transition-opacity"
-        >
-          <div
-            style={{ height: `${h}%` }}
-            className={`w-full rounded-t-sm ${i === bars.length - 1 ? "bg-success" : "bg-accent"}`}
-          />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 export default function JournalPage() {
@@ -316,18 +295,6 @@ export default function JournalPage() {
           />
         </div>
 
-        <div className="bg-card-bg rounded-2xl border border-border-primary shadow-sm p-6 hidden md:block">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wide flex items-center">
-              <Activity className="h-4 w-4 mr-2 text-accent" /> Performance
-              Curve
-            </h3>
-            <button className="text-xs font-medium text-text-tertiary hover:text-accent">
-              View Full Analytics
-            </button>
-          </div>
-          <EquityCurve />
-        </div>
       </div>
 
       <Dialog open={isConnectModalOpen} onOpenChange={setIsConnectModalOpen}>

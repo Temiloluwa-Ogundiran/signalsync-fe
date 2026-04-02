@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   ArrowUpRight,
   Activity,
@@ -14,7 +13,7 @@ import {
   type Asset,
 } from "@/features/dashboard/components/market-card";
 import { SentimentMeter } from "@/features/dashboard/components/sentiment-meter";
-import { AiInsightModal } from "@/features/dashboard/components/ai-insight-modal";
+import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 
 // --- Mock Data ---
 
@@ -119,12 +118,10 @@ const AI_SUGGESTIONS = [
 ];
 
 export default function OverviewPage() {
-  const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [selectedAiTopic, setSelectedAiTopic] = useState<string | null>(null);
+  const { open: openAiModal } = useAiInsightModal();
 
   const handleAiSuggestionClick = (topic: string) => {
-    setSelectedAiTopic(topic);
-    setAiModalOpen(true);
+    openAiModal(topic);
   };
 
   return (
@@ -307,11 +304,6 @@ export default function OverviewPage() {
         </section>
       </div>
 
-      <AiInsightModal
-        isOpen={aiModalOpen}
-        onClose={() => setAiModalOpen(false)}
-        topic={selectedAiTopic}
-      />
     </div>
   );
 }
