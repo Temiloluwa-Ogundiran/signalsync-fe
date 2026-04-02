@@ -18,7 +18,6 @@ import {
   Zap,
   BookOpen,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 // --- Types ---
 
@@ -411,12 +410,6 @@ export default function ToolsPage() {
           <p className="text-text-secondary mt-1">
             Quick tools for sizing, risk management, and trade planning.
           </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3 rounded-xl border border-border-primary bg-card-bg px-3 py-2 self-start">
-          <span className="text-xs font-medium text-text-secondary">
-            Theme
-          </span>
-          <ThemeToggle />
         </div>
       </div>
       <div className="mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">

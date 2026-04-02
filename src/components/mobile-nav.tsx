@@ -1,21 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  IconHome,
-  IconDiscover,
-  IconFeed,
-  IconCopyTrading,
-  IconJournal,
-} from "@/components/icons/syncgram-nav-icons";
 
 const navItems = [
-  { label: "Home", href: "/overview", Icon: IconHome },
-  { label: "Discover", href: "/discover", Icon: IconDiscover },
-  { label: "Feed", href: "/feed", Icon: IconFeed },
-  { label: "Copy", href: "/copy-trading", Icon: IconCopyTrading },
-  { label: "Journal", href: "/journal", Icon: IconJournal },
+  { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg" },
+  { label: "Discover", href: "/discover", iconSrc: "/icons/sidebar/discover.svg" },
+  {
+    label: "Feed",
+    href: "/feed",
+    iconSrc: "/icons/sidebar/trade-history.svg",
+  },
+  { label: "Copy", href: "/copy-trading", iconSrc: "/icons/sidebar/copy-trading.svg" },
+  { label: "Journal", href: "/journal", iconSrc: "/icons/sidebar/journal.svg" },
 ] as const;
 
 export function MobileNav() {
@@ -39,7 +37,13 @@ export function MobileNav() {
             }`}
           >
             <span className="flex h-6 w-6 items-center justify-center">
-              <item.Icon active={isActive} />
+              <Image
+                src={item.iconSrc}
+                alt=""
+                width={24}
+                height={24}
+                className={isActive ? "opacity-100" : "opacity-75"}
+              />
             </span>
             <span className="mt-1 text-[10px] font-medium leading-tight">
               {item.label}

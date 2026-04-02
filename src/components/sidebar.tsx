@@ -1,45 +1,75 @@
 "use client";
 
-import type { ComponentType } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import {
-  IconHome,
-  IconJournal,
-  IconCopyTrading,
-  IconDiscover,
-  IconSpace,
-  IconFeed,
-  IconNotification,
-  IconSettings,
-  IconReport,
-} from "@/components/icons/syncgram-nav-icons";
+import { IconSettings, IconFeed } from "@/components/icons/syncgram-nav-icons";
+
 // import { StreamSwitcher } from "./stream-switcher";
 
 type NavEntry = {
   label: string;
   href: string;
-  Icon: ComponentType<{ active?: boolean; className?: string }>;
+  iconSrc: string;
 };
 
 const navGroups: NavEntry[][] = [
   [
-    { label: "Home", href: "/overview", Icon: IconHome },
-    { label: "Journal", href: "/journal", Icon: IconJournal },
-    { label: "Report", href: "/stream", Icon: IconReport },
-    { label: "Copy Trading", href: "/copy-trading", Icon: IconCopyTrading },
+    { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg" },
+    {
+      label: "Journal",
+      href: "/journal",
+      iconSrc: "/icons/sidebar/journal.svg",
+    },
+    {
+      label: "Trade History",
+      href: "/trade-history",
+      iconSrc: "/icons/sidebar/trade-history.svg",
+    },
+    { label: "Report", href: "/stream", iconSrc: "/icons/sidebar/report.svg" },
+    {
+      label: "Accounts",
+      href: "/accounts",
+      iconSrc: "/icons/sidebar/accounts.svg",
+    },
+    {
+      label: "Copy Trading",
+      href: "/copy-trading",
+      iconSrc: "/icons/sidebar/copy-trading.svg",
+    },
   ],
   [
-    { label: "Discover", href: "/discover", Icon: IconDiscover },
-    { label: "Feed", href: "/feed", Icon: IconFeed },
-    { label: "Space", href: "/spaces", Icon: IconSpace },
+    {
+      label: "Discover",
+      href: "/discover",
+      iconSrc: "/icons/sidebar/discover.svg",
+    },
+    {
+      label: "Feed",
+      href: "/feed",
+      iconSrc: "/icons/sidebar/trade-history.svg",
+    },
+    { label: "Space", href: "/spaces", iconSrc: "/icons/sidebar/spaces.svg" },
   ],
   [
-    { label: "Profile", href: "/profile", Icon: IconNotification },
-    { label: "Tools", href: "/tools", Icon: IconSettings },
+    {
+      label: "Profile",
+      href: "/profile",
+      iconSrc: "/icons/sidebar/notification.svg",
+    },
+    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/report.svg" },
+    {
+      label: "Notifications",
+      href: "/notifications",
+      iconSrc: "/icons/sidebar/notification.svg",
+    },
+    {
+      label: "Settings",
+      href: "/settings",
+      iconSrc: "/icons/sidebar/report.svg",
+    },
   ],
 ];
 
@@ -87,7 +117,22 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                     )}
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                      <item.Icon active={isActive} />
+                      {item.label === "Tools" ? (
+                        <IconSettings active={isActive} />
+                      ) : item.label === "Feed" ? (
+                        <IconFeed active={isActive} />
+                      ) : (
+                        <Image
+                          src={item.iconSrc}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className={cn(
+                            "h-6 w-6 transition-opacity",
+                            isActive ? "opacity-100" : "opacity-75",
+                          )}
+                        />
+                      )}
                     </span>
                     <span className="truncate">{item.label}</span>
                   </Link>

@@ -2,12 +2,7 @@
 
 import { Menu } from "lucide-react";
 import {
-  IconCalendar,
   IconChevronDown,
-  IconWallet,
-  IconCurrency,
-  IconFilter,
-  IconAskSync,
 } from "@/components/icons/syncgram-nav-icons";
 import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 import Image from "next/image";
@@ -49,24 +44,24 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3">
           <button
             type="button"
-            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-chrome-control-border bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
             aria-label="Currency"
           >
-            <IconCurrency />
+            <Image src="/icons/navbar/currency.svg" alt="" width={24} height={24} />
           </button>
           <button
             type="button"
-            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-chrome-control-border bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
             aria-label="Filters"
           >
-            <IconFilter />
+            <Image src="/icons/navbar/filter.svg" alt="" width={24} height={24} />
           </button>
           <div className="hidden items-stretch lg:flex">
             <button
               type="button"
               className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
             >
-              <IconCalendar />
+              <Image src="/icons/navbar/calendar.svg" alt="" width={24} height={24} />
               <span>Date range</span>
               <IconChevronDown />
             </button>
@@ -74,7 +69,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               type="button"
               className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
             >
-              <IconWallet />
+              <Image src="/icons/navbar/accounts.svg" alt="" width={24} height={24} />
               <span>All accounts</span>
               <IconChevronDown />
             </button>
@@ -88,7 +83,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               background: "var(--ask-sync-gradient)",
             }}
           >
-            <IconAskSync />
+            <Image src="/icons/navbar/ai.svg" alt="" width={24} height={24} />
             <span className="hidden sm:inline">Ask Sync</span>
           </button>
         </div>
