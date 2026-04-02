@@ -1,18 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  Calendar as CalendarIcon,
-  Plus,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
-import { JournalCalendar } from "@/features/journal/components/journal-calendar";
+import { useEffect, useMemo, useState } from "react";
+import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
-import type {
-  JournalCalendarDayStat,
-  JournalMonthHeaderStats,
-} from "@/features/journal/types";
+import type { JournalCalendarDayStat } from "@/features/journal/types";
 import {
   useJournalAccounts,
   useSyncJournalAccount,
@@ -22,6 +13,7 @@ import {
   useJournalCalendarAnalytics,
   useJournalSummaryAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
+import { useJournalDayTrades } from "@/features/journal/hooks/use-journal-day-modal";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +23,17 @@ import {
 } from "@/components/ui/dialog";
 import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
+import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
+import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
+import {
+  toJournalKpis,
+  toTradesPanelRows,
+} from "@/features/journal/lib/journal-widget-mappers";
+import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
+import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
+import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
+import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
+import { useRouter, useSearchParams } from "next/navigation";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -40,6 +43,8 @@ function formatDateParam(date: Date) {
 }
 
 export default function JournalPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedDay, setSelectedDay] = useState<number | null>(() =>
     new Date().getDate(),
   );
@@ -48,7 +53,6 @@ export default function JournalPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
-  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
   const {
     data: accounts = [],
@@ -58,10 +62,12 @@ export default function JournalPage() {
   } = useJournalAccounts();
   const syncAccountMutation = useSyncJournalAccount();
 
-  const activeAccountId = selectedAccountId || accounts[0]?.id || "";
+  const accountIdFromQuery = searchParams.get("accountId");
+  const activeAccountId = accountIdFromQuery || accounts[0]?.id || "";
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
+  const shouldOpenConnect = searchParams.get("connectAccount") === "1";
 
   const monthLabel = useMemo(
     () =>
@@ -90,19 +96,17 @@ export default function JournalPage() {
     new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0),
   );
 
-  const { data: calendarAnalytics, isLoading: isCalendarLoading } =
-    useJournalCalendarAnalytics({
-      accountId: activeAccountId || undefined,
-      fromDate,
-      toDate,
-    });
+  const { data: calendarAnalytics } = useJournalCalendarAnalytics({
+    accountId: activeAccountId || undefined,
+    fromDate,
+    toDate,
+  });
 
-  const { data: summaryAnalytics, isLoading: isSummaryLoading } =
-    useJournalSummaryAnalytics({
-      accountId: activeAccountId || undefined,
-      fromDate,
-      toDate,
-    });
+  const { data: summaryAnalytics } = useJournalSummaryAnalytics({
+    accountId: activeAccountId || undefined,
+    fromDate,
+    toDate,
+  });
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
@@ -122,20 +126,6 @@ export default function JournalPage() {
 
     return mapped;
   }, [calendarAnalytics]);
-
-  const monthHeaderStats = useMemo<JournalMonthHeaderStats>(() => {
-    const totalTrades = summaryAnalytics?.total_trades ?? 0;
-    const percent = summaryAnalytics?.net_pnl_percent ?? 0;
-    const winRate = summaryAnalytics?.win_rate ?? 0;
-    const estimatedWins = Math.round((winRate / 100) * totalTrades);
-
-    return {
-      trades: totalTrades,
-      wins: estimatedWins,
-      profits: summaryAnalytics?.total_net_pnl ?? 0,
-      percent,
-    };
-  }, [summaryAnalytics]);
 
   const effectiveSelectedDay =
     selectedDay && selectedDay <= daysInMonth ? selectedDay : 1;
@@ -159,6 +149,12 @@ export default function JournalPage() {
     setSelectedDay(day);
     setIsDayModalOpen(true);
   };
+
+  const dayTradesQuery = useJournalDayTrades(
+    activeAccountId || undefined,
+    selectedTradingDate,
+    !!activeAccountId,
+  );
 
   const handleRefreshAccounts = async () => {
     if (!activeAccountId) {
@@ -195,93 +191,48 @@ export default function JournalPage() {
     }
   };
 
+  useEffect(() => {
+    if (isAccountsError) {
+      toast.error("Unable to load accounts right now.");
+    }
+  }, [isAccountsError]);
+
+  useEffect(() => {
+    if (!shouldOpenConnect) return;
+    setIsConnectModalOpen(true);
+  }, [shouldOpenConnect]);
+
+  const handleConnectModalChange = (open: boolean) => {
+    setIsConnectModalOpen(open);
+    if (!open && shouldOpenConnect) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("connectAccount");
+      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+    }
+  };
+
+  const kpiItems = toJournalKpis(summaryAnalytics);
+  const tradesRows = toTradesPanelRows(dayTradesQuery.data?.items ?? []);
+  const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
+    (widget) => widget.visible,
+  );
+
   return (
-    <div className="p-4 md:p-8 pb-20 md:pb-8">
-      <div className="flex flex-col xl:flex-row gap-6 mb-8">
-        <div className="flex-1">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-2">
-            <h1 className="text-2xl font-bold text-text-primary">
-              Trading Journal
-            </h1>
+    <div className="space-y-4 p-4 pb-20 md:p-8 md:pb-8">
+      <JournalToolbar
+        isSyncPending={syncAccountMutation.isPending}
+        lastSyncedAt={activeAccount?.last_synced_at}
+        onSyncAccount={() => void handleRefreshAccounts()}
+        onOpenConnect={() => setIsConnectModalOpen(true)}
+      />
 
-            <div className="flex flex-col gap-2 sm:items-end">
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {isAccountsLoading ? (
-                  <div className="inline-flex items-center gap-2 rounded-xl border border-border-primary bg-card-bg px-3 py-2 text-sm text-text-secondary">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading accounts...
-                  </div>
-                ) : (
-                  <>
-                    <div className="inline-flex items-center gap-2 rounded-xl border border-border-primary bg-card-bg px-2 py-1.5 shadow-sm">
-                      <select
-                        value={activeAccountId}
-                        onChange={(event) =>
-                          setSelectedAccountId(event.target.value)
-                        }
-                        className="max-w-58 bg-transparent px-2 py-1 text-sm font-medium text-text-primary outline-none"
-                        aria-label="Select connected account"
-                      >
-                        {accounts.length ? (
-                          accounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                              {account.display_name ||
-                                `Account ${account.broker_login}`}{" "}
-                              - {account.platform}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="">No accounts connected</option>
-                        )}
-                      </select>
+      {widgetRegistry.some((widget) => widget.id === "kpiStrip") ? (
+        <JournalKpiStrip items={kpiItems} />
+      ) : null}
 
-                      {accounts.length ? (
-                        <button
-                          onClick={() => void handleRefreshAccounts()}
-                          disabled={syncAccountMutation.isPending}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-text-tertiary hover:bg-bg-tertiary hover:text-text-primary transition-colors"
-                          title={
-                            syncAccountMutation.isPending
-                              ? "Syncing account"
-                              : "Sync active account"
-                          }
-                          aria-label={
-                            syncAccountMutation.isPending
-                              ? "Syncing account"
-                              : "Sync active account"
-                          }
-                        >
-                          <RefreshCw
-                            className={`h-4 w-4 ${syncAccountMutation.isPending ? "animate-spin" : ""}`}
-                          />
-                        </button>
-                      ) : null}
-                    </div>
-
-                    <button
-                      onClick={() => setIsConnectModalOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-accent-hover transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                      {accounts.length ? "Add Account" : "Connect Account"}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {isAccountsError && (
-            <p className="mt-2 text-sm text-danger">
-              Unable to load accounts right now.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <JournalCalendar
+      <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
+        {widgetRegistry.some((widget) => widget.id === "calendar") ? (
+          <JournalCalendarWidget
             monthLabel={monthLabel}
             daysInMonth={daysInMonth}
             selectedDay={effectiveSelectedDay}
@@ -290,14 +241,23 @@ export default function JournalPage() {
             monthStartOffset={monthStartOffset}
             onPrevMonth={() => handleMonthShift(-1)}
             onNextMonth={() => handleMonthShift(1)}
-            headerStats={monthHeaderStats}
-            isHeaderStatsLoading={isSummaryLoading || isCalendarLoading}
           />
-        </div>
-
+        ) : null}
+        {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
+          <JournalTradesPanel rows={tradesRows} />
+        ) : null}
       </div>
 
-      <Dialog open={isConnectModalOpen} onOpenChange={setIsConnectModalOpen}>
+      <div className="grid gap-4 xl:grid-cols-[32%_1fr]">
+        {widgetRegistry.some((widget) => widget.id === "symbols") ? (
+          <JournalSymbolsWidget />
+        ) : null}
+        {widgetRegistry.some((widget) => widget.id === "timePerformance") ? (
+          <JournalTimePerformanceWidget />
+        ) : null}
+      </div>
+
+      <Dialog open={isConnectModalOpen} onOpenChange={handleConnectModalChange}>
         <DialogContent className="max-w-xl border border-border-primary bg-card-bg">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-text-primary">

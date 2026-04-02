@@ -91,9 +91,27 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
   return (
     <aside className="flex h-full w-[240px] shrink-0 flex-col bg-sidebar-chrome-bg">
-      {/* {!collapsed && <StreamSwitcher />} */}
+      <div className="flex h-[60px] shrink-0 items-center px-4">
+        <Link
+          href="/overview"
+          onClick={() => onNavigate?.()}
+          className="flex min-w-0 items-center gap-2"
+        >
+          <Image
+            src="/syncgram/logo-mark.svg"
+            alt=""
+            width={32}
+            height={40}
+            className="shrink-0"
+            priority
+          />
+          <span className="truncate font-heading text-2xl font-bold leading-tight tracking-tight text-text-primary">
+            SyncTrade
+          </span>
+        </Link>
+      </div>
 
-      <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-6">
+      <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-4">
         {navGroups.map((group, gi) => (
           <div key={gi}>
             {gi > 0 && <NavDivider />}

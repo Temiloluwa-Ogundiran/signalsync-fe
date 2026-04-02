@@ -11,7 +11,7 @@ export const journalAccountApi = {
     token?: string,
   ): Promise<JournalAccount> => {
     const { data } = await apiClient.post<JournalAccount>(
-      "/journal/accounts",
+      "/accounts",
       payload,
       withAuth(token),
     );
@@ -21,7 +21,7 @@ export const journalAccountApi = {
 
   listAccounts: async (token?: string): Promise<JournalAccount[]> => {
     const { data } = await apiClient.get<JournalAccount[]>(
-      "/journal/accounts",
+      "/accounts",
       withAuth(token),
     );
 
@@ -33,7 +33,7 @@ export const journalAccountApi = {
     token?: string,
   ): Promise<JournalAccountSyncResult> => {
     const { data } = await apiClient.post<JournalAccountSyncResult>(
-      `/journal/accounts/${accountId}/sync`,
+      `/accounts/${accountId}/sync`,
       null,
       withAuth(token),
     );

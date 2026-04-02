@@ -18,34 +18,34 @@ export default function DashboardLayout({
 
   return (
     <AiInsightModalProvider>
-      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary">
-        <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
-
-        <div className="flex min-h-0 flex-1">
-          <div className="hidden md:flex">
-            <Sidebar />
-          </div>
-
-          {mobileMenuOpen && (
-            <>
-              <button
-                type="button"
-                aria-label="Close menu"
-                className="fixed inset-0 top-[60px] z-40 bg-black/50 md:hidden"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-              <div className="fixed left-0 top-[60px] z-50 h-[calc(100vh-60px)] w-[240px] md:hidden">
-                <Sidebar onNavigate={() => setMobileMenuOpen(false)} />
-              </div>
-            </>
-          )}
-
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <main className="scrollbar-thin flex-1 overflow-y-auto pb-20 md:pb-0">
-              {children}
-            </main>
-          </div>
+      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary md:flex-row">
+        {/* Desktop: full-height sidebar from top of viewport */}
+        <div className="hidden h-screen shrink-0 md:flex">
+          <Sidebar />
         </div>
+
+        {/* Main column: header (top bar) + scrollable content — to the right of sidebar on md+ */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
+
+          <main className="scrollbar-thin flex-1 overflow-y-auto pb-20 md:pb-0">
+            {children}
+          </main>
+        </div>
+
+        {mobileMenuOpen && (
+          <>
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="fixed inset-0 top-[60px] z-40 bg-black/50 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="fixed left-0 top-[60px] z-50 h-[calc(100vh-60px)] w-[240px] md:hidden">
+              <Sidebar onNavigate={() => setMobileMenuOpen(false)} />
+            </div>
+          </>
+        )}
 
         <button
           type="button"
