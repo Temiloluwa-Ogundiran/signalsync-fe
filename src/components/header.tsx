@@ -47,7 +47,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px] font-sans">
+    <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-[26px] pr-[26px] font-sans">
       <div className="flex w-full min-w-0 items-center gap-3">
         <div className="flex shrink-0 items-center gap-2 md:hidden">
           <button

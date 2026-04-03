@@ -15,13 +15,17 @@ export default function DashboardLayout({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <AiInsightModalProvider>
       <div className="flex h-screen flex-col overflow-hidden bg-bg-primary md:flex-row">
         {/* Desktop: full-height sidebar from top of viewport */}
-        <div className="hidden h-screen shrink-0 md:flex">
-          <Sidebar />
+        <div className="relative hidden h-screen shrink-0 md:flex">
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
+          />
         </div>
 
         {/* Main column: header (top bar) + scrollable content — to the right of sidebar on md+ */}
@@ -29,7 +33,7 @@ export default function DashboardLayout({
           <Suspense
             fallback={
               <div
-                className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-4 pr-[26px]"
+                className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-[26px] pr-[26px]"
                 aria-hidden
               />
             }
@@ -51,7 +55,10 @@ export default function DashboardLayout({
               onClick={() => setMobileMenuOpen(false)}
             />
             <div className="fixed left-0 top-[60px] z-50 h-[calc(100vh-60px)] w-[240px] md:hidden">
-              <Sidebar onNavigate={() => setMobileMenuOpen(false)} />
+              <Sidebar
+                collapsed={false}
+                onNavigate={() => setMobileMenuOpen(false)}
+              />
             </div>
           </>
         )}
