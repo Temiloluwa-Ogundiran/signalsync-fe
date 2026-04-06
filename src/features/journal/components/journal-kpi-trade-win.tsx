@@ -1,6 +1,5 @@
 "use client";
 
-import { Info } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
@@ -9,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import type { TradeOutcomeCounts } from "../lib/journal-kpi-aggregates";
 import { formatPercent } from "../lib/journal-widget-mappers";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 const chartConfig = {
   wins: {
@@ -71,13 +71,10 @@ export function JournalKpiTradeWin({
           <span className="text-sm font-semibold leading-tight text-footnote-online">
             Trade Win %
           </span>
-          <button
-            type="button"
-            className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 hover:opacity-100"
-            aria-label="Trade Win % info"
-          >
-            <Info className="size-4" strokeWidth={2} />
-          </button>
+          <JournalKpiInfo
+            title="Trade Win %"
+            description="The percentage of closed trades that ended profitable in the selected range. Breakeven trades are excluded from wins."
+          />
         </div>
         <p className="font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
           {formatPercent(winRatePercent)}

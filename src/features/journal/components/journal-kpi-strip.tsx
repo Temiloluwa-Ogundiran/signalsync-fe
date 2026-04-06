@@ -15,6 +15,7 @@ interface JournalKpiStripProps {
   summary: JournalAnalyticsSummaryResponse | undefined;
   tradeOutcomeCounts: TradeOutcomeCounts;
   dailyOutcomeCounts: DailyOutcomeCounts;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -22,8 +23,27 @@ export function JournalKpiStrip({
   summary,
   tradeOutcomeCounts,
   dailyOutcomeCounts,
+  isLoading = false,
   className,
 }: JournalKpiStripProps) {
+  if (isLoading) {
+    return (
+      <section
+        className={cn(
+          "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5",
+          className,
+        )}
+      >
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={`kpi-skeleton-${index}`}
+            className="min-h-[7.625rem] animate-pulse rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg"
+          />
+        ))}
+      </section>
+    );
+  }
+
   return (
     <section
       className={cn(

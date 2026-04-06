@@ -1,8 +1,9 @@
-import { Info, TrendingDown, TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 import { formatNetPnlDisplay } from "../lib/journal-widget-mappers";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 interface JournalKpiNetPnlProps {
   totalNetPnl: number;
@@ -30,13 +31,10 @@ export function JournalKpiNetPnl({
             <span className="text-sm font-semibold leading-tight text-footnote-online">
               Net P&L
             </span>
-            <button
-              type="button"
-              className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 hover:opacity-100"
-              aria-label="Net P&L info"
-            >
-              <Info className="size-4" strokeWidth={2} />
-            </button>
+            <JournalKpiInfo
+              title="Net P&L"
+              description="Your total realized profit or loss for the selected date range, after costs. Positive means net gain; negative means net loss."
+            />
             <span className="inline-flex min-h-[1.3125rem] ml-[7.5px] items-center justify-center rounded-full border border-kpi-badge-border bg-kpi-card-bg px-1.5 text-xs font-bold tabular-nums tracking-wide text-footnote-online">
               {totalTrades}
             </span>

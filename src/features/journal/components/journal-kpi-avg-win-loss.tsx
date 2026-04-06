@@ -1,7 +1,5 @@
 "use client";
 
-import { Info } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 import {
@@ -9,6 +7,7 @@ import {
   formatCompactMoney,
   winLossShare,
 } from "../lib/journal-widget-mappers";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 interface JournalKpiAvgWinLossProps {
   avgWin: number;
@@ -38,13 +37,10 @@ export function JournalKpiAvgWinLoss({
         <span className="text-sm font-semibold leading-tight text-footnote-online">
           Avg Win/Loss Trade
         </span>
-        <button
-          type="button"
-          className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 hover:opacity-100"
-          aria-label="Avg Win/Loss Trade info"
-        >
-          <Info className="size-4" strokeWidth={2} />
-        </button>
+        <JournalKpiInfo
+          title="Avg Win/Loss Trade"
+          description="Average winning trade size compared with average losing trade size. Higher ratio means winners are larger relative to losers."
+        />
       </div>
 
       {/* bottom part */}

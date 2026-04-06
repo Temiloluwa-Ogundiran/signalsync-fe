@@ -1,11 +1,11 @@
 "use client";
 
-import { Info } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 const chartConfig = {
   gain: {
@@ -65,13 +65,10 @@ export function JournalKpiProfitFactor({
           <span className="text-sm font-semibold leading-tight text-footnote-online">
             Profit Factor
           </span>
-          <button
-            type="button"
-            className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 hover:opacity-100"
-            aria-label="Profit Factor info"
-          >
-            <Info className="size-4" strokeWidth={2} />
-          </button>
+          <JournalKpiInfo
+            title="Profit Factor"
+            description="Gross profits divided by gross losses for the selected period. Above 1.0 means total profits exceed total losses."
+          />
         </div>
         <p className="font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
           {display}

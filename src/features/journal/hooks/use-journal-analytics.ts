@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
+import { journalTradesApi } from "../api/journal-trades.api";
 
 interface AnalyticsQueryInput {
   accountId?: string;
@@ -17,6 +18,8 @@ export const JOURNAL_ANALYTICS_KEYS = {
     ["journal-analytics", "instruments", accountId, fromDate, toDate] as const,
   timePerformance: (accountId?: string, fromDate?: string, toDate?: string) =>
     ["journal-analytics", "time-performance", accountId, fromDate, toDate] as const,
+  recentTrades: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "recent-trades", accountId, fromDate, toDate] as const,
 };
 
 export function useJournalCalendarAnalytics({
@@ -116,6 +119,32 @@ export function useJournalTimePerformanceAnalytics({
           fromDate,
           toDate,
         },
+        session?.accessToken as string,
+      ),
+    enabled:
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      !!accountId &&
+      !!fromDate &&
+      !!toDate,
+  });
+}
+
+export function useJournalRecentTrades({
+  accountId,
+  fromDate,
+  toDate,
+}: AnalyticsQueryInput) {
+  const { data: session, status } = useSession();
+
+  return useQuery({
+    queryKey: JOURNAL_ANALYTICS_KEYS.recentTrades(accountId, fromDate, toDate),
+    queryFn: () =>
+      journalTradesApi.listRecent(
+        accountId as string,
+        fromDate,
+        toDate,
+        5,
         session?.accessToken as string,
       ),
     enabled:

@@ -1,6 +1,5 @@
 "use client";
 
-import { Info } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
@@ -12,6 +11,7 @@ import {
   type DailyOutcomeCounts,
 } from "../lib/journal-kpi-aggregates";
 import { formatPercent } from "../lib/journal-widget-mappers";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 const chartConfig = {
   wins: {
@@ -73,13 +73,10 @@ export function JournalKpiDailyWin({
           <span className="text-sm font-semibold leading-tight text-footnote-online">
             Daily Win %
           </span>
-          <button
-            type="button"
-            className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 hover:opacity-100"
-            aria-label="Daily Win % info"
-          >
-            <Info className="size-4" strokeWidth={2} />
-          </button>
+          <JournalKpiInfo
+            title="Daily Win %"
+            description="The share of trading days that finished green (net positive P&L) over the selected range."
+          />
         </div>
         <p className="font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
           {formatPercent(dailyWinPercent)}

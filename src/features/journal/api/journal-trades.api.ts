@@ -27,6 +27,26 @@ export const journalTradesApi = {
     return data;
   },
 
+  listRecent: async (
+    accountId: string,
+    fromDate: string,
+    toDate: string,
+    limit: number,
+    token?: string,
+  ): Promise<JournalTradeListResponse> => {
+    const { data } = await apiClient.get<JournalTradeListResponse>("/journal/trades", {
+      ...withAuth(token),
+      params: {
+        account_id: accountId,
+        from_date: fromDate,
+        to_date: toDate,
+        limit,
+      },
+    });
+
+    return data;
+  },
+
   getTradeJournalMessages: async (
     tradeId: string,
     token?: string,

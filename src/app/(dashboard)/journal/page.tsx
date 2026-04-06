@@ -12,10 +12,10 @@ import { ConnectAccountForm } from "@/features/journal/components/connect-accoun
 import {
   useJournalCalendarAnalytics,
   useJournalInstrumentsAnalytics,
+  useJournalRecentTrades,
   useJournalSummaryAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
-import { useJournalDayTrades } from "@/features/journal/hooks/use-journal-day-modal";
 import {
   Dialog,
   DialogContent,
@@ -115,7 +115,7 @@ function JournalPageContent() {
     toDate,
   });
 
-  const { data: summaryAnalytics } = useJournalSummaryAnalytics({
+  const { data: summaryAnalytics, isLoading: isSummaryLoading } = useJournalSummaryAnalytics({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
@@ -126,6 +126,11 @@ function JournalPageContent() {
     toDate,
   });
   const { data: timePerformanceAnalytics } = useJournalTimePerformanceAnalytics({
+    accountId: activeAccountId || undefined,
+    fromDate,
+    toDate,
+  });
+  const recentTradesQuery = useJournalRecentTrades({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
@@ -181,12 +186,6 @@ function JournalPageContent() {
     setIsDayModalOpen(true);
   };
 
-  const dayTradesQuery = useJournalDayTrades(
-    activeAccountId || undefined,
-    selectedTradingDate,
-    !!activeAccountId,
-  );
-
   const handleRefreshAccounts = async () => {
     if (!activeAccountId) {
       await refetchAccounts();
@@ -239,7 +238,7 @@ function JournalPageContent() {
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
-  const tradesRows = toTradesPanelRows(dayTradesQuery.data?.items ?? []);
+  const tradesRows = toTradesPanelRows(recentTradesQuery.data?.items ?? []);
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
@@ -258,6 +257,7 @@ function JournalPageContent() {
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
           dailyOutcomeCounts={dailyOutcomeCounts}
+          isLoading={!!activeAccountId && isSummaryLoading}
         />
       ) : null}
 
@@ -275,7 +275,10 @@ function JournalPageContent() {
           />
         ) : null}
         {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
-          <JournalTradesPanel rows={tradesRows} />
+          <JournalTradesPanel
+            rows={tradesRows}
+            isLoading={!!activeAccountId && recentTradesQuery.isLoading}
+          />
         ) : null}
       </div>
 
