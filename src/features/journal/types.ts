@@ -72,6 +72,33 @@ export interface JournalAnalyticsSummaryResponse {
   max_drawdown: number;
 }
 
+export interface JournalAnalyticsInstrumentItem {
+  symbol: string;
+  trade_count: number;
+  total_pnl: number;
+  win_rate: number;
+  avg_pnl: number;
+  avg_mfe?: number | null;
+  avg_mae?: number | null;
+}
+
+export interface JournalAnalyticsInstrumentsResponse {
+  instruments: JournalAnalyticsInstrumentItem[];
+}
+
+export interface JournalAnalyticsTimePerformancePoint {
+  bucket: string;
+  trade_count: number;
+  total_pnl: number;
+  win_rate: number;
+  avg_pnl: number;
+}
+
+export interface JournalAnalyticsTimePerformanceResponse {
+  hourly: JournalAnalyticsTimePerformancePoint[];
+  daily: JournalAnalyticsTimePerformancePoint[];
+}
+
 export interface JournalMonthHeaderStats {
   trades: number;
   wins: number;

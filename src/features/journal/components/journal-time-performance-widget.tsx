@@ -14,69 +14,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { JournalAnalyticsTimePerformancePoint } from "../types";
 
 type TimePerformancePoint = {
-  hour: string;
+  bucket: string;
   pnl: number | null;
 };
 
-const HOURLY_DATA: TimePerformancePoint[] = [
-  { hour: "00", pnl: 3500 },
-  { hour: "01", pnl: -4500 },
-  { hour: "02", pnl: -8500 },
-  { hour: "03", pnl: 21000 },
-  { hour: "04", pnl: 16000 },
-  { hour: "05", pnl: 11000 },
-  { hour: "06", pnl: 25500 },
-  { hour: "07", pnl: -13000 },
-  { hour: "08", pnl: 17000 },
-  { hour: "09", pnl: null },
-  { hour: "10", pnl: null },
-  { hour: "11", pnl: 25500 },
-  { hour: "12", pnl: null },
-  { hour: "13", pnl: 25500 },
-  { hour: "14", pnl: null },
-  { hour: "15", pnl: null },
-  { hour: "16", pnl: 7500 },
-  { hour: "17", pnl: null },
-  { hour: "18", pnl: -16000 },
-  { hour: "19", pnl: null },
-  { hour: "20", pnl: 22000 },
-  { hour: "21", pnl: null },
-  { hour: "22", pnl: null },
-  { hour: "23", pnl: 25500 },
-];
+interface JournalTimePerformanceWidgetProps {
+  hourly: JournalAnalyticsTimePerformancePoint[];
+  daily: JournalAnalyticsTimePerformancePoint[];
+}
 
-const DAILY_DATA: TimePerformancePoint[] = [
-  { hour: "00", pnl: 6200 },
-  { hour: "01", pnl: 4800 },
-  { hour: "02", pnl: -4200 },
-  { hour: "03", pnl: 9100 },
-  { hour: "04", pnl: 7100 },
-  { hour: "05", pnl: -1800 },
-  { hour: "06", pnl: 11800 },
-  { hour: "07", pnl: 5400 },
-  { hour: "08", pnl: -6400 },
-  { hour: "09", pnl: 7300 },
-  { hour: "10", pnl: 8400 },
-  { hour: "11", pnl: -3100 },
-  { hour: "12", pnl: 9800 },
-  { hour: "13", pnl: 12600 },
-  { hour: "14", pnl: -2200 },
-  { hour: "15", pnl: 6300 },
-  { hour: "16", pnl: 8900 },
-  { hour: "17", pnl: -5700 },
-  { hour: "18", pnl: 9400 },
-  { hour: "19", pnl: 6100 },
-  { hour: "20", pnl: 7300 },
-  { hour: "21", pnl: -2800 },
-  { hour: "22", pnl: 5600 },
-  { hour: "23", pnl: 10200 },
-];
-
-const Y_AXIS_TICKS = [
-  -20000, -15000, -10000, -5000, 0, 5000, 10000, 15000, 20000, 25000,
-];
+function mapSeries(points: JournalAnalyticsTimePerformancePoint[]): TimePerformancePoint[] {
+  return points.map((point) => ({
+    bucket: point.bucket,
+    pnl: Number.isFinite(point.total_pnl) ? point.total_pnl : 0,
+  }));
+}
 
 function formatCurrency(value: number) {
   const absValue = Math.abs(value).toLocaleString("en-US");
@@ -141,9 +96,19 @@ function RoundedBarShape(props: {
   );
 }
 
-export function JournalTimePerformanceWidget() {
+export function JournalTimePerformanceWidget({
+  hourly,
+  daily,
+}: JournalTimePerformanceWidgetProps) {
   const [mode, setMode] = useState<"hourly" | "daily">("hourly");
-  const data = mode === "hourly" ? HOURLY_DATA : DAILY_DATA;
+  const data = mode === "hourly" ? mapSeries(hourly) : mapSeries(daily);
+  const numericValues = data
+    .map((point) => (typeof point.pnl === "number" ? point.pnl : 0))
+    .filter((value) => value !== 0);
+  const maxAbs = numericValues.length
+    ? Math.max(...numericValues.map((value) => Math.abs(value)))
+    : 0;
+  const paddedMax = Math.max(1_000, Math.ceil((maxAbs * 1.2) / 1000) * 1000);
 
   return (
     <section className="rounded-xl bg-kpi-card-bg ring-1 ring-border-primary/60">
@@ -202,7 +167,7 @@ export function JournalTimePerformanceWidget() {
             >
               <CartesianGrid vertical={false} horizontal={false} />
               <XAxis
-                dataKey="hour"
+                dataKey="bucket"
                 axisLine={false}
                 tickLine={false}
                 tickMargin={12}
@@ -214,8 +179,7 @@ export function JournalTimePerformanceWidget() {
                 }}
               />
               <YAxis
-                ticks={Y_AXIS_TICKS}
-                domain={[-20000, 25000]}
+                domain={[-paddedMax, paddedMax]}
                 axisLine={false}
                 tickLine={false}
                 tickMargin={8}
@@ -231,7 +195,7 @@ export function JournalTimePerformanceWidget() {
               <Bar dataKey="pnl" shape={<RoundedBarShape />} maxBarSize={24}>
                 {data.map((point) => (
                   <Cell
-                    key={point.hour}
+                    key={point.bucket}
                     fill={
                       point.pnl !== null && point.pnl >= 0
                         ? "var(--color-kpi-metric-positive)"

@@ -4,9 +4,17 @@ import { Menu, Plus } from "lucide-react";
 import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
 import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 import Image from "next/image";
+import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { Calendar as CalendarWidget } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import type { DateRange } from "react-day-picker";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -19,6 +27,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const searchParams = useSearchParams();
   const [isAccountsMenuOpen, setIsAccountsMenuOpen] = useState(false);
   const { data: accounts = [] } = useJournalAccounts();
+  const isJournalRoute = pathname.includes("/journal");
 
   const activeAccountId = searchParams.get("accountId") || "";
   const activeAccount = accounts.find(
@@ -32,10 +41,48 @@ export function Header({ onMenuClick }: HeaderProps) {
     return "";
   }, [pathname]);
 
+  const parsedDateRange = useMemo<DateRange | undefined>(() => {
+    const fromDate = searchParams.get("fromDate");
+    const toDate = searchParams.get("toDate");
+    if (!fromDate) return undefined;
+    const parsedFrom = new Date(fromDate);
+    if (Number.isNaN(parsedFrom.getTime())) return undefined;
+    if (!toDate) return { from: parsedFrom };
+    const parsedTo = new Date(toDate);
+    if (Number.isNaN(parsedTo.getTime())) return { from: parsedFrom };
+    return { from: parsedFrom, to: parsedTo };
+  }, [searchParams]);
+
+  const rangeLabel = useMemo(() => {
+    if (!parsedDateRange?.from || !parsedDateRange.to) return "Date range";
+    return `${format(parsedDateRange.from, "LLL dd, y")} - ${format(parsedDateRange.to, "LLL dd, y")}`;
+  }, [parsedDateRange]);
+
+  const applyDateRange = (nextRange: DateRange | undefined) => {
+    if (!isJournalRoute) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (!nextRange?.from) {
+      params.delete("fromDate");
+      params.delete("toDate");
+      router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+      return;
+    }
+
+    const formatParam = (value: Date) => format(value, "yyyy-MM-dd");
+    params.set("fromDate", formatParam(nextRange.from));
+    if (nextRange.to) {
+      params.set("toDate", formatParam(nextRange.to));
+    } else {
+      params.delete("toDate");
+    }
+
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+  };
+
   const selectAccount = (accountId: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("accountId", accountId);
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
     setIsAccountsMenuOpen(false);
   };
 
@@ -107,19 +154,35 @@ export function Header({ onMenuClick }: HeaderProps) {
             />
           </button>
           <div className="relative hidden items-stretch lg:flex">
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
-            >
-              <Image
-                src="/icons/navbar/calendar.svg"
-                alt=""
-                width={24}
-                height={24}
-              />
-              <span>Date range</span>
-              <IconChevronDown />
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+                >
+                  <Image
+                    src="/icons/navbar/calendar.svg"
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
+                  <span>{rangeLabel}</span>
+                  <IconChevronDown />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto border-chrome-control-border bg-card-bg p-0"
+                align="start"
+              >
+                <CalendarWidget
+                  mode="range"
+                  selected={parsedDateRange}
+                  onSelect={applyDateRange}
+                  numberOfMonths={2}
+                  defaultMonth={parsedDateRange?.from}
+                />
+              </PopoverContent>
+            </Popover>
             <button
               type="button"
               onClick={() => setIsAccountsMenuOpen((prev) => !prev)}

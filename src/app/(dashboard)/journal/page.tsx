@@ -11,7 +11,9 @@ import {
 import { ConnectAccountForm } from "@/features/journal/components/connect-account-form";
 import {
   useJournalCalendarAnalytics,
+  useJournalInstrumentsAnalytics,
   useJournalSummaryAnalytics,
+  useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import { useJournalDayTrades } from "@/features/journal/hooks/use-journal-day-modal";
 import {
@@ -43,6 +45,13 @@ function formatDateParam(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function parseDateParam(value: string | null) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
 function JournalPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,14 +59,13 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
+  const [isConnectModalOpenManual, setIsConnectModalOpenManual] = useState(false);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
 
   const {
     data: accounts = [],
-    isLoading: isAccountsLoading,
     isError: isAccountsError,
     refetch: refetchAccounts,
   } = useJournalAccounts();
@@ -69,6 +77,7 @@ function JournalPageContent() {
     (account) => account.id === activeAccountId,
   );
   const shouldOpenConnect = searchParams.get("connectAccount") === "1";
+  const isConnectModalOpen = shouldOpenConnect || isConnectModalOpenManual;
 
   const monthLabel = useMemo(
     () =>
@@ -90,12 +99,15 @@ function JournalPageContent() {
     1,
   ).getDay();
 
-  const fromDate = formatDateParam(
-    new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1),
-  );
-  const toDate = formatDateParam(
-    new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0),
-  );
+  const queryFromDate = parseDateParam(searchParams.get("fromDate"));
+  const queryToDate = parseDateParam(searchParams.get("toDate"));
+  const hasCustomRange = !!queryFromDate && !!queryToDate;
+  const fromDate = hasCustomRange
+    ? formatDateParam(queryFromDate)
+    : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1));
+  const toDate = hasCustomRange
+    ? formatDateParam(queryToDate)
+    : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0));
 
   const { data: calendarAnalytics } = useJournalCalendarAnalytics({
     accountId: activeAccountId || undefined,
@@ -108,12 +120,30 @@ function JournalPageContent() {
     fromDate,
     toDate,
   });
+  const { data: instrumentsAnalytics } = useJournalInstrumentsAnalytics({
+    accountId: activeAccountId || undefined,
+    fromDate,
+    toDate,
+  });
+  const { data: timePerformanceAnalytics } = useJournalTimePerformanceAnalytics({
+    accountId: activeAccountId || undefined,
+    fromDate,
+    toDate,
+  });
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
 
     for (const day of calendarAnalytics?.days ?? []) {
-      const dayNumber = Number(day.date.split("-")[2]);
+      const parsedDay = new Date(day.date);
+      if (
+        Number.isNaN(parsedDay.getTime()) ||
+        parsedDay.getMonth() !== currentMonth.getMonth() ||
+        parsedDay.getFullYear() !== currentMonth.getFullYear()
+      ) {
+        continue;
+      }
+      const dayNumber = parsedDay.getDate();
       if (!dayNumber || Number.isNaN(dayNumber)) continue;
 
       mapped[dayNumber] = {
@@ -126,7 +156,7 @@ function JournalPageContent() {
     }
 
     return mapped;
-  }, [calendarAnalytics]);
+  }, [calendarAnalytics, currentMonth]);
 
   const effectiveSelectedDay =
     selectedDay && selectedDay <= daysInMonth ? selectedDay : 1;
@@ -198,13 +228,8 @@ function JournalPageContent() {
     }
   }, [isAccountsError]);
 
-  useEffect(() => {
-    if (!shouldOpenConnect) return;
-    setIsConnectModalOpen(true);
-  }, [shouldOpenConnect]);
-
   const handleConnectModalChange = (open: boolean) => {
-    setIsConnectModalOpen(open);
+    setIsConnectModalOpenManual(open);
     if (!open && shouldOpenConnect) {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("connectAccount");
@@ -225,7 +250,7 @@ function JournalPageContent() {
         isSyncPending={syncAccountMutation.isPending}
         lastSyncedAt={activeAccount?.last_synced_at}
         onSyncAccount={() => void handleRefreshAccounts()}
-        onOpenConnect={() => setIsConnectModalOpen(true)}
+        onOpenConnect={() => setIsConnectModalOpenManual(true)}
       />
 
       {widgetRegistry.some((widget) => widget.id === "kpiStrip") ? (
@@ -256,10 +281,13 @@ function JournalPageContent() {
 
       <div className="grid gap-4 xl:grid-cols-[32%_1fr]">
         {widgetRegistry.some((widget) => widget.id === "symbols") ? (
-          <JournalSymbolsWidget />
+          <JournalSymbolsWidget instruments={instrumentsAnalytics?.instruments ?? []} />
         ) : null}
         {widgetRegistry.some((widget) => widget.id === "timePerformance") ? (
-          <JournalTimePerformanceWidget />
+          <JournalTimePerformanceWidget
+            hourly={timePerformanceAnalytics?.hourly ?? []}
+            daily={timePerformanceAnalytics?.daily ?? []}
+          />
         ) : null}
       </div>
 
@@ -274,7 +302,7 @@ function JournalPageContent() {
               into your journal.
             </DialogDescription>
           </DialogHeader>
-          <ConnectAccountForm onSuccess={() => setIsConnectModalOpen(false)} />
+          <ConnectAccountForm onSuccess={() => setIsConnectModalOpenManual(false)} />
         </DialogContent>
       </Dialog>
 
