@@ -66,7 +66,7 @@ export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPan
                       row.netPnl >= 0 ? "text-kpi-metric-positive" : "text-danger",
                     )}
                   >
-                    {row.netPnl >= 0 ? "+" : "-"}$
+                    {row.netPnl < 0 ? "-" : ""}$
                     {Math.abs(row.netPnl).toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}

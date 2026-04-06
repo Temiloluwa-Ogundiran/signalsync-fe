@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CircleHelp, Settings2 } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -120,13 +120,6 @@ export function JournalTimePerformanceWidget({
             </h3>
             <CircleHelp className="h-4 w-4 text-text-tertiary" />
           </div>
-          <button
-            type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-primary transition-colors hover:bg-bg-hover"
-            aria-label="Trade time performance settings"
-          >
-            <Settings2 className="h-4 w-4" />
-          </button>
         </div>
       </header>
 

@@ -1,0 +1,195 @@
+import { useMemo } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import type { JournalTrade } from "../types";
+import type { JournalDaySummary } from "./journal-day-modal.types";
+import {
+  asNumber,
+  buildProfitFactor,
+  formatClock,
+  formatCurrency,
+} from "./journal-day-modal.utils";
+
+interface JournalDayModalOverviewProps {
+  summary: JournalDaySummary;
+  trades: JournalTrade[];
+}
+
+export function JournalDayModalOverview({
+  summary,
+  trades,
+}: JournalDayModalOverviewProps) {
+  const sortedTrades = useMemo(
+    () =>
+      [...trades].sort(
+        (a, b) =>
+          new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
+      ),
+    [trades],
+  );
+
+  const pnlCurveData = useMemo(() => {
+    let runningPnl = 0;
+    return sortedTrades.map((trade, index) => {
+      runningPnl += asNumber(trade.net_profit);
+      return {
+        step: index + 1,
+        time: formatClock(trade.closed_at),
+        cumulativePnl: runningPnl,
+      };
+    });
+  }, [sortedTrades]);
+
+  const chartConfig = {
+    cumulativePnl: {
+      label: "Profit/Loss",
+      color:
+        summary.grossPnl >= 0 ? "var(--kpi-metric-positive)" : "var(--danger)",
+    },
+  } satisfies ChartConfig;
+
+  const profitFactor = useMemo(() => buildProfitFactor(trades), [trades]);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr_1fr]">
+      <section className="rounded-2xl p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-text-primary">
+            Profit/Loss
+          </h3>
+          <span className="text-xs text-text-secondary">
+            Cumulative by closed trade
+          </span>
+        </div>
+
+        <div className="h-50 w-full">
+          <ChartContainer config={chartConfig} className="h-full w-full">
+            <AreaChart
+              data={pnlCurveData}
+              margin={{ left: 8, right: 8, top: 4, bottom: 4 }}
+            >
+              <defs>
+                <linearGradient id="dayPnlGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-cumulativePnl)"
+                    stopOpacity={0.45}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-cumulativePnl)"
+                    stopOpacity={0.02}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="4 4"
+                vertical={false}
+                stroke="var(--border-secondary)"
+              />
+              <XAxis
+                dataKey="step"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 12 }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--text-tertiary)", fontSize: 12 }}
+                tickFormatter={(value: number) =>
+                  `$${Math.abs(value).toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}`
+                }
+              />
+              <Tooltip
+                formatter={(value) =>
+                  formatCurrency(
+                    typeof value === "number" ? value : Number(value ?? 0),
+                  )
+                }
+                labelFormatter={(label) => `Trade #${label}`}
+                contentStyle={{
+                  background: "var(--card-bg)",
+                  border: "1px solid var(--border-primary)",
+                  borderRadius: "12px",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="cumulativePnl"
+                stroke="var(--color-cumulativePnl)"
+                strokeWidth={2.5}
+                fill="url(#dayPnlGradient)"
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+            </AreaChart>
+          </ChartContainer>
+        </div>
+      </section>
+
+      <section className="rounded-2xl p-4">
+        <div className="grid gap-4 text-sm h-full">
+          <Row label="Total Trades" value={summary.totalTrades} />
+          <Row label="Win Rate" value={`${summary.winRate.toFixed(2)}%`} />
+          <Row
+            label="Gross P&L"
+            value={formatCurrency(summary.grossPnl)}
+            className={
+              summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
+            }
+          />
+          <Row label="Volumes" value={summary.volume.toFixed(2)} />
+        </div>
+      </section>
+
+      <section className="rounded-2xl p-4">
+        <div className="grid gap-4 text-sm h-full">
+          <Row label="Winners" value={summary.winners} />
+          <Row label="Losers" value={summary.losers} />
+          <Row
+            label="Commissions"
+            value={`$${summary.commissions.toFixed(2)}`}
+          />
+          <Row
+            label="Profit Factor"
+            value={profitFactor == null ? "--" : profitFactor.toFixed(2)}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string | number;
+  className?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-text-secondary">{label}</p>
+      <p
+        className={["font-semibold text-text-primary", className]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
