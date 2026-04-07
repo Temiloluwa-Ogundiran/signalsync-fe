@@ -18,7 +18,9 @@ export function JournalDayModalHeader({
           <span>{dayTitle}</span>
           <span className="inline-block size-2 rounded-full bg-text-tertiary/80" />
           <span
-            className={summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"}
+            className={
+              summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
+            }
           >
             Net P&L {formatCurrency(summary.grossPnl)}
           </span>

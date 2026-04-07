@@ -24,12 +24,19 @@ export function formatClock(iso: string) {
 
 export function buildDaySummary(trades: JournalTrade[]): JournalDaySummary {
   const totalTrades = trades.length;
-  const winners = trades.filter((trade) => asNumber(trade.net_profit) > 0).length;
-  const losers = trades.filter((trade) => asNumber(trade.net_profit) < 0).length;
+  const winners = trades.filter(
+    (trade) => asNumber(trade.net_profit) > 0,
+  ).length;
+  const losers = trades.filter(
+    (trade) => asNumber(trade.net_profit) < 0,
+  ).length;
   const breakeven = totalTrades - winners - losers;
   const decisionTrades = winners + losers;
   const winRate = decisionTrades ? (winners / decisionTrades) * 100 : 0;
-  const grossPnl = trades.reduce((sum, trade) => sum + asNumber(trade.net_profit), 0);
+  const grossPnl = trades.reduce(
+    (sum, trade) => sum + asNumber(trade.net_profit),
+    0,
+  );
   const commissions = trades.reduce(
     (sum, trade) => sum + Math.abs(asNumber(trade.commission)),
     0,
