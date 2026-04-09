@@ -35,6 +35,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   );
   const title = useMemo(() => {
     if (pathname.includes("/journal")) return "Journal";
+    if (pathname.includes("/trade-history")) return "Trade History";
     if (pathname.includes("/tools")) return "Tools";
     if (pathname.includes("/overview")) return "Overview";
     if (pathname.includes("/settings")) return "Settings";

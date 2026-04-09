@@ -9,11 +9,17 @@ export const journalDailyApi = {
   getDay: async (
     accountId: string,
     tradingDate: string,
+    includeMessages = true,
     token?: string,
   ): Promise<JournalDailyResponse> => {
     const { data } = await apiClient.get<JournalDailyResponse>(
       `/journal/daily/${accountId}/${tradingDate}`,
-      withAuth(token),
+      {
+        ...withAuth(token),
+        params: {
+          include_messages: includeMessages,
+        },
+      },
     );
     return data;
   },

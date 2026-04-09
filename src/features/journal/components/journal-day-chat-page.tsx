@@ -173,9 +173,8 @@ export function JournalDayChatPage() {
 
   const onOpenTradeJournal = (id: string) => {
     if (!accountId || !tradingDate) return;
-    setChatContext("trade");
     router.replace(
-      `/journal/chat?accountId=${encodeURIComponent(accountId)}&date=${encodeURIComponent(tradingDate)}&context=trade&tradeId=${encodeURIComponent(id)}`,
+      `/journal/trade?accountId=${encodeURIComponent(accountId)}&date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(id)}`,
     );
   };
 

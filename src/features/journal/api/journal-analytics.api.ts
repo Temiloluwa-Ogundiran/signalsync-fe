@@ -1,6 +1,7 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   JournalAnalyticsCalendarResponse,
+  JournalAnalyticsDashboardResponse,
   JournalAnalyticsInstrumentsResponse,
   JournalAnalyticsSummaryResponse,
   JournalAnalyticsTimePerformanceResponse,
@@ -86,6 +87,25 @@ export const journalAnalyticsApi = {
       },
     );
 
+    return data;
+  },
+
+  getDashboard: async (
+    params: AnalyticsQueryParams,
+    token?: string,
+  ): Promise<JournalAnalyticsDashboardResponse> => {
+    const { data } = await apiClient.get<JournalAnalyticsDashboardResponse>(
+      "/journal/analytics/dashboard",
+      {
+        ...withAuth(token),
+        params: {
+          account_id: params.accountId,
+          from_date: params.fromDate,
+          to_date: params.toDate,
+          recent_limit: 5,
+        },
+      },
+    );
     return data;
   },
 };

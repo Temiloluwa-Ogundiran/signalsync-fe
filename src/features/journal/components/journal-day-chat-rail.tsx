@@ -30,17 +30,15 @@ export function JournalDayChatRail({
   onPromptClick,
   onContextChange,
   onRemoveFile,
+  title = "Journal Your Day",
+  subtitle = "Review your trade with text, image, and voice notes.",
+  composerPlaceholder = "How did your day go...",
 }: ChatRailProps) {
   return (
     <Card className="flex h-[calc(100vh-12rem)] min-h-176 flex-col rounded-2xl border-l border-border-secondary bg-card-bg">
       <div className="border-b border-border-secondary p-4">
-        <p className="font-heading text-xl text-text-primary">
-          Journal Your Day
-        </p>
-        <p className="text-xs text-text-secondary">
-          Chat and record voice notes to journal your trades instead of plain
-          text areas.
-        </p>
+        <p className="font-heading text-xl text-text-primary">{title}</p>
+        <p className="text-xs text-text-secondary">{subtitle}</p>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -141,7 +139,7 @@ export function JournalDayChatRail({
             value={draftMessage}
             onChange={(event) => onDraftChange(event.target.value)}
             rows={1}
-            placeholder="Ask Sync anything about this session..."
+            placeholder={composerPlaceholder}
             className="min-h-10 border-0 bg-transparent py-2 shadow-none focus-visible:ring-0"
           />
 

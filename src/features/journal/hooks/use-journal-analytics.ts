@@ -20,6 +20,8 @@ export const JOURNAL_ANALYTICS_KEYS = {
     ["journal-analytics", "time-performance", accountId, fromDate, toDate] as const,
   recentTrades: (accountId?: string, fromDate?: string, toDate?: string) =>
     ["journal-analytics", "recent-trades", accountId, fromDate, toDate] as const,
+  dashboard: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "dashboard", accountId, fromDate, toDate] as const,
 };
 
 export function useJournalCalendarAnalytics({
@@ -46,6 +48,7 @@ export function useJournalCalendarAnalytics({
       !!accountId &&
       !!fromDate &&
       !!toDate,
+    staleTime: 60_000,
   });
 }
 
@@ -73,6 +76,7 @@ export function useJournalSummaryAnalytics({
       !!accountId &&
       !!fromDate &&
       !!toDate,
+    staleTime: 60_000,
   });
 }
 
@@ -100,6 +104,7 @@ export function useJournalInstrumentsAnalytics({
       !!accountId &&
       !!fromDate &&
       !!toDate,
+    staleTime: 60_000,
   });
 }
 
@@ -127,6 +132,7 @@ export function useJournalTimePerformanceAnalytics({
       !!accountId &&
       !!fromDate &&
       !!toDate,
+    staleTime: 60_000,
   });
 }
 
@@ -153,5 +159,34 @@ export function useJournalRecentTrades({
       !!accountId &&
       !!fromDate &&
       !!toDate,
+    staleTime: 30_000,
+  });
+}
+
+export function useJournalDashboardAnalytics({
+  accountId,
+  fromDate,
+  toDate,
+}: AnalyticsQueryInput) {
+  const { data: session, status } = useSession();
+
+  return useQuery({
+    queryKey: JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate),
+    queryFn: () =>
+      journalAnalyticsApi.getDashboard(
+        {
+          accountId: accountId as string,
+          fromDate,
+          toDate,
+        },
+        session?.accessToken as string,
+      ),
+    enabled:
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      !!accountId &&
+      !!fromDate &&
+      !!toDate,
+    staleTime: 60_000,
   });
 }

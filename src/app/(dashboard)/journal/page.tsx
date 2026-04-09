@@ -10,11 +10,7 @@ import {
 } from "@/features/journal/hooks/use-journal-accounts";
 import { ConnectAccountForm } from "@/features/journal/components/connect-account-form";
 import {
-  useJournalCalendarAnalytics,
-  useJournalInstrumentsAnalytics,
-  useJournalRecentTrades,
-  useJournalSummaryAnalytics,
-  useJournalTimePerformanceAnalytics,
+  useJournalDashboardAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import {
   Dialog,
@@ -109,32 +105,15 @@ function JournalPageContent() {
     ? formatDateParam(queryToDate)
     : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0));
 
-  const { data: calendarAnalytics } = useJournalCalendarAnalytics({
+  const dashboardQuery = useJournalDashboardAnalytics({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
   });
-
-  const { data: summaryAnalytics, isLoading: isSummaryLoading } = useJournalSummaryAnalytics({
-    accountId: activeAccountId || undefined,
-    fromDate,
-    toDate,
-  });
-  const { data: instrumentsAnalytics } = useJournalInstrumentsAnalytics({
-    accountId: activeAccountId || undefined,
-    fromDate,
-    toDate,
-  });
-  const { data: timePerformanceAnalytics } = useJournalTimePerformanceAnalytics({
-    accountId: activeAccountId || undefined,
-    fromDate,
-    toDate,
-  });
-  const recentTradesQuery = useJournalRecentTrades({
-    accountId: activeAccountId || undefined,
-    fromDate,
-    toDate,
-  });
+  const calendarAnalytics = dashboardQuery.data?.calendar;
+  const summaryAnalytics = dashboardQuery.data?.summary;
+  const instrumentsAnalytics = dashboardQuery.data?.instruments;
+  const timePerformanceAnalytics = dashboardQuery.data?.time_performance;
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
@@ -238,7 +217,7 @@ function JournalPageContent() {
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
-  const tradesRows = toTradesPanelRows(recentTradesQuery.data?.items ?? []);
+  const tradesRows = toTradesPanelRows(dashboardQuery.data?.recent_trades?.items ?? []);
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
@@ -257,7 +236,7 @@ function JournalPageContent() {
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
           dailyOutcomeCounts={dailyOutcomeCounts}
-          isLoading={!!activeAccountId && isSummaryLoading}
+            isLoading={!!activeAccountId && dashboardQuery.isLoading}
         />
       ) : null}
 
@@ -277,7 +256,7 @@ function JournalPageContent() {
         {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
           <JournalTradesPanel
             rows={tradesRows}
-            isLoading={!!activeAccountId && recentTradesQuery.isLoading}
+            isLoading={!!activeAccountId && dashboardQuery.isLoading}
           />
         ) : null}
       </div>

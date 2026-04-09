@@ -35,4 +35,7 @@ export interface ChatRailProps {
   onPromptClick: (value: string) => void;
   onContextChange: (value: ChatContext) => void;
   onRemoveFile: () => void;
+  title?: string;
+  subtitle?: string;
+  composerPlaceholder?: string;
 }

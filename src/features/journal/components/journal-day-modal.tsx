@@ -4,10 +4,7 @@ import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  useJournalDay,
-  useJournalDayTrades,
-} from "../hooks/use-journal-day-modal";
+import { useJournalDay } from "../hooks/use-journal-day-modal";
 import { JournalDayModalFooter } from "./journal-day-modal-footer";
 import { JournalDayModalHeader } from "./journal-day-modal-header";
 import { JournalDayModalOverview } from "./journal-day-modal-overview";
@@ -33,10 +30,10 @@ export function JournalDayModal({
 }: JournalDayModalProps) {
   const router = useRouter();
 
-  const dayQuery = useJournalDay(accountId, tradingDate, open);
-  const tradesQuery = useJournalDayTrades(accountId, tradingDate, open);
-
-  const trades = tradesQuery.data?.items ?? [];
+  const dayQuery = useJournalDay(accountId, tradingDate, open, {
+    includeMessages: false,
+  });
+  const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
   const chipByTradeId = useMemo(
     () =>
       new Map(
@@ -58,7 +55,7 @@ export function JournalDayModal({
     });
   }, [tradingDate]);
 
-  const isLoading = dayQuery.isLoading || tradesQuery.isLoading;
+  const isLoading = dayQuery.isLoading;
   const tradeRows = useMemo<JournalDayTradeRow[]>(
     () =>
       trades.map((trade) => ({
@@ -82,7 +79,7 @@ export function JournalDayModal({
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
     router.push(
-      `/journal/chat?accountId=${encodeURIComponent(accountId)}&date=${encodeURIComponent(tradingDate)}&context=trade&tradeId=${encodeURIComponent(tradeId)}`,
+      `/journal/trade?accountId=${encodeURIComponent(accountId)}&date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}`,
     );
   };
 

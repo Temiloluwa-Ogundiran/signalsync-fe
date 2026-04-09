@@ -185,6 +185,7 @@ export interface JournalDailyResponse {
   trading_date: string;
   account_timezone: string;
   trade_chips: JournalDailyTradeChip[];
+  trades: JournalTrade[];
   messages: JournalMessage[];
 }
 
@@ -207,4 +208,12 @@ export interface JournalTrade {
 export interface JournalTradeListResponse {
   items: JournalTrade[];
   next_cursor: string | null;
+}
+
+export interface JournalAnalyticsDashboardResponse {
+  summary: JournalAnalyticsSummaryResponse;
+  calendar: JournalAnalyticsCalendarResponse;
+  instruments: JournalAnalyticsInstrumentsResponse;
+  time_performance: JournalAnalyticsTimePerformanceResponse;
+  recent_trades: JournalTradeListResponse;
 }

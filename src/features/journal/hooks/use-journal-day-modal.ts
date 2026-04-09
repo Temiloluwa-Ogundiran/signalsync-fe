@@ -5,8 +5,12 @@ import { journalTradesApi } from "../api/journal-trades.api";
 import type { JournalCreateMessagePayload } from "../types";
 
 export const JOURNAL_DAY_MODAL_KEYS = {
-  daily: (token: string | undefined, accountId?: string, day?: string) =>
-    ["journal-day", "daily", token, accountId, day] as const,
+  daily: (
+    token: string | undefined,
+    accountId?: string,
+    day?: string,
+    includeMessages = true,
+  ) => ["journal-day", "daily", token, accountId, day, includeMessages] as const,
   trades: (token: string | undefined, accountId?: string, day?: string) =>
     ["journal-day", "trades", token, accountId, day] as const,
   tradeMessages: (token: string | undefined, tradeId?: string) =>
@@ -17,19 +21,23 @@ export function useJournalDay(
   accountId?: string,
   tradingDate?: string,
   enabled = true,
+  options?: { includeMessages?: boolean },
 ) {
   const { data: session, status } = useSession();
+  const includeMessages = options?.includeMessages ?? true;
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
       session?.accessToken,
       accountId,
       tradingDate,
+      includeMessages,
     ),
     queryFn: () =>
       journalDailyApi.getDay(
         accountId as string,
         tradingDate as string,
+        includeMessages,
         session?.accessToken as string,
       ),
     enabled:
@@ -38,6 +46,7 @@ export function useJournalDay(
       !!session?.accessToken &&
       !!accountId &&
       !!tradingDate,
+    staleTime: 60_000,
   });
 }
 
@@ -66,6 +75,7 @@ export function useJournalDayTrades(
       !!session?.accessToken &&
       !!accountId &&
       !!tradingDate,
+    staleTime: 60_000,
   });
 }
 
@@ -89,7 +99,7 @@ export function useCreateJournalDayMessage(
         payload,
         session?.accessToken as string,
       ),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
           session?.accessToken,

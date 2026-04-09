@@ -54,7 +54,7 @@ export function JournalDayModalTradesTable({
       },
       {
         accessorKey: "closed_at",
-        header: "Closed Time",
+        header: "Close Time",
         cell: ({ row }) => (
           <span className="text-text-secondary">
             {formatClock(row.original.closed_at)}
@@ -129,7 +129,7 @@ export function JournalDayModalTradesTable({
       },
       {
         id: "note",
-        header: () => <span className="text-center">Add Note</span>,
+        header: () => <span className="text-center">Journal</span>,
         cell: ({ row }) => (
           <div className="text-left">
             <button
