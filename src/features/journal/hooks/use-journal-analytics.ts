@@ -175,7 +175,7 @@ export function useJournalDashboardAnalytics({
     queryFn: () =>
       journalAnalyticsApi.getDashboard(
         {
-          accountId: accountId as string,
+          accountId,
           fromDate,
           toDate,
         },
@@ -184,7 +184,6 @@ export function useJournalDashboardAnalytics({
     enabled:
       status === "authenticated" &&
       !!session?.accessToken &&
-      !!accountId &&
       !!fromDate &&
       !!toDate,
     staleTime: 60_000,

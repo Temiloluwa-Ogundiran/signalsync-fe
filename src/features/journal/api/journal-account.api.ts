@@ -40,4 +40,8 @@ export const journalAccountApi = {
 
     return data;
   },
+
+  disconnectAccount: async (accountId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/accounts/${accountId}`, withAuth(token));
+  },
 };

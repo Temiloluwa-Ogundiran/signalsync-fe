@@ -8,7 +8,7 @@ import type {
 } from "../types";
 
 interface AnalyticsQueryParams {
-  accountId: string;
+  accountId?: string;
   fromDate: string;
   toDate: string;
 }
@@ -23,7 +23,7 @@ export const journalAnalyticsApi = {
       {
         ...withAuth(token),
         params: {
-          account_id: params.accountId,
+          ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
         },
@@ -42,7 +42,7 @@ export const journalAnalyticsApi = {
       {
         ...withAuth(token),
         params: {
-          account_id: params.accountId,
+          ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
         },
@@ -61,7 +61,7 @@ export const journalAnalyticsApi = {
       {
         ...withAuth(token),
         params: {
-          account_id: params.accountId,
+          ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
         },
@@ -80,7 +80,7 @@ export const journalAnalyticsApi = {
       {
         ...withAuth(token),
         params: {
-          account_id: params.accountId,
+          ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
         },
@@ -99,7 +99,7 @@ export const journalAnalyticsApi = {
       {
         ...withAuth(token),
         params: {
-          account_id: params.accountId,
+          ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
           recent_limit: 5,

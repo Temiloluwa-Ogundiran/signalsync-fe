@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import type { JournalCalendarDayStat } from "@/features/journal/types";
@@ -56,20 +56,25 @@ function JournalPageContent() {
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isConnectModalOpenManual, setIsConnectModalOpenManual] = useState(false);
-  const [pollingStartedAt, setPollingStartedAt] = useState<number | null>(null);
+  const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<number | null>(null);
+  const hasShownNoAccountToastRef = useRef(false);
+  const wasConnectionPendingRef = useRef(false);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
 
   const {
     data: accounts = [],
+    isLoading: isAccountsLoading,
     isError: isAccountsError,
+    isFetched: isAccountsFetched,
     refetch: refetchAccounts,
   } = useJournalAccounts();
   const syncAccountMutation = useSyncJournalAccount();
 
   const accountIdFromQuery = searchParams.get("accountId");
-  const activeAccountId = accountIdFromQuery || accounts[0]?.id || "";
+  const isAllAccountsSelected = !accountIdFromQuery || accountIdFromQuery === "all";
+  const activeAccountId = isAllAccountsSelected ? "" : accountIdFromQuery;
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
@@ -114,9 +119,7 @@ function JournalPageContent() {
 
   const dashboardQuery = useJournalDashboardAnalytics({
     accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats
-        ? activeAccountId
-        : undefined,
+      activeAccountId && activeAccount?.is_data_ready_for_stats ? activeAccountId : undefined,
     fromDate,
     toDate,
   });
@@ -175,8 +178,26 @@ function JournalPageContent() {
     setIsDayModalOpen(true);
   };
 
+  const handleOpenTodayJournalDay = () => {
+    const today = new Date();
+    const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    setCurrentMonth(todayMonth);
+    setSelectedDay(today.getDate());
+    setIsDayModalOpen(true);
+  };
+
   const handleRefreshAccounts = async () => {
+    if (!accounts.length) {
+      toast.info("No connected account found", {
+        description: "Add an account to get stats and analytics.",
+      });
+      return;
+    }
+
     if (!activeAccountId) {
+      toast.info("Select an account to sync", {
+        description: "Manual sync runs for a specific account. Choose one from your account filter.",
+      });
       await refetchAccounts();
       return;
     }
@@ -217,19 +238,61 @@ function JournalPageContent() {
   };
 
   useEffect(() => {
+    if (!activeAccountId || isAccountsLoading) {
+      return;
+    }
+    const exists = accounts.some((account) => account.id === activeAccountId);
+    if (!exists) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("accountId");
+      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+    }
+  }, [activeAccountId, accounts, isAccountsLoading, router, searchParams]);
+
+  useEffect(() => {
     if (isAccountsError) {
       toast.error("Unable to load accounts right now.");
     }
   }, [isAccountsError]);
 
   useEffect(() => {
-    if (!pollingStartedAt || !isConnectionPending) {
+    if (
+      isAccountsFetched &&
+      !isAccountsLoading &&
+      !isAccountsError &&
+      accounts.length === 0 &&
+      !hasShownNoAccountToastRef.current
+    ) {
+      toast.info("No connected account found", {
+        description: "Add an account to get stats and analytics.",
+      });
+      hasShownNoAccountToastRef.current = true;
       return;
     }
 
-    const elapsedMs = Date.now() - pollingStartedAt;
+    if (accounts.length > 0) {
+      hasShownNoAccountToastRef.current = false;
+    }
+  }, [accounts.length, isAccountsError, isAccountsFetched, isAccountsLoading]);
+
+  useEffect(() => {
+    if (isConnectionPending && !pollingWindowStartedAt) {
+      setPollingWindowStartedAt(Date.now());
+    }
+
+    if (!isConnectionPending && pollingWindowStartedAt) {
+      setPollingWindowStartedAt(null);
+    }
+  }, [isConnectionPending, pollingWindowStartedAt]);
+
+  useEffect(() => {
+    if (!pollingWindowStartedAt || !isConnectionPending) {
+      return;
+    }
+
+    const elapsedMs = Date.now() - pollingWindowStartedAt;
     if (elapsedMs > 6 * 60 * 1000) {
-      setPollingStartedAt(null);
+      setPollingWindowStartedAt(null);
       return;
     }
 
@@ -239,13 +302,14 @@ function JournalPageContent() {
     }, intervalMs);
 
     return () => window.clearInterval(timer);
-  }, [isConnectionPending, pollingStartedAt, refetchAccounts]);
+  }, [isConnectionPending, pollingWindowStartedAt, refetchAccounts]);
 
   useEffect(() => {
-    if (!isConnectionPending && pollingStartedAt) {
-      setPollingStartedAt(null);
+    if (wasConnectionPendingRef.current && !isConnectionPending) {
+      void dashboardQuery.refetch();
     }
-  }, [isConnectionPending, pollingStartedAt]);
+    wasConnectionPendingRef.current = isConnectionPending;
+  }, [dashboardQuery, isConnectionPending]);
 
   const handleConnectModalChange = (open: boolean) => {
     setIsConnectModalOpenManual(open);
@@ -273,7 +337,7 @@ function JournalPageContent() {
           activeAccount?.bootstrap_error_message || activeAccount?.sync_error_message
         }
         onSyncAccount={() => void handleRefreshAccounts()}
-        onOpenConnect={() => setIsConnectModalOpenManual(true)}
+        onOpenJournalDay={handleOpenTodayJournalDay}
       />
 
       {widgetRegistry.some((widget) => widget.id === "kpiStrip") ? (
@@ -281,7 +345,7 @@ function JournalPageContent() {
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
           dailyOutcomeCounts={dailyOutcomeCounts}
-            isLoading={!!activeAccountId && dashboardQuery.isLoading}
+          isLoading={dashboardQuery.isLoading}
         />
       ) : null}
 
@@ -301,7 +365,7 @@ function JournalPageContent() {
         {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
           <JournalTradesPanel
             rows={tradesRows}
-            isLoading={!!activeAccountId && dashboardQuery.isLoading}
+            isLoading={dashboardQuery.isLoading}
           />
         ) : null}
       </div>
@@ -332,7 +396,7 @@ function JournalPageContent() {
           <ConnectAccountForm
             onSuccess={() => {
               setIsConnectModalOpenManual(false);
-              setPollingStartedAt(Date.now());
+              setPollingWindowStartedAt(Date.now());
             }}
           />
         </DialogContent>

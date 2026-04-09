@@ -33,6 +33,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
+  const isAllAccountsSelected = !activeAccountId || activeAccountId === "all";
   const title = useMemo(() => {
     if (pathname.includes("/journal")) return "Journal";
     if (pathname.includes("/trade-history")) return "Trade History";
@@ -82,7 +83,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const selectAccount = (accountId: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("accountId", accountId);
+    if (accountId === "all") {
+      params.delete("accountId");
+    } else {
+      params.set("accountId", accountId);
+    }
     router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
     setIsAccountsMenuOpen(false);
   };
@@ -175,13 +180,24 @@ export function Header({ onMenuClick }: HeaderProps) {
                 className="w-auto border-chrome-control-border bg-card-bg p-0"
                 align="start"
               >
-                <CalendarWidget
-                  mode="range"
-                  selected={parsedDateRange}
-                  onSelect={applyDateRange}
-                  numberOfMonths={2}
-                  defaultMonth={parsedDateRange?.from}
-                />
+                <div className="p-2">
+                  <div className="mb-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => applyDateRange(undefined)}
+                      className="rounded-md px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <CalendarWidget
+                    mode="range"
+                    selected={parsedDateRange}
+                    onSelect={applyDateRange}
+                    numberOfMonths={2}
+                    defaultMonth={parsedDateRange?.from}
+                  />
+                </div>
               </PopoverContent>
             </Popover>
             <button
@@ -208,6 +224,18 @@ export function Header({ onMenuClick }: HeaderProps) {
                 {accounts.length ? (
                   <>
                     <div className="max-h-64 overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => selectAccount("all")}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-sidebar-nav-active-bg"
+                      >
+                        <span>All accounts</span>
+                        {isAllAccountsSelected ? (
+                          <span className="text-xs text-(--calendar-selected-ring)">
+                            Active
+                          </span>
+                        ) : null}
+                      </button>
                       {accounts.map((account) => (
                         <button
                           key={account.id}

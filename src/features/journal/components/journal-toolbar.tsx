@@ -8,7 +8,7 @@ interface JournalToolbarProps {
   connectionState?: string;
   connectionError?: string | null;
   onSyncAccount: () => void;
-  onOpenConnect: () => void;
+  onOpenJournalDay: () => void;
 }
 
 function getLastSyncText(lastSyncedAt?: string | null) {
@@ -30,7 +30,7 @@ export function JournalToolbar({
   connectionState,
   connectionError,
   onSyncAccount,
-  onOpenConnect,
+  onOpenJournalDay,
 }: JournalToolbarProps) {
   const stateLabelMap: Record<string, string> = {
     pending_verification: "Verifying credentials...",
@@ -39,7 +39,8 @@ export function JournalToolbar({
     verification_failed: "Needs attention",
     bootstrap_failed: "Needs attention",
   };
-  const connectionLabel = connectionState ? stateLabelMap[connectionState] : null;
+  const connectionLabel =
+    connectionState && connectionState !== "ready" ? stateLabelMap[connectionState] : null;
 
   return (
     <section className="flex flex-col gap-4 border-b border-border-primary/35 pb-5 lg:flex-row lg:items-center lg:justify-between">
@@ -66,11 +67,11 @@ export function JournalToolbar({
 
       <div className="flex flex-wrap items-center gap-2">
         <button
-          onClick={onOpenConnect}
+          onClick={onOpenJournalDay}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
         >
           <Plus className="h-4 w-4" />
-          Connect Account
+          Journal Day
         </button>
         <button className="inline-flex h-11 items-center gap-2 rounded-full border-2 border-chrome-control-border bg-card-bg px-5 text-sm font-semibold text-text-primary">
           Export Stats
