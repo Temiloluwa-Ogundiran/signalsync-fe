@@ -56,6 +56,7 @@ function JournalPageContent() {
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isConnectModalOpenManual, setIsConnectModalOpenManual] = useState(false);
+  const [pollingStartedAt, setPollingStartedAt] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
@@ -72,6 +73,12 @@ function JournalPageContent() {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
+  const isConnectionPending = accounts.some(
+    (account) =>
+      account.connection_state === "pending_verification" ||
+      account.connection_state === "bootstrapping",
+  );
+
   const shouldOpenConnect = searchParams.get("connectAccount") === "1";
   const isConnectModalOpen = shouldOpenConnect || isConnectModalOpenManual;
 
@@ -106,7 +113,10 @@ function JournalPageContent() {
     : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0));
 
   const dashboardQuery = useJournalDashboardAnalytics({
-    accountId: activeAccountId || undefined,
+    accountId:
+      activeAccountId && activeAccount?.is_data_ready_for_stats
+        ? activeAccountId
+        : undefined,
     fromDate,
     toDate,
   });
@@ -174,14 +184,20 @@ function JournalPageContent() {
     try {
       const result = await syncAccountMutation.mutateAsync(activeAccountId);
       await refetchAccounts();
-      if (result.inserted_trades === 0) {
-        toast.info("No new trades found", {
-          description:
-            "Sync completed successfully, but there were no new closed trades to ingest.",
-        });
+      if ("inserted_trades" in result) {
+        if (result.inserted_trades === 0) {
+          toast.info("No new trades found", {
+            description:
+              "Sync completed successfully, but there were no new closed trades to ingest.",
+          });
+        } else {
+          toast.success("Account sync complete", {
+            description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
+          });
+        }
       } else {
-        toast.success("Account sync complete", {
-          description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
+        toast.info("Sync queued", {
+          description: "Account sync is running in background. Data will refresh shortly.",
         });
       }
     } catch (error) {
@@ -206,6 +222,31 @@ function JournalPageContent() {
     }
   }, [isAccountsError]);
 
+  useEffect(() => {
+    if (!pollingStartedAt || !isConnectionPending) {
+      return;
+    }
+
+    const elapsedMs = Date.now() - pollingStartedAt;
+    if (elapsedMs > 6 * 60 * 1000) {
+      setPollingStartedAt(null);
+      return;
+    }
+
+    const intervalMs = elapsedMs < 90_000 ? 4_000 : 20_000;
+    const timer = window.setInterval(() => {
+      void refetchAccounts();
+    }, intervalMs);
+
+    return () => window.clearInterval(timer);
+  }, [isConnectionPending, pollingStartedAt, refetchAccounts]);
+
+  useEffect(() => {
+    if (!isConnectionPending && pollingStartedAt) {
+      setPollingStartedAt(null);
+    }
+  }, [isConnectionPending, pollingStartedAt]);
+
   const handleConnectModalChange = (open: boolean) => {
     setIsConnectModalOpenManual(open);
     if (!open && shouldOpenConnect) {
@@ -227,6 +268,10 @@ function JournalPageContent() {
       <JournalToolbar
         isSyncPending={syncAccountMutation.isPending}
         lastSyncedAt={activeAccount?.last_synced_at}
+        connectionState={activeAccount?.connection_state}
+        connectionError={
+          activeAccount?.bootstrap_error_message || activeAccount?.sync_error_message
+        }
         onSyncAccount={() => void handleRefreshAccounts()}
         onOpenConnect={() => setIsConnectModalOpenManual(true)}
       />
@@ -280,11 +325,16 @@ function JournalPageContent() {
               Connect Trading Account
             </DialogTitle>
             <DialogDescription className="text-text-secondary">
-              Add your MT4 or MT5 investor credentials to start syncing trades
+              Add your MT5 investor credentials to start syncing trades
               into your journal.
             </DialogDescription>
           </DialogHeader>
-          <ConnectAccountForm onSuccess={() => setIsConnectModalOpenManual(false)} />
+          <ConnectAccountForm
+            onSuccess={() => {
+              setIsConnectModalOpenManual(false);
+              setPollingStartedAt(Date.now());
+            }}
+          />
         </DialogContent>
       </Dialog>
 

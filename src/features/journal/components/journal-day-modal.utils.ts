@@ -22,7 +22,11 @@ export function formatClock(iso: string) {
   });
 }
 
-export function buildDaySummary(trades: JournalTrade[]): JournalDaySummary {
+export function buildDaySummary(
+  trades: JournalTrade[],
+  dayStartBalance?: number | null,
+  dayEndBalance?: number | null,
+): JournalDaySummary {
   const totalTrades = trades.length;
   const winners = trades.filter(
     (trade) => asNumber(trade.net_profit) > 0,
@@ -52,6 +56,12 @@ export function buildDaySummary(trades: JournalTrade[]): JournalDaySummary {
     grossPnl,
     commissions,
     volume,
+    dayStartBalance:
+      dayStartBalance != null && Number.isFinite(dayStartBalance)
+        ? dayStartBalance
+        : null,
+    dayEndBalance:
+      dayEndBalance != null && Number.isFinite(dayEndBalance) ? dayEndBalance : null,
   };
 }
 
@@ -69,18 +79,12 @@ export function buildProfitFactor(trades: JournalTrade[]) {
 }
 
 export function computeNetRoiPercent(trade: JournalTrade) {
-  const net = asNumber(trade.net_profit);
-  const balanceBefore = asNumber(trade.balance_before_trade);
+  const hasBackendRoi = trade.net_roi_percent != null;
 
-  if (balanceBefore !== 0) {
-    return (net / balanceBefore) * 100;
+  if (hasBackendRoi) {
+    const roi = asNumber(trade.net_roi_percent);
+    return Math.abs(roi) <= 1 ? roi * 100 : roi;
   }
 
-  if (trade.net_roi_percent == null) {
-    return null;
-  }
-
-  const roi = asNumber(trade.net_roi_percent);
-  // Some providers send ROI as fraction (0.0103) instead of percent (1.03).
-  return Math.abs(roi) <= 1 ? roi * 100 : roi;
+  return null;
 }

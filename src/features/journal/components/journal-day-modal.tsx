@@ -42,7 +42,15 @@ export function JournalDayModal({
     [dayQuery.data?.trade_chips],
   );
 
-  const summary = useMemo(() => buildDaySummary(trades), [trades]);
+  const summary = useMemo(
+    () =>
+      buildDaySummary(
+        trades,
+        dayQuery.data?.day_start_balance ?? null,
+        dayQuery.data?.day_end_balance ?? null,
+      ),
+    [trades, dayQuery.data?.day_start_balance, dayQuery.data?.day_end_balance],
+  );
 
   const dayTitle = useMemo(() => {
     if (!tradingDate) return "Journal Day";

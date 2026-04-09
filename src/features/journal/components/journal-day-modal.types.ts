@@ -9,6 +9,8 @@ export interface JournalDaySummary {
   grossPnl: number;
   commissions: number;
   volume: number;
+  dayStartBalance: number | null;
+  dayEndBalance: number | null;
 }
 
 export interface JournalDayTradeRow extends JournalTrade {

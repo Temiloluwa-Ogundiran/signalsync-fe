@@ -36,15 +36,18 @@ export function JournalDayModalOverview({
   );
 
   const pnlCurveData = useMemo(() => {
-    let runningPnl = 0;
-    return sortedTrades.map((trade, index) => {
-      runningPnl += asNumber(trade.net_profit);
-      return {
+    return sortedTrades.reduce<
+      { step: number; time: string; cumulativePnl: number }[]
+    >((acc, trade, index) => {
+      const previous = index === 0 ? 0 : acc[index - 1]?.cumulativePnl ?? 0;
+      const cumulativePnl = previous + asNumber(trade.net_profit);
+      acc.push({
         step: index + 1,
         time: formatClock(trade.closed_at),
-        cumulativePnl: runningPnl,
-      };
-    });
+        cumulativePnl,
+      });
+      return acc;
+    }, []);
   }, [sortedTrades]);
 
   const chartConfig = {
@@ -149,7 +152,22 @@ export function JournalDayModalOverview({
               summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
             }
           />
-          <Row label="Volumes" value={summary.volume.toFixed(2)} />
+          <Row
+            label="Starting Balance"
+            value={
+              summary.dayStartBalance == null
+                ? "--"
+                : formatCurrency(summary.dayStartBalance)
+            }
+          />
+          <Row
+            label="Ending Balance"
+            value={
+              summary.dayEndBalance == null
+                ? "--"
+                : formatCurrency(summary.dayEndBalance)
+            }
+          />
         </div>
       </section>
 
@@ -165,6 +183,7 @@ export function JournalDayModalOverview({
             label="Profit Factor"
             value={profitFactor == null ? "--" : profitFactor.toFixed(2)}
           />
+          <Row label="Volumes" value={summary.volume.toFixed(2)} />
         </div>
       </section>
     </div>

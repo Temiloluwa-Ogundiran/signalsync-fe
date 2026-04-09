@@ -133,6 +133,10 @@ export function JournalTradeHistoryPage() {
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Loading trade history...
         </div>
+      ) : tradeHistoryQuery.isError ? (
+        <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
+          Failed to load trade history. Please retry.
+        </div>
       ) : (
         <JournalTradeHistoryTable
           rows={pageRows}

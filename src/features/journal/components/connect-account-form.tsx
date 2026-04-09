@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useConnectJournalAccount } from "../hooks/use-journal-accounts";
-import type { JournalAccountConnectFormValues } from "../types";
+import type { JournalAccount, JournalAccountConnectFormValues } from "../types";
 
 const connectAccountSchema = z.object({
   broker_login: z.string().min(1, "Account ID is required").max(64),
@@ -27,7 +27,7 @@ const connectAccountSchema = z.object({
     .string()
     .min(1, "Investor password is required")
     .max(255),
-  platform: z.enum(["MT4", "MT5"]),
+  platform: z.literal("MT5"),
   display_name: z.string().max(120).optional(),
 });
 
@@ -40,7 +40,7 @@ function getBrowserTimezone() {
 }
 
 interface ConnectAccountFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (account: JournalAccount) => void;
 }
 
 export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
@@ -53,7 +53,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
       broker_login: "",
       broker_server: "",
       investor_password: "",
-      platform: "MT4",
+      platform: "MT5",
       display_name: "",
     },
   });
@@ -70,11 +70,11 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
     };
 
     try {
-      await connectAccount.mutateAsync(payload);
-      toast.success("Account connected", {
-        description: "Initial sync has started in the background.",
+      const account = await connectAccount.mutateAsync(payload);
+      toast.success("Account added", {
+        description: "Verifying credentials and syncing account history in background.",
       });
-      onSuccess?.();
+      onSuccess?.(account);
     } catch (error) {
       const message =
         error instanceof Error
@@ -162,7 +162,6 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
                     onChange={field.onChange}
                     disabled={isPending}
                   >
-                    <option value="MT4">MT4</option>
                     <option value="MT5">MT5</option>
                   </select>
                 </FormControl>

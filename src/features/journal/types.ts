@@ -6,7 +6,7 @@ export interface JournalCalendarDayStat {
   hasJournal: boolean;
 }
 
-export type TradingPlatform = "MT4" | "MT5";
+export type TradingPlatform = "MT5";
 
 export interface JournalAccountConnectFormValues {
   broker_login: string;
@@ -34,16 +34,35 @@ export interface JournalAccount {
   broker_utc_offset: number;
   display_name: string | null;
   status: "pending_sync" | "synced" | "error" | "disconnected";
+  connection_state:
+    | "pending_verification"
+    | "verification_failed"
+    | "bootstrapping"
+    | "ready"
+    | "bootstrap_failed";
+  is_data_ready_for_stats: boolean;
   last_synced_at: string | null;
+  last_bootstrap_synced_at: string | null;
   sync_error_message: string | null;
+  bootstrap_error_message: string | null;
   is_deleted: boolean;
   created_at: string;
 }
 
-export interface JournalAccountSyncResult {
+export interface JournalAccountSyncImmediateResult {
   inserted_trades: number;
   touched_trading_dates: number;
 }
+
+export interface JournalAccountSyncQueuedResult {
+  status: "queued";
+  task_id: string | null;
+  mode?: "verify" | "sync";
+}
+
+export type JournalAccountSyncResult =
+  | JournalAccountSyncImmediateResult
+  | JournalAccountSyncQueuedResult;
 
 export interface JournalAnalyticsCalendarDay {
   date: string;
@@ -184,6 +203,8 @@ export interface JournalDailyResponse {
   id: string;
   trading_date: string;
   account_timezone: string;
+  day_start_balance: number | null;
+  day_end_balance: number | null;
   trade_chips: JournalDailyTradeChip[];
   trades: JournalTrade[];
   messages: JournalMessage[];
