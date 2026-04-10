@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface JournalToolbarProps {
   isSyncPending: boolean;
@@ -13,15 +14,19 @@ interface JournalToolbarProps {
 
 function getLastSyncText(lastSyncedAt?: string | null) {
   if (!lastSyncedAt) return "Last sync: never";
+  const syncedAtMs = new Date(lastSyncedAt).getTime();
+  if (Number.isNaN(syncedAtMs)) return "Last sync: never";
   const deltaSeconds = Math.max(
     1,
-    Math.floor((Date.now() - new Date(lastSyncedAt).getTime()) / 1000),
+    Math.floor((Date.now() - syncedAtMs) / 1000),
   );
   if (deltaSeconds < 60) return `Last sync: ${deltaSeconds} seconds ago`;
   const deltaMinutes = Math.floor(deltaSeconds / 60);
   if (deltaMinutes < 60) return `Last sync: ${deltaMinutes} minutes ago`;
   const deltaHours = Math.floor(deltaMinutes / 60);
-  return `Last sync: ${deltaHours} hours ago`;
+  if (deltaHours < 24) return `Last sync: ${deltaHours} hours ago`;
+  const deltaDays = Math.floor(deltaHours / 24);
+  return `Last sync: ${deltaDays} days ago`;
 }
 
 export function JournalToolbar({
@@ -32,6 +37,16 @@ export function JournalToolbar({
   onSyncAccount,
   onOpenJournalDay,
 }: JournalToolbarProps) {
+  const [, setNowTick] = useState(0);
+
+  useEffect(() => {
+    const intervalMs = lastSyncedAt ? 1_000 : 60_000;
+    const timer = window.setInterval(() => {
+      setNowTick((value) => value + 1);
+    }, intervalMs);
+    return () => window.clearInterval(timer);
+  }, [lastSyncedAt]);
+
   const stateLabelMap: Record<string, string> = {
     pending_verification: "Verifying credentials...",
     bootstrapping: "Syncing account history for stats...",

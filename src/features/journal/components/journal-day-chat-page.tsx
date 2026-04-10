@@ -225,11 +225,6 @@ export function JournalDayChatPage() {
             ) : (
               <>
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,520px)_minmax(0,520px)]">
-                  <JournalDayChatStatsCard
-                    metrics={metrics}
-                    netPnl={summary.grossPnl}
-                    pnlPercentLabel={pnlPercentLabel}
-                  />
                   <div className="grid gap-4">
                     <JournalDayChatPnlChartCard
                       title="Running P&L"
@@ -243,6 +238,12 @@ export function JournalDayChatPage() {
                       seriesKey="accountBalance"
                     />
                   </div>
+
+                  <JournalDayChatStatsCard
+                    metrics={metrics}
+                    netPnl={summary.grossPnl}
+                    pnlPercentLabel={pnlPercentLabel}
+                  />
                 </div>
 
                 <JournalDayChatTradesCard

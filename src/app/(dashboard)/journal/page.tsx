@@ -34,6 +34,8 @@ import { JournalTimePerformanceWidget } from "@/features/journal/components/jour
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
 
+const AUTO_SYNC_THROTTLE_MS = 5 * 60 * 1000;
+
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -57,6 +59,11 @@ function JournalPageContent() {
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isConnectModalOpenManual, setIsConnectModalOpenManual] = useState(false);
   const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<number | null>(null);
+  const [syncUiState, setSyncUiState] = useState<{
+    accountId: string;
+    startedAt: number;
+    baselineLastSyncedAtMs: number | null;
+  } | null>(null);
   const hasShownNoAccountToastRef = useRef(false);
   const wasConnectionPendingRef = useRef(false);
   const [currentMonth, setCurrentMonth] = useState<Date>(
@@ -73,8 +80,7 @@ function JournalPageContent() {
   const syncAccountMutation = useSyncJournalAccount();
 
   const accountIdFromQuery = searchParams.get("accountId");
-  const isAllAccountsSelected = !accountIdFromQuery || accountIdFromQuery === "all";
-  const activeAccountId = isAllAccountsSelected ? "" : accountIdFromQuery;
+  const activeAccountId = accountIdFromQuery ?? "";
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
@@ -174,11 +180,23 @@ function JournalPageContent() {
   );
 
   const handleCalendarDayClick = (day: number) => {
+    if (!activeAccountId) {
+      toast.info("Select an account first", {
+        description: "Daily journal requires a specific trading account.",
+      });
+      return;
+    }
     setSelectedDay(day);
     setIsDayModalOpen(true);
   };
 
   const handleOpenTodayJournalDay = () => {
+    if (!activeAccountId) {
+      toast.info("Select an account first", {
+        description: "Journal Day requires a specific trading account.",
+      });
+      return;
+    }
     const today = new Date();
     const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     setCurrentMonth(todayMonth);
@@ -186,65 +204,161 @@ function JournalPageContent() {
     setIsDayModalOpen(true);
   };
 
-  const handleRefreshAccounts = async () => {
+  const getAutoSyncStorageKey = (accountId: string) =>
+    `journal:auto-sync:last:${accountId}`;
+
+  const canRequestSync = (
+    accountId: string,
+    referenceNowMs = Date.now(),
+  ): { allowed: boolean; remainingMs: number } => {
+    if (typeof window === "undefined") {
+      return { allowed: true, remainingMs: 0 };
+    }
+
+    const key = getAutoSyncStorageKey(accountId);
+    const lastRequestRaw = window.localStorage.getItem(key);
+    const lastRequestMs = lastRequestRaw ? Number(lastRequestRaw) : 0;
+    if (!lastRequestMs || Number.isNaN(lastRequestMs)) {
+      return { allowed: true, remainingMs: 0 };
+    }
+
+    const elapsedMs = referenceNowMs - lastRequestMs;
+    if (elapsedMs >= AUTO_SYNC_THROTTLE_MS) {
+      return { allowed: true, remainingMs: 0 };
+    }
+
+    return {
+      allowed: false,
+      remainingMs: AUTO_SYNC_THROTTLE_MS - elapsedMs,
+    };
+  };
+
+  const markSyncRequestedNow = (accountId: string) => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      getAutoSyncStorageKey(accountId),
+      String(Date.now()),
+    );
+  };
+
+  const handleRefreshAccounts = async (options?: { silent?: boolean; accountId?: string }) => {
+    const silent = options?.silent ?? false;
+    const targetAccountId = options?.accountId ?? activeAccountId;
     if (!accounts.length) {
-      toast.info("No connected account found", {
-        description: "Add an account to get stats and analytics.",
-      });
-      return;
-    }
-
-    if (!activeAccountId) {
-      toast.info("Select an account to sync", {
-        description: "Manual sync runs for a specific account. Choose one from your account filter.",
-      });
-      await refetchAccounts();
-      return;
-    }
-
-    try {
-      const result = await syncAccountMutation.mutateAsync(activeAccountId);
-      await refetchAccounts();
-      if ("inserted_trades" in result) {
-        if (result.inserted_trades === 0) {
-          toast.info("No new trades found", {
-            description:
-              "Sync completed successfully, but there were no new closed trades to ingest.",
-          });
-        } else {
-          toast.success("Account sync complete", {
-            description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
-          });
-        }
-      } else {
-        toast.info("Sync queued", {
-          description: "Account sync is running in background. Data will refresh shortly.",
+      if (!silent) {
+        toast.info("No connected account found", {
+          description: "Add an account to get stats and analytics.",
         });
       }
-    } catch (error) {
-      await refetchAccounts();
-      if (error instanceof ApiException && error.status === 503) {
-        toast.error("Sync failed (MetaAPI timeout)", {
-          description: error.message,
+      return;
+    }
+
+    if (!targetAccountId) {
+      if (!silent) {
+        toast.info("Select an account to sync", {
+          description:
+            "Manual sync runs for a specific account. Choose one from your account filter.",
         });
-      } else {
-        const description =
-          error instanceof ApiException
-            ? error.message
-            : "Unable to sync this account right now.";
-        toast.error("Account sync failed", { description });
+      }
+      await refetchAccounts();
+      return;
+    }
+
+    const syncGuard = canRequestSync(targetAccountId);
+    if (!syncGuard.allowed) {
+      if (!silent) {
+        const remainingMinutes = Math.ceil(syncGuard.remainingMs / 60_000);
+        toast.info("Sync cooldown active", {
+          description: `Try again in about ${remainingMinutes} minute(s).`,
+        });
+      }
+      return;
+    }
+
+    markSyncRequestedNow(targetAccountId);
+    const targetAccount = accounts.find((account) => account.id === targetAccountId);
+    const baselineLastSyncedAtMs = targetAccount?.last_synced_at
+      ? new Date(targetAccount.last_synced_at).getTime()
+      : null;
+    setSyncUiState({
+      accountId: targetAccountId,
+      startedAt: Date.now(),
+      baselineLastSyncedAtMs:
+        baselineLastSyncedAtMs && !Number.isNaN(baselineLastSyncedAtMs)
+          ? baselineLastSyncedAtMs
+          : null,
+    });
+
+    try {
+      const result = await syncAccountMutation.mutateAsync(targetAccountId);
+      const refreshed = await refetchAccounts();
+      const refreshedAccount = (refreshed.data ?? []).find(
+        (account) => account.id === targetAccountId,
+      );
+      const refreshedLastSyncedAtMs = refreshedAccount?.last_synced_at
+        ? new Date(refreshedAccount.last_synced_at).getTime()
+        : null;
+      const didSyncTimestampAdvance =
+        !!refreshedLastSyncedAtMs &&
+        !Number.isNaN(refreshedLastSyncedAtMs) &&
+        (!baselineLastSyncedAtMs || refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
+      if ("inserted_trades" in result || didSyncTimestampAdvance) {
+        setSyncUiState(null);
+      }
+      if (!silent) {
+        if ("inserted_trades" in result) {
+          if (result.inserted_trades === 0) {
+            toast.info("No new trades found", {
+              description:
+                "Sync completed successfully, but there were no new closed trades to ingest.",
+            });
+          } else {
+            toast.success("Account sync complete", {
+              description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
+            });
+          }
+        } else {
+          toast.info("Sync queued", {
+            description:
+              "Account sync is running in background. Data will refresh shortly.",
+          });
+        }
+      }
+    } catch (error) {
+      setSyncUiState(null);
+      await refetchAccounts();
+      if (!silent) {
+        if (error instanceof ApiException && error.status === 503) {
+          toast.error("Sync failed (MetaAPI timeout)", {
+            description: error.message,
+          });
+        } else {
+          const description =
+            error instanceof ApiException
+              ? error.message
+              : "Unable to sync this account right now.";
+          toast.error("Account sync failed", { description });
+        }
       }
     }
   };
 
   useEffect(() => {
-    if (!activeAccountId || isAccountsLoading) {
+    if (isAccountsLoading || !accounts.length) {
       return;
     }
+
+    if (!activeAccountId) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("accountId", accounts[0].id);
+      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+      return;
+    }
+
     const exists = accounts.some((account) => account.id === activeAccountId);
     if (!exists) {
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("accountId");
+      params.set("accountId", accounts[0].id);
       router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
     }
   }, [activeAccountId, accounts, isAccountsLoading, router, searchParams]);
@@ -311,6 +425,80 @@ function JournalPageContent() {
     wasConnectionPendingRef.current = isConnectionPending;
   }, [dashboardQuery, isConnectionPending]);
 
+  useEffect(() => {
+    if (!syncUiState) {
+      return;
+    }
+
+    const elapsedMs = Date.now() - syncUiState.startedAt;
+    if (elapsedMs >= 3 * 60_000) {
+      setSyncUiState(null);
+      return;
+    }
+
+    const timer = window.setInterval(async () => {
+      const refreshed = await refetchAccounts();
+      const trackedAccount = (refreshed.data ?? []).find(
+        (account) => account.id === syncUiState.accountId,
+      );
+      if (!trackedAccount) {
+        setSyncUiState(null);
+        return;
+      }
+
+      const trackedLastSyncedAtMs = trackedAccount.last_synced_at
+        ? new Date(trackedAccount.last_synced_at).getTime()
+        : null;
+      const didSyncTimestampAdvance =
+        !!trackedLastSyncedAtMs &&
+        !Number.isNaN(trackedLastSyncedAtMs) &&
+        (!syncUiState.baselineLastSyncedAtMs ||
+          trackedLastSyncedAtMs > syncUiState.baselineLastSyncedAtMs);
+      const isFailureState =
+        trackedAccount.connection_state === "bootstrap_failed" ||
+        trackedAccount.connection_state === "verification_failed";
+
+      if (didSyncTimestampAdvance || isFailureState) {
+        setSyncUiState(null);
+        void dashboardQuery.refetch();
+      }
+    }, 4_000);
+
+    return () => window.clearInterval(timer);
+  }, [dashboardQuery, refetchAccounts, syncUiState]);
+
+  useEffect(() => {
+    if (isAccountsLoading || !accounts.length || syncAccountMutation.isPending) {
+      return;
+    }
+
+    if (!activeAccount) {
+      return;
+    }
+
+    const referenceNowMs = Date.now();
+    const cooldownGuard = canRequestSync(activeAccount.id, referenceNowMs);
+    if (!cooldownGuard.allowed) {
+      return;
+    }
+
+    const lastSyncedMs = activeAccount.last_synced_at
+      ? new Date(activeAccount.last_synced_at).getTime()
+      : 0;
+    const hasNeverSynced = !lastSyncedMs || Number.isNaN(lastSyncedMs);
+    const isServerSyncStale = hasNeverSynced || referenceNowMs - lastSyncedMs >= AUTO_SYNC_THROTTLE_MS;
+    if (!isServerSyncStale) {
+      return;
+    }
+
+    void handleRefreshAccounts({ silent: true, accountId: activeAccount.id });
+  }, [
+    accounts,
+    activeAccount,
+    isAccountsLoading,
+    syncAccountMutation.isPending,
+  ]);
+
   const handleConnectModalChange = (open: boolean) => {
     setIsConnectModalOpenManual(open);
     if (!open && shouldOpenConnect) {
@@ -330,7 +518,7 @@ function JournalPageContent() {
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
       <JournalToolbar
-        isSyncPending={syncAccountMutation.isPending}
+        isSyncPending={syncAccountMutation.isPending || !!syncUiState}
         lastSyncedAt={activeAccount?.last_synced_at}
         connectionState={activeAccount?.connection_state}
         connectionError={

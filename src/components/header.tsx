@@ -5,7 +5,7 @@ import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
 import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 import Image from "next/image";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
@@ -26,6 +26,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isAccountsMenuOpen, setIsAccountsMenuOpen] = useState(false);
+  const accountsMenuContainerRef = useRef<HTMLDivElement | null>(null);
   const { data: accounts = [] } = useJournalAccounts();
   const isJournalRoute = pathname.includes("/journal");
 
@@ -33,7 +34,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
-  const isAllAccountsSelected = !activeAccountId || activeAccountId === "all";
   const title = useMemo(() => {
     if (pathname.includes("/journal")) return "Journal";
     if (pathname.includes("/trade-history")) return "Trade History";
@@ -83,11 +83,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const selectAccount = (accountId: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (accountId === "all") {
-      params.delete("accountId");
-    } else {
-      params.set("accountId", accountId);
-    }
+    params.set("accountId", accountId);
     router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
     setIsAccountsMenuOpen(false);
   };
@@ -98,6 +94,22 @@ export function Header({ onMenuClick }: HeaderProps) {
     router.push(`/journal?${params.toString()}`);
     setIsAccountsMenuOpen(false);
   };
+
+  useEffect(() => {
+    if (!isAccountsMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (accountsMenuContainerRef.current?.contains(target)) return;
+      setIsAccountsMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [isAccountsMenuOpen]);
 
   return (
     <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-[26px] pr-[26px] font-sans">
@@ -159,7 +171,10 @@ export function Header({ onMenuClick }: HeaderProps) {
               height={24}
             />
           </button>
-          <div className="relative hidden items-stretch lg:flex">
+          <div
+            ref={accountsMenuContainerRef}
+            className="relative hidden items-stretch lg:flex"
+          >
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -214,7 +229,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <span>
                 {activeAccount?.display_name ||
                   activeAccount?.broker_login ||
-                  "All accounts"}
+                  "Select account"}
               </span>
               <IconChevronDown />
             </button>
@@ -224,18 +239,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                 {accounts.length ? (
                   <>
                     <div className="max-h-64 overflow-y-auto">
-                      <button
-                        type="button"
-                        onClick={() => selectAccount("all")}
-                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-sidebar-nav-active-bg"
-                      >
-                        <span>All accounts</span>
-                        {isAllAccountsSelected ? (
-                          <span className="text-xs text-(--calendar-selected-ring)">
-                            Active
-                          </span>
-                        ) : null}
-                      </button>
                       {accounts.map((account) => (
                         <button
                           key={account.id}
