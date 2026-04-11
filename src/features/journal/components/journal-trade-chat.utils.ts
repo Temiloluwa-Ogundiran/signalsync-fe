@@ -48,11 +48,32 @@ export function buildTradeMetrics(trade?: JournalTrade): MetricRow[] {
 export function buildTradeRunningPnlCurve(trade?: JournalTrade): CurvePoint[] {
   if (!trade) return [];
   const net = asNumber(trade.net_profit);
-  return [
-    { label: "Open", value: 0 },
-    { label: "Mid", value: net * 0.55 },
-    { label: "Close", value: net },
-  ];
+  const openedAt = new Date(trade.opened_at).getTime();
+  const closedAt = new Date(trade.closed_at).getTime();
+  const durationMs = Math.max(closedAt - openedAt, 60_000);
+
+  const segments = durationMs <= 60 * 60 * 1000
+    ? 4
+    : durationMs <= 4 * 60 * 60 * 1000
+      ? 6
+      : durationMs <= 24 * 60 * 60 * 1000
+        ? 8
+        : 10;
+
+  const points: CurvePoint[] = [];
+  for (let idx = 0; idx <= segments; idx += 1) {
+    const ratio = idx / segments;
+    const timestamp = new Date(openedAt + durationMs * ratio);
+    points.push({
+      label: timestamp.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+      value: net * ratio,
+    });
+  }
+  return points;
 }
 
 export function buildTradePercentCurve(trade?: JournalTrade): CurvePoint[] {

@@ -29,22 +29,35 @@ export function buildRunningPnlCurve(trades: JournalTrade[]): CurvePoint[] {
     (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
   );
 
+  const points: CurvePoint[] = [{ label: "Open", value: 0 }];
   let running = 0;
-  return sortedTrades.map((trade, index) => {
+  sortedTrades.forEach((trade) => {
     running += asNumber(trade.net_profit);
-    return { label: `${index + 1}`, value: running };
+    points.push({
+      label: new Date(trade.closed_at).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+      value: running,
+    });
   });
+  return points;
 }
 
-export function buildBalanceCurve(trades: JournalTrade[]): CurvePoint[] {
+export function buildBalanceCurve(
+  trades: JournalTrade[],
+  startBalance: number | null,
+): CurvePoint[] {
   const sortedTrades = [...trades].sort(
     (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
   );
 
   if (!sortedTrades.length) return [];
 
-  const startBalance = asNumber(sortedTrades[0].balance_before_trade);
-  let runningBalance = startBalance;
+  const resolvedStartBalance =
+    startBalance ?? asNumber(sortedTrades[0].balance_before_trade);
+  let runningBalance = resolvedStartBalance;
   const points: CurvePoint[] = [{ label: "0", value: runningBalance }];
 
   sortedTrades.forEach((trade, index) => {
@@ -55,16 +68,20 @@ export function buildBalanceCurve(trades: JournalTrade[]): CurvePoint[] {
   return points;
 }
 
-export function buildMetrics(trades: JournalTrade[]): MetricRow[] {
+export function buildMetrics(
+  trades: JournalTrade[],
+  dayStartBalance?: number | null,
+  dayEndBalance?: number | null,
+): MetricRow[] {
   const summary = buildDaySummary(trades);
   const sortedTrades = [...trades].sort(
     (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
   );
 
-  const startBalance = sortedTrades[0]
-    ? asNumber(sortedTrades[0].balance_before_trade)
-    : 0;
-  const endBalance = startBalance + summary.grossPnl;
+  const startBalance = dayStartBalance ?? (
+    sortedTrades[0] ? asNumber(sortedTrades[0].balance_before_trade) : 0
+  );
+  const endBalance = dayEndBalance ?? (startBalance + summary.grossPnl);
   const buys = trades.filter((trade) => trade.direction === "buy").length;
   const sells = trades.filter((trade) => trade.direction === "sell").length;
   const bestTrade = trades.length

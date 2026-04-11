@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import {
   Popover,
@@ -29,8 +30,15 @@ export function Header({ onMenuClick }: HeaderProps) {
   const accountsMenuContainerRef = useRef<HTMLDivElement | null>(null);
   const { data: accounts = [] } = useJournalAccounts();
   const isJournalRoute = pathname.includes("/journal");
-
-  const activeAccountId = searchParams.get("accountId") || "";
+  const storeAccountId = useJournalUiStore((s) => s.activeAccountId);
+  const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
+  const isJournalArea =
+    pathname.includes("/journal") || pathname.includes("/trade-history");
+  const paramAccountId = searchParams.get("accountId") || "";
+  const activeAccountId = isJournalArea
+    ? paramAccountId || storeAccountId || accounts[0]?.id || ""
+    : paramAccountId;
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
@@ -83,16 +91,22 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const selectAccount = (accountId: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("accountId", accountId);
+    if (isJournalArea) {
+      setActiveAccountId(accountId);
+      params.delete("accountId");
+    } else {
+      params.set("accountId", accountId);
+    }
     router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
     setIsAccountsMenuOpen(false);
   };
 
   const openAddAccount = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("connectAccount", "1");
-    router.push(`/journal?${params.toString()}`);
+    openConnectModal();
     setIsAccountsMenuOpen(false);
+    if (!pathname.includes("/journal")) {
+      router.push("/journal");
+    }
   };
 
   useEffect(() => {

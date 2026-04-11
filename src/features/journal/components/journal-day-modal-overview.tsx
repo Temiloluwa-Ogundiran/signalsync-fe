@@ -50,11 +50,16 @@ export function JournalDayModalOverview({
     }, []);
   }, [sortedTrades]);
 
+  const lastCumulative =
+    pnlCurveData.length > 0
+      ? pnlCurveData[pnlCurveData.length - 1]?.cumulativePnl ?? 0
+      : summary.grossPnl;
+
   const chartConfig = {
     cumulativePnl: {
       label: "Profit/Loss",
       color:
-        summary.grossPnl >= 0 ? "var(--kpi-metric-positive)" : "var(--danger)",
+        lastCumulative < 0 ? "var(--danger)" : "var(--kpi-metric-positive)",
     },
   } satisfies ChartConfig;
 
@@ -107,11 +112,14 @@ export function JournalDayModalOverview({
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "var(--text-tertiary)", fontSize: 12 }}
-                tickFormatter={(value: number) =>
-                  `$${Math.abs(value).toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })}`
-                }
+                tickFormatter={(value: number) => {
+                  const n = typeof value === "number" ? value : Number(value);
+                  const absPart = Math.abs(n).toLocaleString(undefined, {
+                    maximumFractionDigits: n % 1 === 0 ? 0 : 2,
+                  });
+                  if (n < 0) return `-$${absPart}`;
+                  return `$${absPart}`;
+                }}
               />
               <Tooltip
                 formatter={(value) =>

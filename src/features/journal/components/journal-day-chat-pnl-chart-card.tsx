@@ -1,7 +1,9 @@
+import { useId, useMemo } from "react";
 import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceLine,
   Tooltip,
   XAxis,
   YAxis,
@@ -11,30 +13,78 @@ import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { formatCurrency } from "./journal-day-modal.utils";
 import type { CurvePoint } from "./journal-day-chat.types";
 
+export type JournalDayChartValueScale = "currency" | "percent";
+
 interface JournalDayChatPnlChartCardProps {
   title: string;
   data: CurvePoint[];
   seriesKey: "runningPnl" | "accountBalance";
+  /** Percent scale for ROI-style curves; currency for $ P&L / balance. */
+  valueScale?: JournalDayChartValueScale;
 }
 
-const chartConfig = {
-  runningPnl: {
-    label: "Running P&L",
-    color: "var(--kpi-metric-positive)",
-  },
-  accountBalance: {
-    label: "Account Balance",
-    color: "var(--kpi-metric-positive)",
-  },
-} satisfies ChartConfig;
+function formatPercentValue(value: number) {
+  const rounded = Math.round(value * 100) / 100;
+  return `${rounded}%`;
+}
 
 export function JournalDayChatPnlChartCard({
   title,
   data,
   seriesKey,
+  valueScale = "currency",
 }: JournalDayChatPnlChartCardProps) {
-  const gradientId = seriesKey === "runningPnl" ? "journalDayPnlGradient" : "journalDayBalanceGradient";
+  const instanceId = useId().replace(/:/g, "");
+  const gradientId =
+    seriesKey === "runningPnl"
+      ? `journalDayPnlGradient-${instanceId}`
+      : `journalDayBalanceGradient-${instanceId}`;
+
+  const lastValue = data.length ? (data[data.length - 1]?.value ?? 0) : 0;
+  const values = data.map((d) => d.value);
+  const minV = values.length ? Math.min(...values) : 0;
+  const maxV = values.length ? Math.max(...values) : 0;
+  const crossesZero = minV < 0 && maxV > 0;
+
+  const strokeColor = useMemo(() => {
+    if (seriesKey === "accountBalance") {
+      return "var(--kpi-metric-positive)";
+    }
+    return lastValue < 0 ? "var(--danger)" : "var(--kpi-metric-positive)";
+  }, [seriesKey, lastValue]);
+
+  const chartConfig = useMemo(
+    () =>
+      ({
+        [seriesKey]: {
+          label: title,
+          color: strokeColor,
+        },
+      }) satisfies ChartConfig,
+    [seriesKey, title, strokeColor],
+  );
+
   const colorVar = `var(--color-${seriesKey})`;
+
+  const tickFormatter = (value: number) => {
+    if (valueScale === "percent") {
+      return formatPercentValue(value);
+    }
+    const n = typeof value === "number" ? value : Number(value);
+    const absPart = Math.abs(n).toLocaleString(undefined, {
+      maximumFractionDigits: n % 1 === 0 ? 0 : 2,
+    });
+    if (n < 0) return `-$${absPart}`;
+    return `$${absPart}`;
+  };
+
+  const tooltipFormatter = (value: unknown) => {
+    const n = typeof value === "number" ? value : Number(value ?? 0);
+    if (valueScale === "percent") {
+      return formatPercentValue(n);
+    }
+    return formatCurrency(n);
+  };
 
   return (
     <Card className="border-0 bg-card-bg">
@@ -56,6 +106,14 @@ export function JournalDayChatPnlChartCard({
               vertical={false}
               stroke="var(--border-secondary)"
             />
+            {crossesZero ? (
+              <ReferenceLine
+                y={0}
+                stroke="var(--text-tertiary)"
+                strokeDasharray="4 4"
+                strokeOpacity={0.6}
+              />
+            ) : null}
             <XAxis
               dataKey="label"
               tickLine={false}
@@ -66,16 +124,10 @@ export function JournalDayChatPnlChartCard({
               tickLine={false}
               axisLine={false}
               tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
-              tickFormatter={(value: number) =>
-                `$${Math.abs(value).toLocaleString(undefined, {
-                  maximumFractionDigits: 0,
-                })}`
-              }
+              tickFormatter={tickFormatter}
             />
             <Tooltip
-              formatter={(value) =>
-                formatCurrency(typeof value === "number" ? value : Number(value ?? 0))
-              }
+              formatter={tooltipFormatter}
               contentStyle={{
                 background: "var(--card-bg)",
                 border: "1px solid var(--border-primary)",

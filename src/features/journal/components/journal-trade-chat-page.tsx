@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import {
   useCreateJournalTradeMessage,
   useJournalDayTrades,
@@ -25,7 +26,7 @@ export function JournalTradeChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const accountId = searchParams.get("accountId") ?? undefined;
+  const accountId = useResolvedJournalAccountId();
   const tradingDate = searchParams.get("date") ?? undefined;
   const tradeId = searchParams.get("tradeId") ?? undefined;
 
@@ -194,6 +195,7 @@ export function JournalTradeChatPage() {
                 title="Percent Gain"
                 data={percentGainCurve}
                 seriesKey="runningPnl"
+                valueScale="percent"
               />
             </div>
             <JournalTradeChatStatsCard

@@ -22,6 +22,20 @@ export const JOURNAL_ANALYTICS_KEYS = {
     ["journal-analytics", "recent-trades", accountId, fromDate, toDate] as const,
   dashboard: (accountId?: string, fromDate?: string, toDate?: string) =>
     ["journal-analytics", "dashboard", accountId, fromDate, toDate] as const,
+  balanceHistory: (
+    accountId?: string,
+    fromDate?: string,
+    toDate?: string,
+    granularity?: "intraday" | "day",
+  ) =>
+    [
+      "journal-analytics",
+      "balance-history",
+      accountId,
+      fromDate,
+      toDate,
+      granularity,
+    ] as const,
 };
 
 export function useJournalCalendarAnalytics({
@@ -184,6 +198,41 @@ export function useJournalDashboardAnalytics({
     enabled:
       status === "authenticated" &&
       !!session?.accessToken &&
+      !!fromDate &&
+      !!toDate,
+    staleTime: 60_000,
+  });
+}
+
+export function useJournalBalanceHistoryAnalytics({
+  accountId,
+  fromDate,
+  toDate,
+  granularity,
+}: AnalyticsQueryInput & { granularity: "intraday" | "day" }) {
+  const { data: session, status } = useSession();
+
+  return useQuery({
+    queryKey: JOURNAL_ANALYTICS_KEYS.balanceHistory(
+      accountId,
+      fromDate,
+      toDate,
+      granularity,
+    ),
+    queryFn: () =>
+      journalAnalyticsApi.getBalanceHistory(
+        {
+          accountId,
+          fromDate,
+          toDate,
+          granularity,
+        },
+        session?.accessToken as string,
+      ),
+    enabled:
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      !!accountId &&
       !!fromDate &&
       !!toDate,
     staleTime: 60_000,

@@ -5,6 +5,7 @@ const DEFAULT_WIDGET_ORDER: JournalWidgetId[] = [
   "kpiStrip",
   "calendar",
   "tradesPanel",
+  "balanceHistory",
   "symbols",
   "timePerformance",
 ];

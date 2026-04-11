@@ -3,12 +3,12 @@
 import { useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   useCreateJournalDayMessage,
   useCreateJournalTradeMessage,
   useJournalDay,
-  useJournalDayTrades,
   useTradeJournalMessages,
 } from "@/features/journal/hooks/use-journal-day-modal";
 import type { JournalMessage } from "@/features/journal/types";
@@ -30,7 +30,7 @@ export function JournalDayChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const accountId = searchParams.get("accountId") ?? undefined;
+  const accountId = useResolvedJournalAccountId();
   const tradingDate = searchParams.get("date") ?? undefined;
   const tradeId = searchParams.get("tradeId") ?? undefined;
   const initialContext =
@@ -51,11 +51,6 @@ export function JournalDayChatPage() {
     tradingDate,
     !!accountId && !!tradingDate,
   );
-  const tradesQuery = useJournalDayTrades(
-    accountId,
-    tradingDate,
-    !!accountId && !!tradingDate,
-  );
   const tradeMessagesQuery = useTradeJournalMessages(
     tradeId,
     chatContext === "trade" && !!tradeId,
@@ -68,14 +63,22 @@ export function JournalDayChatPage() {
   );
   const isSending = createDayMessage.isPending || createTradeMessage.isPending;
 
-  const trades = useMemo(
-    () => tradesQuery.data?.items ?? [],
-    [tradesQuery.data?.items],
-  );
+  const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
   const summary = useMemo(() => buildDaySummary(trades), [trades]);
   const chartData = useMemo(() => buildRunningPnlCurve(trades), [trades]);
-  const balanceCurveData = useMemo(() => buildBalanceCurve(trades), [trades]);
-  const metrics = useMemo(() => buildMetrics(trades), [trades]);
+  const balanceCurveData = useMemo(
+    () => buildBalanceCurve(trades, dayQuery.data?.day_start_balance ?? null),
+    [trades, dayQuery.data?.day_start_balance],
+  );
+  const metrics = useMemo(
+    () =>
+      buildMetrics(
+        trades,
+        dayQuery.data?.day_start_balance ?? null,
+        dayQuery.data?.day_end_balance ?? null,
+      ),
+    [trades, dayQuery.data?.day_end_balance, dayQuery.data?.day_start_balance],
+  );
   const dayLabel = useMemo(() => formatDayLabel(tradingDate), [tradingDate]);
   const prompts = useMemo(
     () => [
@@ -97,18 +100,16 @@ export function JournalDayChatPage() {
     );
   }, [chatContext, dayQuery.data?.messages, tradeMessagesQuery.data]);
 
-  const isLoadingPage = dayQuery.isLoading || tradesQuery.isLoading;
+  const isLoadingPage = dayQuery.isLoading;
   const isLoadingMessages =
     dayQuery.isLoading ||
     (chatContext === "trade" && tradeMessagesQuery.isLoading);
 
   const pnlPercentLabel = useMemo(() => {
-    const start = trades[0]?.balance_before_trade
-      ? Number(trades[0].balance_before_trade)
-      : 0;
+    const start = dayQuery.data?.day_start_balance ?? 0;
     if (!start) return "0%";
     return `${((summary.grossPnl / start) * 100).toFixed(2)}%`;
-  }, [trades, summary.grossPnl]);
+  }, [dayQuery.data?.day_start_balance, summary.grossPnl]);
 
   const sendMessage = async (payload: {
     content?: string;
@@ -174,7 +175,7 @@ export function JournalDayChatPage() {
   const onOpenTradeJournal = (id: string) => {
     if (!accountId || !tradingDate) return;
     router.replace(
-      `/journal/trade?accountId=${encodeURIComponent(accountId)}&date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(id)}`,
+      `/journal/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(id)}`,
     );
   };
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useTradeHistory } from "@/features/journal/hooks/use-trade-history";
 import type { JournalTrade } from "@/features/journal/types";
 import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
@@ -60,7 +61,8 @@ export function JournalTradeHistoryPage() {
   const [page, setPage] = useState(1);
   const { data: accounts = [] } = useJournalAccounts();
 
-  const activeAccountId = searchParams.get("accountId") || accounts[0]?.id || "";
+  const resolvedAccountId = useResolvedJournalAccountId();
+  const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const queryFromDate = parseDateParam(searchParams.get("fromDate"));
   const queryToDate = parseDateParam(searchParams.get("toDate"));
   const fromDate = queryFromDate
@@ -106,7 +108,7 @@ export function JournalTradeHistoryPage() {
   const onOpenJournal = (row: TradeHistoryRow) => {
     if (!activeAccountId) return;
     router.push(
-      `/journal/trade?accountId=${encodeURIComponent(activeAccountId)}&date=${encodeURIComponent(row.tradingDate)}&tradeId=${encodeURIComponent(row.id)}`,
+      `/journal/trade?date=${encodeURIComponent(row.tradingDate)}&tradeId=${encodeURIComponent(row.id)}`,
     );
   };
 

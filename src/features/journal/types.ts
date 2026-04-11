@@ -131,7 +131,8 @@ export type JournalWidgetId =
   | "calendar"
   | "tradesPanel"
   | "symbols"
-  | "timePerformance";
+  | "timePerformance"
+  | "balanceHistory";
 
 export interface JournalWidgetConfig {
   id: JournalWidgetId;
@@ -237,4 +238,15 @@ export interface JournalAnalyticsDashboardResponse {
   instruments: JournalAnalyticsInstrumentsResponse;
   time_performance: JournalAnalyticsTimePerformanceResponse;
   recent_trades: JournalTradeListResponse;
+}
+
+export interface JournalAnalyticsBalanceHistoryPoint {
+  timestamp: string;
+  balance: number;
+  equity?: number | null;
+  source: string;
+}
+
+export interface JournalAnalyticsBalanceHistoryResponse {
+  points: JournalAnalyticsBalanceHistoryPoint[];
 }

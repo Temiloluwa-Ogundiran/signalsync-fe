@@ -31,8 +31,11 @@ import { toTradesPanelRows } from "@/features/journal/lib/journal-widget-mappers
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
 import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
 import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
+import { JournalBalanceOverTimeWidget } from "@/features/journal/components/journal-balance-over-time-widget";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useJournalBalanceHistoryAnalytics } from "@/features/journal/hooks/use-journal-analytics";
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 
 const AUTO_SYNC_THROTTLE_MS = 5 * 60 * 1000;
 
@@ -50,6 +53,28 @@ function parseDateParam(value: string | null) {
   return parsed;
 }
 
+type BalanceRangeOption = "1D" | "1W" | "1M" | "1Y" | "All";
+
+function resolveBalanceRangeWindow(range: BalanceRangeOption) {
+  const now = new Date();
+  const end = formatDateParam(now);
+  if (range === "All") {
+    return { fromDate: "2000-01-01", toDate: end, granularity: "day" as const };
+  }
+  if (range === "1D") {
+    return { fromDate: end, toDate: end, granularity: "intraday" as const };
+  }
+  const start = new Date(now);
+  if (range === "1W") start.setDate(start.getDate() - 7);
+  if (range === "1M") start.setMonth(start.getMonth() - 1);
+  if (range === "1Y") start.setFullYear(start.getFullYear() - 1);
+  return {
+    fromDate: formatDateParam(start),
+    toDate: end,
+    granularity: "day" as const,
+  };
+}
+
 function JournalPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -57,7 +82,6 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [isConnectModalOpenManual, setIsConnectModalOpenManual] = useState(false);
   const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<number | null>(null);
   const [syncUiState, setSyncUiState] = useState<{
     accountId: string;
@@ -66,9 +90,14 @@ function JournalPageContent() {
   } | null>(null);
   const hasShownNoAccountToastRef = useRef(false);
   const wasConnectionPendingRef = useRef(false);
+  const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
+  const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
+  const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
+  const [balanceRange, setBalanceRange] = useState<BalanceRangeOption>("1M");
 
   const {
     data: accounts = [],
@@ -79,8 +108,6 @@ function JournalPageContent() {
   } = useJournalAccounts();
   const syncAccountMutation = useSyncJournalAccount();
 
-  const accountIdFromQuery = searchParams.get("accountId");
-  const activeAccountId = accountIdFromQuery ?? "";
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
@@ -89,9 +116,6 @@ function JournalPageContent() {
       account.connection_state === "pending_verification" ||
       account.connection_state === "bootstrapping",
   );
-
-  const shouldOpenConnect = searchParams.get("connectAccount") === "1";
-  const isConnectModalOpen = shouldOpenConnect || isConnectModalOpenManual;
 
   const monthLabel = useMemo(
     () =>
@@ -133,6 +157,17 @@ function JournalPageContent() {
   const summaryAnalytics = dashboardQuery.data?.summary;
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
   const timePerformanceAnalytics = dashboardQuery.data?.time_performance;
+  const balanceRangeWindow = useMemo(
+    () => resolveBalanceRangeWindow(balanceRange),
+    [balanceRange],
+  );
+  const balanceHistoryQuery = useJournalBalanceHistoryAnalytics({
+    accountId:
+      activeAccountId && activeAccount?.is_data_ready_for_stats ? activeAccountId : undefined,
+    fromDate: balanceRangeWindow.fromDate,
+    toDate: balanceRangeWindow.toDate,
+    granularity: balanceRangeWindow.granularity,
+  });
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
@@ -344,24 +379,37 @@ function JournalPageContent() {
   };
 
   useEffect(() => {
+    const aid = searchParams.get("accountId");
+    const connectLegacy = searchParams.get("connectAccount");
+    if (!aid && connectLegacy !== "1") return;
+
+    if (aid) {
+      setActiveAccountId(aid);
+    }
+    if (connectLegacy === "1") {
+      useJournalUiStore.getState().openConnectModal();
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("accountId");
+    params.delete("connectAccount");
+    router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+  }, [router, searchParams, setActiveAccountId]);
+
+  useEffect(() => {
     if (isAccountsLoading || !accounts.length) {
       return;
     }
 
-    if (!activeAccountId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("accountId", accounts[0].id);
-      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
-      return;
-    }
-
     const exists = accounts.some((account) => account.id === activeAccountId);
-    if (!exists) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("accountId", accounts[0].id);
-      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+    if (!activeAccountId || !exists) {
+      setActiveAccountId(accounts[0].id);
     }
-  }, [activeAccountId, accounts, isAccountsLoading, router, searchParams]);
+  }, [
+    activeAccountId,
+    accounts,
+    isAccountsLoading,
+    setActiveAccountId,
+  ]);
 
   useEffect(() => {
     if (isAccountsError) {
@@ -499,15 +547,6 @@ function JournalPageContent() {
     syncAccountMutation.isPending,
   ]);
 
-  const handleConnectModalChange = (open: boolean) => {
-    setIsConnectModalOpenManual(open);
-    if (!open && shouldOpenConnect) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("connectAccount");
-      router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
-    }
-  };
-
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
   const tradesRows = toTradesPanelRows(dashboardQuery.data?.recent_trades?.items ?? []);
@@ -569,8 +608,16 @@ function JournalPageContent() {
           />
         ) : null}
       </div>
+      {widgetRegistry.some((widget) => widget.id === "balanceHistory") ? (
+        <JournalBalanceOverTimeWidget
+          points={balanceHistoryQuery.data?.points ?? []}
+          isLoading={balanceHistoryQuery.isLoading}
+          selectedRange={balanceRange}
+          onRangeChange={setBalanceRange}
+        />
+      ) : null}
 
-      <Dialog open={isConnectModalOpen} onOpenChange={handleConnectModalChange}>
+      <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
         <DialogContent className="max-w-xl border border-border-primary bg-card-bg">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-text-primary">
@@ -582,8 +629,9 @@ function JournalPageContent() {
             </DialogDescription>
           </DialogHeader>
           <ConnectAccountForm
-            onSuccess={() => {
-              setIsConnectModalOpenManual(false);
+            onSuccess={(account) => {
+              setActiveAccountId(account.id);
+              setConnectModalOpen(false);
               setPollingWindowStartedAt(Date.now());
             }}
           />

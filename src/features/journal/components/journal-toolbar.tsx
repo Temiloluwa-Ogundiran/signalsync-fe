@@ -54,8 +54,12 @@ export function JournalToolbar({
     verification_failed: "Needs attention",
     bootstrap_failed: "Needs attention",
   };
-  const connectionLabel =
-    connectionState && connectionState !== "ready" ? stateLabelMap[connectionState] : null;
+  const connectionLabel = (() => {
+    if (!connectionState || connectionState === "ready") return null;
+    // If an account already synced before, don't regress UX to "verifying credentials".
+    if (connectionState === "pending_verification" && !!lastSyncedAt) return null;
+    return stateLabelMap[connectionState] ?? "Needs attention";
+  })();
 
   return (
     <section className="flex flex-col gap-4 border-b border-border-primary/35 pb-5 lg:flex-row lg:items-center lg:justify-between">
@@ -75,7 +79,6 @@ export function JournalToolbar({
         {connectionLabel ? (
           <p className="text-sm text-text-secondary">
             Connection status: <span className="font-medium text-text-primary">{connectionLabel}</span>
-            {connectionError ? ` - ${connectionError}` : ""}
           </p>
         ) : null}
       </div>

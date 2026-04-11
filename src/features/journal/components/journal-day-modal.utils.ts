@@ -78,10 +78,25 @@ export function buildProfitFactor(trades: JournalTrade[]) {
   return grossWins / grossLossAbs;
 }
 
-export function computeNetRoiPercent(trade: JournalTrade) {
-  const hasBackendRoi = trade.net_roi_percent != null;
+/**
+ * Net ROI %: prefer `net_profit / balance_before_trade` when the backend
+ * supplies equity-before-trade; otherwise use normalized `net_roi_percent`
+ * from the API (0–1 treated as fraction).
+ */
+export function computeNetRoiPercent(trade: JournalTrade): number | null {
+  const profit = asNumber(trade.net_profit);
+  const bal =
+    trade.balance_before_trade != null && trade.balance_before_trade !== ""
+      ? asNumber(trade.balance_before_trade)
+      : null;
 
-  if (hasBackendRoi) {
+  const direct =
+    bal != null && Math.abs(bal) > 1e-9 ? (profit / bal) * 100 : null;
+  if (direct != null) {
+    return direct;
+  }
+
+  if (trade.net_roi_percent != null) {
     const roi = asNumber(trade.net_roi_percent);
     return Math.abs(roi) <= 1 ? roi * 100 : roi;
   }

@@ -28,7 +28,11 @@ export function JournalTradeChatStatsCard({
     <Card className="h-full border-0 bg-card-bg">
       <CardHeader className="border-b border-border-secondary p-6">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-1 rounded-full bg-kpi-metric-positive" />
+          <div
+            className={`h-12 w-1 rounded-full ${
+              netPnl >= 0 ? "bg-kpi-metric-positive" : "bg-danger"
+            }`}
+          />
           <div>
             <p className="mb-1 text-sm font-semibold text-text-secondary">
               Net P&L

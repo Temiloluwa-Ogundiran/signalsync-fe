@@ -1,5 +1,6 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
+  JournalAnalyticsBalanceHistoryResponse,
   JournalAnalyticsCalendarResponse,
   JournalAnalyticsDashboardResponse,
   JournalAnalyticsInstrumentsResponse,
@@ -11,6 +12,10 @@ interface AnalyticsQueryParams {
   accountId?: string;
   fromDate: string;
   toDate: string;
+}
+
+interface BalanceHistoryQueryParams extends AnalyticsQueryParams {
+  granularity: "intraday" | "day";
 }
 
 export const journalAnalyticsApi = {
@@ -103,6 +108,25 @@ export const journalAnalyticsApi = {
           from_date: params.fromDate,
           to_date: params.toDate,
           recent_limit: 5,
+        },
+      },
+    );
+    return data;
+  },
+
+  getBalanceHistory: async (
+    params: BalanceHistoryQueryParams,
+    token?: string,
+  ): Promise<JournalAnalyticsBalanceHistoryResponse> => {
+    const { data } = await apiClient.get<JournalAnalyticsBalanceHistoryResponse>(
+      "/journal/analytics/balance-history",
+      {
+        ...withAuth(token),
+        params: {
+          ...(params.accountId ? { account_id: params.accountId } : {}),
+          from_date: params.fromDate,
+          to_date: params.toDate,
+          granularity: params.granularity,
         },
       },
     );
