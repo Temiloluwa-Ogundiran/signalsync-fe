@@ -81,7 +81,7 @@ export function JournalCalendarGrid({
               onClick={() => onSelectDay(day)}
               style={heatStyle(pnl, maxAbsDayPnl)}
               className={cn(
-                "min-h-22 rounded-md border border-border-primary/60 p-2 text-right transition-all",
+                "min-h-22 cursor-pointer rounded-md border border-border-primary/60 p-2 text-right transition-all",
                 day === selectedDay && "ring-2 ring-(--calendar-selected-ring)",
               )}
             >
@@ -110,4 +110,3 @@ export function JournalCalendarGrid({
     </div>
   );
 }
-

@@ -20,6 +20,8 @@ import {
   formatClock,
   formatCurrency,
 } from "./journal-day-modal.utils";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface JournalDayModalTradesTableProps {
   rows: JournalDayTradeRow[];
@@ -47,7 +49,7 @@ export function JournalDayModalTradesTable({
         accessorKey: "opened_at",
         header: "Open Time",
         cell: ({ row }) => (
-          <span className="text-text-secondary">
+          <span className="text-text-primary font-heading font-medium">
             {formatClock(row.original.opened_at)}
           </span>
         ),
@@ -56,7 +58,7 @@ export function JournalDayModalTradesTable({
         accessorKey: "closed_at",
         header: "Close Time",
         cell: ({ row }) => (
-          <span className="text-text-secondary">
+          <span className="text-text-primary font-heading font-medium">
             {formatClock(row.original.closed_at)}
           </span>
         ),
@@ -65,7 +67,7 @@ export function JournalDayModalTradesTable({
         accessorKey: "symbol",
         header: "Instrument",
         cell: ({ row }) => (
-          <span className="font-semibold text-text-primary">
+          <span className="font-medium text-text-primary font-heading">
             {row.original.symbol}
           </span>
         ),
@@ -74,7 +76,7 @@ export function JournalDayModalTradesTable({
         accessorKey: "direction",
         header: "Side",
         cell: ({ row }) => (
-          <span className="uppercase text-text-secondary">
+          <span className="uppercase text-text-primary font-medium font-heading">
             {row.original.direction}
           </span>
         ),
@@ -83,7 +85,7 @@ export function JournalDayModalTradesTable({
         accessorKey: "volume",
         header: "Volume",
         cell: ({ row }) => (
-          <span className="text-text-secondary">
+          <span className="text-text-primary font-medium font-heading">
             {asNumber(row.original.volume).toFixed(2)}
           </span>
         ),
@@ -95,7 +97,7 @@ export function JournalDayModalTradesTable({
           const net = asNumber(row.original.net_profit);
           return (
             <span
-              className={`font-semibold ${
+              className={`font-medium font-heading ${
                 net >= 0 ? "text-kpi-metric-positive" : "text-danger"
               }`}
             >
@@ -113,15 +115,7 @@ export function JournalDayModalTradesTable({
               ? null
               : asNumber(row.original.net_roi_percent);
           return (
-            <span
-              className={`font-semibold ${
-                roi == null
-                  ? "text-text-tertiary"
-                  : roi >= 0
-                    ? "text-kpi-metric-positive"
-                    : "text-danger"
-              }`}
-            >
+            <span className="font-medium text-text-primary font-heading">
               {roi == null ? "--" : `${roi.toFixed(2)}%`}
             </span>
           );
@@ -134,7 +128,7 @@ export function JournalDayModalTradesTable({
           <div className="text-left">
             <button
               onClick={() => onOpenTradeJournal(row.original.id)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+              className={`inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full border transition-colors ${
                 row.original.journalMessageCount > 0
                   ? "border-accent/40 bg-accent-light text-accent"
                   : "border-border-primary text-text-tertiary hover:text-accent"
@@ -142,7 +136,13 @@ export function JournalDayModalTradesTable({
               title="Open trade chat"
               aria-label="Open trade chat"
             >
-              <PencilLine className="h-4 w-4" />
+              <Image
+                src={"/icons/journal/modal/journal.svg"}
+                alt=""
+                width={20}
+                height={20}
+                className={cn("h-5 w-5")}
+              />
             </button>
           </div>
         ),
@@ -177,7 +177,7 @@ export function JournalDayModalTradesTable({
                     {headerGroup.headers.map((header, headerIndex) => (
                       <TableHead
                         key={header.id}
-                        className={`bg-bg-tertiary px-6 py-6 text-base font-bold text-text-primary ${
+                        className={`bg-bg-tertiary px-6 py-6 text-base font-bold text-text-primary font-heading ${
                           headerIndex === 0 ? "rounded-l-2xl pl-6" : ""
                         } ${
                           headerIndex === headerGroup.headers.length - 1

@@ -12,20 +12,18 @@ export function JournalDayModalHeader({
   summary,
 }: JournalDayModalHeaderProps) {
   return (
-    <DialogHeader className="border-b border-border-primary px-8 py-5">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <DialogTitle className="flex flex-wrap items-center gap-3 text-2xl font-bold text-text-primary">
-          <span>{dayTitle}</span>
-          <span className="inline-block size-2 rounded-full bg-text-tertiary/80" />
-          <span
-            className={
-              summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
-            }
-          >
-            Net P&L {formatCurrency(summary.grossPnl)}
-          </span>
-        </DialogTitle>
-      </div>
+    <DialogHeader className="border-b border-border-primary px-8 py-4 flex items-start justify-center">
+      <DialogTitle className="flex items-center font-heading gap-5 text-[24px] font-bold text-text-primary">
+        <span>{dayTitle}</span>
+        <span className="inline-block size-2 rounded-full bg-text-tertiary/80" />
+        <span
+          className={
+            summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
+          }
+        >
+          Net P&L {formatCurrency(summary.grossPnl)}
+        </span>
+      </DialogTitle>
     </DialogHeader>
   );
 }

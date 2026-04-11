@@ -33,7 +33,10 @@ export function JournalDayModal({
   const dayQuery = useJournalDay(accountId, tradingDate, open, {
     includeMessages: false,
   });
-  const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
+  const trades = useMemo(
+    () => dayQuery.data?.trades ?? [],
+    [dayQuery.data?.trades],
+  );
   const chipByTradeId = useMemo(
     () =>
       new Map(
@@ -96,7 +99,7 @@ export function JournalDayModal({
       <DialogContent className="h-[90vh] w-[95vw] max-w-[95vw] sm:max-w-[95vw] lg:max-w-[1500px] overflow-hidden rounded-3xl border border-border-primary bg-card-bg p-0">
         <JournalDayModalHeader dayTitle={dayTitle} summary={summary} />
 
-        <div className="flex h-[calc(90vh-180px)] min-h-0 flex-col overflow-hidden px-8">
+        <div className="flex h-[calc(90vh-188px)] min-h-0 flex-col overflow-hidden px-8">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
               <Loader2 className="h-4 w-4 animate-spin" />

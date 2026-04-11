@@ -63,14 +63,14 @@ export default function DashboardLayout({
           </>
         )}
 
-        <button
+        {/* <button
           type="button"
           onClick={() => setPostModalOpen(true)}
           className="fixed bottom-24 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg transition-all hover:scale-105 hover:bg-accent-hover hover:shadow-xl md:bottom-8 md:right-8"
           aria-label="Create post"
         >
           <Feather className="h-6 w-6" />
-        </button>
+        </button> */}
 
         <CreatePostModal
           open={postModalOpen}

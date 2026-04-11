@@ -9,17 +9,20 @@ interface JournalTradesPanelProps {
   isLoading?: boolean;
 }
 
-export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPanelProps) {
+export function JournalTradesPanel({
+  rows,
+  isLoading = false,
+}: JournalTradesPanelProps) {
   const [activeTab, setActiveTab] = useState<"recent" | "open">("recent");
   const activeRows = activeTab === "recent" ? rows : [];
 
   return (
     <section className="rounded-xl bg-card-bg ring-1 ring-border-primary/60">
-      <div className="flex items-center gap-2 border-b border-border-primary/60 px-4 pt-3">
+      <div className="flex items-center gap-4 border-b border-border-primary/60 px-4 pt-4 pb-2">
         <button
           onClick={() => setActiveTab("recent")}
           className={cn(
-            "pb-2 text-sm",
+            "pb-2 text-sm cursor-pointer",
             activeTab === "recent"
               ? "border-b-2 border-(--calendar-selected-ring) font-semibold text-(--calendar-selected-ring)"
               : "text-text-secondary",
@@ -27,17 +30,17 @@ export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPan
         >
           Recent Trades
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab("open")}
           className={cn(
-            "pb-2 text-sm",
+            "pb-2 text-sm cursor-pointer",
             activeTab === "open"
               ? "border-b-2 border-(--calendar-selected-ring) font-semibold text-(--calendar-selected-ring)"
               : "text-text-secondary",
           )}
         >
           Open Positions
-        </button>
+        </button> */}
       </div>
 
       <div className="px-4 py-3">
@@ -50,7 +53,10 @@ export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPan
         <div className="mt-2 divide-y divide-border-primary/60">
           {isLoading
             ? Array.from({ length: 5 }).map((_, idx) => (
-                <div key={`recent-trade-skeleton-${idx}`} className="grid grid-cols-3 py-3">
+                <div
+                  key={`recent-trade-skeleton-${idx}`}
+                  className="grid grid-cols-3 py-3"
+                >
                   <div className="h-5 animate-pulse rounded bg-bg-tertiary" />
                   <div className="mx-auto h-5 w-16 animate-pulse rounded bg-bg-tertiary" />
                   <div className="ml-auto h-5 w-20 animate-pulse rounded bg-bg-tertiary" />
@@ -59,11 +65,15 @@ export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPan
             : activeRows.map((row) => (
                 <div key={row.id} className="grid grid-cols-3 py-3 text-sm">
                   <span className="text-text-primary">{row.closeDate}</span>
-                  <span className="text-center text-text-primary">{row.symbol}</span>
+                  <span className="text-center text-text-primary">
+                    {row.symbol}
+                  </span>
                   <span
                     className={cn(
                       "text-right",
-                      row.netPnl >= 0 ? "text-kpi-metric-positive" : "text-danger",
+                      row.netPnl >= 0
+                        ? "text-kpi-metric-positive"
+                        : "text-danger",
                     )}
                   >
                     {row.netPnl < 0 ? "-" : ""}$
@@ -90,4 +100,3 @@ export function JournalTradesPanel({ rows, isLoading = false }: JournalTradesPan
     </section>
   );
 }
-
