@@ -90,7 +90,7 @@ export function JournalDayModal({
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
     router.push(
-      `/journal/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}`,
+      `/journal/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}&from=day&context=day`,
     );
   };
 

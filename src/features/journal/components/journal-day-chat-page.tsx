@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  useAdjacentTradedDates,
   useCreateJournalDayMessage,
   useCreateJournalTradeMessage,
   useJournalDay,
+  useMarkJournalDayReviewed,
   useTradeJournalMessages,
 } from "@/features/journal/hooks/use-journal-day-modal";
 import type { JournalMessage } from "@/features/journal/types";
@@ -25,6 +27,7 @@ import {
   formatDayLabel,
 } from "./journal-day-chat.utils";
 import { buildDaySummary } from "./journal-day-modal.utils";
+import { requestSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 
 export function JournalDayChatPage() {
   const router = useRouter();
@@ -40,6 +43,10 @@ export function JournalDayChatPage() {
   const [draftMessage, setDraftMessage] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+
+  useEffect(() => {
+    requestSkipNextJournalDashboardAutoSync();
+  }, []);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -60,6 +67,12 @@ export function JournalDayChatPage() {
   const createTradeMessage = useCreateJournalTradeMessage(
     accountId,
     tradingDate,
+  );
+  const markDayReviewed = useMarkJournalDayReviewed(accountId, tradingDate);
+  const adjacentDaysQuery = useAdjacentTradedDates(
+    accountId,
+    tradingDate,
+    !!accountId && !!tradingDate,
   );
   const isSending = createDayMessage.isPending || createTradeMessage.isPending;
 
@@ -174,9 +187,25 @@ export function JournalDayChatPage() {
 
   const onOpenTradeJournal = (id: string) => {
     if (!accountId || !tradingDate) return;
-    router.replace(
-      `/journal/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(id)}`,
-    );
+    const params = new URLSearchParams();
+    params.set("date", tradingDate);
+    params.set("tradeId", id);
+    params.set("from", "day");
+    params.set("context", chatContext);
+    router.push(`/journal/trade?${params.toString()}`);
+  };
+
+  const isDayReviewed = Boolean(dayQuery.data?.reviewed_at);
+
+  const navigateToTradingDate = (nextDate: string) => {
+    if (!accountId) return;
+    const params = new URLSearchParams();
+    params.set("date", nextDate);
+    params.set("context", chatContext);
+    if (chatContext === "trade" && tradeId) {
+      params.set("tradeId", tradeId);
+    }
+    router.push(`/journal/chat?${params.toString()}`);
   };
 
   if (!accountId || !tradingDate) {
@@ -193,9 +222,27 @@ export function JournalDayChatPage() {
         <JournalDayChatHeader
           dayLabel={dayLabel}
           onBack={() => router.back()}
+          isReviewed={isDayReviewed}
+          isMarkingReviewed={markDayReviewed.isPending}
+          markReviewDisabled={!dayQuery.data?.id}
+          onMarkReviewed={() => {
+            const id = dayQuery.data?.id;
+            if (!id) return;
+            void markDayReviewed.mutateAsync(id);
+          }}
+          canPrevDay={Boolean(adjacentDaysQuery.data?.prev_date)}
+          canNextDay={Boolean(adjacentDaysQuery.data?.next_date)}
+          onPrevDay={() => {
+            const d = adjacentDaysQuery.data?.prev_date;
+            if (d) navigateToTradingDate(d);
+          }}
+          onNextDay={() => {
+            const d = adjacentDaysQuery.data?.next_date;
+            if (d) navigateToTradingDate(d);
+          }}
         />
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,556px)_minmax(0,1056px)]">
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,556px)_minmax(0,1fr)]">
           <JournalDayChatRail
             messages={messages}
             prompts={prompts}
@@ -215,7 +262,7 @@ export function JournalDayChatPage() {
             onRemoveFile={() => setPendingFile(null)}
           />
 
-          <section className="space-y-4">
+          <section className="min-w-0 space-y-4">
             {isLoadingPage ? (
               <Card className="min-h-112">
                 <CardContent className="flex h-full items-center justify-center p-6 text-sm text-text-secondary">
@@ -224,37 +271,37 @@ export function JournalDayChatPage() {
                 </CardContent>
               </Card>
             ) : (
-              <>
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,520px)_minmax(0,520px)]">
-                  <div className="grid gap-4">
-                    <JournalDayChatPnlChartCard
-                      title="Running P&L"
-                      data={chartData}
-                      seriesKey="runningPnl"
-                    />
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,520px)_minmax(0,520px)]">
+                <div className="grid gap-4">
+                  <JournalDayChatPnlChartCard
+                    title="Running P&L"
+                    data={chartData}
+                    seriesKey="runningPnl"
+                  />
 
-                    <JournalDayChatPnlChartCard
-                      title="Account Balance"
-                      data={balanceCurveData}
-                      seriesKey="accountBalance"
-                    />
-                  </div>
-
-                  <JournalDayChatStatsCard
-                    metrics={metrics}
-                    netPnl={summary.grossPnl}
-                    pnlPercentLabel={pnlPercentLabel}
+                  <JournalDayChatPnlChartCard
+                    title="Account Balance"
+                    data={balanceCurveData}
+                    seriesKey="accountBalance"
                   />
                 </div>
 
-                <JournalDayChatTradesCard
-                  trades={trades}
-                  onOpenTradeJournal={onOpenTradeJournal}
+                <JournalDayChatStatsCard
+                  metrics={metrics}
+                  netPnl={summary.grossPnl}
+                  pnlPercentLabel={pnlPercentLabel}
                 />
-              </>
+              </div>
             )}
           </section>
         </div>
+
+        <JournalDayChatTradesCard
+          accountId={accountId}
+          tradingDate={tradingDate}
+          onOpenTradeJournal={onOpenTradeJournal}
+          className="w-full min-w-0"
+        />
       </div>
 
       <input

@@ -206,6 +206,7 @@ export interface JournalDailyResponse {
   id: string;
   trading_date: string;
   account_timezone: string;
+  reviewed_at?: string | null;
   day_start_balance: number | null;
   day_end_balance: number | null;
   trade_chips: JournalDailyTradeChip[];
@@ -227,6 +228,16 @@ export interface JournalTrade {
   closed_at: string;
   balance_before_trade?: number | string | null;
   net_roi_percent?: number | string | null;
+  trade_reviewed_at?: string | null;
+}
+
+export interface JournalAdjacentTradedDatesResponse {
+  prev_date: string | null;
+  next_date: string | null;
+}
+
+export interface JournalReviewedAtResponse {
+  reviewed_at: string;
 }
 
 export interface JournalTradeListResponse {

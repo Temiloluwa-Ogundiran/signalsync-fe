@@ -1,26 +1,22 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import {
   useCreateJournalTradeMessage,
   useJournalDayTrades,
+  useMarkJournalTradeReviewed,
   useTradeJournalMessages,
 } from "@/features/journal/hooks/use-journal-day-modal";
-import { JournalDayChatPnlChartCard } from "./journal-day-chat-pnl-chart-card";
 import { JournalDayChatRail } from "./journal-day-chat-rail";
 import type { ChatPrompt } from "./journal-day-chat.types";
 import { asNumber } from "./journal-day-modal.utils";
 import { JournalTradeChatHeader } from "./journal-trade-chat-header";
 import { JournalTradeChatStatsCard } from "./journal-trade-chat-stats-card";
-import {
-  buildTradeMetrics,
-  buildTradePercentCurve,
-  buildTradeRunningPnlCurve,
-  formatTradeHeaderDate,
-} from "./journal-trade-chat.utils";
+import { buildTradeMetrics, formatTradeHeaderDate } from "./journal-trade-chat.utils";
+import { requestSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 
 export function JournalTradeChatPage() {
   const router = useRouter();
@@ -29,10 +25,16 @@ export function JournalTradeChatPage() {
   const accountId = useResolvedJournalAccountId();
   const tradingDate = searchParams.get("date") ?? undefined;
   const tradeId = searchParams.get("tradeId") ?? undefined;
+  const fromParam = searchParams.get("from");
+  const contextParam = searchParams.get("context");
 
   const [draftMessage, setDraftMessage] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+
+  useEffect(() => {
+    requestSkipNextJournalDashboardAutoSync();
+  }, []);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -49,11 +51,24 @@ export function JournalTradeChatPage() {
     accountId,
     tradingDate,
   );
+  const markTradeReviewed = useMarkJournalTradeReviewed(accountId, tradingDate);
 
   const trades = useMemo(
     () => tradesQuery.data?.items ?? [],
     [tradesQuery.data?.items],
   );
+  const tradesChronological = useMemo(
+    () =>
+      [...trades].sort((a, b) => {
+        const byClose = a.closed_at.localeCompare(b.closed_at);
+        return byClose !== 0 ? byClose : a.id.localeCompare(b.id);
+      }),
+    [trades],
+  );
+  const tradeIndex = useMemo(() => {
+    if (!tradeId) return -1;
+    return tradesChronological.findIndex((item) => item.id === tradeId);
+  }, [tradeId, tradesChronological]);
   const trade = useMemo(
     () => trades.find((item) => item.id === tradeId),
     [tradeId, trades],
@@ -67,14 +82,6 @@ export function JournalTradeChatPage() {
   );
 
   const metrics = useMemo(() => buildTradeMetrics(trade), [trade]);
-  const runningPnlCurve = useMemo(
-    () => buildTradeRunningPnlCurve(trade),
-    [trade],
-  );
-  const percentGainCurve = useMemo(
-    () => buildTradePercentCurve(trade),
-    [trade],
-  );
   const prompts = useMemo<ChatPrompt[]>(
     () => [
       { id: "p1", label: "Why did this trade perform this way?" },
@@ -140,6 +147,38 @@ export function JournalTradeChatPage() {
     mediaRecorderRef.current.stop();
   };
 
+  const buildTradeHrefForId = useCallback(
+    (id: string) => {
+      if (!tradingDate) return "";
+      const params = new URLSearchParams();
+      params.set("date", tradingDate);
+      params.set("tradeId", id);
+      if (fromParam) params.set("from", fromParam);
+      if (contextParam) params.set("context", contextParam);
+      return `/journal/trade?${params.toString()}`;
+    },
+    [tradingDate, fromParam, contextParam],
+  );
+
+  const goToTradeAtIndex = (index: number) => {
+    const target = tradesChronological[index];
+    if (!accountId || !tradingDate || !target) return;
+    router.replace(buildTradeHrefForId(target.id));
+  };
+
+  const handleBack = useCallback(() => {
+    if (fromParam === "day" && tradingDate && tradeId) {
+      const ctx = contextParam ?? "trade";
+      router.push(
+        `/journal/chat?date=${encodeURIComponent(tradingDate)}&context=${encodeURIComponent(ctx)}&tradeId=${encodeURIComponent(tradeId)}`,
+      );
+      return;
+    }
+    router.back();
+  }, [contextParam, fromParam, router, tradeId, tradingDate]);
+
+  const isTradeReviewed = Boolean(trade?.trade_reviewed_at);
+
   if (!accountId || !tradingDate || !tradeId) {
     return (
       <div className="p-6 text-sm text-text-secondary">
@@ -154,7 +193,19 @@ export function JournalTradeChatPage() {
         <JournalTradeChatHeader
           symbol={trade?.symbol ?? "Trade"}
           subtitle={formatTradeHeaderDate(trade?.opened_at)}
-          onBack={() => router.back()}
+          onBack={handleBack}
+          isReviewed={isTradeReviewed}
+          isMarkingReviewed={markTradeReviewed.isPending}
+          onMarkReviewed={() => {
+            if (!tradeId) return;
+            void markTradeReviewed.mutateAsync(tradeId);
+          }}
+          canPrevTrade={tradeIndex > 0}
+          canNextTrade={
+            tradeIndex >= 0 && tradeIndex < tradesChronological.length - 1
+          }
+          onPrevTrade={() => goToTradeAtIndex(tradeIndex - 1)}
+          onNextTrade={() => goToTradeAtIndex(tradeIndex + 1)}
         />
 
         {isLoadingPage ? (
@@ -185,7 +236,7 @@ export function JournalTradeChatPage() {
               onContextChange={() => {}}
               onRemoveFile={() => setPendingFile(null)}
             />
-            <div className="grid gap-4">
+            {/* <div className="grid gap-4">
               <JournalDayChatPnlChartCard
                 title="Running P&L"
                 data={runningPnlCurve}
@@ -197,7 +248,7 @@ export function JournalTradeChatPage() {
                 seriesKey="runningPnl"
                 valueScale="percent"
               />
-            </div>
+            </div> */}
             <JournalTradeChatStatsCard
               metrics={metrics}
               netPnl={asNumber(trade?.net_profit)}

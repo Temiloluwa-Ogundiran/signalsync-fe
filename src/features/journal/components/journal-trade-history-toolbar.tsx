@@ -25,14 +25,14 @@ export function JournalTradeHistoryToolbar({
             className="h-12 rounded-full border-0 bg-bg-secondary pl-11 pr-4 text-base text-text-primary placeholder:text-text-tertiary"
           />
         </div>
-        <Button
+        {/* <Button
           variant="ghost"
           className="h-12 rounded-full bg-bg-secondary px-5 text-sm font-semibold text-text-primary hover:bg-bg-hover"
           type="button"
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filter
-        </Button>
+        </Button> */}
       </div>
 
       <div className="flex items-center gap-3">

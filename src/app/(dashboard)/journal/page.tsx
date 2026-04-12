@@ -35,6 +35,7 @@ import { JournalBalanceOverTimeWidget } from "@/features/journal/components/jour
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalBalanceHistoryAnalytics } from "@/features/journal/hooks/use-journal-analytics";
+import { consumeSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { cn } from "@/lib/utils";
 
@@ -102,6 +103,7 @@ function JournalPageContent() {
   } | null>(null);
   const hasShownNoAccountToastRef = useRef(false);
   const wasConnectionPendingRef = useRef(false);
+  const journalAutoSyncAttemptedForAccountRef = useRef<string | null>(null);
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
@@ -123,6 +125,7 @@ function JournalPageContent() {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
+  const activeAccountLastSyncedAt = activeAccount?.last_synced_at ?? null;
   const isConnectionPending = accounts.some(
     (account) =>
       account.connection_state === "pending_verification" ||
@@ -529,33 +532,51 @@ function JournalPageContent() {
   }, [dashboardQuery, refetchAccounts, syncUiState]);
 
   useEffect(() => {
+    journalAutoSyncAttemptedForAccountRef.current = null;
+  }, [activeAccountId]);
+
+  useEffect(() => {
     if (isAccountsLoading || !accounts.length || syncAccountMutation.isPending) {
       return;
     }
 
-    if (!activeAccount) {
+    const acct = accounts.find((account) => account.id === activeAccountId);
+    if (!acct) {
+      return;
+    }
+
+    const attemptKey = `${acct.id}:${acct.last_synced_at ?? ""}`;
+    if (journalAutoSyncAttemptedForAccountRef.current === attemptKey) {
+      return;
+    }
+
+    if (consumeSkipNextJournalDashboardAutoSync()) {
       return;
     }
 
     const referenceNowMs = Date.now();
-    const cooldownGuard = canRequestSync(activeAccount.id, referenceNowMs);
+    const cooldownGuard = canRequestSync(acct.id, referenceNowMs);
     if (!cooldownGuard.allowed) {
       return;
     }
 
-    const lastSyncedMs = activeAccount.last_synced_at
-      ? new Date(activeAccount.last_synced_at).getTime()
+    const lastSyncedMs = acct.last_synced_at
+      ? new Date(acct.last_synced_at).getTime()
       : 0;
     const hasNeverSynced = !lastSyncedMs || Number.isNaN(lastSyncedMs);
-    const isServerSyncStale = hasNeverSynced || referenceNowMs - lastSyncedMs >= AUTO_SYNC_THROTTLE_MS;
+    const isServerSyncStale =
+      hasNeverSynced || referenceNowMs - lastSyncedMs >= AUTO_SYNC_THROTTLE_MS;
     if (!isServerSyncStale) {
       return;
     }
 
-    void handleRefreshAccounts({ silent: true, accountId: activeAccount.id });
+    journalAutoSyncAttemptedForAccountRef.current = attemptKey;
+    void handleRefreshAccounts({ silent: true, accountId: acct.id });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid re-running on every accounts[] identity change; use length + lastSyncedAt
   }, [
-    accounts,
-    activeAccount,
+    accounts.length,
+    activeAccountId,
+    activeAccountLastSyncedAt,
     isAccountsLoading,
     syncAccountMutation.isPending,
   ]);

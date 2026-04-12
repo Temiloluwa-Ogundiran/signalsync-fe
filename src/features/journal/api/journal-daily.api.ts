@@ -1,8 +1,10 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
+  JournalAdjacentTradedDatesResponse,
   JournalCreateMessagePayload,
   JournalDailyResponse,
   JournalMessage,
+  JournalReviewedAtResponse,
 } from "../types";
 
 export const journalDailyApi = {
@@ -20,6 +22,33 @@ export const journalDailyApi = {
           include_messages: includeMessages,
         },
       },
+    );
+    return data;
+  },
+
+  getAdjacentTradedDates: async (
+    accountId: string,
+    tradingDate: string,
+    token?: string,
+  ): Promise<JournalAdjacentTradedDatesResponse> => {
+    const { data } = await apiClient.get<JournalAdjacentTradedDatesResponse>(
+      `/journal/daily/${accountId}/adjacent-traded-dates`,
+      {
+        ...withAuth(token),
+        params: { trading_date: tradingDate },
+      },
+    );
+    return data;
+  },
+
+  markDayReviewed: async (
+    dailyJournalId: string,
+    token?: string,
+  ): Promise<JournalReviewedAtResponse> => {
+    const { data } = await apiClient.post<JournalReviewedAtResponse>(
+      `/journal/daily/${dailyJournalId}/review`,
+      undefined,
+      withAuth(token),
     );
     return data;
   },

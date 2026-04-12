@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { invalidateJournalAnalyticsForAccount } from "./use-journal-analytics";
 import { journalDailyApi } from "../api/journal-daily.api";
 import { journalTradesApi } from "../api/journal-trades.api";
 import type { JournalCreateMessagePayload } from "../types";
@@ -15,6 +16,11 @@ export const JOURNAL_DAY_MODAL_KEYS = {
     ["journal-day", "trades", token, accountId, day] as const,
   tradeMessages: (token: string | undefined, tradeId?: string) =>
     ["journal-day", "trade-messages", token, tradeId] as const,
+  adjacentTradedDates: (
+    token: string | undefined,
+    accountId?: string,
+    day?: string,
+  ) => ["journal-day", "adjacent-traded", token, accountId, day] as const,
 };
 
 export function useJournalDay(
@@ -100,13 +106,23 @@ export function useCreateJournalDayMessage(
         session?.accessToken as string,
       ),
     onSuccess: () => {
+      const token = session?.accessToken;
       queryClient.invalidateQueries({
-        queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
-          session?.accessToken,
-          accountId,
-          tradingDate,
-        ),
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
       });
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
     },
   });
 }
@@ -132,12 +148,19 @@ export function useCreateJournalTradeMessage(
         session?.accessToken as string,
       ),
     onSuccess: (_data, variables) => {
+      const token = session?.accessToken;
       queryClient.invalidateQueries({
-        queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
-          session?.accessToken,
-          accountId,
-          tradingDate,
-        ),
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
       });
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
@@ -152,6 +175,9 @@ export function useCreateJournalTradeMessage(
           variables.tradeId,
         ),
       });
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
     },
   });
 }
@@ -174,5 +200,120 @@ export function useTradeJournalMessages(tradeId?: string, enabled = true) {
       status === "authenticated" &&
       !!session?.accessToken &&
       !!tradeId,
+  });
+}
+
+export function useAdjacentTradedDates(
+  accountId?: string,
+  tradingDate?: string,
+  enabled = true,
+) {
+  const { data: session, status } = useSession();
+
+  return useQuery({
+    queryKey: JOURNAL_DAY_MODAL_KEYS.adjacentTradedDates(
+      session?.accessToken,
+      accountId,
+      tradingDate,
+    ),
+    queryFn: () =>
+      journalDailyApi.getAdjacentTradedDates(
+        accountId as string,
+        tradingDate as string,
+        session?.accessToken as string,
+      ),
+    enabled:
+      enabled &&
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      !!accountId &&
+      !!tradingDate,
+    staleTime: 60_000,
+  });
+}
+
+export function useMarkJournalDayReviewed(
+  accountId?: string,
+  tradingDate?: string,
+) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (dailyJournalId: string) =>
+      journalDailyApi.markDayReviewed(
+        dailyJournalId,
+        session?.accessToken as string,
+      ),
+    onSuccess: () => {
+      const token = session?.accessToken;
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["journal-day", "adjacent-traded", token, accountId],
+      });
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
+  });
+}
+
+export function useMarkJournalTradeReviewed(
+  accountId?: string,
+  tradingDate?: string,
+) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (tradeId: string) =>
+      journalTradesApi.markTradeReviewed(
+        tradeId,
+        session?.accessToken as string,
+      ),
+    onSuccess: (_data, tradeId) => {
+      const token = session?.accessToken;
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
+      });
+      queryClient.invalidateQueries({
+        queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
+          session?.accessToken,
+          accountId,
+          tradingDate,
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
+          session?.accessToken,
+          tradeId,
+        ),
+      });
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
   });
 }

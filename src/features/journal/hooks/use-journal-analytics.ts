@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { type QueryClient, useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
 import { journalTradesApi } from "../api/journal-trades.api";
@@ -7,6 +7,23 @@ interface AnalyticsQueryInput {
   accountId?: string;
   fromDate: string;
   toDate: string;
+}
+
+/** Refetch calendar/dashboard after journal review or messages change. */
+export function invalidateJournalAnalyticsForAccount(
+  queryClient: QueryClient,
+  accountId: string,
+) {
+  queryClient.invalidateQueries({
+    predicate: (q) => {
+      const k = q.queryKey;
+      return (
+        Array.isArray(k) &&
+        k[0] === "journal-analytics" &&
+        k[2] === accountId
+      );
+    },
+  });
 }
 
 export const JOURNAL_ANALYTICS_KEYS = {

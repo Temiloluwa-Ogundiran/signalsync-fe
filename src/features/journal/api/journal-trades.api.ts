@@ -2,6 +2,7 @@ import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   JournalCreateMessagePayload,
   JournalMessage,
+  JournalReviewedAtResponse,
   JournalTradeListResponse,
 } from "../types";
 
@@ -95,6 +96,18 @@ export const journalTradesApi = {
       },
     );
 
+    return data;
+  },
+
+  markTradeReviewed: async (
+    tradeId: string,
+    token?: string,
+  ): Promise<JournalReviewedAtResponse> => {
+    const { data } = await apiClient.post<JournalReviewedAtResponse>(
+      `/journal/trades/${tradeId}/review`,
+      undefined,
+      withAuth(token),
+    );
     return data;
   },
 };
