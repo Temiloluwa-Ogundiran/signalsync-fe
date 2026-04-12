@@ -85,6 +85,17 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Journal voice bubble (neutral, light) */
+  --journal-voice-outer: rgba(15, 23, 42, 0.06);
+  --journal-voice-inner: #ffffff;
+  --journal-voice-play-bg: #0f172a;
+  --journal-voice-play-fg: #f8fafc;
+  --journal-voice-bar: #0f172a;
+  --journal-voice-time: #64748b;
+  --journal-voice-speed-bg: rgba(15, 23, 42, 0.08);
+  --journal-voice-speed-fg: #0f172a;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -210,6 +221,16 @@
   --kpi-legend-be-fg: #818cf8;
   --kpi-legend-loss-bg: #7f1d1d;
   --kpi-legend-loss-fg: #f87171;
+
+  /* Journal voice bubble (neutral, dark) */
+  --journal-voice-outer: rgba(255, 255, 255, 0.08);
+  --journal-voice-inner: #2a2a2a;
+  --journal-voice-play-bg: #fafafa;
+  --journal-voice-play-fg: #0a0a0a;
+  --journal-voice-bar: #e5e5e5;
+  --journal-voice-time: #a3a3a3;
+  --journal-voice-speed-bg: rgba(255, 255, 255, 0.12);
+  --journal-voice-speed-fg: #fafafa;
 
   /* shadcn tokens (oklch from hex) */
   --background: oklch(0.159 0 0);

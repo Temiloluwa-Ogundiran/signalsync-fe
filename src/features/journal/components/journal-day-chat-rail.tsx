@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image as ImageIcon,
   Loader2,
@@ -19,6 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatRailProps } from "./journal-day-chat.types";
 import type { JournalAttachment } from "@/features/journal/types";
+import { JournalVoiceMessagePlayer } from "./journal-voice-message-player";
 
 function isImageAttachment(attachment: JournalAttachment): boolean {
   const mime = attachment.mime_type?.toLowerCase() ?? "";
@@ -57,6 +58,20 @@ export function JournalDayChatRail({
     src: string;
     alt: string;
   } | null>(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    /* Object URL lifecycle: create/revoke in effect for Strict Mode correctness. */
+    /* eslint-disable react-hooks/set-state-in-effect -- blob preview URL sync */
+    if (!pendingFile || !pendingFile.type.startsWith("image/")) {
+      setPendingPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPendingPreviewUrl(url);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
 
   const canSend = Boolean(draftMessage.trim() || pendingFile);
 
@@ -98,18 +113,75 @@ export function JournalDayChatRail({
         ) : messages.length ? (
           messages.map((message) => {
             const isSystem = message.message_type === "system";
-            const bubbleClass = isSystem
-              ? "inline-block rounded-full bg-bg-tertiary px-3 py-1 text-xs text-text-tertiary"
-              : "max-w-[92%] rounded-[2.75rem] bg-bg-tertiary px-6 py-5 text-sm text-text-primary";
+            const systemBubbleClass =
+              "inline-block rounded-full bg-bg-tertiary px-3 py-1 text-xs text-text-tertiary";
+            const textBubbleClass =
+              "w-full max-w-full rounded-[2.75rem] bg-bg-tertiary px-6 py-5 text-sm text-text-primary";
+
+            if (isSystem) {
+              return (
+                <div key={message.id} className="text-center">
+                  <div className={systemBubbleClass}>
+                    {message.attachments?.length ? (
+                      <div className="mb-2 space-y-2">
+                        {message.attachments.map((attachment) => {
+                          const alt =
+                            attachment.original_filename || "journal attachment";
+                          if (isImageAttachment(attachment)) {
+                            return (
+                              <button
+                                key={attachment.id}
+                                type="button"
+                                className="block w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                                aria-label="View image"
+                                onClick={() =>
+                                  setAttachmentPreview({
+                                    src: attachment.signed_url,
+                                    alt,
+                                  })
+                                }
+                              >
+                                <img
+                                  src={attachment.signed_url}
+                                  alt={alt}
+                                  className="max-h-64 w-full rounded-xl object-cover"
+                                />
+                              </button>
+                            );
+                          }
+                          return (
+                            <img
+                              key={attachment.id}
+                              src={attachment.signed_url}
+                              alt={alt}
+                              className="max-h-64 w-full rounded-xl object-cover"
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                    {message.audio_url ? (
+                      <div className="max-w-full">
+                        <JournalVoiceMessagePlayer
+                          key={message.id}
+                          messageId={message.id}
+                          audioUrl={message.audio_url}
+                        />
+                      </div>
+                    ) : null}
+                    {message.content ? <p>{message.content}</p> : null}
+                  </div>
+                </div>
+              );
+            }
+
+            const trimmedText = message.content?.trim() ?? "";
 
             return (
-              <div
-                key={message.id}
-                className={isSystem ? "text-center" : "flex justify-start"}
-              >
-                <div className={bubbleClass}>
+              <div key={message.id} className="flex justify-start">
+                <div className="flex max-w-[92%] flex-col gap-2">
                   {message.attachments?.length ? (
-                    <div className="mb-2 space-y-2">
+                    <div className="space-y-2">
                       {message.attachments.map((attachment) => {
                         const alt =
                           attachment.original_filename || "journal attachment";
@@ -148,14 +220,20 @@ export function JournalDayChatRail({
                   ) : null}
 
                   {message.audio_url ? (
-                    <audio
-                      controls
-                      src={message.audio_url}
-                      className="max-w-full"
-                    />
+                    <div className="max-w-full">
+                      <JournalVoiceMessagePlayer
+                        key={message.id}
+                        messageId={message.id}
+                        audioUrl={message.audio_url}
+                      />
+                    </div>
                   ) : null}
 
-                  {message.content ? <p>{message.content}</p> : null}
+                  {trimmedText ? (
+                    <div className={textBubbleClass}>
+                      <p>{trimmedText}</p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -185,11 +263,31 @@ export function JournalDayChatRail({
         </div> */}
 
         {pendingFile ? (
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-bg-tertiary px-3 py-1 text-xs text-text-secondary">
-            {pendingFile.name}
+          <div className="mb-2 flex flex-wrap items-center gap-3 rounded-xl bg-bg-tertiary p-2 text-xs text-text-secondary">
+            {pendingPreviewUrl && pendingFile.type.startsWith("image/") ? (
+              <button
+                type="button"
+                className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-0 p-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="Preview attached image"
+                onClick={() =>
+                  setAttachmentPreview({
+                    src: pendingPreviewUrl,
+                    alt: pendingFile.name || "Attached image",
+                  })
+                }
+              >
+                <img
+                  src={pendingPreviewUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ) : null}
+            <span className="min-w-0 flex-1 truncate">{pendingFile.name}</span>
             <button
+              type="button"
               onClick={onRemoveFile}
-              className="text-text-tertiary hover:text-text-primary"
+              className="shrink-0 text-text-tertiary hover:text-text-primary"
             >
               remove
             </button>
