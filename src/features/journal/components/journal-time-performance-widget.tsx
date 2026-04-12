@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CircleHelp } from "lucide-react";
+import { JournalHoverHelpIcon } from "./journal-hover-help-icon";
 import {
   Bar,
   BarChart,
@@ -24,9 +24,16 @@ type TimePerformancePoint = {
 interface JournalTimePerformanceWidgetProps {
   hourly: JournalAnalyticsTimePerformancePoint[];
   daily: JournalAnalyticsTimePerformancePoint[];
+  /** Tighter layout when shown beside other analytics widgets. */
+  compact?: boolean;
 }
 
-function mapSeries(points: JournalAnalyticsTimePerformancePoint[]): TimePerformancePoint[] {
+const TRADE_TIME_PERFORMANCE_HELP =
+  "Net P&L summed by when trades were closed in your account timezone. Hourly groups by clock hour; Daily groups by weekday. Bar height is total P&L for that bucket—green is net positive, red is net negative.";
+
+function mapSeries(
+  points: JournalAnalyticsTimePerformancePoint[],
+): TimePerformancePoint[] {
   return points.map((point) => ({
     bucket: point.bucket,
     pnl: Number.isFinite(point.total_pnl) ? point.total_pnl : 0,
@@ -99,6 +106,7 @@ function RoundedBarShape(props: {
 export function JournalTimePerformanceWidget({
   hourly,
   daily,
+  compact = false,
 }: JournalTimePerformanceWidgetProps) {
   const [mode, setMode] = useState<"hourly" | "daily">("hourly");
   const data = mode === "hourly" ? mapSeries(hourly) : mapSeries(daily);
@@ -111,19 +119,28 @@ export function JournalTimePerformanceWidget({
   const paddedMax = Math.max(1_000, Math.ceil((maxAbs * 1.2) / 1000) * 1000);
 
   return (
-    <section className="rounded-xl bg-kpi-card-bg ring-1 ring-border-primary/60">
-      <header className="border-b border-border-secondary px-4 py-4">
+    <section className="flex h-full min-h-0 flex-col justify-between rounded-xl bg-kpi-card-bg ring-1 ring-border-primary/60">
+      <header
+        className={cn(
+          "shrink-0 border-b border-border-secondary px-4",
+          compact ? "py-3" : "py-4",
+        )}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="text-base font-semibold text-text-primary">
               Trade Time Performance
             </h3>
-            <CircleHelp className="h-4 w-4 text-text-tertiary" />
+            <JournalHoverHelpIcon
+              ariaLabel={TRADE_TIME_PERFORMANCE_HELP}
+              side="above"
+              tooltip={TRADE_TIME_PERFORMANCE_HELP}
+            />
           </div>
         </div>
       </header>
 
-      <div className="px-4 pb-4 pt-2">
+      <div className="min-h-0 flex-1 px-4 pb-4 pt-2">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -151,7 +168,7 @@ export function JournalTimePerformanceWidget({
           </button>
         </div>
 
-        <div className="h-88 w-full pt-3">
+        <div className={cn("w-full pt-3", compact ? "h-80" : "h-80")}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}

@@ -107,7 +107,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
-          recent_limit: 5,
+          recent_limit: 8,
         },
       },
     );

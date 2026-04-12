@@ -2,7 +2,7 @@
 
 import { Info } from "lucide-react";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { JournalHoverHelpIcon } from "./journal-hover-help-icon";
 
 interface JournalKpiInfoProps {
   title: string;
@@ -10,25 +10,22 @@ interface JournalKpiInfoProps {
 }
 
 export function JournalKpiInfo({ title, description }: JournalKpiInfoProps) {
+  const ariaLabel = `${title}. ${description}`;
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-footnote-online opacity-80 transition-opacity hover:opacity-100"
-          aria-label={`${title} info`}
-        >
-          <Info className="size-4" strokeWidth={2} />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={8}
-        className="max-w-64 border-chrome-control-border bg-card-bg p-3"
-      >
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
-        <p className="mt-1 text-xs leading-relaxed text-text-secondary">{description}</p>
-      </PopoverContent>
-    </Popover>
+    <JournalHoverHelpIcon
+      ariaLabel={ariaLabel}
+      side="below"
+      icon={Info}
+      iconClassName="text-footnote-online opacity-80 group-hover:opacity-100"
+      tooltip={
+        <>
+          <p className="text-sm font-semibold text-text-primary">{title}</p>
+          <p className="mt-1 text-xs font-normal leading-relaxed text-text-secondary">
+            {description}
+          </p>
+        </>
+      }
+    />
   );
 }

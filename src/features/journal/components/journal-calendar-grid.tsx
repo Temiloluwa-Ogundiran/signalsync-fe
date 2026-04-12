@@ -1,5 +1,9 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 import type { JournalCalendarDayStat } from "../types";
+
+const JOURNAL_CELL_ICON_SRC = "/icons/journal/modal/journal.svg";
 
 interface JournalCalendarGridProps {
   dayStats: Record<number, JournalCalendarDayStat>;
@@ -81,10 +85,23 @@ export function JournalCalendarGrid({
               onClick={() => onSelectDay(day)}
               style={heatStyle(pnl, maxAbsDayPnl)}
               className={cn(
-                "min-h-22 cursor-pointer rounded-md border border-border-primary/60 p-2 text-right transition-all",
+                "relative min-h-22 cursor-pointer rounded-md border border-border-primary/60 p-2 text-right transition-all",
                 day === selectedDay && "ring-2 ring-(--calendar-selected-ring)",
               )}
             >
+              {stats?.hasJournalActivity ? (
+                <span className="pointer-events-none absolute left-1 top-1 z-1 flex h-4 w-4 items-center justify-center opacity-95">
+                  <Image
+                    src={JOURNAL_CELL_ICON_SRC}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="object-contain"
+                    unoptimized
+                    aria-hidden
+                  />
+                </span>
+              ) : null}
               <p className="text-[0.65rem] text-text-primary">{day}</p>
               {stats ? (
                 <>

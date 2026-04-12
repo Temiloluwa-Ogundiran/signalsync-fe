@@ -36,6 +36,7 @@ import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-r
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalBalanceHistoryAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+import { cn } from "@/lib/utils";
 
 const AUTO_SYNC_THROTTLE_MS = 5 * 60 * 1000;
 
@@ -51,6 +52,17 @@ function parseDateParam(value: string | null) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed;
+}
+
+/** Inclusive rolling window: `days` calendar days ending today (local). */
+function getLastDaysInclusiveRange(days: number) {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - (days - 1));
+  return {
+    fromDate: formatDateParam(from),
+    toDate: formatDateParam(to),
+  };
 }
 
 type BalanceRangeOption = "1D" | "1W" | "1M" | "1Y" | "All";
@@ -140,12 +152,13 @@ function JournalPageContent() {
   const queryFromDate = parseDateParam(searchParams.get("fromDate"));
   const queryToDate = parseDateParam(searchParams.get("toDate"));
   const hasCustomRange = !!queryFromDate && !!queryToDate;
+  const rollingDefaultRange = getLastDaysInclusiveRange(30);
   const fromDate = hasCustomRange
     ? formatDateParam(queryFromDate)
-    : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1));
+    : rollingDefaultRange.fromDate;
   const toDate = hasCustomRange
     ? formatDateParam(queryToDate)
-    : formatDateParam(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0));
+    : rollingDefaultRange.toDate;
 
   const dashboardQuery = useJournalDashboardAnalytics({
     accountId:
@@ -189,7 +202,7 @@ function JournalPageContent() {
         pnl: day.total_pnl,
         trades: day.trade_count,
         winRate: day.trade_count ? (day.win_count / day.trade_count) * 100 : 0,
-        hasJournal: day.trade_count > 0,
+        hasJournalActivity: Boolean(day.has_journal_activity),
       };
     }
 
@@ -553,6 +566,11 @@ function JournalPageContent() {
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
+  const showJournalSymbols = widgetRegistry.some((widget) => widget.id === "symbols");
+  const showTimePerformance = widgetRegistry.some((widget) => widget.id === "timePerformance");
+  const showBalanceHistory = widgetRegistry.some((widget) => widget.id === "balanceHistory");
+  const analyticsRowCount =
+    Number(showJournalSymbols) + Number(showTimePerformance) + Number(showBalanceHistory);
 
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
@@ -597,24 +615,44 @@ function JournalPageContent() {
         ) : null}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[32%_1fr]">
-        {widgetRegistry.some((widget) => widget.id === "symbols") ? (
-          <JournalSymbolsWidget instruments={instrumentsAnalytics?.instruments ?? []} />
-        ) : null}
-        {widgetRegistry.some((widget) => widget.id === "timePerformance") ? (
-          <JournalTimePerformanceWidget
-            hourly={timePerformanceAnalytics?.hourly ?? []}
-            daily={timePerformanceAnalytics?.daily ?? []}
-          />
-        ) : null}
-      </div>
-      {widgetRegistry.some((widget) => widget.id === "balanceHistory") ? (
-        <JournalBalanceOverTimeWidget
-          points={balanceHistoryQuery.data?.points ?? []}
-          isLoading={balanceHistoryQuery.isLoading}
-          selectedRange={balanceRange}
-          onRangeChange={setBalanceRange}
-        />
+      {analyticsRowCount > 0 ? (
+        <div
+          className={cn(
+            "grid min-w-0 gap-3 xl:items-stretch",
+            analyticsRowCount === 1 && "xl:grid-cols-1",
+            analyticsRowCount === 2 && "xl:grid-cols-2",
+            analyticsRowCount >= 3 && "xl:grid-cols-3",
+          )}
+        >
+          {showJournalSymbols ? (
+            <div className="min-h-0 min-w-0">
+              <JournalSymbolsWidget
+                compact
+                instruments={instrumentsAnalytics?.instruments ?? []}
+              />
+            </div>
+          ) : null}
+          {showTimePerformance ? (
+            <div className="min-h-0 min-w-0">
+              <JournalTimePerformanceWidget
+                compact
+                hourly={timePerformanceAnalytics?.hourly ?? []}
+                daily={timePerformanceAnalytics?.daily ?? []}
+              />
+            </div>
+          ) : null}
+          {showBalanceHistory ? (
+            <div className="min-h-0 min-w-0">
+              <JournalBalanceOverTimeWidget
+                compact
+                points={balanceHistoryQuery.data?.points ?? []}
+                isLoading={balanceHistoryQuery.isLoading}
+                selectedRange={balanceRange}
+                onRangeChange={setBalanceRange}
+              />
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>

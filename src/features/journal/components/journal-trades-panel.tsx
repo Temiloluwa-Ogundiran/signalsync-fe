@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { JournalTradesPanelRow } from "../types";
@@ -52,7 +53,7 @@ export function JournalTradesPanel({
 
         <div className="mt-2 divide-y divide-border-primary/60">
           {isLoading
-            ? Array.from({ length: 5 }).map((_, idx) => (
+            ? Array.from({ length: 8 }).map((_, idx) => (
                 <div
                   key={`recent-trade-skeleton-${idx}`}
                   className="grid grid-cols-3 py-3"
@@ -93,9 +94,12 @@ export function JournalTradesPanel({
           </p>
         ) : null}
 
-        <button className="mt-2 w-full text-center text-sm font-semibold text-(--calendar-selected-ring)">
+        <Link
+          href="/trade-history"
+          className="mt-2 block w-full text-center text-sm font-semibold text-(--calendar-selected-ring) transition-colors hover:opacity-90"
+        >
           View more
-        </button>
+        </Link>
       </div>
     </section>
   );

@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/table";
 import { asNumber } from "./journal-day-modal.utils";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface JournalTradeHistoryTableProps {
   rows: TradeHistoryRow[];
@@ -133,9 +135,15 @@ export function JournalTradeHistoryTable({
             type="button"
             onClick={() => onOpenJournal(row.original)}
             aria-label="Open trade journal"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-text-primary transition-colors hover:bg-bg-hover"
+            className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-text-primary transition-colors hover:bg-bg-hover"
           >
-            <FilePenLine className="h-4 w-4" />
+            <Image
+              src={"/icons/journal/modal/journal.svg"}
+              alt=""
+              width={24}
+              height={24}
+              className={cn("h-5 w-5")}
+            />
           </button>
         ),
       },
@@ -186,7 +194,10 @@ export function JournalTradeHistoryTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-6">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

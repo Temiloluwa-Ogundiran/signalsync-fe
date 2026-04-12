@@ -3,7 +3,8 @@ export interface JournalCalendarDayStat {
   pnl: number;
   trades: number;
   winRate: number;
-  hasJournal: boolean;
+  /** True when the user has non-system journal notes on that day (daily or trade). */
+  hasJournalActivity: boolean;
 }
 
 export type TradingPlatform = "MT5";
@@ -71,6 +72,7 @@ export interface JournalAnalyticsCalendarDay {
   win_count: number;
   loss_count: number;
   outcome: "win" | "loss" | "breakeven" | "no_trades";
+  has_journal_activity?: boolean;
 }
 
 export interface JournalAnalyticsCalendarResponse {

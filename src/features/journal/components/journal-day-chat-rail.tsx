@@ -98,7 +98,7 @@ export function JournalDayChatRail({
       </div>
 
       <div className="border-t border-border-secondary p-4">
-        <div className="mb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+        {/* <div className="mb-3 flex gap-2 overflow-x-auto scrollbar-hide">
           {prompts.map((prompt) => (
             <Button
               key={prompt.id}
@@ -110,7 +110,7 @@ export function JournalDayChatRail({
               {prompt.label}
             </Button>
           ))}
-        </div>
+        </div> */}
 
         {pendingFile ? (
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-bg-tertiary px-3 py-1 text-xs text-text-secondary">

@@ -4,10 +4,13 @@ import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import type { JournalAnalyticsInstrumentItem } from "../types";
 
 interface JournalSymbolsWidgetProps {
   instruments: JournalAnalyticsInstrumentItem[];
+  /** Tighter layout when shown beside other analytics widgets. */
+  compact?: boolean;
 }
 
 function SymbolFrequencyTooltip({
@@ -33,7 +36,10 @@ function SymbolFrequencyTooltip({
   );
 }
 
-export function JournalSymbolsWidget({ instruments }: JournalSymbolsWidgetProps) {
+export function JournalSymbolsWidget({
+  instruments,
+  compact = false,
+}: JournalSymbolsWidgetProps) {
   const nonZero = instruments
     .filter((item) => item.trade_count > 0)
     .sort((a, b) => b.trade_count - a.trade_count)
@@ -55,21 +61,39 @@ export function JournalSymbolsWidget({ instruments }: JournalSymbolsWidgetProps)
   );
 
   return (
-    <section className="rounded-xl bg-card-bg ring-1 ring-border-primary/60">
-      <header className="flex items-center justify-between border-b border-border-primary/60 px-4 py-3">
+    <section className="flex h-full min-h-0 flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60">
+      <header
+        className={cn(
+          "flex shrink-0 items-center justify-between border-b border-border-primary/60 px-4",
+          compact ? "py-2.5" : "py-3",
+        )}
+      >
         <h3 className="text-base font-semibold text-text-primary">
           Symbols Traded
         </h3>
       </header>
       {chartData.length === 0 ? (
-        <div className="p-6 text-center text-sm text-text-secondary">
+        <div
+          className={cn(
+            "text-center text-sm text-text-secondary",
+            compact ? "p-4" : "p-6",
+          )}
+        >
           No symbol data for this period.
         </div>
       ) : (
-        <div className="flex items-center justify-center p-6">
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 items-center justify-center",
+            compact ? "p-3" : "p-6",
+          )}
+        >
           <ChartContainer
             config={chartConfig}
-            className="mx-auto aspect-square w-full max-w-xs"
+            className={cn(
+              "mx-auto aspect-square w-full max-w-xs",
+              compact && "max-h-[min(100%,14rem)]",
+            )}
           >
             <PieChart>
               <Tooltip cursor={false} content={<SymbolFrequencyTooltip />} />

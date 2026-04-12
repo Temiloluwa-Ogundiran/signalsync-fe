@@ -35,7 +35,7 @@ export function JournalTradeHistoryToolbar({
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-3">
         <Button
           type="button"
           className="h-12 rounded-full bg-accent px-6 text-sm font-semibold text-white hover:bg-accent-hover"
@@ -43,14 +43,14 @@ export function JournalTradeHistoryToolbar({
           <Plus className="h-4 w-4" />
           Journal Day
         </Button>
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           className="h-12 rounded-full border-2 border-chrome-control-border bg-bg-secondary px-6 text-sm font-semibold text-text-primary hover:bg-bg-hover"
         >
           <Download className="h-4 w-4" />
           Export Stats
-        </Button>
+        </Button> */}
       </div>
     </section>
   );

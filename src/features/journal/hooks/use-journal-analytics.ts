@@ -164,7 +164,7 @@ export function useJournalRecentTrades({
         accountId as string,
         fromDate,
         toDate,
-        5,
+        8,
         session?.accessToken as string,
       ),
     enabled:
