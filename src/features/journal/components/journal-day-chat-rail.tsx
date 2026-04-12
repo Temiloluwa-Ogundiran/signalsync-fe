@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
+import { useState } from "react";
 import {
   Image as ImageIcon,
   Loader2,
@@ -10,8 +11,21 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatRailProps } from "./journal-day-chat.types";
+import type { JournalAttachment } from "@/features/journal/types";
+
+function isImageAttachment(attachment: JournalAttachment): boolean {
+  const mime = attachment.mime_type?.toLowerCase() ?? "";
+  if (mime.startsWith("image/")) return true;
+  const media = attachment.media_type?.toLowerCase() ?? "";
+  return media.startsWith("image/");
+}
 
 export function JournalDayChatRail({
   messages,
@@ -34,8 +48,42 @@ export function JournalDayChatRail({
   subtitle = "Review your trade with text, image, and voice notes.",
   composerPlaceholder = "How did your day go...",
 }: ChatRailProps) {
+  void prompts;
+  void hasTrade;
+  void onPromptClick;
+  void onContextChange;
+
+  const [attachmentPreview, setAttachmentPreview] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
+
+  const canSend = Boolean(draftMessage.trim() || pendingFile);
+
   return (
     <Card className="flex h-[calc(100vh-12rem)] min-h-176 flex-col rounded-2xl border-l border-border-secondary bg-card-bg">
+      <Dialog
+        open={!!attachmentPreview}
+        onOpenChange={(open) => {
+          if (!open) setAttachmentPreview(null);
+        }}
+      >
+        <DialogContent
+          overlayClassName="bg-black/80 supports-backdrop-filter:backdrop-blur-xs"
+          showCloseButton
+          className="max-h-[min(92vh,900px)] max-w-[min(96vw,1200px)] gap-0 border-0 bg-transparent p-2 shadow-none ring-0 sm:max-w-[min(96vw,1200px)] [&>button]:text-white [&>button]:hover:bg-white/10"
+        >
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          {attachmentPreview ? (
+            <img
+              src={attachmentPreview.src}
+              alt={attachmentPreview.alt}
+              className="max-h-[85vh] w-full rounded-lg object-contain"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       <div className="border-b border-border-secondary p-4">
         <p className="font-heading text-xl text-text-primary">{title}</p>
         <p className="text-xs text-text-secondary">{subtitle}</p>
@@ -62,16 +110,40 @@ export function JournalDayChatRail({
                 <div className={bubbleClass}>
                   {message.attachments?.length ? (
                     <div className="mb-2 space-y-2">
-                      {message.attachments.map((attachment) => (
-                        <img
-                          key={attachment.id}
-                          src={attachment.signed_url}
-                          alt={
-                            attachment.original_filename || "journal attachment"
-                          }
-                          className="max-h-64 w-full rounded-xl object-cover"
-                        />
-                      ))}
+                      {message.attachments.map((attachment) => {
+                        const alt =
+                          attachment.original_filename || "journal attachment";
+                        if (isImageAttachment(attachment)) {
+                          return (
+                            <button
+                              key={attachment.id}
+                              type="button"
+                              className="block w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                              aria-label="View image"
+                              onClick={() =>
+                                setAttachmentPreview({
+                                  src: attachment.signed_url,
+                                  alt,
+                                })
+                              }
+                            >
+                              <img
+                                src={attachment.signed_url}
+                                alt={alt}
+                                className="max-h-64 w-full rounded-xl object-cover"
+                              />
+                            </button>
+                          );
+                        }
+                        return (
+                          <img
+                            key={attachment.id}
+                            src={attachment.signed_url}
+                            alt={alt}
+                            className="max-h-64 w-full rounded-xl object-cover"
+                          />
+                        );
+                      })}
                     </div>
                   ) : null}
 
@@ -138,37 +210,56 @@ export function JournalDayChatRail({
           <Textarea
             value={draftMessage}
             onChange={(event) => onDraftChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || event.shiftKey) return;
+              event.preventDefault();
+              if (!canSend || isSending || isRecording) return;
+              onSend();
+            }}
             rows={1}
             placeholder={composerPlaceholder}
             className="min-h-10 border-0 bg-transparent py-2 shadow-none focus-visible:ring-0"
           />
 
-          <Button
-            size="icon"
-            className="rounded-full bg-accent text-white hover:bg-accent-hover"
-            onClick={onRecordToggle}
-            disabled={isSending}
-            title={isRecording ? "Stop recording" : "Record voice note"}
-          >
-            {isRecording ? (
-              <Square className="h-4 w-4" />
-            ) : (
+          {isRecording ? (
+            <Button
+              size="icon"
+              className="rounded-full bg-accent text-white hover:bg-accent-hover"
+              onClick={onRecordToggle}
+              disabled={isSending}
+              title="Stop recording"
+            >
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+            </Button>
+          ) : canSend ? (
+            <Button
+              size="icon"
+              className="rounded-full bg-primary text-primary-foreground"
+              onClick={onSend}
+              disabled={isSending}
+              title="Send message"
+            >
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <SendHorizontal className="h-4 w-4" />
+              )}
+            </Button>
+          ) : (
+            <Button
+              size="icon"
+              className="rounded-full bg-accent text-white hover:bg-accent-hover"
+              onClick={onRecordToggle}
+              disabled={isSending}
+              title="Record voice note"
+            >
               <Mic className="h-4 w-4" />
-            )}
-          </Button>
-
-          <Button
-            size="icon"
-            className="rounded-full bg-primary text-primary-foreground"
-            onClick={onSend}
-            disabled={isSending || (!draftMessage.trim() && !pendingFile)}
-          >
-            {isSending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <SendHorizontal className="h-4 w-4" />
-            )}
-          </Button>
+            </Button>
+          )}
         </div>
       </div>
     </Card>
