@@ -28,6 +28,17 @@ function parseDateParam(value: string | null) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+/** Inclusive rolling window: `days` calendar days ending today (local). Matches journal dashboard stats. */
+function getLastDaysInclusiveRange(days: number) {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - (days - 1));
+  return {
+    fromDate: formatDateParam(from),
+    toDate: formatDateParam(to),
+  };
+}
+
 function formatTradeTimestamp(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "--";
@@ -69,12 +80,14 @@ export function JournalTradeHistoryPage() {
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const queryFromDate = parseDateParam(searchParams.get("fromDate"));
   const queryToDate = parseDateParam(searchParams.get("toDate"));
-  const fromDate = queryFromDate
+  const hasCustomRange = !!queryFromDate && !!queryToDate;
+  const rollingDefaultRange = getLastDaysInclusiveRange(30);
+  const fromDate = hasCustomRange
     ? formatDateParam(queryFromDate)
-    : formatDateParam(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const toDate = queryToDate
+    : rollingDefaultRange.fromDate;
+  const toDate = hasCustomRange
     ? formatDateParam(queryToDate)
-    : formatDateParam(new Date());
+    : rollingDefaultRange.toDate;
 
   const tradeHistoryQuery = useTradeHistory({
     accountId: activeAccountId || undefined,
