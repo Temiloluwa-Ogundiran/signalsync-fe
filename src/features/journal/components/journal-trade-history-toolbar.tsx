@@ -1,17 +1,19 @@
 "use client";
 
-import { Download, Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 interface JournalTradeHistoryToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
+  onOpenJournalDay: () => void;
 }
 
 export function JournalTradeHistoryToolbar({
   searchValue,
   onSearchChange,
+  onOpenJournalDay,
 }: JournalTradeHistoryToolbarProps) {
   return (
     <section className="flex flex-col gap-3 border-b border-border-secondary/80 pb-6 lg:flex-row lg:items-center lg:justify-between">
@@ -38,7 +40,8 @@ export function JournalTradeHistoryToolbar({
       <div className="flex items-center gap-3">
         <Button
           type="button"
-          className="h-12 rounded-full bg-accent px-6 text-sm font-semibold text-white hover:bg-accent-hover"
+          onClick={onOpenJournalDay}
+          className="h-12 rounded-full bg-accent px-6 text-sm font-semibold text-white hover:bg-accent-hover cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Journal Day

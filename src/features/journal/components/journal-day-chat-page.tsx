@@ -77,11 +77,32 @@ export function JournalDayChatPage() {
   const isSending = createDayMessage.isPending || createTradeMessage.isPending;
 
   const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
-  const summary = useMemo(() => buildDaySummary(trades), [trades]);
+  const summary = useMemo(
+    () =>
+      buildDaySummary(
+        trades,
+        dayQuery.data?.day_start_balance ?? null,
+        dayQuery.data?.day_end_balance ?? null,
+      ),
+    [
+      trades,
+      dayQuery.data?.day_start_balance,
+      dayQuery.data?.day_end_balance,
+    ],
+  );
   const chartData = useMemo(() => buildRunningPnlCurve(trades), [trades]);
   const balanceCurveData = useMemo(
-    () => buildBalanceCurve(trades, dayQuery.data?.day_start_balance ?? null),
-    [trades, dayQuery.data?.day_start_balance],
+    () =>
+      buildBalanceCurve(
+        trades,
+        dayQuery.data?.day_start_balance ?? null,
+        dayQuery.data?.day_end_balance ?? null,
+      ),
+    [
+      trades,
+      dayQuery.data?.day_start_balance,
+      dayQuery.data?.day_end_balance,
+    ],
   );
   const metrics = useMemo(
     () =>

@@ -1,5 +1,10 @@
 import type { JournalTrade } from "@/features/journal/types";
-import { asNumber, buildDaySummary, buildProfitFactor, formatCurrency } from "./journal-day-modal.utils";
+import {
+  asNumber,
+  buildDaySummary,
+  buildProfitFactor,
+  formatCurrency,
+} from "./journal-day-modal.utils";
 import type { CurvePoint, MetricRow } from "./journal-day-chat.types";
 
 export function formatDayLabel(dateInput?: string) {
@@ -47,16 +52,38 @@ export function buildRunningPnlCurve(trades: JournalTrade[]): CurvePoint[] {
 
 export function buildBalanceCurve(
   trades: JournalTrade[],
-  startBalance: number | null,
+  startBalance: number | string | null,
+  endBalance?: number | string | null,
 ): CurvePoint[] {
+  const startN =
+    startBalance !== null &&
+    startBalance !== undefined &&
+    startBalance !== ""
+      ? asNumber(startBalance as number | string)
+      : null;
+  const endN =
+    endBalance !== null && endBalance !== undefined && endBalance !== ""
+      ? asNumber(endBalance as number | string)
+      : null;
+
   const sortedTrades = [...trades].sort(
     (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
   );
 
-  if (!sortedTrades.length) return [];
+  if (!sortedTrades.length) {
+    const lo = startN ?? endN;
+    const hi = endN ?? startN ?? lo;
+    if (lo == null && hi == null) return [];
+    const a = lo ?? hi ?? 0;
+    const b = hi ?? lo ?? 0;
+    return [
+      { label: "0", value: a },
+      { label: "1", value: b },
+    ];
+  }
 
   const resolvedStartBalance =
-    startBalance ?? asNumber(sortedTrades[0].balance_before_trade);
+    startN ?? asNumber(sortedTrades[0].balance_before_trade);
   let runningBalance = resolvedStartBalance;
   const points: CurvePoint[] = [{ label: "0", value: runningBalance }];
 
@@ -70,18 +97,13 @@ export function buildBalanceCurve(
 
 export function buildMetrics(
   trades: JournalTrade[],
-  dayStartBalance?: number | null,
-  dayEndBalance?: number | null,
+  dayStartBalance?: number | string | null,
+  dayEndBalance?: number | string | null,
 ): MetricRow[] {
-  const summary = buildDaySummary(trades);
-  const sortedTrades = [...trades].sort(
-    (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
-  );
-
-  const startBalance = dayStartBalance ?? (
-    sortedTrades[0] ? asNumber(sortedTrades[0].balance_before_trade) : 0
-  );
-  const endBalance = dayEndBalance ?? (startBalance + summary.grossPnl);
+  const summary = buildDaySummary(trades, dayStartBalance, dayEndBalance);
+  const startBalance = summary.dayStartBalance ?? 0;
+  const endBalance =
+    summary.dayEndBalance ?? startBalance + summary.grossPnl;
   const buys = trades.filter((trade) => trade.direction === "buy").length;
   const sells = trades.filter((trade) => trade.direction === "sell").length;
   const bestTrade = trades.length

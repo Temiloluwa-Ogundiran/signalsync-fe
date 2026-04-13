@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useTradeHistory } from "@/features/journal/hooks/use-trade-history";
 import type { JournalTrade } from "@/features/journal/types";
+import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
 import { JournalTradeHistoryTable } from "./journal-trade-history-table";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
@@ -59,6 +61,8 @@ export function JournalTradeHistoryPage() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [journalDayTradingDate, setJournalDayTradingDate] = useState<string>();
   const { data: accounts = [] } = useJournalAccounts();
 
   const resolvedAccountId = useResolvedJournalAccountId();
@@ -112,6 +116,17 @@ export function JournalTradeHistoryPage() {
     );
   };
 
+  const handleOpenTodayJournalDay = () => {
+    if (!activeAccountId) {
+      toast.info("Select an account first", {
+        description: "Journal Day requires a specific trading account.",
+      });
+      return;
+    }
+    setJournalDayTradingDate(formatDateParam(new Date()));
+    setIsDayModalOpen(true);
+  };
+
   if (!activeAccountId) {
     return (
       <div className="p-6 text-sm text-text-secondary">
@@ -128,6 +143,14 @@ export function JournalTradeHistoryPage() {
           setSearch(value);
           setPage(1);
         }}
+        onOpenJournalDay={handleOpenTodayJournalDay}
+      />
+
+      <JournalDayModal
+        open={isDayModalOpen}
+        onOpenChange={setIsDayModalOpen}
+        accountId={activeAccountId}
+        tradingDate={journalDayTradingDate}
       />
 
       {tradeHistoryQuery.isLoading ? (

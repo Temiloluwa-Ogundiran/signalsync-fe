@@ -446,6 +446,20 @@ body {
   border-radius: 9999px;
 }
 
+@keyframes journal-sync-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Indeterminate sync bar segment (journal dashboard) */
+.animate-journal-sync-indeterminate {
+  animation: journal-sync-indeterminate 1.25s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

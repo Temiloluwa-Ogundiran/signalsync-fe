@@ -36,18 +36,25 @@ export function JournalDayModalOverview({
   );
 
   const pnlCurveData = useMemo(() => {
-    return sortedTrades.reduce<
+    const open: { step: number; time: string; cumulativePnl: number } = {
+      step: 0,
+      time: "Open",
+      cumulativePnl: 0,
+    };
+    const byTrade = sortedTrades.reduce<
       { step: number; time: string; cumulativePnl: number }[]
     >((acc, trade, index) => {
-      const previous = index === 0 ? 0 : acc[index - 1]?.cumulativePnl ?? 0;
-      const cumulativePnl = previous + asNumber(trade.net_profit);
+      const previous = acc.length
+        ? (acc[acc.length - 1]?.cumulativePnl ?? 0)
+        : 0;
       acc.push({
         step: index + 1,
         time: formatClock(trade.closed_at),
-        cumulativePnl,
+        cumulativePnl: previous + asNumber(trade.net_profit),
       });
       return acc;
     }, []);
+    return [open, ...byTrade];
   }, [sortedTrades]);
 
   const lastCumulative =
@@ -107,6 +114,7 @@ export function JournalDayModalOverview({
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "var(--text-tertiary)", fontSize: 12 }}
+                tickFormatter={(v) => (Number(v) === 0 ? "Open" : String(v))}
               />
               <YAxis
                 tickLine={false}
@@ -127,7 +135,11 @@ export function JournalDayModalOverview({
                     typeof value === "number" ? value : Number(value ?? 0),
                   )
                 }
-                labelFormatter={(label) => `Trade #${label}`}
+                labelFormatter={(label) => {
+                  const n = Number(label);
+                  if (n === 0) return "Session open";
+                  return `Trade #${n}`;
+                }}
                 contentStyle={{
                   background: "var(--card-bg)",
                   border: "1px solid var(--border-primary)",

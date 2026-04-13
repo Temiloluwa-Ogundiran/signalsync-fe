@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { computePaddedBalanceDomain } from "../lib/balance-chart-domain";
 import { formatCurrency } from "./journal-day-modal.utils";
 import type { CurvePoint } from "./journal-day-chat.types";
 
@@ -65,6 +66,16 @@ export function JournalDayChatPnlChartCard({
   );
 
   const colorVar = `var(--color-${seriesKey})`;
+
+  const yDomain = useMemo(() => {
+    if (valueScale !== "currency" || seriesKey !== "accountBalance") {
+      return undefined;
+    }
+    return computePaddedBalanceDomain(
+      data.map((d) => d.value),
+      { padRatio: 0.15, minAbsoluteSpread: 100 },
+    );
+  }, [seriesKey, valueScale, data]);
 
   const tickFormatter = (value: number) => {
     if (valueScale === "percent") {
@@ -123,6 +134,7 @@ export function JournalDayChatPnlChartCard({
             <YAxis
               tickLine={false}
               axisLine={false}
+              domain={yDomain ?? ["auto", "auto"]}
               tick={{ fill: "var(--text-tertiary)", fontSize: 10 }}
               tickFormatter={tickFormatter}
             />

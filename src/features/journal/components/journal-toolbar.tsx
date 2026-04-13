@@ -57,7 +57,8 @@ export function JournalToolbar({
   const connectionLabel = (() => {
     if (!connectionState || connectionState === "ready") return null;
     // If an account already synced before, don't regress UX to "verifying credentials".
-    if (connectionState === "pending_verification" && !!lastSyncedAt) return null;
+    if (connectionState === "pending_verification" && !!lastSyncedAt)
+      return null;
     return stateLabelMap[connectionState] ?? "Needs attention";
   })();
 
@@ -69,16 +70,23 @@ export function JournalToolbar({
           <button
             onClick={onSyncAccount}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-            aria-label={isSyncPending ? "Syncing account" : "Sync active account"}
+            aria-label={
+              isSyncPending ? "Syncing account" : "Sync active account"
+            }
             title={isSyncPending ? "Syncing account" : "Sync active account"}
             disabled={isSyncPending}
           >
-            <RefreshCw className={`h-4 w-4 ${isSyncPending ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isSyncPending ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
         {connectionLabel ? (
           <p className="text-sm text-text-secondary">
-            Connection status: <span className="font-medium text-text-primary">{connectionLabel}</span>
+            Connection status:{" "}
+            <span className="font-medium text-text-primary">
+              {connectionLabel}
+            </span>
           </p>
         ) : null}
       </div>
@@ -86,16 +94,15 @@ export function JournalToolbar({
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={onOpenJournalDay}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Journal Day
         </button>
-        <button className="inline-flex h-11 items-center gap-2 rounded-full border-2 border-chrome-control-border bg-card-bg px-5 text-sm font-semibold text-text-primary">
+        {/* <button className="inline-flex h-11 items-center gap-2 rounded-full border-2 border-chrome-control-border bg-card-bg px-5 text-sm font-semibold text-text-primary">
           Export Stats
-        </button>
+        </button> */}
       </div>
     </section>
   );
 }
-

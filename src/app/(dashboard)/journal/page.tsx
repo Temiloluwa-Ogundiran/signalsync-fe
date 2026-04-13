@@ -37,6 +37,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalBalanceHistoryAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { consumeSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
 import { cn } from "@/lib/utils";
 
 const AUTO_SYNC_THROTTLE_MS = 5 * 60 * 1000;
@@ -131,6 +132,31 @@ function JournalPageContent() {
       account.connection_state === "pending_verification" ||
       account.connection_state === "bootstrapping",
   );
+
+  const activeAccountConnectionBusy =
+    activeAccount?.connection_state === "bootstrapping" ||
+    activeAccount?.connection_state === "pending_verification";
+
+  const showJournalSyncProgress =
+    syncAccountMutation.isPending ||
+    !!syncUiState ||
+    activeAccountConnectionBusy;
+
+  const journalSyncProgressMessage = useMemo(() => {
+    if (syncAccountMutation.isPending) return "Contacting server…";
+    if (syncUiState) return "Waiting for background sync…";
+    if (activeAccount?.connection_state === "bootstrapping") {
+      return "Syncing account history for stats…";
+    }
+    if (activeAccount?.connection_state === "pending_verification") {
+      return "Verifying credentials…";
+    }
+    return "Sync in progress…";
+  }, [
+    syncAccountMutation.isPending,
+    syncUiState,
+    activeAccount?.connection_state,
+  ]);
 
   const monthLabel = useMemo(
     () =>
@@ -595,6 +621,10 @@ function JournalPageContent() {
 
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+      <JournalSyncProgressBanner
+        open={showJournalSyncProgress}
+        message={journalSyncProgressMessage}
+      />
       <JournalToolbar
         isSyncPending={syncAccountMutation.isPending || !!syncUiState}
         lastSyncedAt={activeAccount?.last_synced_at}

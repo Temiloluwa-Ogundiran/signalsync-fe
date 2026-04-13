@@ -22,10 +22,61 @@ export function formatClock(iso: string) {
   });
 }
 
+/** Coerce API `Decimal` (often JSON string) to a finite number, or null if absent. */
+function normalizeApiBalance(
+  value: number | string | null | undefined,
+): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = asNumber(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Resolve start/end of day balances: coerce API decimals, then apply the same
+ * fill-forward rules as the backend / day chat metrics (start+PnL=end, etc.).
+ */
+export function resolveDayBookends(
+  trades: JournalTrade[],
+  apiDayStart?: number | string | null,
+  apiDayEnd?: number | string | null,
+): { dayStartBalance: number | null; dayEndBalance: number | null } {
+  const grossPnl = trades.reduce(
+    (sum, trade) => sum + asNumber(trade.net_profit),
+    0,
+  );
+  let start = normalizeApiBalance(apiDayStart);
+  let end = normalizeApiBalance(apiDayEnd);
+
+  if (end == null && start != null) {
+    end = start + grossPnl;
+  }
+  if (start == null && end != null) {
+    start = end - grossPnl;
+  }
+
+  const sortedTrades = [...trades].sort(
+    (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
+  );
+
+  if (start == null && sortedTrades.length > 0) {
+    const raw = sortedTrades[0].balance_before_trade;
+    if (raw != null && raw !== "") {
+      const first = asNumber(raw);
+      if (Number.isFinite(first)) start = first;
+    }
+  }
+
+  if (end == null && start != null) {
+    end = start + grossPnl;
+  }
+
+  return { dayStartBalance: start, dayEndBalance: end };
+}
+
 export function buildDaySummary(
   trades: JournalTrade[],
-  dayStartBalance?: number | null,
-  dayEndBalance?: number | null,
+  dayStartBalance?: number | string | null,
+  dayEndBalance?: number | string | null,
 ): JournalDaySummary {
   const totalTrades = trades.length;
   const winners = trades.filter(
@@ -47,6 +98,9 @@ export function buildDaySummary(
   );
   const volume = trades.reduce((sum, trade) => sum + asNumber(trade.volume), 0);
 
+  const { dayStartBalance: resolvedStart, dayEndBalance: resolvedEnd } =
+    resolveDayBookends(trades, dayStartBalance ?? null, dayEndBalance ?? null);
+
   return {
     totalTrades,
     winners,
@@ -56,12 +110,8 @@ export function buildDaySummary(
     grossPnl,
     commissions,
     volume,
-    dayStartBalance:
-      dayStartBalance != null && Number.isFinite(dayStartBalance)
-        ? dayStartBalance
-        : null,
-    dayEndBalance:
-      dayEndBalance != null && Number.isFinite(dayEndBalance) ? dayEndBalance : null,
+    dayStartBalance: resolvedStart,
+    dayEndBalance: resolvedEnd,
   };
 }
 
