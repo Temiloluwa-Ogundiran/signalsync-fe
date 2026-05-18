@@ -74,7 +74,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     if (!nextRange?.from) {
       params.delete("fromDate");
       params.delete("toDate");
-      router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+      router.replace(
+        params.toString() ? `${pathname}?${params.toString()}` : pathname,
+      );
       return;
     }
 
@@ -86,7 +88,9 @@ export function Header({ onMenuClick }: HeaderProps) {
       params.delete("toDate");
     }
 
-    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    router.replace(
+      params.toString() ? `${pathname}?${params.toString()}` : pathname,
+    );
   };
 
   const selectAccount = (accountId: string) => {
@@ -97,7 +101,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     } else {
       params.set("accountId", accountId);
     }
-    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    router.replace(
+      params.toString() ? `${pathname}?${params.toString()}` : pathname,
+    );
     setIsAccountsMenuOpen(false);
   };
 
@@ -147,7 +153,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               priority
             />
             <span className="truncate hidden md:inline-block font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">
-              SyncTrade
+              TradePartna
             </span>
           </div>
         </div>
@@ -161,7 +167,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3">
-          <button
+          {/* <button
             type="button"
             className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chrome-bar-bg text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg md:flex"
             aria-label="Currency"
@@ -184,7 +190,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               width={24}
               height={24}
             />
-          </button>
+          </button> */}
           <div
             ref={accountsMenuContainerRef}
             className="relative hidden items-stretch lg:flex"
@@ -295,7 +301,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             ) : null}
           </div>
 
-          <button
+          {/* <button
             type="button"
             onClick={() => openAi(null)}
             className="flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold text-text-primary shadow-sm transition-opacity hover:opacity-95"
@@ -305,7 +311,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           >
             <Image src="/icons/navbar/ai.svg" alt="" width={24} height={24} />
             <span className="hidden sm:inline">Ask Sync</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </header>

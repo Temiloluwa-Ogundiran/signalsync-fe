@@ -66,7 +66,7 @@ export function JournalTradeHistoryTable({
       },
       {
         accessorKey: "direction",
-        header: "Type",
+        header: "Side",
         cell: ({ row }) => (
           <span className="text-sm font-semibold capitalize text-text-primary">
             {row.original.direction}

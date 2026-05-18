@@ -80,7 +80,7 @@ function NavDivider() {
 
 interface SidebarProps {
   onNavigate?: () => void;
-  /** Desktop: narrow sidebar to icons-only; hides “SyncTrade” next to the logo */
+  /** Desktop: narrow sidebar to icons-only; hides TradePartna next to the logo */
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
 }
@@ -128,7 +128,7 @@ export function Sidebar({
           />
           {!collapsed ? (
             <span className="truncate font-heading text-2xl font-bold leading-tight tracking-tight text-text-primary">
-              SyncTrade
+              TradePartna
             </span>
           ) : null}
         </Link>
@@ -172,9 +172,7 @@ export function Sidebar({
                     onClick={() => onNavigate?.()}
                     className={cn(
                       "flex min-h-[44px] items-center rounded-full py-2.5 text-base font-semibold leading-snug transition-colors",
-                      collapsed
-                        ? "w-11 justify-center px-0"
-                        : "gap-3 px-4",
+                      collapsed ? "w-11 justify-center px-0" : "gap-3 px-4",
                       isActive
                         ? "border border-sidebar-nav-active-border bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
                         : "border border-transparent bg-transparent text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/40 hover:text-sidebar-nav-active-text",

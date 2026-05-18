@@ -23,7 +23,7 @@ export function JournalTradeHistoryToolbar({
           <Input
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search"
+            placeholder="Search by symbol or side"
             className="h-12 rounded-full border-0 bg-bg-secondary pl-11 pr-4 text-base text-text-primary placeholder:text-text-tertiary"
           />
         </div>

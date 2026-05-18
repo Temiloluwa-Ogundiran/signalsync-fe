@@ -1,12 +1,18 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { RegisterForm } from "@/features/auth/components/register-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Create an Account | SyncTrades",
-  description: "Join SyncTrades today",
+  title: "Create an Account | TradePartna",
+  description: "Join TradePartna today",
 };
 
 export default function RegisterPage() {
@@ -19,7 +25,7 @@ export default function RegisterPage() {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">
-          Join Syncgram Trades
+          Join TradePartna
         </CardTitle>
         <CardDescription className="text-sm">
           Enter your information below to sign up

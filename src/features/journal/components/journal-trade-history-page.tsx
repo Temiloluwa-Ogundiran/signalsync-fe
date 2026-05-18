@@ -9,6 +9,7 @@ import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolv
 import { useTradeHistory } from "@/features/journal/hooks/use-trade-history";
 import type { JournalTrade } from "@/features/journal/types";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
+import { formatTradeTimestamp } from "./journal-day-modal.utils";
 import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
 import { JournalTradeHistoryTable } from "./journal-trade-history-table";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
@@ -37,18 +38,6 @@ function getLastDaysInclusiveRange(days: number) {
     fromDate: formatDateParam(from),
     toDate: formatDateParam(to),
   };
-}
-
-function formatTradeTimestamp(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--";
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = String(date.getFullYear()).slice(-2);
-  const hours = date.getHours();
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year}, ${hours}:${minutes}`;
 }
 
 function mapTradeRows(items: JournalTrade[]): TradeHistoryRow[] {

@@ -17,8 +17,8 @@ import {
 import type { JournalDayTradeRow } from "./journal-day-modal.types";
 import {
   asNumber,
-  formatClock,
   formatCurrency,
+  formatTradeTimestamp,
 } from "./journal-day-modal.utils";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -50,7 +50,7 @@ export function JournalDayModalTradesTable({
         header: "Open Time",
         cell: ({ row }) => (
           <span className="text-text-primary font-heading font-medium">
-            {formatClock(row.original.opened_at)}
+            {formatTradeTimestamp(row.original.opened_at)}
           </span>
         ),
       },
@@ -59,7 +59,7 @@ export function JournalDayModalTradesTable({
         header: "Close Time",
         cell: ({ row }) => (
           <span className="text-text-primary font-heading font-medium">
-            {formatClock(row.original.closed_at)}
+            {formatTradeTimestamp(row.original.closed_at)}
           </span>
         ),
       },

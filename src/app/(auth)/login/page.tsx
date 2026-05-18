@@ -1,11 +1,17 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/features/auth/components/login-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Login | SyncTrades",
+  title: "Login | TradePartna",
   description: "Login to your account",
 };
 
@@ -19,7 +25,7 @@ export default function LoginPage() {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">
-          Welcome to Syncgram Trades
+          Welcome to TradePartna
         </CardTitle>
         <CardDescription className="text-sm">
           Enter your email and password to access your account
