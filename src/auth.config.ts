@@ -7,7 +7,8 @@ export const authConfig = {
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
+      const isLoggedIn =
+        !!auth?.user && !!auth.accessToken && auth.error !== "RefreshAccessTokenError";
       const pathname = nextUrl.pathname;
 
       // All dashboard routes that require auth
@@ -38,7 +39,7 @@ export const authConfig = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // First login
       if (user) {
         token.accessToken = user.accessToken;
@@ -108,10 +109,31 @@ export const authConfig = {
           emailVerified: null,
         };
         session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
         session.expiresAt = token.expiresAt as number;
+        session.error = token.error as string | undefined;
       }
       return session;
+    },
+  },
+  events: {
+    async signOut(message) {
+      if (!("token" in message) || !message.token?.refreshToken) {
+        return;
+      }
+
+      try {
+        const backendUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+        await fetch(`${backendUrl}/auth/logout`, {
+          method: "POST",
+          headers: {
+            Cookie: `refresh_token=${message.token.refreshToken}`,
+          },
+        });
+      } catch {
+        console.error("Failed to revoke backend refresh token during sign-out");
+      }
     },
   },
   providers: [],

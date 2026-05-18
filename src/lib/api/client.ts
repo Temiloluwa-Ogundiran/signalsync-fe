@@ -8,14 +8,15 @@
  *
  * Auth Strategy:
  * Since we use NextAuth v5, the access token lives in the encrypted session
- * cookie managed by Next.js—NOT in a Zustand store. To attach the token:
+ * cookie managed by Next.js, not in a Zustand store. To attach the token:
  *
  *  - Server Components / Server Actions: call `auth()` and pass
  *    `session.accessToken` via `apiClient.defaults.headers.common[...]`
  *    or use the `withAuth` helper exported below.
  *
- *  - Client Components: use the `useApiClient` hook (to be added) which
- *    reads the token from `useSession()` and injects it per-request.
+ *  - Client Components: read the token from `useSession()` and attach it per
+ *    request. When a request gets a 401, this client asks NextAuth for a fresh
+ *    session once before forcing the user to sign in again.
  */
 
 import axios, {
@@ -25,8 +26,8 @@ import axios, {
 } from "axios";
 import {
   ApiException,
-  normalizeError,
   FastAPIErrorResponse,
+  normalizeError,
 } from "./types";
 
 const API_BASE_URL = (
@@ -34,6 +35,51 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 
 const REQUEST_TIMEOUT = 30_000; // 30 seconds
+
+let pendingSessionRefresh: Promise<{ accessToken?: string } | null> | null = null;
+
+function getAuthorizationToken(
+  config?: InternalAxiosRequestConfig
+): string | null {
+  const authorization = config?.headers?.Authorization;
+  if (typeof authorization !== "string") {
+    return null;
+  }
+
+  const [scheme, token] = authorization.split(" ");
+  if (scheme !== "Bearer" || !token) {
+    return null;
+  }
+
+  return token;
+}
+
+async function refreshBrowserSession() {
+  if (!pendingSessionRefresh) {
+    pendingSessionRefresh = import("next-auth/react")
+      .then(({ getSession }) => getSession())
+      .finally(() => {
+        pendingSessionRefresh = null;
+      });
+  }
+
+  return pendingSessionRefresh;
+}
+
+async function signOutBrowserSession() {
+  const [{ signOut }, { toast }] = await Promise.all([
+    import("next-auth/react"),
+    import("sonner"),
+  ]);
+
+  await signOut({ redirect: false });
+  toast.error("Session expired", {
+    description: "Please log in again.",
+    duration: 3000,
+  });
+
+  window.location.replace("/login");
+}
 
 /**
  * Singleton Axios instance with base configuration.
@@ -44,29 +90,25 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  // withCredentials: true  ← would be needed if we relied on the
-  // backend's own HTTP-only cookie instead of our NextAuth session.
+  // `withCredentials` stays off because the browser talks to the backend with
+  // Bearer tokens, while the refresh token remains server-only in Auth.js.
   withCredentials: false,
 });
-
-// ── Request interceptor ────────────────────────────────────────────────────
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (process.env.NODE_ENV === "development") {
-      console.log(`🚀 [API] ${config.method?.toUpperCase()} ${config.url}`);
+      console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`);
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ── Response interceptor ───────────────────────────────────────────────────
-
 apiClient.interceptors.response.use(
   (response) => {
     if (process.env.NODE_ENV === "development") {
-      console.log(`✅ [API] ${response.status} ${response.config.url}`);
+      console.log(`[API] ${response.status} ${response.config.url}`);
     }
     return response;
   },
@@ -75,43 +117,50 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Network-level errors (CORS, connection refused, offline, etc.)
     if (!error.response) {
       const msg = error.message || "Network error";
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ [API] Network Error:", {
+        console.error("[API] Network Error:", {
           message: msg,
           url: originalRequest?.url,
           baseURL: API_BASE_URL,
         });
       }
+
       throw new ApiException({
         status: 0,
         code: "NETWORK_ERROR",
-        message: msg.includes("ECONNREFUSED") || msg.includes("Failed to fetch")
-          ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
-          : "Network error. Please check your internet connection.",
+        message:
+          msg.includes("ECONNREFUSED") || msg.includes("Failed to fetch")
+            ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
+            : "Network error. Please check your internet connection.",
       });
     }
 
     const { status, data } = error.response;
 
     if (process.env.NODE_ENV === "development") {
-      console.error(`❌ [API] ${status} ${originalRequest?.url}`, data);
+      console.error(`[API] ${status} ${originalRequest?.url}`, data);
     }
 
-    // Session expired — interceptor shows a toast and redirects client-side
     if (status === 401 && !originalRequest._retry) {
       if (typeof window !== "undefined") {
-        import("sonner").then(({ toast }) => {
-          toast.error("Session expired", {
-            description: "Please log in again.",
-            duration: 3000,
-          });
-        });
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 500);
+        originalRequest._retry = true;
+
+        const previousToken = getAuthorizationToken(originalRequest);
+        const refreshedSession = await refreshBrowserSession();
+        const refreshedToken =
+          refreshedSession?.accessToken &&
+          refreshedSession.accessToken !== previousToken
+            ? refreshedSession.accessToken
+            : null;
+
+        if (refreshedToken) {
+          originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
+          return apiClient(originalRequest);
+        }
+
+        await signOutBrowserSession();
       }
 
       throw new ApiException({
@@ -129,12 +178,6 @@ apiClient.interceptors.response.use(
  * Returns a one-off Axios request config with the Authorization header already
  * set. Use this in Server Actions / Server Components where you have access to
  * the NextAuth session.
- *
- * @example
- * ```ts
- * const session = await auth();
- * const res = await apiClient.get("/trades", withAuth(session?.accessToken));
- * ```
  */
 export function withAuth(accessToken?: string | null) {
   return {

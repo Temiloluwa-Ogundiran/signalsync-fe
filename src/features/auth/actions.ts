@@ -1,10 +1,23 @@
 "use server";
 
-import { auth, signIn, signOut } from "../../auth";
+import { signIn, signOut } from "../../auth";
 import { AuthError } from "next-auth";
 import { registerUser } from "@/features/auth/api/auth.api";
 import { ApiException } from "@/lib/api/types";
-import apiClient from "@/lib/api/client";
+
+function getCredentialsErrorMessage(error: AuthError) {
+  const cause = error.cause;
+  if (
+    cause &&
+    typeof cause === "object" &&
+    "err" in cause &&
+    cause.err instanceof Error
+  ) {
+    return cause.err.message;
+  }
+
+  return "Invalid credentials.";
+}
 
 export async function loginAction(formData: FormData) {
   try {
@@ -13,10 +26,7 @@ export async function loginAction(formData: FormData) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          // NextAuth wraps our custom thrown Error in `error.cause?.err?.message`
-          // We can surface exactly what the backend returned:
-          const backendMessage = (error.cause as any)?.err?.message || "Invalid credentials.";
-          return { error: backendMessage };
+          return { error: getCredentialsErrorMessage(error) };
         default:
           return { error: "Something went wrong." };
       }
@@ -43,17 +53,5 @@ export async function registerAction(data: {
 }
 
 export async function logoutAction() {
-  const session = await auth();
-  
-  if (session?.refreshToken) {
-    try {
-      await apiClient.post("/auth/logout", null, {
-        headers: { Cookie: `refresh_token=${session.refreshToken}` },
-      });
-    } catch (e) {
-      console.error("Failed to revoke refresh token:", e);
-    }
-  }
-
   await signOut();
 }
