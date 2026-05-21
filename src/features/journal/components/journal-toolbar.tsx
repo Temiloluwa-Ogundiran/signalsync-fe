@@ -52,7 +52,7 @@ export function JournalToolbar({
     bootstrapping: "Syncing account history for stats...",
     ready: "Ready",
     verification_failed: "Needs attention",
-    bootstrap_failed: "Needs attention",
+    bootstrap_failed: "Connected with sync warning",
   };
   const connectionLabel = (() => {
     if (!connectionState || connectionState === "ready") return null;

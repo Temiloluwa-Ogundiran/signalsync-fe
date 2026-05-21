@@ -721,6 +721,15 @@ function JournalPageContent() {
             onSuccess={(account) => {
               setActiveAccountId(account.id);
               setConnectModalOpen(false);
+              if (account.connection_state === "bootstrap_failed") {
+                toast.warning("Account connected with warning", {
+                  description: "Account was verified, but history sync failed. You can retry syncing manually.",
+                });
+              } else {
+                toast.success("Account connected", {
+                  description: "Your trading account has been successfully connected.",
+                });
+              }
               setPollingWindowStartedAt(Date.now());
             }}
           />

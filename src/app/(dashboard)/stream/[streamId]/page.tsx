@@ -393,12 +393,17 @@ export default function StreamDetailPage() {
 
   // Follow state
   const [following, setFollowing] = useState(false);
+  const [prevStreamId, setPrevStreamId] = useState<string | null>(null);
+  const [prevStreamFollowing, setPrevStreamFollowing] = useState<boolean | null>(null);
+
   const followMutation = useFollowStream();
   const unfollowMutation = useUnfollowStream();
 
-  useEffect(() => {
-    if (stream) setFollowing(stream.is_following);
-  }, [stream]);
+  if (stream && (stream.id !== prevStreamId || stream.is_following !== prevStreamFollowing)) {
+    setPrevStreamId(stream.id);
+    setPrevStreamFollowing(stream.is_following);
+    setFollowing(stream.is_following);
+  }
 
   // Set as active stream when viewing
   useEffect(() => {

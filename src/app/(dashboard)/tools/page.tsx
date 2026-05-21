@@ -117,38 +117,28 @@ function PositionSizeCalculator() {
     instrument: "Forex",
     lotType: "Standard",
   });
-  const [results, setResults] = useState({
-    lots: 0,
-    units: 0,
-    dollarRisk: 0,
-    pipRisk: 0,
-  });
+  const dollarRisk = (inputs.balance * inputs.riskPercent) / 100;
+  const pipRisk =
+    Math.abs(inputs.entryPrice - inputs.stopLoss) *
+    (inputs.entryPrice > 50 ? 100 : 10000);
+  const pipValue =
+    inputs.lotType === "Standard" ? 10 : inputs.lotType === "Mini" ? 1 : 0.1;
+  const lots = pipRisk > 0 ? dollarRisk / (pipRisk * pipValue) : 0;
+  const unitMultiplier =
+    inputs.lotType === "Standard"
+      ? 100000
+      : inputs.lotType === "Mini"
+        ? 10000
+        : 1000;
 
-  const calculate = () => {
-    const dollarRisk = (inputs.balance * inputs.riskPercent) / 100;
-    let pipRisk =
-      Math.abs(inputs.entryPrice - inputs.stopLoss) *
-      (inputs.entryPrice > 50 ? 100 : 10000);
-    let pipValue =
-      inputs.lotType === "Standard" ? 10 : inputs.lotType === "Mini" ? 1 : 0.1;
-    const lots = pipRisk > 0 ? dollarRisk / (pipRisk * pipValue) : 0;
-    const unitMultiplier =
-      inputs.lotType === "Standard"
-        ? 100000
-        : inputs.lotType === "Mini"
-          ? 10000
-          : 1000;
-    setResults({
-      lots: Number(lots.toFixed(2)),
-      units: Math.round(lots * unitMultiplier),
-      dollarRisk: Number(dollarRisk.toFixed(2)),
-      pipRisk: Number(pipRisk.toFixed(1)),
-    });
+  const results = {
+    lots: Number(lots.toFixed(2)),
+    units: Math.round(lots * unitMultiplier),
+    dollarRisk: Number(dollarRisk.toFixed(2)),
+    pipRisk: Number(pipRisk.toFixed(1)),
   };
 
-  useEffect(() => {
-    calculate();
-  }, [inputs]);
+  const calculate = () => {};
 
   const handleChange = (field: string, value: string | number) =>
     setInputs((prev) => ({ ...prev, [field]: value }));

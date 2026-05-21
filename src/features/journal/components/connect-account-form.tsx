@@ -39,6 +39,8 @@ function getBrowserTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
+import { ConnectAccountProgress } from "./connect-account-progress";
+
 interface ConnectAccountFormProps {
   onSuccess?: (account: JournalAccount) => void;
 }
@@ -72,10 +74,11 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
     try {
       const account = await connectAccount.mutateAsync(payload);
       toast.success("Account added", {
-        description: "Verifying credentials and syncing account history in background.",
+        description: "Credentials verified and history sync completed successfully.",
       });
       onSuccess?.(account);
     } catch (error) {
+      form.setValue("investor_password", "");
       const message =
         error instanceof Error
           ? error.message
@@ -86,6 +89,10 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
       });
     }
   };
+
+  if (isPending) {
+    return <ConnectAccountProgress />;
+  }
 
   return (
     <Form {...form}>

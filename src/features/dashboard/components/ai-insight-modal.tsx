@@ -15,10 +15,21 @@ export function AiInsightModal({
   topic,
 }: AiInsightModalProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
+  const [prevTopic, setPrevTopic] = useState<string | null>(null);
+
+  if (isOpen && (!prevIsOpen || topic !== prevTopic)) {
+    setPrevIsOpen(true);
+    setPrevTopic(topic);
+    setIsLoading(true);
+  }
+
+  if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   useEffect(() => {
     if (isOpen) {
-      setIsLoading(true);
       const timer = setTimeout(() => setIsLoading(false), 1500);
       return () => clearTimeout(timer);
     }
