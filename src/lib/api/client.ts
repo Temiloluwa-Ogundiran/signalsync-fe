@@ -34,7 +34,7 @@ const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 ).replace(/\/$/, "");
 
-const REQUEST_TIMEOUT = 30_000; // 30 seconds
+const REQUEST_TIMEOUT = 90_000; // 90 seconds
 
 let pendingSessionRefresh: Promise<{ accessToken?: string } | null> | null = null;
 
