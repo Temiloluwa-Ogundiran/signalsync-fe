@@ -36,6 +36,8 @@ export interface ChatRailProps {
   onContextChange: (value: ChatContext) => void;
   onRemoveFile: () => void;
   onPasteFile?: (file: File) => void;
+  onEditMessage?: (messageId: string, content: string) => Promise<void> | void;
+  onDeleteMessage?: (messageId: string) => Promise<void> | void;
   title?: string;
   subtitle?: string;
   composerPlaceholder?: string;

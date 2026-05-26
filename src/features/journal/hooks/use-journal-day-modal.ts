@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { invalidateJournalAnalyticsForAccount } from "./use-journal-analytics";
 import { journalDailyApi } from "../api/journal-daily.api";
 import { journalTradesApi } from "../api/journal-trades.api";
+import { journalMessagesApi } from "../api/journal-messages.api";
 import type { JournalCreateMessagePayload } from "../types";
 
 export const JOURNAL_DAY_MODAL_KEYS = {
@@ -311,6 +312,95 @@ export function useMarkJournalTradeReviewed(
           tradeId,
         ),
       });
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
+  });
+}
+
+export function useUpdateJournalMessage(
+  accountId?: string,
+  tradingDate?: string,
+  tradeId?: string,
+) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ messageId, content }: { messageId: string; content: string }) =>
+      journalMessagesApi.updateMessage(
+        messageId,
+        content,
+        session?.accessToken as string,
+      ),
+    onSuccess: () => {
+      const token = session?.accessToken;
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
+      });
+      if (tradeId) {
+        queryClient.invalidateQueries({
+          queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
+            token,
+            tradeId,
+          ),
+        });
+      }
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
+  });
+}
+
+export function useDeleteJournalMessage(
+  accountId?: string,
+  tradingDate?: string,
+  tradeId?: string,
+) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (messageId: string) =>
+      journalMessagesApi.deleteMessage(
+        messageId,
+        session?.accessToken as string,
+      ),
+    onSuccess: () => {
+      const token = session?.accessToken;
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[1] === "daily" &&
+            k[2] === token &&
+            k[3] === accountId &&
+            k[4] === tradingDate
+          );
+        },
+      });
+      if (tradeId) {
+        queryClient.invalidateQueries({
+          queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
+            token,
+            tradeId,
+          ),
+        });
+      }
       if (accountId) {
         invalidateJournalAnalyticsForAccount(queryClient, accountId);
       }

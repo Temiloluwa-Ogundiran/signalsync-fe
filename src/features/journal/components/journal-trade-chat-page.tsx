@@ -9,6 +9,8 @@ import {
   useJournalDayTrades,
   useMarkJournalTradeReviewed,
   useTradeJournalMessages,
+  useUpdateJournalMessage,
+  useDeleteJournalMessage,
 } from "@/features/journal/hooks/use-journal-day-modal";
 import { JournalDayChatRail } from "./journal-day-chat-rail";
 import type { ChatPrompt } from "./journal-day-chat.types";
@@ -52,6 +54,8 @@ export function JournalTradeChatPage() {
     accountId,
     tradingDate,
   );
+  const updateMessage = useUpdateJournalMessage(accountId, tradingDate, tradeId);
+  const deleteMessage = useDeleteJournalMessage(accountId, tradingDate, tradeId);
   const markTradeReviewed = useMarkJournalTradeReviewed(accountId, tradingDate);
 
   const trades = useMemo(
@@ -93,7 +97,10 @@ export function JournalTradeChatPage() {
   );
 
   const isLoadingPage = tradesQuery.isLoading || tradeMessagesQuery.isLoading;
-  const isSending = createTradeMessage.isPending;
+  const isSending =
+    createTradeMessage.isPending ||
+    updateMessage.isPending ||
+    deleteMessage.isPending;
 
   const sendMessage = async (payload: {
     content?: string;
@@ -237,6 +244,12 @@ export function JournalTradeChatPage() {
               onContextChange={() => {}}
               onRemoveFile={() => setPendingFile(null)}
               onPasteFile={setPendingFile}
+              onEditMessage={async (messageId, content) => {
+                await updateMessage.mutateAsync({ messageId, content });
+              }}
+              onDeleteMessage={async (messageId) => {
+                await deleteMessage.mutateAsync(messageId);
+              }}
             />
             {/* Responsive stacking container for Details and Tags columns on md/lg screens */}
             <div className="grid gap-4 h-fit xl:contents">

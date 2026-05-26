@@ -12,6 +12,8 @@ import {
   useJournalDay,
   useMarkJournalDayReviewed,
   useTradeJournalMessages,
+  useUpdateJournalMessage,
+  useDeleteJournalMessage,
 } from "@/features/journal/hooks/use-journal-day-modal";
 import type { JournalMessage } from "@/features/journal/types";
 import { JournalDayChatHeader } from "./journal-day-chat-header";
@@ -68,13 +70,19 @@ export function JournalDayChatPage() {
     accountId,
     tradingDate,
   );
+  const updateMessage = useUpdateJournalMessage(accountId, tradingDate, tradeId);
+  const deleteMessage = useDeleteJournalMessage(accountId, tradingDate, tradeId);
   const markDayReviewed = useMarkJournalDayReviewed(accountId, tradingDate);
   const adjacentDaysQuery = useAdjacentTradedDates(
     accountId,
     tradingDate,
     !!accountId && !!tradingDate,
   );
-  const isSending = createDayMessage.isPending || createTradeMessage.isPending;
+  const isSending =
+    createDayMessage.isPending ||
+    createTradeMessage.isPending ||
+    updateMessage.isPending ||
+    deleteMessage.isPending;
 
   const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
   const summary = useMemo(
@@ -282,6 +290,12 @@ export function JournalDayChatPage() {
             onContextChange={setChatContext}
             onRemoveFile={() => setPendingFile(null)}
             onPasteFile={setPendingFile}
+            onEditMessage={async (messageId, content) => {
+              await updateMessage.mutateAsync({ messageId, content });
+            }}
+            onDeleteMessage={async (messageId) => {
+              await deleteMessage.mutateAsync(messageId);
+            }}
           />
 
           <section className="min-w-0 space-y-4">

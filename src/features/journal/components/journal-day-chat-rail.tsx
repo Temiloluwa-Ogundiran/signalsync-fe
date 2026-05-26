@@ -9,7 +9,11 @@ import {
   Paperclip,
   SendHorizontal,
   Square,
+  MoreHorizontal,
+  Edit,
+  Trash2,
 } from "lucide-react";
+import { DropdownMenu, ContextMenu } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -43,6 +47,8 @@ export function JournalDayChatRail({
   onContextChange,
   onRemoveFile,
   onPasteFile,
+  onEditMessage,
+  onDeleteMessage,
   title = "Journal Your Day",
   subtitle = "Review your trades with text, image, and voice notes.",
   composerPlaceholder = "How did your day go...",
@@ -59,6 +65,29 @@ export function JournalDayChatRail({
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(
     null,
   );
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const handleStartEdit = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditText(content);
+  };
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editText.trim()) return;
+    if (onEditMessage) {
+      await onEditMessage(messageId, editText.trim());
+    }
+    setEditingMessageId(null);
+  };
+
+  const handleDelete = async (messageId: string) => {
+    if (confirm("Are you sure you want to delete this message?")) {
+      if (onDeleteMessage) {
+        await onDeleteMessage(messageId);
+      }
+    }
+  };
 
   useEffect(() => {
     /* Object URL lifecycle: create/revoke in effect for Strict Mode correctness. */
@@ -116,7 +145,7 @@ export function JournalDayChatRail({
             const systemBubbleClass =
               "inline-block rounded-full bg-bg-tertiary px-3 py-1 text-xs text-text-tertiary";
             const textBubbleClass =
-              "w-full max-w-full rounded-[2.75rem] bg-bg-tertiary px-6 py-5 text-sm text-text-primary";
+              "w-fit max-w-full rounded-[2.75rem] bg-bg-tertiary px-6 py-5 text-sm text-text-primary";
 
             if (isSystem) {
               return (
@@ -179,64 +208,163 @@ export function JournalDayChatRail({
             const trimmedText = message.content?.trim() ?? "";
 
             return (
-              <div key={message.id} className="flex justify-start">
-                <div className="flex max-w-[92%] flex-col gap-2">
-                  {message.attachments?.length ? (
-                    <div className="space-y-2">
-                      {message.attachments.map((attachment) => {
-                        const alt =
-                          attachment.original_filename || "journal attachment";
-                        if (isImageAttachment(attachment)) {
-                          return (
-                            <button
-                              key={attachment.id}
-                              type="button"
-                              className="block w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                              aria-label="View image"
-                              onClick={() =>
-                                setAttachmentPreview({
-                                  src: attachment.signed_url,
-                                  alt,
-                                })
-                              }
-                            >
+              <ContextMenu.Root key={message.id}>
+                <ContextMenu.Trigger disabled={!trimmedText || !!editingMessageId}>
+                  <div className="group/msg relative flex items-center justify-between gap-3 w-full pr-8 py-1 rounded-xl hover:bg-bg-tertiary/10 transition-all">
+                    <div className="flex max-w-[90%] flex-col gap-2 w-full">
+                      {message.attachments?.length ? (
+                        <div className="space-y-2">
+                          {message.attachments.map((attachment) => {
+                            const alt =
+                              attachment.original_filename || "journal attachment";
+                            if (isImageAttachment(attachment)) {
+                              return (
+                                <button
+                                  key={attachment.id}
+                                  type="button"
+                                  className="block w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                                  aria-label="View image"
+                                  onClick={() =>
+                                    setAttachmentPreview({
+                                      src: attachment.signed_url,
+                                      alt,
+                                    })
+                                  }
+                                >
+                                  <img
+                                    src={attachment.signed_url}
+                                    alt={alt}
+                                    className="max-h-64 w-full rounded-xl object-cover"
+                                  />
+                                </button>
+                              );
+                            }
+                            return (
                               <img
+                                key={attachment.id}
                                 src={attachment.signed_url}
                                 alt={alt}
                                 className="max-h-64 w-full rounded-xl object-cover"
                               />
-                            </button>
-                          );
-                        }
-                        return (
-                          <img
-                            key={attachment.id}
-                            src={attachment.signed_url}
-                            alt={alt}
-                            className="max-h-64 w-full rounded-xl object-cover"
+                            );
+                          })}
+                        </div>
+                      ) : null}
+
+                      {message.audio_url ? (
+                        <div className="max-w-full">
+                          <JournalVoiceMessagePlayer
+                            key={message.id}
+                            messageId={message.id}
+                            audioUrl={message.audio_url}
                           />
-                        );
-                      })}
-                    </div>
-                  ) : null}
+                        </div>
+                      ) : null}
 
-                  {message.audio_url ? (
-                    <div className="max-w-full">
-                      <JournalVoiceMessagePlayer
-                        key={message.id}
-                        messageId={message.id}
-                        audioUrl={message.audio_url}
-                      />
+                      {editingMessageId === message.id ? (
+                        <div className="flex flex-col gap-2 w-full rounded-2xl bg-bg-tertiary px-6 py-5 border border-border-primary/45 shadow-inner">
+                          <Textarea
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            className="min-h-12 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 text-sm text-text-primary placeholder:text-text-tertiary resize-none"
+                            autoFocus
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" && !event.shiftKey) {
+                                event.preventDefault();
+                                void handleSaveEdit(message.id);
+                              }
+                              if (event.key === "Escape") {
+                                setEditingMessageId(null);
+                              }
+                            }}
+                          />
+                          <div className="flex justify-end gap-2 text-xs">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 cursor-pointer text-text-secondary hover:text-text-primary rounded-lg"
+                              onClick={() => setEditingMessageId(null)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 px-3 bg-brand text-white hover:bg-brand-hover cursor-pointer rounded-lg font-bold"
+                              onClick={() => handleSaveEdit(message.id)}
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      ) : trimmedText ? (
+                        <div className={textBubbleClass}>
+                          <p>{trimmedText}</p>
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
 
-                  {trimmedText ? (
-                    <div className={textBubbleClass}>
-                      <p>{trimmedText}</p>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+                    {trimmedText && !editingMessageId && (
+                      <div className="absolute right-0 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                        <DropdownMenu.Root>
+                          <DropdownMenu.Trigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 rounded-full border border-border-primary/40 bg-bg-secondary text-text-secondary hover:text-text-primary shadow-xs cursor-pointer flex items-center justify-center"
+                              title="Message actions"
+                            >
+                              <MoreHorizontal className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenu.Trigger>
+                          <DropdownMenu.Portal>
+                            <DropdownMenu.Content
+                              className="z-50 min-w-[7.5rem] overflow-hidden rounded-lg border border-border-primary bg-bg-secondary p-1 text-text-primary shadow-md"
+                              align="end"
+                              sideOffset={4}
+                            >
+                              <DropdownMenu.Item
+                                onClick={() => handleStartEdit(message.id, trimmedText)}
+                                className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                                <span className="ml-2">Edit</span>
+                              </DropdownMenu.Item>
+                              <DropdownMenu.Item
+                                onClick={() => handleDelete(message.id)}
+                                className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold text-danger outline-none hover:bg-danger/10 hover:text-danger focus:bg-danger/10 focus:text-danger transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span className="ml-2">Delete</span>
+                              </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                          </DropdownMenu.Portal>
+                        </DropdownMenu.Root>
+                      </div>
+                    )}
+                  </div>
+                </ContextMenu.Trigger>
+                <ContextMenu.Portal>
+                  <ContextMenu.Content
+                    className="z-50 min-w-[7.5rem] overflow-hidden rounded-lg border border-border-primary bg-bg-secondary p-1 text-text-primary shadow-md"
+                    alignOffset={4}
+                  >
+                    <ContextMenu.Item
+                      onClick={() => handleStartEdit(message.id, trimmedText)}
+                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      <span className="ml-2">Edit</span>
+                    </ContextMenu.Item>
+                    <ContextMenu.Item
+                      onClick={() => handleDelete(message.id)}
+                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold text-danger outline-none hover:bg-danger/10 hover:text-danger focus:bg-danger/10 focus:text-danger transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span className="ml-2">Delete</span>
+                    </ContextMenu.Item>
+                  </ContextMenu.Content>
+                </ContextMenu.Portal>
+              </ContextMenu.Root>
             );
           })
         ) : (
