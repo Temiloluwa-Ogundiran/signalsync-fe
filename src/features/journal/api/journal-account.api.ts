@@ -44,4 +44,17 @@ export const journalAccountApi = {
   disconnectAccount: async (accountId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/accounts/${accountId}`, withAuth(token));
   },
+
+  updateAccount: async (
+    accountId: string,
+    displayName: string,
+    token?: string,
+  ): Promise<JournalAccount> => {
+    const { data } = await apiClient.patch<JournalAccount>(
+      `/accounts/${accountId}`,
+      { display_name: displayName },
+      withAuth(token),
+    );
+    return data;
+  },
 };
