@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Plus } from "lucide-react";
+import { Menu, PlugZap, Plus } from "lucide-react";
 import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
 import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
 import Image from "next/image";
@@ -33,7 +33,9 @@ export function Header({ onMenuClick }: HeaderProps) {
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const isJournalArea =
-    pathname.includes("/journal") || pathname.includes("/trade-history") || pathname.includes("/accounts");
+    pathname.includes("/journal") ||
+    pathname.includes("/trade-history") ||
+    pathname.includes("/accounts");
   const paramAccountId = searchParams.get("accountId") || "";
   const activeAccountId = isJournalArea
     ? paramAccountId || storeAccountId || accounts[0]?.id || ""
@@ -41,7 +43,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
-  
+
   const title = useMemo(() => {
     if (pathname.includes("/journal")) return "Journal";
     if (pathname.includes("/trade-history")) return "Trade History";
@@ -210,12 +212,17 @@ export function Header({ onMenuClick }: HeaderProps) {
                     <span>
                       {activeAccount?.display_name ||
                         activeAccount?.broker_login ||
-                        (accounts.length === 0 ? "Connect Account" : "Select account")}
+                        (accounts.length === 0
+                          ? "Connect Account"
+                          : "Select account")}
                     </span>
                     <IconChevronDown />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 border-chrome-control-border bg-card-bg p-2" align="end">
+                <PopoverContent
+                  className="w-72 border-chrome-control-border bg-card-bg p-2"
+                  align="end"
+                >
                   {accounts.length ? (
                     <>
                       <div className="max-h-64 overflow-y-auto">
@@ -264,9 +271,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Button
               type="button"
               onClick={openAddAccount}
-              className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-brand text-white hover:bg-brand-hover text-xs font-bold px-4 py-2 h-9 border-0 shadow-sm transition-all"
+              className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] bg-brand text-white hover:bg-brand-hover text-xs font-bold px-4 py-2 h-9 border-0 shadow-sm transition-all"
             >
-              <Plus className="h-4 w-4" />
+              <PlugZap className="h-4 w-4" />
               Connect Account
             </Button>
           </div>
@@ -341,7 +348,10 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <IconChevronDown className="h-3 w-3 shrink-0" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 border-chrome-control-border bg-card-bg p-2" align="start">
+            <PopoverContent
+              className="w-64 border-chrome-control-border bg-card-bg p-2"
+              align="start"
+            >
               {accounts.length ? (
                 <>
                   <div className="max-h-48 overflow-y-auto">
@@ -391,7 +401,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Button
           type="button"
           onClick={openAddAccount}
-          className="flex shrink-0 items-center gap-1 rounded-full bg-brand text-white hover:bg-brand-hover text-[10px] font-bold px-3 py-1 h-7 border-0 shadow-sm transition-all cursor-pointer"
+          className="flex shrink-0 items-center gap-1 rounded-[10px] bg-brand text-white hover:bg-brand-hover text-[10px] font-bold px-3 py-1 h-7 border-0 shadow-sm transition-all cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5" />
           Connect

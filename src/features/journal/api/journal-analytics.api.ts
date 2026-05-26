@@ -12,15 +12,16 @@ interface AnalyticsQueryParams {
   accountId?: string;
   fromDate: string;
   toDate: string;
+  timeBasis?: "open" | "close";
 }
 
-interface BalanceHistoryQueryParams extends AnalyticsQueryParams {
+interface BalanceHistoryQueryParams extends Omit<AnalyticsQueryParams, "timeBasis"> {
   granularity: "intraday" | "day";
 }
 
 export const journalAnalyticsApi = {
   getCalendar: async (
-    params: AnalyticsQueryParams,
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
     token?: string,
   ): Promise<JournalAnalyticsCalendarResponse> => {
     const { data } = await apiClient.get<JournalAnalyticsCalendarResponse>(
@@ -39,7 +40,7 @@ export const journalAnalyticsApi = {
   },
 
   getSummary: async (
-    params: AnalyticsQueryParams,
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
     token?: string,
   ): Promise<JournalAnalyticsSummaryResponse> => {
     const { data } = await apiClient.get<JournalAnalyticsSummaryResponse>(
@@ -58,7 +59,7 @@ export const journalAnalyticsApi = {
   },
 
   getInstruments: async (
-    params: AnalyticsQueryParams,
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
     token?: string,
   ): Promise<JournalAnalyticsInstrumentsResponse> => {
     const { data } = await apiClient.get<JournalAnalyticsInstrumentsResponse>(
@@ -88,6 +89,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
+          ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
         },
       },
     );
@@ -108,6 +110,7 @@ export const journalAnalyticsApi = {
           from_date: params.fromDate,
           to_date: params.toDate,
           recent_limit: 8,
+          ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
         },
       },
     );

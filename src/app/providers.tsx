@@ -49,7 +49,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <NuqsAdapter>
           <SessionQuerySync />
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="bottom-right" />
         </NuqsAdapter>
       </QueryClientProvider>
     </SessionProvider>

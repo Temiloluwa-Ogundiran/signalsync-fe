@@ -26,10 +26,15 @@ interface JournalTimePerformanceWidgetProps {
   daily: JournalAnalyticsTimePerformancePoint[];
   /** Tighter layout when shown beside other analytics widgets. */
   compact?: boolean;
+  timeBasis?: "open" | "close";
+  onTimeBasisChange?: (basis: "open" | "close") => void;
 }
 
-const TRADE_TIME_PERFORMANCE_HELP =
+const TRADE_TIME_PERFORMANCE_HELP_CLOSE =
   "Net P&L summed by when trades were closed in your account timezone. Hourly groups by clock hour; Daily groups by weekday. Bar height is total P&L for that bucket—green is net positive, red is net negative.";
+
+const TRADE_TIME_PERFORMANCE_HELP_OPEN =
+  "Net P&L summed by when trades were opened in your account timezone. Hourly groups by clock hour; Daily groups by weekday. Bar height is total P&L for that bucket—green is net positive, red is net negative.";
 
 function mapSeries(
   points: JournalAnalyticsTimePerformancePoint[],
@@ -107,6 +112,8 @@ export function JournalTimePerformanceWidget({
   hourly,
   daily,
   compact = false,
+  timeBasis = "close",
+  onTimeBasisChange,
 }: JournalTimePerformanceWidgetProps) {
   const [mode, setMode] = useState<"hourly" | "daily">("hourly");
   const data = mode === "hourly" ? mapSeries(hourly) : mapSeries(daily);
@@ -117,6 +124,11 @@ export function JournalTimePerformanceWidget({
     ? Math.max(...numericValues.map((value) => Math.abs(value)))
     : 0;
   const paddedMax = Math.max(1_000, Math.ceil((maxAbs * 1.2) / 1000) * 1000);
+
+  const helpText =
+    timeBasis === "open"
+      ? TRADE_TIME_PERFORMANCE_HELP_OPEN
+      : TRADE_TIME_PERFORMANCE_HELP_CLOSE;
 
   return (
     <section className="flex h-full min-h-0 flex-col justify-between rounded-xl bg-kpi-card-bg ring-1 ring-border-primary/60">
@@ -132,11 +144,21 @@ export function JournalTimePerformanceWidget({
               Trade Time Performance
             </h3>
             <JournalHoverHelpIcon
-              ariaLabel={TRADE_TIME_PERFORMANCE_HELP}
+              ariaLabel={helpText}
               side="above"
-              tooltip={TRADE_TIME_PERFORMANCE_HELP}
+              tooltip={helpText}
             />
           </div>
+          {onTimeBasisChange && (
+            <select
+              value={timeBasis}
+              onChange={(e) => onTimeBasisChange(e.target.value as "open" | "close")}
+              className="rounded-lg border border-border-primary bg-bg-tertiary px-2 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary focus:text-text-primary focus:border-brand focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="close">Close Time</option>
+              <option value="open">Open Time</option>
+            </select>
+          )}
         </div>
       </header>
 

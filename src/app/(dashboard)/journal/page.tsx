@@ -113,6 +113,7 @@ function JournalPageContent() {
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
   const [balanceRange, setBalanceRange] = useState<BalanceRangeOption>("1M");
+  const [timeBasis, setTimeBasis] = useState<"open" | "close">("close");
 
   const {
     data: accounts = [],
@@ -194,6 +195,7 @@ function JournalPageContent() {
       activeAccountId && activeAccount?.is_data_ready_for_stats ? activeAccountId : undefined,
     fromDate,
     toDate,
+    timeBasis,
   });
   const calendarAnalytics = dashboardQuery.data?.calendar;
   const summaryAnalytics = dashboardQuery.data?.summary;
@@ -689,6 +691,8 @@ function JournalPageContent() {
                 compact
                 hourly={timePerformanceAnalytics?.hourly ?? []}
                 daily={timePerformanceAnalytics?.daily ?? []}
+                timeBasis={timeBasis}
+                onTimeBasisChange={setTimeBasis}
               />
             </div>
           ) : null}

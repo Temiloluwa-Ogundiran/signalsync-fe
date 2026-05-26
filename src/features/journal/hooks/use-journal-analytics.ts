@@ -198,17 +198,19 @@ export function useJournalDashboardAnalytics({
   accountId,
   fromDate,
   toDate,
-}: AnalyticsQueryInput) {
+  timeBasis = "close",
+}: AnalyticsQueryInput & { timeBasis?: "open" | "close" }) {
   const { data: session, status } = useSession();
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate),
+    queryKey: [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate), timeBasis],
     queryFn: () =>
       journalAnalyticsApi.getDashboard(
         {
           accountId,
           fromDate,
           toDate,
+          timeBasis,
         },
         session?.accessToken as string,
       ),

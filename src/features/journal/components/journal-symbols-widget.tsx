@@ -103,13 +103,28 @@ export function JournalSymbolsWidget({
                 nameKey="symbol"
                 cx="50%"
                 cy="50%"
-                innerRadius="55%"
-                outerRadius="95%"
+                innerRadius="42%"
+                outerRadius="70%"
                 startAngle={90}
                 endAngle={-270}
                 stroke="none"
                 paddingAngle={1}
                 cornerRadius={6}
+                labelLine={{ stroke: "var(--border-secondary)", strokeWidth: 1, opacity: 0.5 }}
+                label={({ payload, x, y, textAnchor, dominantBaseline }) => {
+                  if (!payload) return null;
+                  return (
+                    <text
+                      x={x}
+                      y={y}
+                      textAnchor={textAnchor}
+                      dominantBaseline={dominantBaseline}
+                      className="fill-text-primary text-[10px] sm:text-xs font-bold font-sans"
+                    >
+                      {`${payload.symbol}: ${payload.trades}`}
+                    </text>
+                  );
+                }}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={entry.symbol} fill={`var(--chart-${(index % 5) + 1})`} />

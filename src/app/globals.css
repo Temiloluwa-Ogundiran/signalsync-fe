@@ -285,6 +285,9 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-light: var(--accent-light);
 
+  --color-brand: var(--accent);
+  --color-brand-hover: var(--accent-hover);
+
   --color-success: var(--success);
   --color-success-light: var(--success-light);
   --color-danger: var(--danger);
