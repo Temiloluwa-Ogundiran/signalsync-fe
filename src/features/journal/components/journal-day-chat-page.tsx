@@ -281,6 +281,7 @@ export function JournalDayChatPage() {
             onPromptClick={(prompt) => setDraftMessage(prompt)}
             onContextChange={setChatContext}
             onRemoveFile={() => setPendingFile(null)}
+            onPasteFile={setPendingFile}
           />
 
           <section className="min-w-0 space-y-4">

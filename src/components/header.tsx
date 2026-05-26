@@ -111,9 +111,6 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const openAddAccount = () => {
     openConnectModal();
-    if (!pathname.includes("/journal") && !pathname.includes("/accounts")) {
-      router.push("/journal");
-    }
   };
 
   return (
@@ -135,7 +132,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 alt=""
                 width={28}
                 height={35}
-                className="shrink-0"
+                className="shrink-0 hidden md:inline-block"
                 priority
               />
               <span className="truncate hidden md:inline-block font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">

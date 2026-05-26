@@ -27,13 +27,7 @@ export function JournalDayModalFooter({
         className="rounded-full font-semibold bg-violet-700 cursor-pointer text-white hover:bg-violet-600 w-[164px] h-[46px]"
         onClick={onOpenDayJournal}
       >
-        <Image
-          src={"/icons/journal/modal/journal.svg"}
-          alt=""
-          width={24}
-          height={24}
-          className={cn("h-6 w-6 mr-2")}
-        />
+        <PencilLine className="h-4 w-4" />
         Journal Day
       </Button>
     </div>

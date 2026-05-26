@@ -6,16 +6,13 @@ import {
   Image as ImageIcon,
   Loader2,
   Mic,
+  Paperclip,
   SendHorizontal,
   Square,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChatRailProps } from "./journal-day-chat.types";
 import type { JournalAttachment } from "@/features/journal/types";
@@ -45,6 +42,7 @@ export function JournalDayChatRail({
   onPromptClick,
   onContextChange,
   onRemoveFile,
+  onPasteFile,
   title = "Journal Your Day",
   subtitle = "Review your trades with text, image, and voice notes.",
   composerPlaceholder = "How did your day go...",
@@ -58,7 +56,9 @@ export function JournalDayChatRail({
     src: string;
     alt: string;
   } | null>(null);
-  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     /* Object URL lifecycle: create/revoke in effect for Strict Mode correctness. */
@@ -126,7 +126,8 @@ export function JournalDayChatRail({
                       <div className="mb-2 space-y-2">
                         {message.attachments.map((attachment) => {
                           const alt =
-                            attachment.original_filename || "journal attachment";
+                            attachment.original_filename ||
+                            "journal attachment";
                           if (isImageAttachment(attachment)) {
                             return (
                               <button
@@ -298,11 +299,11 @@ export function JournalDayChatRail({
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full"
+            className="rounded-full cursor-pointer"
             onClick={onPickImage}
             title="Attach image"
           >
-            <ImageIcon className="h-4 w-4" />
+            <Paperclip className="h-4 w-4" />
           </Button>
 
           <Textarea
@@ -314,6 +315,22 @@ export function JournalDayChatRail({
               if (!canSend || isSending || isRecording) return;
               onSend();
             }}
+            onPaste={(event) => {
+              if (!onPasteFile) return;
+              const items = event.clipboardData?.items;
+              if (!items) return;
+              for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.startsWith("image/")) {
+                  const file = item.getAsFile();
+                  if (file) {
+                    onPasteFile(file);
+                    event.preventDefault();
+                    break;
+                  }
+                }
+              }
+            }}
             rows={1}
             placeholder={composerPlaceholder}
             className="min-h-10 border-0 bg-transparent py-2 shadow-none focus-visible:ring-0"
@@ -322,7 +339,7 @@ export function JournalDayChatRail({
           {isRecording ? (
             <Button
               size="icon"
-              className="rounded-full bg-accent text-white hover:bg-accent-hover"
+              className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
               onClick={onRecordToggle}
               disabled={isSending}
               title="Stop recording"
@@ -336,7 +353,7 @@ export function JournalDayChatRail({
           ) : canSend ? (
             <Button
               size="icon"
-              className="rounded-full bg-primary text-primary-foreground"
+              className="rounded-full hover:cursor-pointer bg-primary text-primary-foreground"
               onClick={onSend}
               disabled={isSending}
               title="Send message"
@@ -350,7 +367,7 @@ export function JournalDayChatRail({
           ) : (
             <Button
               size="icon"
-              className="rounded-full bg-accent text-white hover:bg-accent-hover"
+              className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
               onClick={onRecordToggle}
               disabled={isSending}
               title="Record voice note"

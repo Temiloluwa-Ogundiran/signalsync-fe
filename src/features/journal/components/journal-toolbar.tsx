@@ -1,6 +1,12 @@
 "use client";
 
-import { Plus, RefreshCw } from "lucide-react";
+import {
+  Pencil,
+  PencilLine,
+  PencilLineIcon,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface JournalToolbarProps {
@@ -69,7 +75,7 @@ export function JournalToolbar({
           <span>{getLastSyncText(lastSyncedAt)}</span>
           <button
             onClick={onSyncAccount}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
             aria-label={
               isSyncPending ? "Syncing account" : "Sync active account"
             }
@@ -96,7 +102,7 @@ export function JournalToolbar({
           onClick={onOpenJournalDay}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover cursor-pointer"
         >
-          <Plus className="h-4 w-4" />
+          <PencilLine className="h-4 w-4" />
           Journal Day
         </button>
         {/* <button className="inline-flex h-11 items-center gap-2 rounded-full border-2 border-chrome-control-border bg-card-bg px-5 text-sm font-semibold text-text-primary">

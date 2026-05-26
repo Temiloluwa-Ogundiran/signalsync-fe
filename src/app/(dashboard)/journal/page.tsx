@@ -8,17 +8,9 @@ import {
   useJournalAccounts,
   useSyncJournalAccount,
 } from "@/features/journal/hooks/use-journal-accounts";
-import { ConnectAccountForm } from "@/features/journal/components/connect-account-form";
 import {
   useJournalDashboardAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
 import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
@@ -709,36 +701,6 @@ function JournalPageContent() {
           ) : null}
         </div>
       ) : null}
-
-      <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
-        <DialogContent className="max-w-xl border border-border-primary bg-card-bg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-text-primary">
-              Connect Trading Account
-            </DialogTitle>
-            <DialogDescription className="text-text-secondary">
-              Add your MT5 investor credentials to start syncing trades
-              into your journal.
-            </DialogDescription>
-          </DialogHeader>
-          <ConnectAccountForm
-            onSuccess={(account) => {
-              setActiveAccountId(account.id);
-              setConnectModalOpen(false);
-              if (account.connection_state === "bootstrap_failed") {
-                toast.warning("Account connected with warning", {
-                  description: "Account was verified, but history sync failed. You can retry syncing manually.",
-                });
-              } else {
-                toast.success("Account connected", {
-                  description: "Your trading account has been successfully connected.",
-                });
-              }
-              setPollingWindowStartedAt(Date.now());
-            }}
-          />
-        </DialogContent>
-      </Dialog>
 
       <JournalDayModal
         open={isDayModalOpen}

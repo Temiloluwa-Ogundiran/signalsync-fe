@@ -236,6 +236,7 @@ export function JournalTradeChatPage() {
               onPromptClick={(prompt) => setDraftMessage(prompt)}
               onContextChange={() => {}}
               onRemoveFile={() => setPendingFile(null)}
+              onPasteFile={setPendingFile}
             />
             {/* Responsive stacking container for Details and Tags columns on md/lg screens */}
             <div className="grid gap-4 h-fit xl:contents">

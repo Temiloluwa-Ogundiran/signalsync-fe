@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { MobileNav } from "@/components/mobile-nav";
 import { Feather } from "lucide-react";
 import { CreatePostModal } from "@/features/post/components/CreatePostModal";
+import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AiInsightModalProvider } from "@/features/dashboard/components/ai-insight-modal-provider";
 
 export default function DashboardLayout({
@@ -76,6 +77,8 @@ export default function DashboardLayout({
           open={postModalOpen}
           onClose={() => setPostModalOpen(false)}
         />
+
+        <ConnectAccountModal />
 
         <MobileNav />
       </div>

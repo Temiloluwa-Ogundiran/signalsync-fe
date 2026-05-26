@@ -32,7 +32,7 @@ export function JournalDayChatHeader({
       <CardContent className="flex flex-wrap items-center gap-3 p-3 md:p-4">
         <Button
           variant="ghost"
-          className="rounded-full border border-border-secondary bg-bg-primary px-4 text-text-primary"
+          className="rounded-full cursor-pointer border border-border-secondary bg-bg-primary px-4 text-text-primary"
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4" />

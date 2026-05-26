@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { PencilLine, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -43,7 +43,7 @@ export function JournalTradeHistoryToolbar({
           onClick={onOpenJournalDay}
           className="h-12 rounded-full bg-accent px-6 text-sm font-semibold text-white hover:bg-accent-hover cursor-pointer"
         >
-          <Plus className="h-4 w-4" />
+          <PencilLine className="h-4 w-4" />
           Journal Day
         </Button>
         {/* <Button

@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Tag, Loader2, Settings, Shield, ChevronDown } from "lucide-react";
+import {
+  Plus,
+  Tag,
+  Loader2,
+  Settings,
+  Shield,
+  ChevronDown,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,13 +35,13 @@ export function JournalTradeChatTagsCard({
   const { data: config, isLoading: isLoadingConfig } = useJournalTagsConfig();
   const { data: activeTags, isLoading: isLoadingActiveTags } = useTradeTags(
     tradeId,
-    !!tradeId
+    !!tradeId,
   );
   const updateTradeTags = useUpdateTradeTags(accountId);
 
   const handleUpdateTags = async (
     category: TagCategory,
-    nextOptionIdsForCategory: string[]
+    nextOptionIdsForCategory: string[],
   ) => {
     if (!tradeId) return;
 
@@ -44,7 +51,10 @@ export function JournalTradeChatTagsCard({
         ?.filter((t) => t.category_id !== category.id)
         .map((t) => t.id) ?? [];
 
-    const finalOptionIds = [...otherCategoriesOptionIds, ...nextOptionIdsForCategory];
+    const finalOptionIds = [
+      ...otherCategoriesOptionIds,
+      ...nextOptionIdsForCategory,
+    ];
 
     try {
       await updateTradeTags.mutateAsync({
@@ -102,7 +112,9 @@ export function JournalTradeChatTagsCard({
               {config?.map((category) => {
                 // Get selected options belonging to this category
                 const selectedOptionsForCat =
-                  activeTags?.filter((opt) => opt.category_id === category.id) ?? [];
+                  activeTags?.filter(
+                    (opt) => opt.category_id === category.id,
+                  ) ?? [];
 
                 return (
                   <div
@@ -125,7 +137,9 @@ export function JournalTradeChatTagsCard({
                       <JournalTagSelector
                         category={category}
                         selectedOptions={selectedOptionsForCat}
-                        onSelectChange={(nextIds) => handleUpdateTags(category, nextIds)}
+                        onSelectChange={(nextIds) =>
+                          handleUpdateTags(category, nextIds)
+                        }
                         onOpenTagManager={() => setIsTagManagerOpen(true)}
                         trigger={
                           <Button
@@ -146,10 +160,12 @@ export function JournalTradeChatTagsCard({
                         <JournalTagSelector
                           category={category}
                           selectedOptions={selectedOptionsForCat}
-                          onSelectChange={(nextIds) => handleUpdateTags(category, nextIds)}
+                          onSelectChange={(nextIds) =>
+                            handleUpdateTags(category, nextIds)
+                          }
                           onOpenTagManager={() => setIsTagManagerOpen(true)}
                           trigger={
-                            <button className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-secondary p-3 text-center text-xs font-semibold text-text-tertiary transition-all hover:border-brand/40 hover:text-text-secondary bg-bg-primary/30">
+                            <button className="flex cursor-pointer w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-secondary p-3 text-center text-xs font-semibold text-text-tertiary transition-all hover:border-brand/40 hover:text-text-secondary bg-bg-primary/30">
                               <Plus className="h-4 w-4" />
                               No {category.title} tags assigned
                             </button>
@@ -161,12 +177,16 @@ export function JournalTradeChatTagsCard({
                             key={opt.id}
                             category={category}
                             selectedOptions={selectedOptionsForCat}
-                            onSelectChange={(nextIds) => handleUpdateTags(category, nextIds)}
+                            onSelectChange={(nextIds) =>
+                              handleUpdateTags(category, nextIds)
+                            }
                             onOpenTagManager={() => setIsTagManagerOpen(true)}
                             trigger={
                               <button
                                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white transition-all shadow-sm hover:scale-105"
-                                style={{ backgroundColor: opt.color || "#64748b" }}
+                                style={{
+                                  backgroundColor: opt.color || "#64748b",
+                                }}
                               >
                                 <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
                                 {opt.value}

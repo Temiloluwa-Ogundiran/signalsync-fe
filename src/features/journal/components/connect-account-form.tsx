@@ -74,7 +74,8 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
     try {
       const account = await connectAccount.mutateAsync(payload);
       toast.success("Account added", {
-        description: "Credentials verified and history sync completed successfully.",
+        description:
+          "Credentials verified and history sync completed successfully.",
       });
       onSuccess?.(account);
     } catch (error) {
@@ -217,7 +218,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           ) : (
             <>
               <PlugZap className="mr-2 h-4 w-4" />
-              Connect Account
+              Connect
             </>
           )}
         </Button>
