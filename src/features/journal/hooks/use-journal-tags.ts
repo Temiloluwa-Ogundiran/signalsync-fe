@@ -143,3 +143,39 @@ export function useUpdateTradeTags(accountId?: string) {
     },
   });
 }
+
+export function useUpdateTradeRating(accountId?: string) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      tradeId,
+      rating,
+    }: {
+      tradeId: string;
+      rating: number;
+    }) =>
+      journalTagsApi.updateTradeRating(tradeId, rating, session?.accessToken),
+    onSuccess: (_data, variables) => {
+      const token = session?.accessToken;
+
+      // Invalidate journal day/trades caches to update trade details & stars immediately
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[2] === token
+          );
+        },
+      });
+
+      // Invalidate setups & analytics if accountId is provided
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
+  });
+}

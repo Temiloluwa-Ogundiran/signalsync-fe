@@ -242,6 +242,9 @@ export function JournalTradeChatPage() {
               <JournalTradeChatStatsCard
                 metrics={metrics}
                 netPnl={asNumber(trade?.net_profit)}
+                tradeId={tradeId}
+                rating={trade?.rating}
+                accountId={accountId}
               />
               <JournalTradeChatTagsCard
                 tradeId={tradeId}

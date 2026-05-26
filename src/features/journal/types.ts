@@ -229,6 +229,7 @@ export interface JournalTrade {
   balance_before_trade?: number | string | null;
   net_roi_percent?: number | string | null;
   trade_reviewed_at?: string | null;
+  rating?: number;
 }
 
 export interface JournalAdjacentTradedDatesResponse {

@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+import { Button } from "@/components/ui/button";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import {
   Popover,
@@ -237,7 +238,13 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Popover>
             <button
               type="button"
-              onClick={() => setIsAccountsMenuOpen((prev) => !prev)}
+              onClick={() => {
+                if (accounts.length === 0) {
+                  openAddAccount();
+                } else {
+                  setIsAccountsMenuOpen((prev) => !prev);
+                }
+              }}
               className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
             >
               <Image
@@ -249,7 +256,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <span>
                 {activeAccount?.display_name ||
                   activeAccount?.broker_login ||
-                  "Select account"}
+                  (accounts.length === 0 ? "Connect Account" : "Select account")}
               </span>
               <IconChevronDown />
             </button>
@@ -300,6 +307,15 @@ export function Header({ onMenuClick }: HeaderProps) {
               </div>
             ) : null}
           </div>
+
+          <Button
+            type="button"
+            onClick={openAddAccount}
+            className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-brand text-white hover:bg-brand-hover text-xs font-bold px-4 py-2 h-9 border-0 shadow-sm transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Connect Account
+          </Button>
 
           {/* <button
             type="button"

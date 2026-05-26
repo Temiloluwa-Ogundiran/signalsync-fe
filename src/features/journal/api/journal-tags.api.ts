@@ -67,4 +67,17 @@ export const journalTagsApi = {
     );
     return data;
   },
+
+  updateTradeRating: async (
+    tradeId: string,
+    rating: number,
+    token?: string
+  ): Promise<{ rating: number }> => {
+    const { data } = await apiClient.put<{ rating: number }>(
+      `/journal/trades/${tradeId}/rating`,
+      { rating },
+      withAuth(token)
+    );
+    return data;
+  },
 };
