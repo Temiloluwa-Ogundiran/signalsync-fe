@@ -15,6 +15,7 @@ import type { ChatPrompt } from "./journal-day-chat.types";
 import { asNumber } from "./journal-day-modal.utils";
 import { JournalTradeChatHeader } from "./journal-trade-chat-header";
 import { JournalTradeChatStatsCard } from "./journal-trade-chat-stats-card";
+import { JournalTradeChatTagsCard } from "./journal-trade-chat-tags-card";
 import { buildTradeMetrics, formatTradeHeaderDate } from "./journal-trade-chat.utils";
 import { requestSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 
@@ -214,11 +215,11 @@ export function JournalTradeChatPage() {
             Loading trade details...
           </div>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,520px)_minmax(0,520px)_minmax(0,556px)]">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,520px)_minmax(0,520px)_minmax(0,556px)]">
             <JournalDayChatRail
               title="Journal Trade"
               subtitle="Review your trade with text, image, and voice notes."
-              composerPlaceholder="Type something..."
+              composerPlaceholder="What was the lore behind this trade..."
               messages={messages}
               prompts={prompts}
               isLoading={tradeMessagesQuery.isLoading}
@@ -236,23 +237,17 @@ export function JournalTradeChatPage() {
               onContextChange={() => {}}
               onRemoveFile={() => setPendingFile(null)}
             />
-            {/* <div className="grid gap-4">
-              <JournalDayChatPnlChartCard
-                title="Running P&L"
-                data={runningPnlCurve}
-                seriesKey="runningPnl"
+            {/* Responsive stacking container for Details and Tags columns on md/lg screens */}
+            <div className="grid gap-4 h-fit xl:contents">
+              <JournalTradeChatStatsCard
+                metrics={metrics}
+                netPnl={asNumber(trade?.net_profit)}
               />
-              <JournalDayChatPnlChartCard
-                title="Percent Gain"
-                data={percentGainCurve}
-                seriesKey="runningPnl"
-                valueScale="percent"
+              <JournalTradeChatTagsCard
+                tradeId={tradeId}
+                accountId={accountId}
               />
-            </div> */}
-            <JournalTradeChatStatsCard
-              metrics={metrics}
-              netPnl={asNumber(trade?.net_profit)}
-            />
+            </div>
           </div>
         )}
       </div>

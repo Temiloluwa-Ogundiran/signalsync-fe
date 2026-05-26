@@ -46,7 +46,7 @@ export function JournalDayChatRail({
   onContextChange,
   onRemoveFile,
   title = "Journal Your Day",
-  subtitle = "Review your trade with text, image, and voice notes.",
+  subtitle = "Review your trades with text, image, and voice notes.",
   composerPlaceholder = "How did your day go...",
 }: ChatRailProps) {
   void prompts;

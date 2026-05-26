@@ -263,3 +263,18 @@ export interface JournalAnalyticsBalanceHistoryPoint {
 export interface JournalAnalyticsBalanceHistoryResponse {
   points: JournalAnalyticsBalanceHistoryPoint[];
 }
+
+export interface TagOption {
+  id: string;
+  category_id: string;
+  value: string;
+  color?: string | null;
+}
+
+export interface TagCategory {
+  id: string;
+  title: string;
+  is_system: boolean;
+  options: TagOption[];
+}
+

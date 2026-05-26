@@ -48,41 +48,47 @@ export function JournalTradeChatHeader({
           </p>
         </div>
 
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <Button
             variant="ghost"
-            className="rounded-full border border-border-secondary bg-bg-primary text-text-primary"
+            className="rounded-full border border-border-secondary bg-bg-primary text-text-primary h-8 sm:h-9 px-3 sm:px-4 text-[11px] sm:text-xs font-semibold flex items-center gap-1"
             type="button"
             disabled={isMarkingReviewed}
             onClick={onMarkReviewed}
           >
-            <Check className="h-4 w-4" />
-            {isReviewed ? "Trade reviewed" : "Mark Trade as reviewed"}
+            <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">
+              {isReviewed ? "Trade reviewed" : "Mark Trade as reviewed"}
+            </span>
+            <span className="inline sm:hidden">
+              {isReviewed ? "Reviewed" : "Mark Reviewed"}
+            </span>
           </Button>
 
-          <div className="inline-flex overflow-hidden rounded-full border-2 border-chrome-control-border bg-bg-secondary">
+          <div className="inline-flex overflow-hidden rounded-full border border-border-secondary bg-bg-secondary h-8 sm:h-9">
             <Button
               variant="ghost"
               type="button"
               disabled={!canPrevTrade}
-              className="rounded-none border-r border-chrome-control-border text-text-primary"
+              className="rounded-none border-r border-border-secondary text-text-primary h-full px-2.5 sm:px-4 text-[11px] sm:text-xs font-semibold flex items-center gap-0.5 sm:gap-1"
               onClick={onPrevTrade}
             >
-              <ChevronLeft className="h-4 w-4" />
-              Previous Trade
+              <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Previous Trade</span>
+              <span className="inline sm:hidden">Prev</span>
             </Button>
             <Button
               variant="ghost"
               type="button"
               disabled={!canNextTrade}
-              className="rounded-none text-text-primary"
+              className="rounded-none text-text-primary h-full px-2.5 sm:px-4 text-[11px] sm:text-xs font-semibold flex items-center gap-0.5 sm:gap-1"
               onClick={onNextTrade}
             >
-              Next Trade
-              <ChevronRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Next Trade</span>
+              <span className="inline sm:hidden">Next</span>
+              <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
-
         </div>
       </CardContent>
     </Card>
