@@ -34,7 +34,7 @@ export function JournalKpiAvgWinLoss({
       {/* top part */}
       {/* </div> */}
       <div className="flex flex-wrap items-center gap-1">
-        <span className="text-sm font-semibold leading-tight text-footnote-online">
+        <span className="text-xs sm:text-sm font-semibold leading-tight text-footnote-online">
           Avg Win/Loss Trade
         </span>
         <JournalKpiInfo
@@ -44,18 +44,18 @@ export function JournalKpiAvgWinLoss({
       </div>
 
       {/* bottom part */}
-      <div className="flex items-center justify-between">
-        <p className="font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
+      <div className="flex items-center justify-between gap-1">
+        <p className="font-heading text-2xl xl:text-xl min-[1400px]:text-2xl 2xl:text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
           {ratioLabel}
         </p>
-        <div className="flex w-[10.0625rem] shrink-0 flex-col justify-center gap-1.5 pt-0.5">
+        <div className="flex w-[7.5rem] xl:w-[6.2rem] min-[1400px]:w-[8rem] 2xl:w-[10.0625rem] shrink-0 flex-col justify-center gap-1.5 pt-0.5">
           <div className="relative h-[9px] w-full overflow-hidden rounded-full bg-kpi-legend-loss-fg">
             <div
               className="absolute left-0 top-0 h-full min-w-0 rounded-full bg-kpi-metric-positive"
               style={{ width: `${share * 100}%` }}
             />
           </div>
-          <div className="flex w-full items-center justify-between gap-2 text-sm font-normal leading-tight">
+          <div className="flex w-full items-center justify-between gap-1 text-[10px] sm:text-xs md:text-sm font-normal leading-tight">
             <span className="truncate text-kpi-metric-positive">
               {formatCompactMoney(avgWin)}
             </span>

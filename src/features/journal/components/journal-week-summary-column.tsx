@@ -17,16 +17,16 @@ export function JournalWeekSummaryColumn({
   weeklyTotals,
 }: JournalWeekSummaryColumnProps) {
   return (
-    <div className="grid grid-rows-6 gap-1.5">
+    <div className="grid grid-cols-2 gap-1.5 min-[480px]:grid-cols-3 sm:grid-cols-5 lg:grid-cols-1 lg:grid-rows-6 lg:gap-1.5">
       {weeklyTotals.map((weekPnl, index) => (
         <div
           key={`week-${index + 1}`}
-          className="rounded-md border border-border-primary/55 bg-card-bg px-2 py-2"
+          className="rounded-md border border-border-primary/55 bg-card-bg px-2 py-1.5 lg:py-2"
         >
-          <p className="text-[0.62rem] uppercase text-text-tertiary">Week {index + 1}</p>
+          <p className="text-[0.62rem] uppercase text-text-tertiary">W{index + 1}</p>
           <p
             className={cn(
-              "mt-1 text-sm font-semibold",
+              "mt-0.5 text-xs lg:text-sm font-semibold",
               weekPnl > 0 && "text-success",
               weekPnl < 0 && "text-danger",
               weekPnl === 0 && "text-text-secondary",
@@ -34,7 +34,9 @@ export function JournalWeekSummaryColumn({
           >
             {formatCompact(weekPnl)}
           </p>
-          <p className="text-[0.65rem] text-text-tertiary">{Math.abs(weekPnl) ? "6 days" : "0 days"}</p>
+          <p className="text-[0.58rem] sm:text-[0.65rem] text-text-tertiary hidden min-[360px]:block">
+            {Math.abs(weekPnl) ? "6 days" : "0 days"}
+          </p>
         </div>
       ))}
     </div>
