@@ -13,16 +13,40 @@ type MobileNavItem = {
 };
 
 const navItems: MobileNavItem[] = [
-  { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg", flag: "HOME" },
-  { label: "Discover", href: "/discover", iconSrc: "/icons/sidebar/discover.svg", flag: "DISCOVER" },
+  {
+    label: "Home",
+    href: "/overview",
+    iconSrc: "/icons/sidebar/home.svg",
+    flag: "HOME",
+  },
+  {
+    label: "Discover",
+    href: "/discover",
+    iconSrc: "/icons/sidebar/discover.svg",
+    flag: "DISCOVER",
+  },
   {
     label: "Feed",
     href: "/feed",
     iconSrc: "/icons/sidebar/trade-history.svg",
     flag: "FEED",
   },
-  { label: "Copy", href: "/copy-trading", iconSrc: "/icons/sidebar/copy-trading.svg" },
   { label: "Journal", href: "/journal", iconSrc: "/icons/sidebar/journal.svg" },
+  {
+    label: "History",
+    href: "/trade-history",
+    iconSrc: "/icons/sidebar/trade-history.svg",
+  },
+  {
+    label: "Accounts",
+    href: "/accounts",
+    iconSrc: "/icons/sidebar/accounts.svg",
+  },
+  {
+    label: "Copy",
+    href: "/copy-trading",
+    iconSrc: "/icons/sidebar/copy-trading.svg",
+  },
 ];
 
 /** Only show items whose feature flag is enabled (or have no flag at all) */
