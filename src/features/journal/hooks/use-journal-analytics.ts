@@ -152,18 +152,20 @@ export function useJournalTimePerformanceAnalytics({
   accountId,
   fromDate,
   toDate,
-}: AnalyticsQueryInput) {
+  timeBasis = "close",
+}: AnalyticsQueryInput & { timeBasis?: "open" | "close" }) {
   const { data: session, status } = useSession();
   const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, includeManual),
+    queryKey: [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, includeManual), timeBasis],
     queryFn: () =>
       journalAnalyticsApi.getTimePerformance(
         {
           accountId: accountId as string,
           fromDate,
           toDate,
+          timeBasis,
           includeManual,
         },
         session?.accessToken as string,

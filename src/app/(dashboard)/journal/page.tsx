@@ -10,6 +10,8 @@ import {
 } from "@/features/journal/hooks/use-journal-accounts";
 import {
   useJournalDashboardAnalytics,
+  useJournalBalanceHistoryAnalytics,
+  useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
@@ -26,7 +28,6 @@ import { JournalTimePerformanceWidget } from "@/features/journal/components/jour
 import { JournalBalanceOverTimeWidget } from "@/features/journal/components/journal-balance-over-time-widget";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useJournalBalanceHistoryAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { consumeSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
@@ -88,7 +89,9 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<number | null>(null);
+  const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<
+    number | null
+  >(null);
   const [syncUiState, setSyncUiState] = useState<{
     accountId: string;
     startedAt: number;
@@ -99,8 +102,8 @@ function JournalPageContent() {
   const journalAutoSyncAttemptedForAccountRef = useRef<string | null>(null);
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
-  const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
-  const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
+  // const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
+  // const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
@@ -184,22 +187,35 @@ function JournalPageContent() {
 
   const dashboardQuery = useJournalDashboardAnalytics({
     accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats ? activeAccountId : undefined,
+      activeAccountId && activeAccount?.is_data_ready_for_stats
+        ? activeAccountId
+        : undefined,
     fromDate,
     toDate,
-    timeBasis,
   });
   const calendarAnalytics = dashboardQuery.data?.calendar;
   const summaryAnalytics = dashboardQuery.data?.summary;
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
-  const timePerformanceAnalytics = dashboardQuery.data?.time_performance;
+
+  const timePerformanceQuery = useJournalTimePerformanceAnalytics({
+    accountId:
+      activeAccountId && activeAccount?.is_data_ready_for_stats
+        ? activeAccountId
+        : undefined,
+    fromDate,
+    toDate,
+    timeBasis,
+  });
+  const timePerformanceAnalytics = timePerformanceQuery.data;
   const balanceRangeWindow = useMemo(
     () => resolveBalanceRangeWindow(balanceRange),
     [balanceRange],
   );
   const balanceHistoryQuery = useJournalBalanceHistoryAnalytics({
     accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats ? activeAccountId : undefined,
+      activeAccountId && activeAccount?.is_data_ready_for_stats
+        ? activeAccountId
+        : undefined,
     fromDate: balanceRangeWindow.fromDate,
     toDate: balanceRangeWindow.toDate,
     granularity: balanceRangeWindow.granularity,
@@ -312,7 +328,10 @@ function JournalPageContent() {
     );
   };
 
-  const handleRefreshAccounts = async (options?: { silent?: boolean; accountId?: string }) => {
+  const handleRefreshAccounts = async (options?: {
+    silent?: boolean;
+    accountId?: string;
+  }) => {
     const silent = options?.silent ?? false;
     const targetAccountId = options?.accountId ?? activeAccountId;
     if (!accounts.length) {
@@ -347,7 +366,9 @@ function JournalPageContent() {
     }
 
     markSyncRequestedNow(targetAccountId);
-    const targetAccount = accounts.find((account) => account.id === targetAccountId);
+    const targetAccount = accounts.find(
+      (account) => account.id === targetAccountId,
+    );
     const baselineLastSyncedAtMs = targetAccount?.last_synced_at
       ? new Date(targetAccount.last_synced_at).getTime()
       : null;
@@ -372,7 +393,8 @@ function JournalPageContent() {
       const didSyncTimestampAdvance =
         !!refreshedLastSyncedAtMs &&
         !Number.isNaN(refreshedLastSyncedAtMs) &&
-        (!baselineLastSyncedAtMs || refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
+        (!baselineLastSyncedAtMs ||
+          refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
       if ("inserted_trades" in result || didSyncTimestampAdvance) {
         setSyncUiState(null);
       }
@@ -428,7 +450,9 @@ function JournalPageContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("accountId");
     params.delete("connectAccount");
-    router.replace(params.toString() ? `/journal?${params.toString()}` : "/journal");
+    router.replace(
+      params.toString() ? `/journal?${params.toString()}` : "/journal",
+    );
   }, [router, searchParams, setActiveAccountId]);
 
   useEffect(() => {
@@ -440,12 +464,7 @@ function JournalPageContent() {
     if (!activeAccountId || !exists) {
       setActiveAccountId(accounts[0].id);
     }
-  }, [
-    activeAccountId,
-    accounts,
-    isAccountsLoading,
-    setActiveAccountId,
-  ]);
+  }, [activeAccountId, accounts, isAccountsLoading, setActiveAccountId]);
 
   useEffect(() => {
     if (isAccountsError) {
@@ -556,7 +575,11 @@ function JournalPageContent() {
   }, [activeAccountId]);
 
   useEffect(() => {
-    if (isAccountsLoading || !accounts.length || syncAccountMutation.isPending) {
+    if (
+      isAccountsLoading ||
+      !accounts.length ||
+      syncAccountMutation.isPending
+    ) {
       return;
     }
 
@@ -592,7 +615,7 @@ function JournalPageContent() {
 
     journalAutoSyncAttemptedForAccountRef.current = attemptKey;
     void handleRefreshAccounts({ silent: true, accountId: acct.id });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid re-running on every accounts[] identity change; use length + lastSyncedAt
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid re-running on every accounts[] identity change; use length + lastSyncedAt
   }, [
     accounts.length,
     activeAccountId,
@@ -603,15 +626,25 @@ function JournalPageContent() {
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
-  const tradesRows = toTradesPanelRows(dashboardQuery.data?.recent_trades?.items ?? []);
+  const tradesRows = toTradesPanelRows(
+    dashboardQuery.data?.recent_trades?.items ?? [],
+  );
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
-  const showJournalSymbols = widgetRegistry.some((widget) => widget.id === "symbols");
-  const showTimePerformance = widgetRegistry.some((widget) => widget.id === "timePerformance");
-  const showBalanceHistory = widgetRegistry.some((widget) => widget.id === "balanceHistory");
+  const showJournalSymbols = widgetRegistry.some(
+    (widget) => widget.id === "symbols",
+  );
+  const showTimePerformance = widgetRegistry.some(
+    (widget) => widget.id === "timePerformance",
+  );
+  const showBalanceHistory = widgetRegistry.some(
+    (widget) => widget.id === "balanceHistory",
+  );
   const analyticsRowCount =
-    Number(showJournalSymbols) + Number(showTimePerformance) + Number(showBalanceHistory);
+    Number(showJournalSymbols) +
+    Number(showTimePerformance) +
+    Number(showBalanceHistory);
 
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
@@ -624,7 +657,8 @@ function JournalPageContent() {
         lastSyncedAt={activeAccount?.last_synced_at}
         connectionState={activeAccount?.connection_state}
         connectionError={
-          activeAccount?.bootstrap_error_message || activeAccount?.sync_error_message
+          activeAccount?.bootstrap_error_message ||
+          activeAccount?.sync_error_message
         }
         onSyncAccount={() => void handleRefreshAccounts()}
         onOpenJournalDay={handleOpenTodayJournalDay}
@@ -671,7 +705,7 @@ function JournalPageContent() {
           )}
         >
           {showJournalSymbols ? (
-            <div className="min-h-0 min-w-0">
+            <div className="min-h-0 min-w-0 order-3 xl:order-none">
               <JournalSymbolsWidget
                 compact
                 instruments={instrumentsAnalytics?.instruments ?? []}
@@ -679,18 +713,25 @@ function JournalPageContent() {
             </div>
           ) : null}
           {showTimePerformance ? (
-            <div className="min-h-0 min-w-0">
-              <JournalTimePerformanceWidget
-                compact
-                hourly={timePerformanceAnalytics?.hourly ?? []}
-                daily={timePerformanceAnalytics?.daily ?? []}
-                timeBasis={timeBasis}
-                onTimeBasisChange={setTimeBasis}
-              />
+            <div className="min-h-0 min-w-0 order-2 xl:order-none">
+              {timePerformanceQuery.isLoading ? (
+                <div className="h-[396px] animate-pulse rounded-xl bg-kpi-card-bg border border-border-primary/60 flex flex-col justify-between p-4" aria-hidden>
+                  <div className="h-6 w-1/3 bg-bg-tertiary rounded" />
+                  <div className="h-64 bg-bg-tertiary rounded w-full" />
+                </div>
+              ) : (
+                <JournalTimePerformanceWidget
+                  compact
+                  hourly={timePerformanceAnalytics?.hourly ?? []}
+                  daily={timePerformanceAnalytics?.daily ?? []}
+                  timeBasis={timeBasis}
+                  onTimeBasisChange={setTimeBasis}
+                />
+              )}
             </div>
           ) : null}
           {showBalanceHistory ? (
-            <div className="min-h-0 min-w-0">
+            <div className="min-h-0 min-w-0 order-1 xl:order-none">
               <JournalBalanceOverTimeWidget
                 compact
                 points={balanceHistoryQuery.data?.points ?? []}
