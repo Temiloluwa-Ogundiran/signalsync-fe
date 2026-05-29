@@ -51,6 +51,15 @@ function formatCurrency(value: number) {
   return value < 0 ? `-$${absValue}` : `$${absValue}`;
 }
 
+function formatYAxisCurrency(value: number) {
+  if (value === 0) return "$0";
+  const compact = new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Math.abs(value));
+  return `${value < 0 ? "-" : ""}$${compact}`;
+}
+
 function TimePerformanceTooltip({
   active,
   payload,
@@ -116,7 +125,18 @@ export function JournalTimePerformanceWidget({
   onTimeBasisChange,
 }: JournalTimePerformanceWidgetProps) {
   const [mode, setMode] = useState<"hourly" | "daily">("hourly");
-  const data = mode === "hourly" ? mapSeries(hourly) : mapSeries(daily);
+
+  const rawData = mode === "hourly" ? mapSeries(hourly) : mapSeries(daily);
+  // Filter out empty hours in hourly mode to focus on actual active trading times and save space.
+  const activeData =
+    mode === "hourly"
+      ? rawData.filter(
+          (point) => point.pnl !== null && Math.abs(point.pnl) > 0.01,
+        )
+      : rawData;
+  // Fallback to rawData if no active hours have trades yet
+  const data =
+    mode === "hourly" && activeData.length > 0 ? activeData : rawData;
   const numericValues = data
     .map((point) => (typeof point.pnl === "number" ? point.pnl : 0))
     .filter((value) => value !== 0);
@@ -152,7 +172,9 @@ export function JournalTimePerformanceWidget({
           {onTimeBasisChange && (
             <select
               value={timeBasis}
-              onChange={(e) => onTimeBasisChange(e.target.value as "open" | "close")}
+              onChange={(e) =>
+                onTimeBasisChange(e.target.value as "open" | "close")
+              }
               className="rounded-lg border border-border-primary bg-bg-tertiary px-2 py-1 text-xs font-semibold text-text-secondary hover:text-text-primary focus:text-text-primary focus:border-brand focus:outline-none transition-all cursor-pointer"
             >
               <option value="close">Close Time</option>
@@ -194,7 +216,7 @@ export function JournalTimePerformanceWidget({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
-              margin={{ top: 8, right: 12, bottom: 28, left: 18 }}
+              margin={{ top: 8, right: 12, bottom: 28, left: 4 }}
               barCategoryGap="25%"
             >
               <CartesianGrid vertical={false} horizontal={false} />
@@ -203,7 +225,7 @@ export function JournalTimePerformanceWidget({
                 axisLine={false}
                 tickLine={false}
                 tickMargin={12}
-                interval={0}
+                interval="preserveStartEnd"
                 tick={{
                   fill: "var(--text-secondary)",
                   fontSize: 10,
@@ -215,8 +237,8 @@ export function JournalTimePerformanceWidget({
                 axisLine={false}
                 tickLine={false}
                 tickMargin={8}
-                width={52}
-                tickFormatter={formatCurrency}
+                width={36}
+                tickFormatter={formatYAxisCurrency}
                 tick={{
                   fill: "var(--text-secondary)",
                   fontSize: 10,
