@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { JournalTrade } from "../types";
 
 type JournalUiState = {
   activeAccountId: string;
@@ -7,6 +8,19 @@ type JournalUiState = {
   connectModalOpen: boolean;
   openConnectModal: () => void;
   setConnectModalOpen: (open: boolean) => void;
+  
+  addTradeModalOpen: boolean;
+  openAddTradeModal: (date?: string | null) => void;
+  setAddTradeModalOpen: (open: boolean) => void;
+  prefilledAddTradeDate: string | null;
+  
+  editTradeModalOpen: boolean;
+  openEditTradeModal: (trade: JournalTrade) => void;
+  setEditTradeModalOpen: (open: boolean) => void;
+  editTradeData: JournalTrade | null;
+
+  includeManualTrades: boolean;
+  setIncludeManualTrades: (val: boolean) => void;
 };
 
 export const useJournalUiStore = create<JournalUiState>()(
@@ -17,10 +31,26 @@ export const useJournalUiStore = create<JournalUiState>()(
       connectModalOpen: false,
       openConnectModal: () => set({ connectModalOpen: true }),
       setConnectModalOpen: (open: boolean) => set({ connectModalOpen: open }),
+      
+      addTradeModalOpen: false,
+      openAddTradeModal: (date = null) => set({ addTradeModalOpen: true, prefilledAddTradeDate: date }),
+      setAddTradeModalOpen: (open: boolean) => set({ addTradeModalOpen: open, prefilledAddTradeDate: open ? null : null }),
+      prefilledAddTradeDate: null,
+      
+      editTradeModalOpen: false,
+      openEditTradeModal: (trade: JournalTrade) => set({ editTradeModalOpen: true, editTradeData: trade }),
+      setEditTradeModalOpen: (open: boolean) => set({ editTradeModalOpen: open, editTradeData: open ? null : null }),
+      editTradeData: null,
+
+      includeManualTrades: true,
+      setIncludeManualTrades: (val: boolean) => set({ includeManualTrades: val }),
     }),
     {
       name: "journal-ui",
-      partialize: (state) => ({ activeAccountId: state.activeAccountId }),
+      partialize: (state) => ({ 
+        activeAccountId: state.activeAccountId,
+        includeManualTrades: state.includeManualTrades
+      }),
     },
   ),
 );

@@ -74,8 +74,17 @@ export function JournalDayChatTradesCard({
         accessorKey: "symbol",
         header: "Symbol",
         cell: ({ row }) => (
-          <span className="text-xs font-semibold tracking-[0.04em] text-sidebar-nav-active-text">
+          <span className="text-xs font-semibold tracking-[0.04em] text-sidebar-nav-active-text flex items-center gap-1.5">
             {row.original.symbol}
+            {row.original.is_missed ? (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/15 text-orange-500 uppercase tracking-wide border border-orange-500/20">
+                Missed
+              </span>
+            ) : row.original.is_manual ? (
+              <sup className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-accent/15 text-accent text-[9px] font-bold animate-in zoom-in duration-200" title="Manual Trade">
+                M
+              </sup>
+            ) : null}
           </span>
         ),
       },
@@ -102,7 +111,7 @@ export function JournalDayChatTradesCard({
         header: "Close Price",
         cell: ({ row }) => (
           <span className="text-xs font-semibold tracking-[0.04em] text-sidebar-nav-active-text">
-            {formatPrice(row.original.close_price)}
+            {row.original.is_missed && !row.original.close_price ? "—" : formatPrice(row.original.close_price)}
           </span>
         ),
       },
@@ -120,7 +129,7 @@ export function JournalDayChatTradesCard({
         header: "Close Time",
         cell: ({ row }) => (
           <span className="text-xs font-semibold tracking-[0.04em] text-sidebar-nav-active-text">
-            {formatDateTime(row.original.closed_at)}
+            {row.original.is_missed && !row.original.closed_at ? "—" : formatDateTime(row.original.closed_at)}
           </span>
         ),
       },
@@ -129,7 +138,7 @@ export function JournalDayChatTradesCard({
         header: "Lot Size",
         cell: ({ row }) => (
           <span className="text-xs font-semibold tracking-[0.04em] text-sidebar-nav-active-text">
-            {asNumber(row.original.volume).toFixed(2)}
+            {row.original.is_missed ? "—" : asNumber(row.original.volume).toFixed(2)}
           </span>
         ),
       },
@@ -137,6 +146,9 @@ export function JournalDayChatTradesCard({
         accessorKey: "net_profit",
         header: "Net P&L",
         cell: ({ row }) => {
+          if (row.original.is_missed) {
+            return <span className="text-xs text-text-tertiary font-medium">—</span>;
+          }
           const net = asNumber(row.original.net_profit);
           return (
             <span

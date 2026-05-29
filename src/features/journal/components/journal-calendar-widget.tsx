@@ -14,6 +14,7 @@ interface JournalCalendarWidgetProps {
   monthStartOffset: number;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  currentMonth: Date;
 }
 
 export function JournalCalendarWidget({
@@ -25,6 +26,7 @@ export function JournalCalendarWidget({
   monthStartOffset,
   onPrevMonth,
   onNextMonth,
+  currentMonth,
 }: JournalCalendarWidgetProps) {
   const totalCells = Math.ceil((monthStartOffset + daysInMonth) / 7) * 7;
   const weekRows = Array.from({ length: totalCells / 7 }, (_, rowIndex) =>
@@ -59,6 +61,7 @@ export function JournalCalendarWidget({
           monthStartOffset={monthStartOffset}
           selectedDay={selectedDay}
           onSelectDay={onSelectDay}
+          currentMonth={currentMonth}
         />
         <JournalWeekSummaryColumn weeklyTotals={weeklyTotals} />
       </div>

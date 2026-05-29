@@ -2,6 +2,7 @@ import { type QueryClient, useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
 import { journalTradesApi } from "../api/journal-trades.api";
+import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface AnalyticsQueryInput {
   accountId?: string;
@@ -27,23 +28,24 @@ export function invalidateJournalAnalyticsForAccount(
 }
 
 export const JOURNAL_ANALYTICS_KEYS = {
-  calendar: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "calendar", accountId, fromDate, toDate] as const,
-  summary: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "summary", accountId, fromDate, toDate] as const,
-  instruments: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "instruments", accountId, fromDate, toDate] as const,
-  timePerformance: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "time-performance", accountId, fromDate, toDate] as const,
-  recentTrades: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "recent-trades", accountId, fromDate, toDate] as const,
-  dashboard: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "dashboard", accountId, fromDate, toDate] as const,
+  calendar: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "calendar", accountId, fromDate, toDate, includeManual] as const,
+  summary: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "summary", accountId, fromDate, toDate, includeManual] as const,
+  instruments: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "instruments", accountId, fromDate, toDate, includeManual] as const,
+  timePerformance: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "time-performance", accountId, fromDate, toDate, includeManual] as const,
+  recentTrades: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "recent-trades", accountId, fromDate, toDate, includeManual] as const,
+  dashboard: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "dashboard", accountId, fromDate, toDate, includeManual] as const,
   balanceHistory: (
     accountId?: string,
     fromDate?: string,
     toDate?: string,
     granularity?: "intraday" | "day",
+    includeManual?: boolean,
   ) =>
     [
       "journal-analytics",
@@ -52,6 +54,7 @@ export const JOURNAL_ANALYTICS_KEYS = {
       fromDate,
       toDate,
       granularity,
+      includeManual,
     ] as const,
 };
 
@@ -61,17 +64,19 @@ export function useJournalCalendarAnalytics({
   toDate,
 }: AnalyticsQueryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.calendar(accountId, fromDate, toDate),
+    queryKey: JOURNAL_ANALYTICS_KEYS.calendar(accountId, fromDate, toDate, includeManual),
     queryFn: () =>
       journalAnalyticsApi.getCalendar(
         {
           accountId: accountId as string,
           fromDate,
           toDate,
+          includeManual,
         },
-        session?.accessToken as string,
+          session?.accessToken as string,
       ),
     enabled:
       status === "authenticated" &&
@@ -89,15 +94,17 @@ export function useJournalSummaryAnalytics({
   toDate,
 }: AnalyticsQueryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate),
+    queryKey: JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate, includeManual),
     queryFn: () =>
       journalAnalyticsApi.getSummary(
         {
           accountId: accountId as string,
           fromDate,
           toDate,
+          includeManual,
         },
         session?.accessToken as string,
       ),
@@ -117,15 +124,17 @@ export function useJournalInstrumentsAnalytics({
   toDate,
 }: AnalyticsQueryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.instruments(accountId, fromDate, toDate),
+    queryKey: JOURNAL_ANALYTICS_KEYS.instruments(accountId, fromDate, toDate, includeManual),
     queryFn: () =>
       journalAnalyticsApi.getInstruments(
         {
           accountId: accountId as string,
           fromDate,
           toDate,
+          includeManual,
         },
         session?.accessToken as string,
       ),
@@ -145,15 +154,17 @@ export function useJournalTimePerformanceAnalytics({
   toDate,
 }: AnalyticsQueryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate),
+    queryKey: JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, includeManual),
     queryFn: () =>
       journalAnalyticsApi.getTimePerformance(
         {
           accountId: accountId as string,
           fromDate,
           toDate,
+          includeManual,
         },
         session?.accessToken as string,
       ),
@@ -173,15 +184,17 @@ export function useJournalRecentTrades({
   toDate,
 }: AnalyticsQueryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.recentTrades(accountId, fromDate, toDate),
+    queryKey: JOURNAL_ANALYTICS_KEYS.recentTrades(accountId, fromDate, toDate, includeManual),
     queryFn: () =>
       journalTradesApi.listRecent(
         accountId as string,
         fromDate,
         toDate,
         8,
+        includeManual,
         session?.accessToken as string,
       ),
     enabled:
@@ -201,9 +214,10 @@ export function useJournalDashboardAnalytics({
   timeBasis = "close",
 }: AnalyticsQueryInput & { timeBasis?: "open" | "close" }) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
-    queryKey: [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate), timeBasis],
+    queryKey: [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate, includeManual), timeBasis],
     queryFn: () =>
       journalAnalyticsApi.getDashboard(
         {
@@ -211,6 +225,7 @@ export function useJournalDashboardAnalytics({
           fromDate,
           toDate,
           timeBasis,
+          includeManual,
         },
         session?.accessToken as string,
       ),
@@ -230,6 +245,7 @@ export function useJournalBalanceHistoryAnalytics({
   granularity,
 }: AnalyticsQueryInput & { granularity: "intraday" | "day" }) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_ANALYTICS_KEYS.balanceHistory(
@@ -237,6 +253,7 @@ export function useJournalBalanceHistoryAnalytics({
       fromDate,
       toDate,
       granularity,
+      includeManual,
     ),
     queryFn: () =>
       journalAnalyticsApi.getBalanceHistory(
@@ -245,6 +262,7 @@ export function useJournalBalanceHistoryAnalytics({
           fromDate,
           toDate,
           granularity,
+          includeManual,
         },
         session?.accessToken as string,
       ),

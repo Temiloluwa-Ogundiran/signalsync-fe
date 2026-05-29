@@ -13,6 +13,7 @@ interface AnalyticsQueryParams {
   fromDate: string;
   toDate: string;
   timeBasis?: "open" | "close";
+  includeManual?: boolean;
 }
 
 interface BalanceHistoryQueryParams extends Omit<AnalyticsQueryParams, "timeBasis"> {
@@ -32,6 +33,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -51,6 +53,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -70,6 +73,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           from_date: params.fromDate,
           to_date: params.toDate,
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -90,6 +94,7 @@ export const journalAnalyticsApi = {
           from_date: params.fromDate,
           to_date: params.toDate,
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -111,6 +116,7 @@ export const journalAnalyticsApi = {
           to_date: params.toDate,
           recent_limit: 8,
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -130,6 +136,7 @@ export const journalAnalyticsApi = {
           from_date: params.fromDate,
           to_date: params.toDate,
           granularity: params.granularity,
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );

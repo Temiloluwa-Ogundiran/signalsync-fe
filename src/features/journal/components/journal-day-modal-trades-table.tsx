@@ -5,7 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilLine } from "lucide-react";
+import { PencilLine, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,16 +22,20 @@ import {
 } from "./journal-day-modal.utils";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface JournalDayModalTradesTableProps {
   rows: JournalDayTradeRow[];
   onOpenTradeJournal: (tradeId: string) => void;
+  onDeleteManualTrade?: (tradeId: string) => void;
 }
 
 export function JournalDayModalTradesTable({
   rows,
   onOpenTradeJournal,
+  onDeleteManualTrade,
 }: JournalDayModalTradesTableProps) {
+  const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
   const columnWidths = [
     "13.7%",
     "13.7%",
@@ -40,7 +44,7 @@ export function JournalDayModalTradesTable({
     "11%",
     "13.7%",
     "13.7%",
-    "9.5%",
+    "15%", // adjust width to give actions column a bit more space
   ];
 
   const columns = useMemo<ColumnDef<JournalDayTradeRow>[]>(
@@ -59,7 +63,7 @@ export function JournalDayModalTradesTable({
         header: "Close Time",
         cell: ({ row }) => (
           <span className="text-text-primary font-heading font-medium">
-            {formatTradeTimestamp(row.original.closed_at)}
+            {row.original.is_missed && !row.original.closed_at ? "—" : formatTradeTimestamp(row.original.closed_at)}
           </span>
         ),
       },
@@ -67,8 +71,17 @@ export function JournalDayModalTradesTable({
         accessorKey: "symbol",
         header: "Instrument",
         cell: ({ row }) => (
-          <span className="font-medium text-text-primary font-heading">
+          <span className="font-semibold text-text-primary font-heading flex items-center gap-1.5">
             {row.original.symbol}
+            {row.original.is_missed ? (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/15 text-orange-500 uppercase tracking-wide border border-orange-500/20">
+                Missed
+              </span>
+            ) : row.original.is_manual ? (
+              <sup className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-accent/15 text-accent text-[9px] font-bold animate-in zoom-in duration-200" title="Manual Trade">
+                M
+              </sup>
+            ) : null}
           </span>
         ),
       },
@@ -86,7 +99,7 @@ export function JournalDayModalTradesTable({
         header: "Volume",
         cell: ({ row }) => (
           <span className="text-text-primary font-medium font-heading">
-            {asNumber(row.original.volume).toFixed(2)}
+            {row.original.is_missed ? "—" : asNumber(row.original.volume).toFixed(2)}
           </span>
         ),
       },
@@ -94,6 +107,9 @@ export function JournalDayModalTradesTable({
         accessorKey: "net_profit",
         header: "Net P&L",
         cell: ({ row }) => {
+          if (row.original.is_missed) {
+            return <span className="font-medium font-heading text-text-tertiary">—</span>;
+          }
           const net = asNumber(row.original.net_profit);
           return (
             <span
@@ -110,6 +126,9 @@ export function JournalDayModalTradesTable({
         accessorKey: "net_roi_percent",
         header: "Net ROI",
         cell: ({ row }) => {
+          if (row.original.is_missed) {
+            return <span className="font-medium font-heading text-text-tertiary">—</span>;
+          }
           const roi =
             row.original.net_roi_percent == null
               ? null
@@ -125,7 +144,7 @@ export function JournalDayModalTradesTable({
         id: "note",
         header: () => <span className="text-center">Journal</span>,
         cell: ({ row }) => (
-          <div className="text-left">
+          <div className="text-left flex items-center gap-2">
             <button
               onClick={() => onOpenTradeJournal(row.original.id)}
               className={`inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full border transition-colors ${
@@ -144,11 +163,35 @@ export function JournalDayModalTradesTable({
                 className={cn("h-5 w-5")}
               />
             </button>
+
+            {row.original.is_manual && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => openEditTradeModal(row.original)}
+                  title="Edit manual trade"
+                  aria-label="Edit manual trade"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full border border-border-primary text-accent hover:text-white transition-all hover:bg-accent hover:border-accent"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDeleteManualTrade && onDeleteManualTrade(row.original.id)}
+                  title="Delete manual trade"
+                  aria-label="Delete manual trade"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full border border-border-primary text-danger hover:text-white transition-all hover:bg-danger hover:border-danger"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
         ),
       },
     ],
-    [onOpenTradeJournal],
+    [onOpenTradeJournal, onDeleteManualTrade, openEditTradeModal],
   );
 
   const table = useReactTable({

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalTradesApi } from "../api/journal-trades.api";
+import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface UseTradeHistoryInput {
   accountId?: string;
@@ -16,7 +17,8 @@ export const JOURNAL_TRADE_HISTORY_KEYS = {
     fromDate?: string,
     toDate?: string,
     limit?: number,
-  ) => ["journal-trade-history", token, accountId, fromDate, toDate, limit] as const,
+    includeManual?: boolean,
+  ) => ["journal-trade-history", token, accountId, fromDate, toDate, limit, includeManual] as const,
 };
 
 export function useTradeHistory({
@@ -26,6 +28,7 @@ export function useTradeHistory({
   limit = 200,
 }: UseTradeHistoryInput) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_TRADE_HISTORY_KEYS.list(
@@ -34,6 +37,7 @@ export function useTradeHistory({
       fromDate,
       toDate,
       limit,
+      includeManual,
     ),
     queryFn: () =>
       journalTradesApi.listRecent(
@@ -41,6 +45,7 @@ export function useTradeHistory({
         fromDate,
         toDate,
         limit,
+        includeManual,
         session?.accessToken as string,
       ),
     staleTime: 60_000,

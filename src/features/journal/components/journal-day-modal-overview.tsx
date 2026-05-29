@@ -204,6 +204,7 @@ export function JournalDayModalOverview({
             value={profitFactor == null ? "--" : profitFactor.toFixed(2)}
           />
           <Row label="Volumes" value={summary.volume.toFixed(2)} />
+          <Row label="Avg. Hold Time" value={summary.avgHoldTime} />
         </div>
       </section>
     </div>

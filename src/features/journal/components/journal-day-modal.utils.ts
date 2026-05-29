@@ -85,6 +85,45 @@ export function resolveDayBookends(
   return { dayStartBalance: start, dayEndBalance: end };
 }
 
+export function formatHoldTime(ms: number): string {
+  if (ms < 0) ms = 0;
+  const totalSeconds = Math.round(ms / 1000);
+  const totalMinutes = Math.round(totalSeconds / 60);
+
+  if (totalMinutes < 60) {
+    return `${totalMinutes}m`;
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+
+  if (mins === 0) {
+    return `${hours}h`;
+  }
+  return `${hours}h ${mins}m`;
+}
+
+export function calculateAverageHoldTime(trades: JournalTrade[]): string {
+  if (trades.length === 0) return "--";
+
+  let totalMs = 0;
+  let count = 0;
+
+  for (const trade of trades) {
+    if (!trade.opened_at || !trade.closed_at) continue;
+    const opened = new Date(trade.opened_at).getTime();
+    const closed = new Date(trade.closed_at).getTime();
+    if (!Number.isNaN(opened) && !Number.isNaN(closed)) {
+      totalMs += Math.max(closed - opened, 0);
+      count++;
+    }
+  }
+
+  if (count === 0) return "--";
+  const avgMs = totalMs / count;
+  return formatHoldTime(avgMs);
+}
+
 export function buildDaySummary(
   trades: JournalTrade[],
   dayStartBalance?: number | string | null,
@@ -113,6 +152,8 @@ export function buildDaySummary(
   const { dayStartBalance: resolvedStart, dayEndBalance: resolvedEnd } =
     resolveDayBookends(trades, dayStartBalance ?? null, dayEndBalance ?? null);
 
+  const avgHoldTime = calculateAverageHoldTime(trades);
+
   return {
     totalTrades,
     winners,
@@ -124,6 +165,7 @@ export function buildDaySummary(
     volume,
     dayStartBalance: resolvedStart,
     dayEndBalance: resolvedEnd,
+    avgHoldTime,
   };
 }
 

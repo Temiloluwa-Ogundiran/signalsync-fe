@@ -11,6 +11,7 @@ export interface JournalDaySummary {
   volume: number;
   dayStartBalance: number | null;
   dayEndBalance: number | null;
+  avgHoldTime: string;
 }
 
 export interface JournalDayTradeRow extends JournalTrade {

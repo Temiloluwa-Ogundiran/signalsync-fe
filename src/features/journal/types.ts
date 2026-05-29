@@ -185,6 +185,7 @@ export interface JournalMessage {
   is_edited?: boolean;
   edited_at?: string | null;
   created_at: string;
+  status?: "sending" | "success" | "error";
 }
 
 export interface JournalCreateMessagePayload {
@@ -200,6 +201,8 @@ export interface JournalDailyTradeChip {
   net_profit: number;
   outcome: "win" | "loss" | "breakeven";
   journal_message_count: number;
+  is_manual?: boolean;
+  is_missed?: boolean;
 }
 
 export interface JournalDailyResponse {
@@ -230,6 +233,14 @@ export interface JournalTrade {
   net_roi_percent?: number | string | null;
   trade_reviewed_at?: string | null;
   rating?: number;
+  execution_quality?: number;
+  setup_quality?: number;
+  discipline_score?: number;
+  is_manual?: boolean;
+  is_missed?: boolean;
+  sl?: number;
+  tp?: number;
+  swap?: number;
 }
 
 export interface JournalAdjacentTradedDatesResponse {
@@ -278,4 +289,22 @@ export interface TagCategory {
   is_system: boolean;
   options: TagOption[];
 }
+
+export interface ManualTradeCreatePayload {
+  is_missed: boolean;
+  symbol: string;
+  direction: "buy" | "sell";
+  opened_at: string; // ISO string
+  open_price: number;
+  volume?: number;
+  closed_at?: string; // ISO string
+  close_price?: number;
+  net_profit?: number;
+  commission?: number;
+  swap?: number;
+  sl?: number;
+  tp?: number;
+}
+
+export type ManualTradeUpdatePayload = Partial<ManualTradeCreatePayload>;
 

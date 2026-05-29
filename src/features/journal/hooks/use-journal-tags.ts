@@ -179,3 +179,47 @@ export function useUpdateTradeRating(accountId?: string) {
     },
   });
 }
+
+export function useUpdateTradeAssessment(accountId?: string) {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      tradeId,
+      execution_quality,
+      setup_quality,
+      discipline_score,
+    }: {
+      tradeId: string;
+      execution_quality?: number;
+      setup_quality?: number;
+      discipline_score?: number;
+    }) =>
+      journalTagsApi.updateTradeAssessment(
+        tradeId,
+        { execution_quality, setup_quality, discipline_score },
+        session?.accessToken
+      ),
+    onSuccess: (_data, variables) => {
+      const token = session?.accessToken;
+
+      // Invalidate journal day/trades caches to update trade details instantly
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const k = q.queryKey;
+          return (
+            Array.isArray(k) &&
+            k[0] === "journal-day" &&
+            k[2] === token
+          );
+        },
+      });
+
+      // Invalidate setups & analytics if accountId is provided
+      if (accountId) {
+        invalidateJournalAnalyticsForAccount(queryClient, accountId);
+      }
+    },
+  });
+}

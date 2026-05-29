@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useJournalDay } from "../hooks/use-journal-day-modal";
+import { useDeleteManualTrade } from "../hooks/use-manual-trade";
+import { toast } from "sonner";
 import { JournalDayModalFooter } from "./journal-day-modal-footer";
 import { JournalDayModalHeader } from "./journal-day-modal-header";
 import { JournalDayModalOverview } from "./journal-day-modal-overview";
@@ -29,6 +31,22 @@ export function JournalDayModal({
   tradingDate,
 }: JournalDayModalProps) {
   const router = useRouter();
+
+  const deleteManualTrade = useDeleteManualTrade(accountId || "");
+
+  const handleDeleteManualTrade = async (tradeId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this manual trade?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteManualTrade.mutateAsync(tradeId);
+      toast.success("Manual trade deleted successfully");
+    } catch (err: any) {
+      toast.error("Failed to delete manual trade", {
+        description: err?.message || "An error occurred.",
+      });
+    }
+  };
 
   const dayQuery = useJournalDay(accountId, tradingDate, open, {
     includeMessages: false,
@@ -111,6 +129,7 @@ export function JournalDayModal({
               <JournalDayModalTradesTable
                 rows={tradeRows}
                 onOpenTradeJournal={openTradeJournal}
+                onDeleteManualTrade={handleDeleteManualTrade}
               />
             </>
           )}

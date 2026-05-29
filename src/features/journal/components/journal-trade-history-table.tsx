@@ -13,6 +13,8 @@ import {
   ChevronsLeft,
   ChevronRight,
   ChevronsRight,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +29,7 @@ import { asNumber } from "./journal-day-modal.utils";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface JournalTradeHistoryTableProps {
   rows: TradeHistoryRow[];
@@ -37,6 +40,7 @@ interface JournalTradeHistoryTableProps {
   onFirstPage: () => void;
   onLastPage: () => void;
   onOpenJournal: (row: TradeHistoryRow) => void;
+  onDeleteManualTrade?: (tradeId: string) => void;
 }
 
 function formatPrice(value: number | string) {
@@ -52,15 +56,27 @@ export function JournalTradeHistoryTable({
   onFirstPage,
   onLastPage,
   onOpenJournal,
+  onDeleteManualTrade,
 }: JournalTradeHistoryTableProps) {
+  const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
+
   const columns = useMemo<ColumnDef<TradeHistoryRow>[]>(
     () => [
       {
         accessorKey: "symbol",
         header: "Symbol",
         cell: ({ row }) => (
-          <span className="text-sm font-semibold text-text-primary">
+          <span className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
             {row.original.symbol}
+            {row.original.is_missed ? (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/15 text-orange-500 uppercase tracking-wide border border-orange-500/20">
+                Missed
+              </span>
+            ) : row.original.is_manual ? (
+              <sup className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-accent/15 text-accent text-[9px] font-bold animate-in zoom-in duration-200" title="Manual Trade">
+                M
+              </sup>
+            ) : null}
           </span>
         ),
       },
@@ -87,7 +103,7 @@ export function JournalTradeHistoryTable({
         header: "Close Price",
         cell: ({ row }) => (
           <span className="text-sm font-semibold text-text-primary">
-            {formatPrice(row.original.close_price)}
+            {row.original.is_missed && !row.original.close_price ? "—" : formatPrice(row.original.close_price)}
           </span>
         ),
       },
@@ -105,7 +121,7 @@ export function JournalTradeHistoryTable({
         header: "Close Time",
         cell: ({ row }) => (
           <span className="text-sm font-semibold text-text-primary">
-            {row.original.closedDateLabel}
+            {row.original.is_missed && !row.original.closed_at ? "—" : row.original.closedDateLabel}
           </span>
         ),
       },
@@ -114,41 +130,78 @@ export function JournalTradeHistoryTable({
         header: "Lot Size",
         cell: ({ row }) => (
           <span className="text-sm font-semibold text-text-primary">
-            {asNumber(row.original.volume).toFixed(2)}
+            {row.original.is_missed ? "—" : asNumber(row.original.volume).toFixed(2)}
           </span>
         ),
       },
       {
         accessorKey: "net_profit",
         header: "Net Profit",
-        cell: ({ row }) => (
-          <span className="text-sm font-semibold text-text-primary">
-            {formatPrice(row.original.net_profit)}
-          </span>
-        ),
+        cell: ({ row }) => {
+          if (row.original.is_missed) {
+            return <span className="text-sm text-text-tertiary font-medium">—</span>;
+          }
+          const net = asNumber(row.original.net_profit);
+          return (
+            <span
+              className={cn(
+                "text-sm font-semibold",
+                net >= 0 ? "text-kpi-metric-positive" : "text-danger",
+              )}
+            >
+              {net >= 0 ? `+${formatPrice(net)}` : formatPrice(net)}
+            </span>
+          );
+        },
       },
       {
         id: "journal",
         header: "Journal",
         cell: ({ row }) => (
-          <button
-            type="button"
-            onClick={() => onOpenJournal(row.original)}
-            aria-label="Open trade journal"
-            className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-text-primary transition-colors hover:bg-bg-hover"
-          >
-            <Image
-              src={"/icons/journal/modal/journal.svg"}
-              alt=""
-              width={24}
-              height={24}
-              className={cn("h-5 w-5")}
-            />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onOpenJournal(row.original)}
+              aria-label="Open trade journal"
+              className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-text-primary transition-colors hover:bg-bg-hover"
+            >
+              <Image
+                src={"/icons/journal/modal/journal.svg"}
+                alt=""
+                width={24}
+                height={24}
+                className={cn("h-5 w-5")}
+              />
+            </button>
+            
+            {row.original.is_manual && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => openEditTradeModal(row.original)}
+                  title="Edit manual trade"
+                  aria-label="Edit manual trade"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-accent hover:text-white transition-all hover:bg-accent cursor-pointer border border-transparent"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => onDeleteManualTrade && onDeleteManualTrade(row.original.id)}
+                  title="Delete manual trade"
+                  aria-label="Delete manual trade"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-danger hover:text-white transition-all hover:bg-danger cursor-pointer border border-transparent"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         ),
       },
     ],
-    [onOpenJournal],
+    [onOpenJournal, onDeleteManualTrade, openEditTradeModal],
   );
 
   const table = useReactTable({

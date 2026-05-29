@@ -7,6 +7,7 @@ import { signOut, useSession } from "next-auth/react";
 import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconFeed } from "@/components/icons/syncgram-nav-icons";
+import { FEATURE_FLAGS, type FeatureFlag } from "@/lib/feature-flags";
 
 // import { StreamSwitcher } from "./stream-switcher";
 
@@ -14,11 +15,13 @@ type NavEntry = {
   label: string;
   href: string;
   iconSrc: string;
+  /** When set, this item is hidden if the corresponding feature flag is false */
+  flag?: FeatureFlag;
 };
 
 const navGroups: NavEntry[][] = [
   [
-    { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg" },
+    { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg", flag: "HOME" },
     {
       label: "Journal",
       href: "/journal",
@@ -46,21 +49,24 @@ const navGroups: NavEntry[][] = [
       label: "Discover",
       href: "/discover",
       iconSrc: "/icons/sidebar/discover.svg",
+      flag: "DISCOVER",
     },
     {
       label: "Feed",
       href: "/feed",
       iconSrc: "/icons/sidebar/trade-history.svg",
+      flag: "FEED",
     },
-    { label: "Space", href: "/spaces", iconSrc: "/icons/sidebar/spaces.svg" },
+    { label: "Space", href: "/spaces", iconSrc: "/icons/sidebar/spaces.svg", flag: "SPACE" },
   ],
   [
     {
       label: "Profile",
       href: "/profile",
       iconSrc: "/icons/sidebar/profile.svg",
+      flag: "PROFILE",
     },
-    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/tools.svg" },
+    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/tools.svg", flag: "TOOLS" },
     {
       label: "Notifications",
       href: "/notifications",
@@ -73,6 +79,11 @@ const navGroups: NavEntry[][] = [
     // },
   ],
 ];
+
+/** Filter a group down to only items whose feature flag is enabled (or have no flag) */
+function filterByFlags(group: NavEntry[]): NavEntry[] {
+  return group.filter((item) => !item.flag || FEATURE_FLAGS[item.flag]);
+}
 
 function NavDivider() {
   return <div className="my-3 h-px w-full bg-sidebar-divider" aria-hidden />;
@@ -155,11 +166,14 @@ export function Sidebar({
           collapsed ? "items-center px-2" : "px-3",
         )}
       >
-        {navGroups.map((group, gi) => (
+        {navGroups.map((group, gi) => {
+          const visibleItems = filterByFlags(group);
+          if (visibleItems.length === 0) return null;
+          return (
           <div key={gi}>
             {gi > 0 && <NavDivider />}
             <div className="flex flex-col gap-1">
-              {group.map((item) => {
+              {visibleItems.map((item) => {
                 const isActive =
                   item.href === "/overview"
                     ? pathname === "/overview"
@@ -203,7 +217,8 @@ export function Sidebar({
               })}
             </div>
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div

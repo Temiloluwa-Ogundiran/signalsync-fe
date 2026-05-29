@@ -5,6 +5,7 @@ import { journalDailyApi } from "../api/journal-daily.api";
 import { journalTradesApi } from "../api/journal-trades.api";
 import { journalMessagesApi } from "../api/journal-messages.api";
 import type { JournalCreateMessagePayload } from "../types";
+import { useJournalUiStore } from "../store/journal-ui-store";
 
 export const JOURNAL_DAY_MODAL_KEYS = {
   daily: (
@@ -12,9 +13,10 @@ export const JOURNAL_DAY_MODAL_KEYS = {
     accountId?: string,
     day?: string,
     includeMessages = true,
-  ) => ["journal-day", "daily", token, accountId, day, includeMessages] as const,
-  trades: (token: string | undefined, accountId?: string, day?: string) =>
-    ["journal-day", "trades", token, accountId, day] as const,
+    includeManual = true,
+  ) => ["journal-day", "daily", token, accountId, day, includeMessages, includeManual] as const,
+  trades: (token: string | undefined, accountId?: string, day?: string, includeManual = true) =>
+    ["journal-day", "trades", token, accountId, day, includeManual] as const,
   tradeMessages: (token: string | undefined, tradeId?: string) =>
     ["journal-day", "trade-messages", token, tradeId] as const,
   adjacentTradedDates: (
@@ -32,6 +34,7 @@ export function useJournalDay(
 ) {
   const { data: session, status } = useSession();
   const includeMessages = options?.includeMessages ?? true;
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
@@ -39,12 +42,14 @@ export function useJournalDay(
       accountId,
       tradingDate,
       includeMessages,
+      includeManual,
     ),
     queryFn: () =>
       journalDailyApi.getDay(
         accountId as string,
         tradingDate as string,
         includeMessages,
+        includeManual,
         session?.accessToken as string,
       ),
     enabled:
@@ -63,17 +68,20 @@ export function useJournalDayTrades(
   enabled = true,
 ) {
   const { data: session, status } = useSession();
+  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
       session?.accessToken,
       accountId,
       tradingDate,
+      includeManual,
     ),
     queryFn: () =>
       journalTradesApi.listByDay(
         accountId as string,
         tradingDate as string,
+        includeManual,
         session?.accessToken as string,
       ),
     enabled:
@@ -97,14 +105,17 @@ export function useCreateJournalDayMessage(
     mutationFn: ({
       dailyJournalId,
       payload,
+      signal,
     }: {
       dailyJournalId: string;
       payload: JournalCreateMessagePayload;
+      signal?: AbortSignal;
     }) =>
       journalDailyApi.createDayMessage(
         dailyJournalId,
         payload,
         session?.accessToken as string,
+        { signal },
       ),
     onSuccess: () => {
       const token = session?.accessToken;
@@ -139,14 +150,17 @@ export function useCreateJournalTradeMessage(
     mutationFn: ({
       tradeId,
       payload,
+      signal,
     }: {
       tradeId: string;
       payload: JournalCreateMessagePayload;
+      signal?: AbortSignal;
     }) =>
       journalTradesApi.createTradeMessage(
         tradeId,
         payload,
         session?.accessToken as string,
+        { signal },
       ),
     onSuccess: (_data, variables) => {
       const token = session?.accessToken;

@@ -69,9 +69,9 @@ export function JournalTradeChatTagsCard({
   const isLoadingTags = isLoadingConfig || isLoadingActiveTags;
 
   return (
-    <Card className="h-full border-0 bg-card-bg text-text-primary shadow-sm flex flex-col justify-between">
-      <div>
-        <CardHeader className="border-b border-border-secondary p-6 flex flex-row items-center justify-between">
+    <Card className="h-full border-0 bg-card-bg text-text-primary shadow-sm flex flex-col justify-between xl:max-h-[calc(100vh-6rem)] overflow-hidden">
+      <div className="flex flex-col min-h-0 overflow-y-auto scrollbar-thin">
+        <CardHeader className="border-b border-border-secondary p-6 flex flex-row items-center justify-between sticky top-0 bg-card-bg z-10 shrink-0">
           <div className="flex items-center gap-2">
             <Tag className="h-5 w-5 text-brand" />
             <CardTitle className="text-lg font-bold tracking-tight">
@@ -89,7 +89,7 @@ export function JournalTradeChatTagsCard({
           </Button>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="p-6 space-y-6 flex-1 min-h-0">
           {isLoadingTags ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-xs text-text-tertiary">
               <Loader2 className="h-5 w-5 animate-spin text-brand" />

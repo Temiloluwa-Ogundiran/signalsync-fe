@@ -12,6 +12,7 @@ export const journalDailyApi = {
     accountId: string,
     tradingDate: string,
     includeMessages = true,
+    includeManual?: boolean,
     token?: string,
   ): Promise<JournalDailyResponse> => {
     const { data } = await apiClient.get<JournalDailyResponse>(
@@ -20,6 +21,7 @@ export const journalDailyApi = {
         ...withAuth(token),
         params: {
           include_messages: includeMessages,
+          include_manual: includeManual !== undefined ? includeManual : undefined,
         },
       },
     );
@@ -57,6 +59,7 @@ export const journalDailyApi = {
     dailyJournalId: string,
     payload: JournalCreateMessagePayload,
     token?: string,
+    options?: { signal?: AbortSignal },
   ): Promise<JournalMessage> => {
     const body = new FormData();
     const messageType =
@@ -80,6 +83,7 @@ export const journalDailyApi = {
       body,
       {
         ...withAuth(token),
+        signal: options?.signal,
         headers: {
           ...withAuth(token).headers,
           "Content-Type": "multipart/form-data",

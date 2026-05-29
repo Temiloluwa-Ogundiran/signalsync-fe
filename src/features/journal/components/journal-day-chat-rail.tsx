@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Image as ImageIcon,
   Loader2,
@@ -40,7 +40,7 @@ export function JournalDayChatRail({
   draftMessage,
   isRecording,
   onDraftChange,
-  onPickImage,
+  onPickFile,
   onRecordToggle,
   onSend,
   onPromptClick,
@@ -49,6 +49,8 @@ export function JournalDayChatRail({
   onPasteFile,
   onEditMessage,
   onDeleteMessage,
+  onCancelSending,
+  resolvedBlobUrls,
   title = "Journal Your Day",
   subtitle = "Review your trades with text, image, and voice notes.",
   composerPlaceholder = "How did your day go...",
@@ -102,6 +104,21 @@ export function JournalDayChatRail({
     return () => URL.revokeObjectURL(url);
   }, [pendingFile]);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+    const timer = setTimeout(scrollToBottom, 50);
+    return () => clearTimeout(timer);
+  }, [messages, scrollToBottom]);
+
   const canSend = Boolean(draftMessage.trim() || pendingFile);
 
   return (
@@ -133,7 +150,7 @@ export function JournalDayChatRail({
         <p className="text-xs text-text-secondary">{subtitle}</p>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div ref={containerRef} className="flex-1 space-y-3 overflow-y-auto p-4">
         {isLoading ? (
           <div className="inline-flex items-center gap-2 text-sm text-text-secondary">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -175,6 +192,7 @@ export function JournalDayChatRail({
                                   src={attachment.signed_url}
                                   alt={alt}
                                   className="max-h-64 w-full rounded-xl object-cover"
+                                  onLoad={scrollToBottom}
                                 />
                               </button>
                             );
@@ -185,6 +203,7 @@ export function JournalDayChatRail({
                               src={attachment.signed_url}
                               alt={alt}
                               className="max-h-64 w-full rounded-xl object-cover"
+                              onLoad={scrollToBottom}
                             />
                           );
                         })}
@@ -209,34 +228,80 @@ export function JournalDayChatRail({
 
             return (
               <ContextMenu.Root key={message.id}>
-                <ContextMenu.Trigger disabled={!trimmedText || !!editingMessageId}>
-                  <div className="group/msg relative flex items-center justify-between gap-3 w-full pr-8 py-1 rounded-xl hover:bg-bg-tertiary/10 transition-all">
-                    <div className="flex max-w-[90%] flex-col gap-2 w-full">
+                <ContextMenu.Trigger disabled={isSystem || !!editingMessageId}>
+                  <div className="group/msg relative flex items-center gap-2 w-full pr-8 py-1 rounded-xl hover:bg-bg-tertiary/10 transition-all">
+                    {/* Unified Content Block: w-fit max-w-[90%] */}
+                    <div className="flex flex-col gap-2 w-fit max-w-[90%]">
+                      {/* Attachments */}
                       {message.attachments?.length ? (
-                        <div className="space-y-2">
+                        <div className="space-y-2 w-fit max-w-full">
                           {message.attachments.map((attachment) => {
                             const alt =
-                              attachment.original_filename || "journal attachment";
+                              attachment.original_filename ||
+                              "journal attachment";
                             if (isImageAttachment(attachment)) {
+                              const isSending = message.status === "sending";
+                              const isSuccess = message.status === "success";
+                              const showOverlay = isSending || isSuccess;
+                              const imageUrl =
+                                resolvedBlobUrls?.[message.id] ||
+                                attachment.signed_url;
                               return (
-                                <button
+                                <div
                                   key={attachment.id}
-                                  type="button"
-                                  className="block w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                                  aria-label="View image"
-                                  onClick={() =>
-                                    setAttachmentPreview({
-                                      src: attachment.signed_url,
-                                      alt,
-                                    })
-                                  }
+                                  className="relative w-fit max-w-full overflow-hidden rounded-xl"
                                 >
-                                  <img
-                                    src={attachment.signed_url}
-                                    alt={alt}
-                                    className="max-h-64 w-full rounded-xl object-cover"
-                                  />
-                                </button>
+                                  <button
+                                    type="button"
+                                    className="block w-fit max-w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                                    aria-label="View image"
+                                    disabled={isSending}
+                                    onClick={() =>
+                                      setAttachmentPreview({
+                                        src: imageUrl,
+                                        alt,
+                                      })
+                                    }
+                                  >
+                                    <img
+                                      src={imageUrl}
+                                      alt={alt}
+                                      className="max-h-64 w-full rounded-xl object-cover"
+                                      onLoad={scrollToBottom}
+                                    />
+                                  </button>
+
+                                  {/* Blurred Sending overlay */}
+                                  {showOverlay && (
+                                    <div
+                                      className={`absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 backdrop-blur-[1.5px] transition-all duration-500 ease-out ${
+                                        isSuccess
+                                          ? "opacity-0 scale-95 pointer-events-none"
+                                          : "opacity-100 scale-100"
+                                      }`}
+                                    >
+                                      <div className="relative flex items-center justify-center">
+                                        <Loader2 className="h-10 w-10 animate-spin text-white" />
+                                        {isSending && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                              onCancelSending?.(message.id);
+                                            }}
+                                            className="absolute h-6 w-6 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center border-0 cursor-pointer focus:outline-none"
+                                            title="Cancel upload"
+                                          >
+                                            <span className="text-[11px] font-bold">
+                                              ✕
+                                            </span>
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               );
                             }
                             return (
@@ -245,22 +310,73 @@ export function JournalDayChatRail({
                                 src={attachment.signed_url}
                                 alt={alt}
                                 className="max-h-64 w-full rounded-xl object-cover"
+                                onLoad={scrollToBottom}
                               />
                             );
                           })}
                         </div>
                       ) : null}
 
+                      {/* Audio URL */}
                       {message.audio_url ? (
-                        <div className="max-w-full">
-                          <JournalVoiceMessagePlayer
-                            key={message.id}
-                            messageId={message.id}
-                            audioUrl={message.audio_url}
-                          />
+                        <div className="max-w-full w-fit">
+                          {message.status === "sending" ||
+                          message.status === "success" ? (
+                            <div
+                              className={`relative w-fit max-w-[min(100%,20.75rem)] transition-all duration-500 ${
+                                message.status === "success"
+                                  ? "opacity-100"
+                                  : "opacity-60"
+                              }`}
+                            >
+                              <JournalVoiceMessagePlayer
+                                messageId={message.id}
+                                audioUrl={
+                                  resolvedBlobUrls?.[message.id] ||
+                                  message.audio_url ||
+                                  ""
+                                }
+                              />
+                              <div
+                                className={`absolute top-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white transition-all duration-500 ease-out ${
+                                  message.status === "success"
+                                    ? "opacity-0 scale-95 pointer-events-none"
+                                    : "opacity-100 scale-100"
+                                }`}
+                              >
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                <span>Sending...</span>
+                                {message.status === "sending" && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      onCancelSending?.(message.id);
+                                    }}
+                                    className="ml-1 cursor-pointer font-bold text-red-400 hover:text-red-300 pointer-events-auto"
+                                    title="Cancel upload"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <JournalVoiceMessagePlayer
+                              key={message.id}
+                              messageId={message.id}
+                              audioUrl={
+                                resolvedBlobUrls?.[message.id] ||
+                                message.audio_url ||
+                                ""
+                              }
+                            />
+                          )}
                         </div>
                       ) : null}
 
+                      {/* Inline Text Editor */}
                       {editingMessageId === message.id ? (
                         <div className="flex flex-col gap-2 w-full rounded-2xl bg-bg-tertiary px-6 py-5 border border-border-primary/45 shadow-inner">
                           <Textarea
@@ -297,52 +413,88 @@ export function JournalDayChatRail({
                           </div>
                         </div>
                       ) : trimmedText ? (
-                        <div className="flex items-center gap-2 w-full">
+                        <div className="flex flex-col gap-1 w-fit max-w-full">
                           <div className={textBubbleClass}>
                             <p>{trimmedText}</p>
                           </div>
-                          
-                          {trimmedText && !editingMessageId && (
-                            <div className="opacity-0 group-hover/msg:opacity-100 transition-opacity shrink-0">
-                              <DropdownMenu.Root>
-                                <DropdownMenu.Trigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 rounded-full border border-border-primary/40 bg-bg-secondary text-text-secondary hover:text-text-primary shadow-xs cursor-pointer flex items-center justify-center animate-in fade-in zoom-in-95 duration-150"
-                                    title="Message actions"
-                                  >
-                                    <MoreHorizontal className="h-3.5 w-3.5" />
-                                  </Button>
-                                </DropdownMenu.Trigger>
-                                <DropdownMenu.Portal>
-                                  <DropdownMenu.Content
-                                    className="z-50 min-w-[7.5rem] overflow-hidden rounded-lg border border-border-primary bg-bg-secondary p-1 text-text-primary shadow-md"
-                                    align="start"
-                                    sideOffset={4}
-                                  >
-                                    <DropdownMenu.Item
-                                      onClick={() => handleStartEdit(message.id, trimmedText)}
-                                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
-                                    >
-                                      <Edit className="h-3.5 w-3.5" />
-                                      <span className="ml-2">Edit</span>
-                                    </DropdownMenu.Item>
-                                    <DropdownMenu.Item
-                                      onClick={() => handleDelete(message.id)}
-                                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold text-danger outline-none hover:bg-danger/10 hover:text-danger focus:bg-danger/10 focus:text-danger transition-colors"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                      <span className="ml-2">Delete</span>
-                                    </DropdownMenu.Item>
-                                  </DropdownMenu.Content>
-                                </DropdownMenu.Portal>
-                              </DropdownMenu.Root>
-                            </div>
+
+                          {/* Sending status below bubble */}
+                          {(message.status === "sending" ||
+                            message.status === "success") && (
+                            <span
+                              className={`text-[10px] text-text-tertiary flex items-center gap-1 pl-3 transition-all duration-500 ease-out ${
+                                message.status === "success"
+                                  ? "opacity-0 translate-y-1 pointer-events-none"
+                                  : "opacity-60 translate-y-0"
+                              }`}
+                            >
+                              <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                              Sending...
+                              {message.status === "sending" && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    onCancelSending?.(message.id);
+                                  }}
+                                  className="ml-1 cursor-pointer font-bold text-red-400 hover:text-red-300"
+                                  title="Cancel upload"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </span>
                           )}
                         </div>
                       ) : null}
                     </div>
+
+                    {/* Hover Action Dropdown Menu: sits immediately next to the Content Block */}
+                    {!isSystem &&
+                      !editingMessageId &&
+                      message.status !== "sending" &&
+                      message.status !== "success" && (
+                        <div className="opacity-0 group-hover/msg:opacity-100 transition-opacity shrink-0">
+                          <DropdownMenu.Root>
+                            <DropdownMenu.Trigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 rounded-full border border-border-primary/40 bg-bg-secondary text-text-secondary hover:text-text-primary shadow-xs cursor-pointer flex items-center justify-center animate-in fade-in zoom-in-95 duration-150"
+                                title="Message actions"
+                              >
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </Button>
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Portal>
+                              <DropdownMenu.Content
+                                className="z-50 min-w-[7.5rem] overflow-hidden rounded-lg border border-border-primary bg-bg-secondary p-1 text-text-primary shadow-md"
+                                align="start"
+                                sideOffset={4}
+                              >
+                                <DropdownMenu.Item
+                                  onClick={() =>
+                                    handleStartEdit(message.id, trimmedText)
+                                  }
+                                  disabled={!trimmedText}
+                                  className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                  <span className="ml-2">Edit</span>
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item
+                                  onClick={() => handleDelete(message.id)}
+                                  className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold text-danger outline-none hover:bg-danger/10 hover:text-danger focus:bg-danger/10 focus:text-danger transition-colors"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span className="ml-2">Delete</span>
+                                </DropdownMenu.Item>
+                              </DropdownMenu.Content>
+                            </DropdownMenu.Portal>
+                          </DropdownMenu.Root>
+                        </div>
+                      )}
                   </div>
                 </ContextMenu.Trigger>
                 <ContextMenu.Portal>
@@ -352,7 +504,8 @@ export function JournalDayChatRail({
                   >
                     <ContextMenu.Item
                       onClick={() => handleStartEdit(message.id, trimmedText)}
-                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
+                      disabled={!trimmedText}
+                      className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors disabled:opacity-40 disabled:pointer-events-none"
                     >
                       <Edit className="h-3.5 w-3.5" />
                       <span className="ml-2">Edit</span>
@@ -376,6 +529,7 @@ export function JournalDayChatRail({
               : "No trade messages yet. Open a trade and send the first note."}
           </p>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="border-t border-border-secondary p-4">
@@ -411,6 +565,7 @@ export function JournalDayChatRail({
                   src={pendingPreviewUrl}
                   alt=""
                   className="h-full w-full object-cover"
+                  onLoad={scrollToBottom}
                 />
               </button>
             ) : null}
@@ -426,15 +581,40 @@ export function JournalDayChatRail({
         ) : null}
 
         <div className="flex items-end gap-2 rounded-full bg-bg-tertiary p-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="rounded-full cursor-pointer"
-            onClick={onPickImage}
-            title="Attach image"
-          >
-            <Paperclip className="h-4 w-4" />
-          </Button>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="rounded-full cursor-pointer text-text-secondary hover:text-text-primary"
+                title="Attach file"
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                className="z-50 min-w-[9.5rem] overflow-hidden rounded-lg border border-border-primary bg-bg-secondary p-1 text-text-primary shadow-md"
+                align="start"
+                sideOffset={8}
+              >
+                <DropdownMenu.Item
+                  onClick={() => onPickFile("image")}
+                  className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  <span className="ml-2">Photo</span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onClick={() => onPickFile("audio")}
+                  className="flex cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold outline-none hover:bg-bg-tertiary focus:bg-bg-tertiary transition-colors"
+                >
+                  <Mic className="h-3.5 w-3.5" />
+                  <span className="ml-2">Audio File</span>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
 
           <Textarea
             value={draftMessage}
@@ -442,7 +622,7 @@ export function JournalDayChatRail({
             onKeyDown={(event) => {
               if (event.key !== "Enter" || event.shiftKey) return;
               event.preventDefault();
-              if (!canSend || isSending || isRecording) return;
+              if (!canSend || isRecording) return;
               onSend();
             }}
             onPaste={(event) => {
@@ -471,35 +651,24 @@ export function JournalDayChatRail({
               size="icon"
               className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
               onClick={onRecordToggle}
-              disabled={isSending}
               title="Stop recording"
             >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Square className="h-4 w-4" />
-              )}
+              <Square className="h-4 w-4" />
             </Button>
           ) : canSend ? (
             <Button
               size="icon"
               className="rounded-full hover:cursor-pointer bg-primary text-primary-foreground"
               onClick={onSend}
-              disabled={isSending}
               title="Send message"
             >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <SendHorizontal className="h-4 w-4" />
-              )}
+              <SendHorizontal className="h-4 w-4" />
             </Button>
           ) : (
             <Button
               size="icon"
               className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
               onClick={onRecordToggle}
-              disabled={isSending}
               title="Record voice note"
             >
               <Mic className="h-4 w-4" />

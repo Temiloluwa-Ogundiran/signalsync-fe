@@ -80,4 +80,29 @@ export const journalTagsApi = {
     );
     return data;
   },
+
+  updateTradeAssessment: async (
+    tradeId: string,
+    payload: {
+      execution_quality?: number;
+      setup_quality?: number;
+      discipline_score?: number;
+    },
+    token?: string
+  ): Promise<{
+    execution_quality?: number;
+    setup_quality?: number;
+    discipline_score?: number;
+  }> => {
+    const { data } = await apiClient.put<{
+      execution_quality?: number;
+      setup_quality?: number;
+      discipline_score?: number;
+    }>(
+      `/journal/trades/${tradeId}/assessment`,
+      payload,
+      withAuth(token)
+    );
+    return data;
+  },
 };

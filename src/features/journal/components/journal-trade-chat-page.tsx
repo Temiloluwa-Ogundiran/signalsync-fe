@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
+import type { JournalMessage } from "@/features/journal/types";
 import {
   useCreateJournalTradeMessage,
   useJournalDayTrades,
@@ -21,9 +23,12 @@ import { JournalTradeChatTagsCard } from "./journal-trade-chat-tags-card";
 import { buildTradeMetrics, formatTradeHeaderDate } from "./journal-trade-chat.utils";
 import { requestSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+
 export function JournalTradeChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
 
   const accountId = useResolvedJournalAccountId();
   const tradingDate = searchParams.get("date") ?? undefined;
@@ -40,9 +45,45 @@ export function JournalTradeChatPage() {
   }, []);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const audioInputRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+
+  interface SendingMessage {
+    id: string;
+    content?: string;
+    file?: File;
+    previewUrl?: string;
+    messageType: "text" | "image" | "voice";
+    abortController: AbortController;
+    status?: "sending" | "success" | "error";
+  }
+
+  const [sendingMessages, setSendingMessages] = useState<SendingMessage[]>([]);
+  const [resolvedBlobUrls, setResolvedBlobUrls] = useState<Record<string, string>>({});
+  const createdBlobUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      createdBlobUrlsRef.current.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {}
+      });
+    };
+  }, []);
+
+  const onCancelSending = useCallback((messageId: string) => {
+    setSendingMessages((prev) => {
+      const match = prev.find((sm) => sm.id === messageId);
+      if (match) {
+        match.abortController.abort();
+        if (match.previewUrl) URL.revokeObjectURL(match.previewUrl);
+      }
+      return prev.filter((sm) => sm.id !== messageId);
+    });
+  }, []);
 
   const tradesQuery = useJournalDayTrades(
     accountId,
@@ -78,13 +119,47 @@ export function JournalTradeChatPage() {
     () => trades.find((item) => item.id === tradeId),
     [tradeId, trades],
   );
-  const messages = useMemo(
+  const rawMessages = useMemo(
     () =>
       [...(tradeMessagesQuery.data ?? [])].sort((a, b) =>
         a.created_at.localeCompare(b.created_at),
       ),
     [tradeMessagesQuery.data],
   );
+
+  const messages = useMemo<JournalMessage[]>(() => {
+    const optimistic: JournalMessage[] = sendingMessages.map((sm) => {
+      const isVoice = sm.messageType === "voice";
+      const isImage = sm.messageType === "image";
+      return {
+        id: sm.id,
+        daily_journal_id: null,
+        trade_journal_id: tradeId ?? null,
+        message_type: sm.messageType,
+        content: sm.content ?? null,
+        tags: [],
+        audio_url: isVoice && sm.previewUrl ? sm.previewUrl : null,
+        attachments: isImage && sm.previewUrl ? [{
+          id: `attach-${sm.id}`,
+          message_id: sm.id,
+          storage_path: "",
+          media_type: "image",
+          mime_type: sm.file?.type ?? "image/png",
+          original_filename: sm.file?.name ?? "image.png",
+          caption: null,
+          signed_url: sm.previewUrl,
+          signed_url_expires_at: "",
+          created_at: new Date().toISOString(),
+        }] : [],
+        created_at: new Date().toISOString(),
+        status: (sm.status ?? "sending") as any,
+      };
+    });
+
+    const optimisticIds = new Set(sendingMessages.map((sm) => sm.id));
+    const filteredRaw = rawMessages.filter((m) => !optimisticIds.has(m.id));
+    return [...filteredRaw, ...optimistic];
+  }, [rawMessages, sendingMessages, tradeId]);
 
   const metrics = useMemo(() => buildTradeMetrics(trade), [trade]);
   const prompts = useMemo<ChatPrompt[]>(
@@ -100,7 +175,8 @@ export function JournalTradeChatPage() {
   const isSending =
     createTradeMessage.isPending ||
     updateMessage.isPending ||
-    deleteMessage.isPending;
+    deleteMessage.isPending ||
+    sendingMessages.length > 0;
 
   const sendMessage = async (payload: {
     content?: string;
@@ -108,7 +184,73 @@ export function JournalTradeChatPage() {
     messageType?: "text" | "image" | "voice";
   }) => {
     if (!tradeId) return;
-    await createTradeMessage.mutateAsync({ tradeId, payload });
+    const tempId = `temp-${Date.now()}`;
+    const abortController = new AbortController();
+    const messageType =
+      payload.messageType ??
+      (payload.file?.type.startsWith("image/")
+        ? "image"
+        : payload.file?.type.startsWith("audio/")
+          ? "voice"
+          : "text");
+    const previewUrl = payload.file ? URL.createObjectURL(payload.file) : undefined;
+    if (previewUrl) {
+      createdBlobUrlsRef.current.push(previewUrl);
+    }
+
+    setSendingMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        content: payload.content,
+        file: payload.file,
+        previewUrl,
+        messageType,
+        abortController,
+      },
+    ]);
+
+    try {
+      const realMsg = await createTradeMessage.mutateAsync({
+        tradeId,
+        payload,
+        signal: abortController.signal,
+      });
+
+      if (realMsg && realMsg.id) {
+        setSendingMessages((prev) =>
+          prev.map((sm) =>
+            sm.id === tempId
+              ? { ...sm, id: realMsg.id, status: "success" as any }
+              : sm
+          )
+        );
+        if (previewUrl) {
+          setResolvedBlobUrls((prev) => ({ ...prev, [realMsg.id]: previewUrl }));
+        }
+        setTimeout(() => {
+          setSendingMessages((prev) => prev.filter((sm) => sm.id !== realMsg.id));
+        }, 600);
+      } else {
+        setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+      }
+    } catch (err: any) {
+      if (
+        err.name === "CanceledError" ||
+        err.name === "AbortError" ||
+        axios.isCancel(err)
+      ) {
+        console.log("Upload aborted by user");
+        return;
+      }
+      setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const [{ toast }] = await Promise.all([import("sonner")]);
+      toast.error("Failed to send message", {
+        description: err.message || "An error occurred while uploading.",
+      });
+    }
   };
 
   const onSendComposer = async () => {
@@ -214,6 +356,11 @@ export function JournalTradeChatPage() {
           }
           onPrevTrade={() => goToTradeAtIndex(tradeIndex - 1)}
           onNextTrade={() => goToTradeAtIndex(tradeIndex + 1)}
+          isManual={trade?.is_manual}
+          isMissed={trade?.is_missed}
+          onEdit={() => {
+            if (trade) openEditTradeModal(trade);
+          }}
         />
 
         {isLoadingPage ? (
@@ -237,7 +384,11 @@ export function JournalTradeChatPage() {
               draftMessage={draftMessage}
               isRecording={isRecording}
               onDraftChange={setDraftMessage}
-              onPickImage={() => imageInputRef.current?.click()}
+              onPickFile={(type) =>
+                type === "image"
+                  ? imageInputRef.current?.click()
+                  : audioInputRef.current?.click()
+              }
               onRecordToggle={isRecording ? onStopRecording : onStartRecording}
               onSend={onSendComposer}
               onPromptClick={(prompt) => setDraftMessage(prompt)}
@@ -250,6 +401,8 @@ export function JournalTradeChatPage() {
               onDeleteMessage={async (messageId) => {
                 await deleteMessage.mutateAsync(messageId);
               }}
+              onCancelSending={onCancelSending}
+              resolvedBlobUrls={resolvedBlobUrls}
             />
             {/* Responsive stacking container for Details and Tags columns on md/lg screens */}
             <div className="grid gap-4 h-fit xl:contents">
@@ -258,6 +411,9 @@ export function JournalTradeChatPage() {
                 netPnl={asNumber(trade?.net_profit)}
                 tradeId={tradeId}
                 rating={trade?.rating}
+                executionQuality={trade?.execution_quality}
+                setupQuality={trade?.setup_quality}
+                disciplineScore={trade?.discipline_score}
                 accountId={accountId}
               />
               <JournalTradeChatTagsCard
@@ -273,6 +429,17 @@ export function JournalTradeChatPage() {
         ref={imageInputRef}
         type="file"
         accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) setPendingFile(file);
+        }}
+      />
+
+      <input
+        ref={audioInputRef}
+        type="file"
+        accept="audio/*"
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];

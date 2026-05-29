@@ -12,6 +12,7 @@ export const journalTradesApi = {
   listByDay: async (
     accountId: string,
     tradingDate: string,
+    includeManual?: boolean,
     token?: string,
   ): Promise<JournalTradeListResponse> => {
     const { data } = await apiClient.get<JournalTradeListResponse>(
@@ -23,6 +24,7 @@ export const journalTradesApi = {
           from_date: tradingDate,
           to_date: tradingDate,
           limit: 200,
+          include_manual: includeManual !== undefined ? includeManual : undefined,
         },
       },
     );
@@ -35,6 +37,7 @@ export const journalTradesApi = {
     fromDate: string,
     toDate: string,
     limit: number,
+    includeManual?: boolean,
     token?: string,
   ): Promise<JournalTradeListResponse> => {
     const safeLimit = Math.max(1, Math.min(limit, MAX_TRADE_HISTORY_LIMIT));
@@ -45,6 +48,7 @@ export const journalTradesApi = {
         from_date: fromDate,
         to_date: toDate,
         limit: safeLimit,
+        include_manual: includeManual !== undefined ? includeManual : undefined,
       },
     });
 
@@ -66,6 +70,7 @@ export const journalTradesApi = {
     tradeId: string,
     payload: JournalCreateMessagePayload,
     token?: string,
+    options?: { signal?: AbortSignal },
   ): Promise<JournalMessage> => {
     const body = new FormData();
     const messageType =
@@ -89,6 +94,7 @@ export const journalTradesApi = {
       body,
       {
         ...withAuth(token),
+        signal: options?.signal,
         headers: {
           ...withAuth(token).headers,
           "Content-Type": "multipart/form-data",

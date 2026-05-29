@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,9 +52,45 @@ export function JournalDayChatPage() {
   }, []);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const audioInputRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+
+  interface SendingMessage {
+    id: string;
+    content?: string;
+    file?: File;
+    previewUrl?: string;
+    messageType: "text" | "image" | "voice";
+    abortController: AbortController;
+    status?: "sending" | "success" | "error";
+  }
+
+  const [sendingMessages, setSendingMessages] = useState<SendingMessage[]>([]);
+  const [resolvedBlobUrls, setResolvedBlobUrls] = useState<Record<string, string>>({});
+  const createdBlobUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      createdBlobUrlsRef.current.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {}
+      });
+    };
+  }, []);
+
+  const onCancelSending = useCallback((messageId: string) => {
+    setSendingMessages((prev) => {
+      const match = prev.find((sm) => sm.id === messageId);
+      if (match) {
+        match.abortController.abort();
+        if (match.previewUrl) URL.revokeObjectURL(match.previewUrl);
+      }
+      return prev.filter((sm) => sm.id !== messageId);
+    });
+  }, []);
 
   const dayQuery = useJournalDay(
     accountId,
@@ -82,7 +119,8 @@ export function JournalDayChatPage() {
     createDayMessage.isPending ||
     createTradeMessage.isPending ||
     updateMessage.isPending ||
-    deleteMessage.isPending;
+    deleteMessage.isPending ||
+    sendingMessages.length > 0;
 
   const trades = useMemo(() => dayQuery.data?.trades ?? [], [dayQuery.data?.trades]);
   const summary = useMemo(
@@ -131,7 +169,7 @@ export function JournalDayChatPage() {
     [],
   );
 
-  const messages = useMemo<JournalMessage[]>(() => {
+  const rawMessages = useMemo<JournalMessage[]>(() => {
     if (chatContext === "trade") {
       return [...(tradeMessagesQuery.data ?? [])].sort((a, b) =>
         a.created_at.localeCompare(b.created_at),
@@ -141,6 +179,40 @@ export function JournalDayChatPage() {
       a.created_at.localeCompare(b.created_at),
     );
   }, [chatContext, dayQuery.data?.messages, tradeMessagesQuery.data]);
+
+  const messages = useMemo<JournalMessage[]>(() => {
+    const optimistic: JournalMessage[] = sendingMessages.map((sm) => {
+      const isVoice = sm.messageType === "voice";
+      const isImage = sm.messageType === "image";
+      return {
+        id: sm.id,
+        daily_journal_id: chatContext === "day" ? (dayQuery.data?.id ?? null) : null,
+        trade_journal_id: chatContext === "trade" ? (tradeId ?? null) : null,
+        message_type: sm.messageType,
+        content: sm.content ?? null,
+        tags: [],
+        audio_url: isVoice && sm.previewUrl ? sm.previewUrl : null,
+        attachments: isImage && sm.previewUrl ? [{
+          id: `attach-${sm.id}`,
+          message_id: sm.id,
+          storage_path: "",
+          media_type: "image",
+          mime_type: sm.file?.type ?? "image/png",
+          original_filename: sm.file?.name ?? "image.png",
+          caption: null,
+          signed_url: sm.previewUrl,
+          signed_url_expires_at: "",
+          created_at: new Date().toISOString(),
+        }] : [],
+        created_at: new Date().toISOString(),
+        status: (sm.status ?? "sending") as any,
+      };
+    });
+
+    const optimisticIds = new Set(sendingMessages.map((sm) => sm.id));
+    const filteredRaw = rawMessages.filter((m) => !optimisticIds.has(m.id));
+    return [...filteredRaw, ...optimistic];
+  }, [rawMessages, sendingMessages, chatContext, dayQuery.data?.id, tradeId]);
 
   const isLoadingPage = dayQuery.isLoading;
   const isLoadingMessages =
@@ -158,16 +230,84 @@ export function JournalDayChatPage() {
     file?: File;
     messageType?: "text" | "image" | "voice";
   }) => {
-    if (chatContext === "day") {
-      if (!dayQuery.data?.id) return;
-      await createDayMessage.mutateAsync({
-        dailyJournalId: dayQuery.data.id,
-        payload,
-      });
-      return;
+    const tempId = `temp-${Date.now()}`;
+    const abortController = new AbortController();
+    const messageType =
+      payload.messageType ??
+      (payload.file?.type.startsWith("image/")
+        ? "image"
+        : payload.file?.type.startsWith("audio/")
+          ? "voice"
+          : "text");
+    const previewUrl = payload.file ? URL.createObjectURL(payload.file) : undefined;
+    if (previewUrl) {
+      createdBlobUrlsRef.current.push(previewUrl);
     }
-    if (!tradeId) return;
-    await createTradeMessage.mutateAsync({ tradeId, payload });
+
+    setSendingMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        content: payload.content,
+        file: payload.file,
+        previewUrl,
+        messageType,
+        abortController,
+      },
+    ]);
+
+    try {
+      let realMsg: JournalMessage;
+      if (chatContext === "day") {
+        if (!dayQuery.data?.id) return;
+        realMsg = await createDayMessage.mutateAsync({
+          dailyJournalId: dayQuery.data.id,
+          payload,
+          signal: abortController.signal,
+        });
+      } else {
+        if (!tradeId) return;
+        realMsg = await createTradeMessage.mutateAsync({
+          tradeId,
+          payload,
+          signal: abortController.signal,
+        });
+      }
+
+      if (realMsg && realMsg.id) {
+        setSendingMessages((prev) =>
+          prev.map((sm) =>
+            sm.id === tempId
+              ? { ...sm, id: realMsg.id, status: "success" as any }
+              : sm
+          )
+        );
+        if (previewUrl) {
+          setResolvedBlobUrls((prev) => ({ ...prev, [realMsg.id]: previewUrl }));
+        }
+        setTimeout(() => {
+          setSendingMessages((prev) => prev.filter((sm) => sm.id !== realMsg.id));
+        }, 600);
+      } else {
+        setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+      }
+    } catch (err: any) {
+      if (
+        err.name === "CanceledError" ||
+        err.name === "AbortError" ||
+        axios.isCancel(err)
+      ) {
+        console.log("Upload aborted by user");
+        return;
+      }
+      setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const [{ toast }] = await Promise.all([import("sonner")]);
+      toast.error("Failed to send message", {
+        description: err.message || "An error occurred while uploading.",
+      });
+    }
   };
 
   const onSendComposer = async () => {
@@ -283,7 +423,11 @@ export function JournalDayChatPage() {
             draftMessage={draftMessage}
             isRecording={isRecording}
             onDraftChange={setDraftMessage}
-            onPickImage={() => imageInputRef.current?.click()}
+            onPickFile={(type) =>
+              type === "image"
+                ? imageInputRef.current?.click()
+                : audioInputRef.current?.click()
+            }
             onRecordToggle={isRecording ? onStopRecording : onStartRecording}
             onSend={onSendComposer}
             onPromptClick={(prompt) => setDraftMessage(prompt)}
@@ -296,7 +440,9 @@ export function JournalDayChatPage() {
             onDeleteMessage={async (messageId) => {
               await deleteMessage.mutateAsync(messageId);
             }}
-          />
+             onCancelSending={onCancelSending}
+             resolvedBlobUrls={resolvedBlobUrls}
+           />
 
           <section className="min-w-0 space-y-4">
             {isLoadingPage ? (
@@ -344,6 +490,17 @@ export function JournalDayChatPage() {
         ref={imageInputRef}
         type="file"
         accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) setPendingFile(file);
+        }}
+      />
+
+      <input
+        ref={audioInputRef}
+        type="file"
+        accept="audio/*"
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];

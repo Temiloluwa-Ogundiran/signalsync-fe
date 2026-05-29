@@ -13,6 +13,7 @@ import { formatTradeTimestamp } from "./journal-day-modal.utils";
 import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
 import { JournalTradeHistoryTable } from "./journal-trade-history-table";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
+import { useDeleteManualTrade } from "@/features/journal/hooks/use-manual-trade";
 
 const PAGE_SIZE = 15;
 
@@ -67,6 +68,22 @@ export function JournalTradeHistoryPage() {
 
   const resolvedAccountId = useResolvedJournalAccountId();
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
+
+  const deleteManualTrade = useDeleteManualTrade(activeAccountId);
+
+  const handleDeleteManualTrade = async (tradeId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this manual trade?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteManualTrade.mutateAsync(tradeId);
+      toast.success("Manual trade deleted successfully");
+    } catch (err: any) {
+      toast.error("Failed to delete manual trade", {
+        description: err?.message || "An error occurred.",
+      });
+    }
+  };
   const queryFromDate = parseDateParam(searchParams.get("fromDate"));
   const queryToDate = parseDateParam(searchParams.get("toDate"));
   const hasCustomRange = !!queryFromDate && !!queryToDate;
@@ -176,6 +193,7 @@ export function JournalTradeHistoryPage() {
           }
           onLastPage={() => setPage(totalPages)}
           onOpenJournal={onOpenJournal}
+          onDeleteManualTrade={handleDeleteManualTrade}
         />
       )}
     </div>

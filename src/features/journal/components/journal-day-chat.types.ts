@@ -29,7 +29,7 @@ export interface ChatRailProps {
   draftMessage: string;
   isRecording: boolean;
   onDraftChange: (value: string) => void;
-  onPickImage: () => void;
+  onPickFile: (type: "image" | "audio") => void;
   onRecordToggle: () => void;
   onSend: () => void;
   onPromptClick: (value: string) => void;
@@ -38,6 +38,8 @@ export interface ChatRailProps {
   onPasteFile?: (file: File) => void;
   onEditMessage?: (messageId: string, content: string) => Promise<void> | void;
   onDeleteMessage?: (messageId: string) => Promise<void> | void;
+  onCancelSending?: (messageId: string) => void;
+  resolvedBlobUrls?: Record<string, string>;
   title?: string;
   subtitle?: string;
   composerPlaceholder?: string;

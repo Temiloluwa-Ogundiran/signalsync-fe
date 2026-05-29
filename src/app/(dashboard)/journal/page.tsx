@@ -650,6 +650,7 @@ function JournalPageContent() {
             monthStartOffset={monthStartOffset}
             onPrevMonth={() => handleMonthShift(-1)}
             onNextMonth={() => handleMonthShift(1)}
+            currentMonth={currentMonth}
           />
         ) : null}
         {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (

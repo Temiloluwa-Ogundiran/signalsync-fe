@@ -1,12 +1,14 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { MobileNav } from "@/components/mobile-nav";
 import { Feather } from "lucide-react";
 import { CreatePostModal } from "@/features/post/components/CreatePostModal";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
+import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
+import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
 import { AiInsightModalProvider } from "@/features/dashboard/components/ai-insight-modal-provider";
 
 export default function DashboardLayout({
@@ -17,6 +19,17 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <AiInsightModalProvider>
@@ -79,6 +92,8 @@ export default function DashboardLayout({
         />
 
         <ConnectAccountModal />
+        <AddTradeModal />
+        <EditTradeModal />
 
         <MobileNav />
       </div>
