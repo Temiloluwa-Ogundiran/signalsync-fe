@@ -47,6 +47,7 @@ export interface JournalAccount {
   sync_error_message: string | null;
   bootstrap_error_message: string | null;
   is_deleted: boolean;
+  sync_provider?: string;
   created_at: string;
 }
 
@@ -307,4 +308,67 @@ export interface ManualTradeCreatePayload {
 }
 
 export type ManualTradeUpdatePayload = Partial<ManualTradeCreatePayload>;
+
+export interface CSVPreviewAccountMeta {
+  account_number: string | null;
+  currency: string | null;
+  broker_server: string | null;
+  account_type: "demo" | "live" | null;
+  broker_name: string | null;
+  starting_balance: number | null;
+  current_balance: number | null;
+}
+
+export interface CSVPreviewTrade {
+  broker_trade_id: string;
+  symbol: string;
+  direction: "buy" | "sell";
+  opened_at: string;
+  closed_at: string;
+  open_price: number;
+  close_price: number;
+  volume: number;
+  profit: number;
+  commission: number;
+  swap: number;
+  sl: number | null;
+  tp: number | null;
+}
+
+export interface CSVParseError {
+  row_number: number;
+  column: string | null;
+  message: string;
+  severity: "error" | "warning";
+}
+
+export interface CSVPreviewResponse {
+  account_meta: CSVPreviewAccountMeta;
+  trades: CSVPreviewTrade[];
+  trade_count: number;
+  errors: CSVParseError[];
+  warnings: string[];
+  summary: {
+    date_range: { from: string; to: string } | null;
+    total_profit: number;
+    total_trades: number;
+    symbols: string[];
+  };
+}
+
+export interface CSVConfirmResult {
+  account: JournalAccount;
+  inserted: number;
+  skipped: number;
+  touched_dates: number;
+}
+
+export interface PlatformInfo {
+  id: string;
+  name: string;
+  description: string;
+  supported_extensions: string[];
+  export_instructions: string;
+  max_file_size_mb: number;
+}
 

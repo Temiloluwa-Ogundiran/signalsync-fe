@@ -21,6 +21,10 @@ type JournalUiState = {
 
   includeManualTrades: boolean;
   setIncludeManualTrades: (val: boolean) => void;
+
+  csvReimportAccountId: string | null;
+  openCSVReimportModal: (accountId: string) => void;
+  setCSVReimportAccountId: (id: string | null) => void;
 };
 
 export const useJournalUiStore = create<JournalUiState>()(
@@ -29,8 +33,11 @@ export const useJournalUiStore = create<JournalUiState>()(
       activeAccountId: "",
       setActiveAccountId: (id: string) => set({ activeAccountId: id }),
       connectModalOpen: false,
-      openConnectModal: () => set({ connectModalOpen: true }),
-      setConnectModalOpen: (open: boolean) => set({ connectModalOpen: open }),
+      openConnectModal: () => set({ connectModalOpen: true, csvReimportAccountId: null }),
+      setConnectModalOpen: (open: boolean) => set((state) => ({ 
+        connectModalOpen: open,
+        csvReimportAccountId: open ? state.csvReimportAccountId : null 
+      })),
       
       addTradeModalOpen: false,
       openAddTradeModal: (date = null) => set({ addTradeModalOpen: true, prefilledAddTradeDate: date }),
@@ -44,6 +51,10 @@ export const useJournalUiStore = create<JournalUiState>()(
 
       includeManualTrades: true,
       setIncludeManualTrades: (val: boolean) => set({ includeManualTrades: val }),
+
+      csvReimportAccountId: null,
+      openCSVReimportModal: (accountId: string) => set({ csvReimportAccountId: accountId, connectModalOpen: true }),
+      setCSVReimportAccountId: (id: string | null) => set({ csvReimportAccountId: id }),
     }),
     {
       name: "journal-ui",

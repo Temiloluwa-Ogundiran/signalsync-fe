@@ -10,7 +10,8 @@ import {
   XCircle,
   Wrench,
   Share2,
-  Pencil
+  Pencil,
+  Upload
 } from "lucide-react";
 import {
   useJournalAccounts,
@@ -29,6 +30,7 @@ export function JournalAccountsPage() {
   const disconnectAccount = useDisconnectJournalAccount();
   const updateAccount = useUpdateJournalAccount();
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
+  const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
 
   const [syncingAll, setSyncingAll] = useState(false);
   const [activeSyncingId, setActiveSyncingId] = useState<string | null>(null);
@@ -248,35 +250,53 @@ export function JournalAccountsPage() {
 
                           {/* Connection */}
                           <td className="px-6 py-4">
-                            <span className="rounded bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
-                              API
-                            </span>
+                            {account.sync_provider === "csv_import" ? (
+                              <span className="rounded bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                                CSV
+                              </span>
+                            ) : (
+                              <span className="rounded bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                                API
+                              </span>
+                            )}
                           </td>
 
                           {/* Last Sync */}
                           <td className="px-6 py-4 text-text-secondary text-xs">
-                            {formatLastSync(account.last_synced_at)}
+                            {account.sync_provider === "csv_import"
+                              ? `Last import: ${formatLastSync(account.last_synced_at)}`
+                              : formatLastSync(account.last_synced_at)}
                           </td>
 
                           {/* Actions */}
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-3.5">
-                              <button
-                                onClick={() => handleSyncAccount(account.id)}
-                                disabled={isSyncing || isOnCooldown}
-                                className={`transition-colors hover:scale-110 duration-150 ${
-                                  isOnCooldown
-                                    ? "text-text-tertiary opacity-40 cursor-not-allowed"
-                                    : "text-cyan-400 hover:text-cyan-300 disabled:opacity-50"
-                                }`}
-                                title={
-                                  isOnCooldown
-                                    ? `Sync locked (Wait ${Math.floor(cooldownSecs / 60)}m ${cooldownSecs % 60}s)`
-                                    : "Sync account trades"
-                                }
-                              >
-                                <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin text-brand" : ""}`} />
-                              </button>
+                              {account.sync_provider === "csv_import" ? (
+                                <button
+                                  onClick={() => openCSVReimportModal(account.id)}
+                                  className="text-cyan-400 hover:text-cyan-300 transition-colors hover:scale-110 duration-150"
+                                  title="Import more trades"
+                                >
+                                  <Upload className="h-4 w-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleSyncAccount(account.id)}
+                                  disabled={isSyncing || isOnCooldown}
+                                  className={`transition-colors hover:scale-110 duration-150 ${
+                                    isOnCooldown
+                                      ? "text-text-tertiary opacity-40 cursor-not-allowed"
+                                      : "text-cyan-400 hover:text-cyan-300 disabled:opacity-50"
+                                  }`}
+                                  title={
+                                    isOnCooldown
+                                      ? `Sync locked (Wait ${Math.floor(cooldownSecs / 60)}m ${cooldownSecs % 60}s)`
+                                      : "Sync account trades"
+                                  }
+                                >
+                                  <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin text-brand" : ""}`} />
+                                </button>
+                              )}
                               
                               <button
                                 onClick={async () => {
