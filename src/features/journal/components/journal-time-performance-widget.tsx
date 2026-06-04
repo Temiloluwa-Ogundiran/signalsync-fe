@@ -143,7 +143,25 @@ export function JournalTimePerformanceWidget({
   const maxAbs = numericValues.length
     ? Math.max(...numericValues.map((value) => Math.abs(value)))
     : 0;
-  const paddedMax = Math.max(1_000, Math.ceil((maxAbs * 1.2) / 1000) * 1000);
+  let paddedMax = 100;
+  if (maxAbs > 0) {
+    const rawMax = maxAbs * 1.2;
+    if (rawMax <= 10) {
+      paddedMax = 10;
+    } else if (rawMax <= 50) {
+      paddedMax = 50;
+    } else if (rawMax <= 100) {
+      paddedMax = 100;
+    } else if (rawMax <= 250) {
+      paddedMax = 250;
+    } else if (rawMax <= 500) {
+      paddedMax = 500;
+    } else if (rawMax <= 1000) {
+      paddedMax = 1000;
+    } else {
+      paddedMax = Math.ceil(rawMax / 1000) * 1000;
+    }
+  }
 
   const helpText =
     timeBasis === "open"

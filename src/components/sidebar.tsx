@@ -21,7 +21,12 @@ type NavEntry = {
 
 const navGroups: NavEntry[][] = [
   [
-    { label: "Home", href: "/overview", iconSrc: "/icons/sidebar/home.svg", flag: "HOME" },
+    {
+      label: "Home",
+      href: "/overview",
+      iconSrc: "/icons/sidebar/home.svg",
+      flag: "HOME",
+    },
     {
       label: "Journal",
       href: "/journal",
@@ -57,7 +62,12 @@ const navGroups: NavEntry[][] = [
       iconSrc: "/icons/sidebar/trade-history.svg",
       flag: "FEED",
     },
-    { label: "Space", href: "/spaces", iconSrc: "/icons/sidebar/spaces.svg", flag: "SPACE" },
+    {
+      label: "Space",
+      href: "/spaces",
+      iconSrc: "/icons/sidebar/spaces.svg",
+      flag: "SPACE",
+    },
   ],
   [
     {
@@ -66,7 +76,12 @@ const navGroups: NavEntry[][] = [
       iconSrc: "/icons/sidebar/profile.svg",
       flag: "PROFILE",
     },
-    { label: "Tools", href: "/tools", iconSrc: "/icons/sidebar/tools.svg", flag: "TOOLS" },
+    {
+      label: "Tools",
+      href: "/tools",
+      iconSrc: "/icons/sidebar/tools.svg",
+      flag: "TOOLS",
+    },
     {
       label: "Notifications",
       href: "/notifications",
@@ -149,7 +164,7 @@ export function Sidebar({
             type="button"
             onClick={onToggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="absolute right-0 top-1/2 z-40 flex size-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-sidebar-chrome-bg p-2 text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+            className="absolute right-0 top-1/2 z-40 flex size-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-sidebar-chrome-bg p-2 text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
           >
             {collapsed ? (
               <ChevronRight className="size-5 shrink-0" strokeWidth={2} />
@@ -170,53 +185,53 @@ export function Sidebar({
           const visibleItems = filterByFlags(group);
           if (visibleItems.length === 0) return null;
           return (
-          <div key={gi}>
-            {gi > 0 && <NavDivider />}
-            <div className="flex flex-col gap-1">
-              {visibleItems.map((item) => {
-                const isActive =
-                  item.href === "/overview"
-                    ? pathname === "/overview"
-                    : pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.label + item.href}
-                    href={item.href}
-                    onClick={() => onNavigate?.()}
-                    className={cn(
-                      "flex min-h-[44px] items-center rounded-full py-2.5 text-base font-semibold leading-snug transition-colors",
-                      collapsed ? "w-11 justify-center px-0" : "gap-3 px-4",
-                      isActive
-                        ? "border border-sidebar-nav-active-border bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
-                        : "border border-transparent bg-transparent text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/40 hover:text-sidebar-nav-active-text",
-                    )}
-                    title={collapsed ? item.label : undefined}
-                  >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                      {item.label === "Feed" ? (
-                        <IconFeed active={isActive} />
-                      ) : (
-                        <Image
-                          src={item.iconSrc}
-                          alt=""
-                          width={24}
-                          height={24}
-                          className={cn(
-                            "h-6 w-6 transition-opacity",
-                            isActive ? "opacity-100" : "opacity-75",
-                          )}
-                        />
+            <div key={gi}>
+              {gi > 0 && <NavDivider />}
+              <div className="flex flex-col gap-1">
+                {visibleItems.map((item) => {
+                  const isActive =
+                    item.href === "/overview"
+                      ? pathname === "/overview"
+                      : pathname === item.href ||
+                        pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.label + item.href}
+                      href={item.href}
+                      onClick={() => onNavigate?.()}
+                      className={cn(
+                        "flex min-h-[44px] items-center rounded-full py-2.5 text-base font-semibold leading-snug transition-colors",
+                        collapsed ? "w-11 justify-center px-0" : "gap-3 px-4",
+                        isActive
+                          ? "border border-sidebar-nav-active-border bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
+                          : "border border-transparent bg-transparent text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/40 hover:text-sidebar-nav-active-text",
                       )}
-                    </span>
-                    {!collapsed ? (
-                      <span className="truncate">{item.label}</span>
-                    ) : null}
-                  </Link>
-                );
-              })}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                        {item.label === "Feed" ? (
+                          <IconFeed active={isActive} />
+                        ) : (
+                          <Image
+                            src={item.iconSrc}
+                            alt=""
+                            width={24}
+                            height={24}
+                            className={cn(
+                              "h-6 w-6 transition-opacity",
+                              isActive ? "opacity-100" : "opacity-75",
+                            )}
+                          />
+                        )}
+                      </span>
+                      {!collapsed ? (
+                        <span className="truncate">{item.label}</span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
           );
         })}
       </nav>

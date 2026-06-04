@@ -156,7 +156,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+                    className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg hover:cursor-pointer"
                   >
                     <Image
                       src="/icons/navbar/calendar.svg"
@@ -164,7 +164,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                       width={24}
                       height={24}
                     />
-                    <span>{rangeLabel}</span>
+                    <div className="flex flex-col items-start leading-none gap-0.5">
+                      <span className="text-[10px] font-medium text-text-secondary select-none">
+                        Date range
+                      </span>
+                      <span className="text-[11px] font-semibold text-sidebar-nav-active-text">
+                        {parsedDateRange?.from && parsedDateRange?.to
+                          ? rangeLabel
+                          : "Last 30 days"}
+                      </span>
+                    </div>
                     <IconChevronDown />
                   </button>
                 </PopoverTrigger>
@@ -198,7 +207,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg"
+                    className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg hover:cursor-pointer"
                   >
                     <Image
                       src="/icons/navbar/accounts.svg"
@@ -285,7 +294,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-1.5 rounded-full border border-chrome-control-border px-3 py-1.5 text-xs font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg min-w-0"
+                className="flex items-center gap-1.5 rounded-full border border-chrome-control-border px-3 py-1 text-xs font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg min-w-0"
               >
                 <Image
                   src="/icons/navbar/calendar.svg"
@@ -294,7 +303,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                   height={16}
                   className="shrink-0"
                 />
-                <span className="truncate">{rangeLabel}</span>
+                <div className="flex flex-col items-start leading-none gap-0.5 min-w-0">
+                  <span className="text-[9px] font-medium text-text-secondary select-none">
+                    Date range
+                  </span>
+                  <span className="text-[10px] font-semibold text-sidebar-nav-active-text truncate">
+                    {parsedDateRange?.from && parsedDateRange?.to
+                      ? rangeLabel
+                      : "Last 30 days"}
+                  </span>
+                </div>
                 <IconChevronDown className="h-3 w-3 shrink-0" />
               </button>
             </PopoverTrigger>
