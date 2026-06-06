@@ -69,7 +69,7 @@ export function JournalSymbolsWidget({
         )}
       >
         <h3 className="text-base font-semibold text-text-primary">
-          Symbols Traded
+          Symbols Traded!!!
         </h3>
       </header>
       {chartData.length === 0 ? (
