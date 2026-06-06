@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
   RefreshCw,
@@ -21,8 +22,10 @@ import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "./journal-day-modal.utils";
+import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
 
 export function JournalAccountsPage() {
+  const queryClient = useQueryClient();
   const { data: accounts = [], isLoading } = useJournalAccounts();
   const syncAccount = useSyncJournalAccount();
   const disconnectAccount = useDisconnectJournalAccount();
@@ -36,6 +39,7 @@ export function JournalAccountsPage() {
     setActiveSyncingId(accountId);
     try {
       await syncAccount.mutateAsync(accountId);
+      await refreshJournalQueriesAfterManualSync(queryClient);
     } catch (err) {
       console.error("Sync failed for account: " + accountId, err);
     } finally {

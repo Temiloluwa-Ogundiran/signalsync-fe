@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import type { JournalCalendarDayStat } from "@/features/journal/types";
@@ -31,6 +32,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
 import { cn } from "@/lib/utils";
+import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -99,6 +101,7 @@ function formatSyncTimestamp(dateString: string | null | undefined) {
 
 function JournalPageContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const [selectedDay, setSelectedDay] = useState<number | null>(() =>
     new Date().getDate(),
@@ -344,6 +347,7 @@ function JournalPageContent() {
 
     try {
       const result = await syncAccountMutation.mutateAsync(targetAccountId);
+      await refreshJournalQueriesAfterManualSync(queryClient);
       const refreshed = await refetchAccounts();
       const refreshedAccount = (refreshed.data ?? []).find(
         (account) => account.id === targetAccountId,
