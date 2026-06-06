@@ -102,6 +102,11 @@ export function JournalBalanceOverTimeWidget({
     return asNumber(last.balance as number | string);
   }, [points]);
 
+  const isPositiveTrend = useMemo(() => {
+    if (data.length < 2) return true;
+    return data[data.length - 1].value >= data[0].value;
+  }, [data]);
+
   return (
     <section className="flex h-full min-h-0 flex-col justify-between rounded-xl bg-kpi-card-bg ring-1 ring-border-primary/60">
       <header
@@ -198,7 +203,11 @@ export function JournalBalanceOverTimeWidget({
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="var(--color-kpi-metric-positive)"
+                stroke={
+                  isPositiveTrend
+                    ? "var(--color-kpi-metric-positive)"
+                    : "var(--color-danger)"
+                }
                 strokeWidth={2.5}
                 dot={false}
               />

@@ -42,6 +42,12 @@ export function JournalCalendarWidget({
       0,
     ),
   );
+  const weeklyActiveDays = weekRows.map((week) =>
+    week.reduce<number>(
+      (acc, day) => acc + (day && (dayStats[day]?.trades ?? 0) > 0 ? 1 : 0),
+      0,
+    ),
+  );
   const monthlyPnl = Object.values(dayStats).reduce((acc, day) => acc + day.pnl, 0);
   const activeDays = Object.values(dayStats).filter((day) => day.trades > 0).length;
 
@@ -63,7 +69,10 @@ export function JournalCalendarWidget({
           onSelectDay={onSelectDay}
           currentMonth={currentMonth}
         />
-        <JournalWeekSummaryColumn weeklyTotals={weeklyTotals} />
+        <JournalWeekSummaryColumn
+          weeklyTotals={weeklyTotals}
+          weeklyActiveDays={weeklyActiveDays}
+        />
       </div>
     </section>
   );

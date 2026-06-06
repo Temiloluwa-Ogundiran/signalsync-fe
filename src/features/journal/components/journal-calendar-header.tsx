@@ -10,10 +10,18 @@ interface JournalCalendarHeaderProps {
 }
 
 function compactMoney(value: number) {
+  const abs = Math.abs(value);
+  if (abs < 1000) {
+    return `${value >= 0 ? "+" : "-"}$${abs.toLocaleString("en-US", {
+      minimumFractionDigits: abs < 1 ? 2 : 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
   const compact = new Intl.NumberFormat("en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
-  }).format(Math.abs(value));
+  }).format(abs);
   return `${value >= 0 ? "+" : "-"}$${compact}`;
 }
 

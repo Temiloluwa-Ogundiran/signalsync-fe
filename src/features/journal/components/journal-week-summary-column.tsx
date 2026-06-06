@@ -2,19 +2,30 @@ import { cn } from "@/lib/utils";
 
 interface JournalWeekSummaryColumnProps {
   weeklyTotals: number[];
+  weeklyActiveDays: number[];
 }
 
 function formatCompact(value: number) {
   if (!value) return "$0";
+
+  const abs = Math.abs(value);
+  if (abs < 1000) {
+    return `${value >= 0 ? "+" : "-"}$${abs.toLocaleString("en-US", {
+      minimumFractionDigits: abs < 1 ? 2 : 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
   const compact = new Intl.NumberFormat("en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
-  }).format(Math.abs(value));
+  }).format(abs);
   return `${value >= 0 ? "+" : "-"}$${compact}`;
 }
 
 export function JournalWeekSummaryColumn({
   weeklyTotals,
+  weeklyActiveDays,
 }: JournalWeekSummaryColumnProps) {
   return (
     <div className="grid grid-cols-2 gap-1.5 min-[480px]:grid-cols-3 sm:grid-cols-5 lg:grid-cols-1 lg:grid-rows-6 lg:gap-1.5">
@@ -35,7 +46,7 @@ export function JournalWeekSummaryColumn({
             {formatCompact(weekPnl)}
           </p>
           <p className="text-[0.58rem] sm:text-[0.65rem] text-text-tertiary hidden min-[360px]:block">
-            {Math.abs(weekPnl) ? "6 days" : "0 days"}
+            {weeklyActiveDays[index] ?? 0} day{(weeklyActiveDays[index] ?? 0) === 1 ? "" : "s"}
           </p>
         </div>
       ))}
