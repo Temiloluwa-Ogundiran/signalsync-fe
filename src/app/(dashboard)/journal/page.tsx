@@ -85,6 +85,18 @@ function resolveBalanceRangeWindow(range: BalanceRangeOption) {
   };
 }
 
+function formatSyncTimestamp(dateString: string | null | undefined) {
+  if (!dateString) return null;
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function JournalPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -339,6 +351,9 @@ function JournalPageContent() {
       const refreshedLastSyncedAtMs = refreshedAccount?.last_synced_at
         ? new Date(refreshedAccount.last_synced_at).getTime()
         : null;
+      const refreshedSyncLabel = formatSyncTimestamp(
+        refreshedAccount?.last_synced_at ?? null,
+      );
       const didSyncTimestampAdvance =
         !!refreshedLastSyncedAtMs &&
         !Number.isNaN(refreshedLastSyncedAtMs) &&
@@ -350,9 +365,11 @@ function JournalPageContent() {
       if (!silent) {
         if ("inserted_trades" in result) {
           if (result.inserted_trades === 0) {
-            toast.info("No new trades found", {
+            toast.info("Account already up to date", {
               description:
-                "Sync completed successfully, but there were no new closed trades to ingest.",
+                didSyncTimestampAdvance
+                  ? `Sync completed${refreshedSyncLabel ? ` at ${refreshedSyncLabel}` : ""}. There were no additional closed trades to ingest.`
+                  : "There were no additional closed trades to ingest yet. Open positions only appear after they are closed.",
             });
           } else {
             toast.success("Account sync complete", {
