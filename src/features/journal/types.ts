@@ -46,6 +46,12 @@ export interface JournalAccount {
   last_bootstrap_synced_at: string | null;
   sync_error_message: string | null;
   bootstrap_error_message: string | null;
+  last_sync_attempted_at: string | null;
+  next_sync_not_before: string | null;
+  last_sync_outcome: string | null;
+  consecutive_sync_failures: number;
+  latest_balance: number | null;
+  latest_equity: number | null;
   is_deleted: boolean;
   sync_provider?: string;
   created_at: string;
@@ -57,9 +63,11 @@ export interface JournalAccountSyncImmediateResult {
 }
 
 export interface JournalAccountSyncQueuedResult {
-  status: "queued";
-  task_id: string | null;
+  status: string;
+  task_id?: string | null;
   mode?: "verify" | "sync";
+  retry_after_seconds?: number | null;
+  message?: string | null;
 }
 
 export type JournalAccountSyncResult =
@@ -230,6 +238,7 @@ export interface JournalTrade {
   net_profit: number;
   opened_at: string;
   closed_at: string;
+  trading_date: string;
   balance_before_trade?: number | string | null;
   net_roi_percent?: number | string | null;
   trade_reviewed_at?: string | null;

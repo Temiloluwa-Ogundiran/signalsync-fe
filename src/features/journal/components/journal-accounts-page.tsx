@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Plus,
   RefreshCw,
@@ -8,8 +8,6 @@ import {
   Server,
   CheckCircle2,
   XCircle,
-  Wrench,
-  Share2,
   Pencil,
   Upload
 } from "lucide-react";
@@ -32,17 +30,7 @@ export function JournalAccountsPage() {
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
 
-  const [syncingAll, setSyncingAll] = useState(false);
   const [activeSyncingId, setActiveSyncingId] = useState<string | null>(null);
-  const [, setNowTick] = useState(0);
-
-  // Live ticking cooldown states in real-time
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNowTick((prev) => prev + 1);
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   const handleSyncAccount = async (accountId: string) => {
     setActiveSyncingId(accountId);
@@ -52,31 +40,6 @@ export function JournalAccountsPage() {
       console.error("Sync failed for account: " + accountId, err);
     } finally {
       setActiveSyncingId(null);
-    }
-  };
-
-  const getSyncCooldownSeconds = (lastSyncedAt: string | null) => {
-    if (!lastSyncedAt) return 0;
-    const lastSyncMs = new Date(lastSyncedAt).getTime();
-    const diffMs = Date.now() - lastSyncMs;
-    const remainingMs = 5 * 60 * 1000 - diffMs;
-    return remainingMs > 0 ? Math.ceil(remainingMs / 1000) : 0;
-  };
-
-  const handleSyncAll = async () => {
-    const syncableAccounts = accounts.filter(
-      (acc) => getSyncCooldownSeconds(acc.last_synced_at) === 0
-    );
-    if (syncableAccounts.length === 0) return;
-    setSyncingAll(true);
-    try {
-      await Promise.all(
-        syncableAccounts.map((acc) => syncAccount.mutateAsync(acc.id))
-      );
-    } catch (err) {
-      console.error("Sync all failed", err);
-    } finally {
-      setSyncingAll(false);
     }
   };
 
@@ -115,21 +78,52 @@ export function JournalAccountsPage() {
     });
   };
 
-  const getAccountBalance = (account: any) => {
-    const name = (account.display_name || "").toLowerCase();
-    const login = account.broker_login;
-    if (login === "314905752" || name.includes("100k")) {
-      return 90017.22;
+  const formatNextRetry = (dateString: string | null) => {
+    if (!dateString) return null;
+    const retryAt = new Date(dateString);
+    const diffMs = retryAt.getTime() - Date.now();
+    if (Number.isNaN(diffMs) || diffMs <= 0) return null;
+
+    const diffMins = Math.ceil(diffMs / 60000);
+    if (diffMins <= 1) return "Retrying within a minute";
+    if (diffMins < 60) return `Retrying in ${diffMins} min`;
+
+    const diffHours = Math.ceil(diffMins / 60);
+    return `Retrying in ${diffHours} hr`;
+  };
+
+  const getSyncStatusDetail = (account: (typeof accounts)[number]) => {
+    if (account.sync_provider === "csv_import") return null;
+    if (account.connection_state === "pending_verification") {
+      return "Verifying credentials";
     }
-    if (login === "31449127" || name.includes("5k")) {
-      return 4721.34;
+    if (account.connection_state === "bootstrapping") {
+      return "Syncing history";
     }
-    // Deterministic balance based on login
-    const num = parseInt(login, 10);
-    if (!isNaN(num)) {
-      return (num % 90000) + 10000.50;
+    if (account.connection_state === "verification_failed") {
+      return account.sync_error_message || "Credentials need attention";
     }
-    return 10000.00;
+    if (account.connection_state === "bootstrap_failed") {
+      return account.bootstrap_error_message || "Background sync failed";
+    }
+    if (account.last_sync_outcome === "rate_limited") {
+      return formatNextRetry(account.next_sync_not_before) || "Rate limited";
+    }
+    if (account.last_sync_outcome === "backpressure") {
+      return formatNextRetry(account.next_sync_not_before) || "Server busy";
+    }
+    if (account.last_sync_outcome === "timeout") {
+      return "Timed out, retrying automatically";
+    }
+    if (account.last_sync_outcome === "transient_error") {
+      return "Retrying automatically";
+    }
+    if (account.consecutive_sync_failures > 0) {
+      return `${account.consecutive_sync_failures} recent sync failure${
+        account.consecutive_sync_failures === 1 ? "" : "s"
+      }`;
+    }
+    return null;
   };
 
   return (
@@ -188,9 +182,11 @@ export function JournalAccountsPage() {
                     {accounts.map((account) => {
                       const isSyncing = activeSyncingId === account.id;
                       const accountLabel = account.display_name || "MT5 Trading Account";
-                      const balanceVal = getAccountBalance(account);
-                      const cooldownSecs = getSyncCooldownSeconds(account.last_synced_at);
-                      const isOnCooldown = cooldownSecs > 0;
+                      const balanceText =
+                        account.latest_balance == null
+                          ? "--"
+                          : formatCurrency(account.latest_balance);
+                      const syncStatusDetail = getSyncStatusDetail(account);
                       
                       return (
                         <tr
@@ -245,7 +241,7 @@ export function JournalAccountsPage() {
 
                           {/* Balance */}
                           <td className="px-6 py-4 text-text-primary font-bold">
-                            {formatCurrency(balanceVal)}
+                            {balanceText}
                           </td>
 
                           {/* Connection */}
@@ -262,10 +258,19 @@ export function JournalAccountsPage() {
                           </td>
 
                           {/* Last Sync */}
-                          <td className="px-6 py-4 text-text-secondary text-xs">
-                            {account.sync_provider === "csv_import"
-                              ? `Last import: ${formatLastSync(account.last_synced_at)}`
-                              : formatLastSync(account.last_synced_at)}
+                          <td className="px-6 py-4 text-xs">
+                            <div className="space-y-1">
+                              <div className="text-text-secondary">
+                                {account.sync_provider === "csv_import"
+                                  ? `Last import: ${formatLastSync(account.last_synced_at)}`
+                                  : formatLastSync(account.last_synced_at)}
+                              </div>
+                              {syncStatusDetail ? (
+                                <div className="text-[11px] font-medium text-text-tertiary">
+                                  {syncStatusDetail}
+                                </div>
+                              ) : null}
+                            </div>
                           </td>
 
                           {/* Actions */}
@@ -282,17 +287,9 @@ export function JournalAccountsPage() {
                               ) : (
                                 <button
                                   onClick={() => handleSyncAccount(account.id)}
-                                  disabled={isSyncing || isOnCooldown}
-                                  className={`transition-colors hover:scale-110 duration-150 ${
-                                    isOnCooldown
-                                      ? "text-text-tertiary opacity-40 cursor-not-allowed"
-                                      : "text-cyan-400 hover:text-cyan-300 disabled:opacity-50"
-                                  }`}
-                                  title={
-                                    isOnCooldown
-                                      ? `Sync locked (Wait ${Math.floor(cooldownSecs / 60)}m ${cooldownSecs % 60}s)`
-                                      : "Sync account trades"
-                                  }
+                                  disabled={isSyncing}
+                                  className="text-cyan-400 hover:text-cyan-300 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
+                                  title="Sync account trades"
                                 >
                                   <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin text-brand" : ""}`} />
                                 </button>

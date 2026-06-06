@@ -8,11 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  FilePenLine,
-  ChevronLeft,
-  ChevronsLeft,
-  ChevronRight,
-  ChevronsRight,
+  Loader2,
   Pencil,
   Trash2,
 } from "lucide-react";
@@ -33,14 +29,11 @@ import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface JournalTradeHistoryTableProps {
   rows: TradeHistoryRow[];
-  page: number;
-  totalPages: number;
-  onPrevPage: () => void;
-  onNextPage: () => void;
-  onFirstPage: () => void;
-  onLastPage: () => void;
   onOpenJournal: (row: TradeHistoryRow) => void;
   onDeleteManualTrade?: (tradeId: string) => void;
+  canLoadMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 function formatPrice(value: number | string) {
@@ -49,14 +42,11 @@ function formatPrice(value: number | string) {
 
 export function JournalTradeHistoryTable({
   rows,
-  page,
-  totalPages,
-  onPrevPage,
-  onNextPage,
-  onFirstPage,
-  onLastPage,
   onOpenJournal,
   onDeleteManualTrade,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }: JournalTradeHistoryTableProps) {
   const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
 
@@ -269,50 +259,22 @@ export function JournalTradeHistoryTable({
         </Table>
       </div>
 
-      <div className="flex h-[4.4rem] items-center justify-end gap-1 border-t border-border-secondary/80 bg-bg-secondary px-4">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onFirstPage}
-          disabled={page <= 1}
-          className="rounded-full text-text-primary disabled:text-text-tertiary"
-        >
-          <ChevronsLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onPrevPage}
-          disabled={page <= 1}
-          className="rounded-full text-text-primary disabled:text-text-tertiary"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <p className="px-2 text-sm font-semibold text-text-primary">
-          Page {Math.max(page, 1)} of {Math.max(totalPages, 1)}
+      <div className="flex min-h-[4.4rem] items-center justify-between gap-3 border-t border-border-secondary/80 bg-bg-secondary px-4 py-3">
+        <p className="text-sm font-semibold text-text-primary">
+          Showing {rows.length} loaded trade{rows.length === 1 ? "" : "s"}
         </p>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onNextPage}
-          disabled={page >= totalPages}
-          className="rounded-full text-text-primary disabled:text-text-tertiary"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onLastPage}
-          disabled={page >= totalPages}
-          className="rounded-full text-text-primary disabled:text-text-tertiary"
-        >
-          <ChevronsRight className="h-4 w-4" />
-        </Button>
+        {canLoadMore ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="rounded-full"
+          >
+            {isLoadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Load more
+          </Button>
+        ) : null}
       </div>
     </section>
   );

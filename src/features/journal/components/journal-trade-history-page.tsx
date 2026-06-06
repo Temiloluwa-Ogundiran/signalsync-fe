@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
-import { useTradeHistory } from "@/features/journal/hooks/use-trade-history";
+import { useInfiniteTradeHistory } from "@/features/journal/hooks/use-infinite-trade-history";
 import type { JournalTrade } from "@/features/journal/types";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import { formatTradeTimestamp } from "./journal-day-modal.utils";
@@ -14,8 +14,6 @@ import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
 import { JournalTradeHistoryTable } from "./journal-trade-history-table";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { useDeleteManualTrade } from "@/features/journal/hooks/use-manual-trade";
-
-const PAGE_SIZE = 15;
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -26,7 +24,13 @@ function formatDateParam(date: Date) {
 
 function parseDateParam(value: string | null) {
   if (!value) return null;
-  const parsed = new Date(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(year, month - 1, day);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
@@ -43,16 +47,11 @@ function getLastDaysInclusiveRange(days: number) {
 
 function mapTradeRows(items: JournalTrade[]): TradeHistoryRow[] {
   return items.map((item) => {
-    const openedAt = new Date(item.opened_at);
-    const tradingDate = Number.isNaN(openedAt.getTime())
-      ? item.opened_at.slice(0, 10)
-      : formatDateParam(openedAt);
-
     return {
       ...item,
       openedDateLabel: formatTradeTimestamp(item.opened_at),
       closedDateLabel: formatTradeTimestamp(item.closed_at),
-      tradingDate,
+      tradingDate: item.trading_date,
     };
   });
 }
@@ -61,7 +60,6 @@ export function JournalTradeHistoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [journalDayTradingDate, setJournalDayTradingDate] = useState<string>();
   const { data: accounts = [] } = useJournalAccounts();
@@ -78,9 +76,11 @@ export function JournalTradeHistoryPage() {
     try {
       await deleteManualTrade.mutateAsync(tradeId);
       toast.success("Manual trade deleted successfully");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const description =
+        err instanceof Error ? err.message : "An error occurred.";
       toast.error("Failed to delete manual trade", {
-        description: err?.message || "An error occurred.",
+        description,
       });
     }
   };
@@ -95,15 +95,18 @@ export function JournalTradeHistoryPage() {
     ? formatDateParam(queryToDate)
     : rollingDefaultRange.toDate;
 
-  const tradeHistoryQuery = useTradeHistory({
+  const tradeHistoryQuery = useInfiniteTradeHistory({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
   });
 
   const allRows = useMemo(
-    () => mapTradeRows(tradeHistoryQuery.data?.items ?? []),
-    [tradeHistoryQuery.data?.items],
+    () =>
+      mapTradeRows(
+        tradeHistoryQuery.data?.pages.flatMap((page) => page.items) ?? [],
+      ),
+    [tradeHistoryQuery.data],
   );
 
   const filteredRows = useMemo(() => {
@@ -120,13 +123,6 @@ export function JournalTradeHistoryPage() {
       );
     });
   }, [allRows, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageRows = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filteredRows.slice(start, start + PAGE_SIZE);
-  }, [filteredRows, safePage]);
 
   const onOpenJournal = (row: TradeHistoryRow) => {
     if (!activeAccountId) return;
@@ -160,7 +156,6 @@ export function JournalTradeHistoryPage() {
         searchValue={search}
         onSearchChange={(value) => {
           setSearch(value);
-          setPage(1);
         }}
         onOpenJournalDay={handleOpenTodayJournalDay}
       />
@@ -183,17 +178,12 @@ export function JournalTradeHistoryPage() {
         </div>
       ) : (
         <JournalTradeHistoryTable
-          rows={pageRows}
-          page={safePage}
-          totalPages={totalPages}
-          onFirstPage={() => setPage(1)}
-          onPrevPage={() => setPage((current) => Math.max(1, current - 1))}
-          onNextPage={() =>
-            setPage((current) => Math.min(totalPages, current + 1))
-          }
-          onLastPage={() => setPage(totalPages)}
+          rows={filteredRows}
           onOpenJournal={onOpenJournal}
           onDeleteManualTrade={handleDeleteManualTrade}
+          canLoadMore={tradeHistoryQuery.hasNextPage}
+          isLoadingMore={tradeHistoryQuery.isFetchingNextPage}
+          onLoadMore={() => void tradeHistoryQuery.fetchNextPage()}
         />
       )}
     </div>

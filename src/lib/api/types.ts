@@ -13,8 +13,10 @@ export interface FastAPIErrorResponse {
     | string
     | {
         message: string;
-        error_code: string;
+        error_code?: string;
+        code?: string;
         suggestion?: string;
+        retry_after_seconds?: number;
       };
 }
 
@@ -134,12 +136,12 @@ export function normalizeError(
   }
 
   return {
-    status,
-    code: data.detail.error_code || ErrorCodes.UNKNOWN_ERROR,
-    message: data.detail.message,
-    suggestion: data.detail.suggestion,
-    raw: data,
-  };
+      status,
+      code: data.detail.error_code || data.detail.code || ErrorCodes.UNKNOWN_ERROR,
+      message: data.detail.message,
+      suggestion: data.detail.suggestion,
+      raw: data,
+    };
 }
 
 function getErrorCodeFromStatus(status: number): string {

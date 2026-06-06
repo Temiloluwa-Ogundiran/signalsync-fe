@@ -6,8 +6,6 @@ import type {
   JournalTradeListResponse,
 } from "../types";
 
-const MAX_TRADE_HISTORY_LIMIT = 200;
-
 export const journalTradesApi = {
   listByDay: async (
     accountId: string,
@@ -36,18 +34,22 @@ export const journalTradesApi = {
     accountId: string,
     fromDate: string,
     toDate: string,
-    limit: number,
+    cursorOrLimit?: string | number,
     includeManual?: boolean,
     token?: string,
   ): Promise<JournalTradeListResponse> => {
-    const safeLimit = Math.max(1, Math.min(limit, MAX_TRADE_HISTORY_LIMIT));
+    const cursor =
+      typeof cursorOrLimit === "string" ? cursorOrLimit : undefined;
+    const limit =
+      typeof cursorOrLimit === "number" ? cursorOrLimit : 100;
     const { data } = await apiClient.get<JournalTradeListResponse>("/journal/trades", {
       ...withAuth(token),
       params: {
         account_id: accountId,
         from_date: fromDate,
         to_date: toDate,
-        limit: safeLimit,
+        limit,
+        cursor,
         include_manual: includeManual !== undefined ? includeManual : undefined,
       },
     });

@@ -28,12 +28,9 @@ import { JournalTimePerformanceWidget } from "@/features/journal/components/jour
 import { JournalBalanceOverTimeWidget } from "@/features/journal/components/journal-balance-over-time-widget";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
-import { consumeSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
 import { cn } from "@/lib/utils";
-
-const AUTO_SYNC_THROTTLE_MS = 5 * 60 * 1000;
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -44,7 +41,13 @@ function formatDateParam(date: Date) {
 
 function parseDateParam(value: string | null) {
   if (!value) return null;
-  const parsed = new Date(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(year, month - 1, day);
   if (Number.isNaN(parsed.getTime())) return null;
   return parsed;
 }
@@ -89,9 +92,6 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [pollingWindowStartedAt, setPollingWindowStartedAt] = useState<
-    number | null
-  >(null);
   const [syncUiState, setSyncUiState] = useState<{
     accountId: string;
     startedAt: number;
@@ -99,7 +99,7 @@ function JournalPageContent() {
   } | null>(null);
   const hasShownNoAccountToastRef = useRef(false);
   const wasConnectionPendingRef = useRef(false);
-  const journalAutoSyncAttemptedForAccountRef = useRef<string | null>(null);
+  const pollingWindowStartedAtRef = useRef<number | null>(null);
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   // const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
@@ -122,7 +122,6 @@ function JournalPageContent() {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
-  const activeAccountLastSyncedAt = activeAccount?.last_synced_at ?? null;
   const isConnectionPending = accounts.some(
     (account) =>
       account.connection_state === "pending_verification" ||
@@ -139,15 +138,15 @@ function JournalPageContent() {
     activeAccountConnectionBusy;
 
   const journalSyncProgressMessage = useMemo(() => {
-    if (syncAccountMutation.isPending) return "Contacting server…";
-    if (syncUiState) return "Waiting for background sync…";
+    if (syncAccountMutation.isPending) return "Contacting server...";
+    if (syncUiState) return "Waiting for background sync...";
     if (activeAccount?.connection_state === "bootstrapping") {
-      return "Syncing account history for stats…";
+      return "Syncing account history for stats...";
     }
     if (activeAccount?.connection_state === "pending_verification") {
-      return "Verifying credentials…";
+      return "Verifying credentials...";
     }
-    return "Sync in progress…";
+    return "Sync in progress...";
   }, [
     syncAccountMutation.isPending,
     syncUiState,
@@ -291,43 +290,6 @@ function JournalPageContent() {
     setIsDayModalOpen(true);
   };
 
-  const getAutoSyncStorageKey = (accountId: string) =>
-    `journal:auto-sync:last:${accountId}`;
-
-  const canRequestSync = (
-    accountId: string,
-    referenceNowMs = Date.now(),
-  ): { allowed: boolean; remainingMs: number } => {
-    if (typeof window === "undefined") {
-      return { allowed: true, remainingMs: 0 };
-    }
-
-    const key = getAutoSyncStorageKey(accountId);
-    const lastRequestRaw = window.localStorage.getItem(key);
-    const lastRequestMs = lastRequestRaw ? Number(lastRequestRaw) : 0;
-    if (!lastRequestMs || Number.isNaN(lastRequestMs)) {
-      return { allowed: true, remainingMs: 0 };
-    }
-
-    const elapsedMs = referenceNowMs - lastRequestMs;
-    if (elapsedMs >= AUTO_SYNC_THROTTLE_MS) {
-      return { allowed: true, remainingMs: 0 };
-    }
-
-    return {
-      allowed: false,
-      remainingMs: AUTO_SYNC_THROTTLE_MS - elapsedMs,
-    };
-  };
-
-  const markSyncRequestedNow = (accountId: string) => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      getAutoSyncStorageKey(accountId),
-      String(Date.now()),
-    );
-  };
-
   const handleRefreshAccounts = async (options?: {
     silent?: boolean;
     accountId?: string;
@@ -353,19 +315,6 @@ function JournalPageContent() {
       await refetchAccounts();
       return;
     }
-
-    const syncGuard = canRequestSync(targetAccountId);
-    if (!syncGuard.allowed) {
-      if (!silent) {
-        const remainingMinutes = Math.ceil(syncGuard.remainingMs / 60_000);
-        toast.info("Sync cooldown active", {
-          description: `Try again in about ${remainingMinutes} minute(s).`,
-        });
-      }
-      return;
-    }
-
-    markSyncRequestedNow(targetAccountId);
     const targetAccount = accounts.find(
       (account) => account.id === targetAccountId,
     );
@@ -411,9 +360,9 @@ function JournalPageContent() {
             });
           }
         } else {
-          toast.info("Sync queued", {
+          toast.info("Sync deferred", {
             description:
-              "Account sync is running in background. Data will refresh shortly.",
+              result.message || "Backend deferred this sync attempt. It will retry when allowed.",
           });
         }
       }
@@ -493,23 +442,25 @@ function JournalPageContent() {
   }, [accounts.length, isAccountsError, isAccountsFetched, isAccountsLoading]);
 
   useEffect(() => {
-    if (isConnectionPending && !pollingWindowStartedAt) {
-      setPollingWindowStartedAt(Date.now());
+    if (isConnectionPending) {
+      if (!pollingWindowStartedAtRef.current) {
+        pollingWindowStartedAtRef.current = Date.now();
+      }
+      return;
     }
 
-    if (!isConnectionPending && pollingWindowStartedAt) {
-      setPollingWindowStartedAt(null);
-    }
-  }, [isConnectionPending, pollingWindowStartedAt]);
+    pollingWindowStartedAtRef.current = null;
+  }, [isConnectionPending]);
 
   useEffect(() => {
+    const pollingWindowStartedAt = pollingWindowStartedAtRef.current;
     if (!pollingWindowStartedAt || !isConnectionPending) {
       return;
     }
 
     const elapsedMs = Date.now() - pollingWindowStartedAt;
     if (elapsedMs > 6 * 60 * 1000) {
-      setPollingWindowStartedAt(null);
+      pollingWindowStartedAtRef.current = null;
       return;
     }
 
@@ -519,7 +470,7 @@ function JournalPageContent() {
     }, intervalMs);
 
     return () => window.clearInterval(timer);
-  }, [isConnectionPending, pollingWindowStartedAt, refetchAccounts]);
+  }, [isConnectionPending, refetchAccounts]);
 
   useEffect(() => {
     if (wasConnectionPendingRef.current && !isConnectionPending) {
@@ -534,10 +485,10 @@ function JournalPageContent() {
     }
 
     const elapsedMs = Date.now() - syncUiState.startedAt;
-    if (elapsedMs >= 3 * 60_000) {
+    const timeoutMs = Math.max(3 * 60_000 - elapsedMs, 0);
+    const expiryTimer = window.setTimeout(() => {
       setSyncUiState(null);
-      return;
-    }
+    }, timeoutMs);
 
     const timer = window.setInterval(async () => {
       const refreshed = await refetchAccounts();
@@ -567,62 +518,11 @@ function JournalPageContent() {
       }
     }, 4_000);
 
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearTimeout(expiryTimer);
+      window.clearInterval(timer);
+    };
   }, [dashboardQuery, refetchAccounts, syncUiState]);
-
-  useEffect(() => {
-    journalAutoSyncAttemptedForAccountRef.current = null;
-  }, [activeAccountId]);
-
-  useEffect(() => {
-    if (
-      isAccountsLoading ||
-      !accounts.length ||
-      syncAccountMutation.isPending
-    ) {
-      return;
-    }
-
-    const acct = accounts.find((account) => account.id === activeAccountId);
-    if (!acct) {
-      return;
-    }
-
-    const attemptKey = `${acct.id}:${acct.last_synced_at ?? ""}`;
-    if (journalAutoSyncAttemptedForAccountRef.current === attemptKey) {
-      return;
-    }
-
-    if (consumeSkipNextJournalDashboardAutoSync()) {
-      return;
-    }
-
-    const referenceNowMs = Date.now();
-    const cooldownGuard = canRequestSync(acct.id, referenceNowMs);
-    if (!cooldownGuard.allowed) {
-      return;
-    }
-
-    const lastSyncedMs = acct.last_synced_at
-      ? new Date(acct.last_synced_at).getTime()
-      : 0;
-    const hasNeverSynced = !lastSyncedMs || Number.isNaN(lastSyncedMs);
-    const isServerSyncStale =
-      hasNeverSynced || referenceNowMs - lastSyncedMs >= AUTO_SYNC_THROTTLE_MS;
-    if (!isServerSyncStale) {
-      return;
-    }
-
-    journalAutoSyncAttemptedForAccountRef.current = attemptKey;
-    void handleRefreshAccounts({ silent: true, accountId: acct.id });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid re-running on every accounts[] identity change; use length + lastSyncedAt
-  }, [
-    accounts.length,
-    activeAccountId,
-    activeAccountLastSyncedAt,
-    isAccountsLoading,
-    syncAccountMutation.isPending,
-  ]);
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
