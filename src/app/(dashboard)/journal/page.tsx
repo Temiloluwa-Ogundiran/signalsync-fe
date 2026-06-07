@@ -22,7 +22,10 @@ import {
   aggregateDailyOutcomes,
   aggregateTradeOutcomes,
 } from "@/features/journal/lib/journal-kpi-aggregates";
-import { toTradesPanelRows } from "@/features/journal/lib/journal-widget-mappers";
+import {
+  toOpenPositionsPanelRows,
+  toTradesPanelRows,
+} from "@/features/journal/lib/journal-widget-mappers";
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
 import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
 import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
@@ -33,6 +36,7 @@ import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
 import { cn } from "@/lib/utils";
 import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
+import { useJournalOpenPositions } from "@/features/journal/hooks/use-journal-open-positions";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -234,6 +238,10 @@ function JournalPageContent() {
     toDate: balanceRangeWindow.toDate,
     granularity: balanceRangeWindow.granularity,
   });
+  const openPositionsQuery = useJournalOpenPositions({
+    accountId: activeAccountId || undefined,
+    limit: 10,
+  });
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
@@ -373,7 +381,7 @@ function JournalPageContent() {
               description:
                 didSyncTimestampAdvance
                   ? `Sync completed${refreshedSyncLabel ? ` at ${refreshedSyncLabel}` : ""}. There were no additional closed trades to ingest.`
-                  : "There were no additional closed trades to ingest yet. Open positions only appear after they are closed.",
+                  : "There were no additional closed trades to ingest yet. Live open positions are shown separately in the Open Positions tab.",
             });
           } else {
             toast.success("Account sync complete", {
@@ -550,6 +558,9 @@ function JournalPageContent() {
   const tradesRows = toTradesPanelRows(
     dashboardQuery.data?.recent_trades?.items ?? [],
   );
+  const openPositionRows = toOpenPositionsPanelRows(
+    openPositionsQuery.data?.items ?? [],
+  );
   const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
     (widget) => widget.visible,
   );
@@ -610,8 +621,15 @@ function JournalPageContent() {
         ) : null}
         {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
           <JournalTradesPanel
-            rows={tradesRows}
-            isLoading={dashboardQuery.isLoading}
+            recentRows={tradesRows}
+            openRows={openPositionRows}
+            isRecentLoading={dashboardQuery.isLoading}
+            isOpenLoading={openPositionsQuery.isLoading}
+            openErrorMessage={
+              openPositionsQuery.isError
+                ? "Unable to load live open positions right now."
+                : null
+            }
           />
         ) : null}
       </div>

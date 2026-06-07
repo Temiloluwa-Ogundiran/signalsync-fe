@@ -10,12 +10,14 @@ interface JournalTradeHistoryToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   onOpenJournalDay: () => void;
+  showManualToggle?: boolean;
 }
 
 export function JournalTradeHistoryToolbar({
   searchValue,
   onSearchChange,
   onOpenJournalDay,
+  showManualToggle = true,
 }: JournalTradeHistoryToolbarProps) {
   const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
   const includeManualTrades = useJournalUiStore((s) => s.includeManualTrades);
@@ -39,23 +41,25 @@ export function JournalTradeHistoryToolbar({
 
       <div className="flex flex-row items-center gap-3 md:gap-4 flex-wrap md:flex-nowrap shrink-0">
         {/* Compact Analytics Toggle */}
-        <div className="flex items-center gap-3 border border-border-primary/45 bg-bg-secondary rounded-full py-1.5 px-4 h-12 transition-all hover:border-border-primary select-none shrink-0">
-          <span className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent/15 text-accent text-[10px] font-bold">
-              M
+        {showManualToggle ? (
+          <div className="flex items-center gap-3 border border-border-primary/45 bg-bg-secondary rounded-full py-1.5 px-4 h-12 transition-all hover:border-border-primary select-none shrink-0">
+            <span className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent/15 text-accent text-[10px] font-bold">
+                M
+              </span>
+              Manual trades
             </span>
-            Manual trades
-          </span>
-          <Switch
-            checked={includeManualTrades}
-            onCheckedChange={setIncludeManualTrades}
-            title={
-              includeManualTrades
-                ? "Exclude manual trades from stats"
-                : "Include manual trades in stats"
-            }
-          />
-        </div>
+            <Switch
+              checked={includeManualTrades}
+              onCheckedChange={setIncludeManualTrades}
+              title={
+                includeManualTrades
+                  ? "Exclude manual trades from stats"
+                  : "Include manual trades in stats"
+              }
+            />
+          </div>
+        ) : null}
 
         {/* Add Trade Button */}
         <Button

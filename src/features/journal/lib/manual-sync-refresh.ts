@@ -14,6 +14,7 @@ export async function refreshJournalQueriesAfterManualSync(
     "journal-accounts",
     "journal-analytics",
     "journal-trade-history",
+    "journal-open-positions",
     "journal-day",
   ] as const;
 

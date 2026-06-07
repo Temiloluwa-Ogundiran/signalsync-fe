@@ -3,19 +3,43 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { JournalTradesPanelRow } from "../types";
+import type {
+  JournalOpenPositionsPanelRow,
+  JournalTradesPanelRow,
+} from "../types";
 
 interface JournalTradesPanelProps {
-  rows: JournalTradesPanelRow[];
-  isLoading?: boolean;
+  recentRows: JournalTradesPanelRow[];
+  openRows: JournalOpenPositionsPanelRow[];
+  isRecentLoading?: boolean;
+  isOpenLoading?: boolean;
+  recentErrorMessage?: string | null;
+  openErrorMessage?: string | null;
 }
 
 export function JournalTradesPanel({
-  rows,
-  isLoading = false,
+  recentRows,
+  openRows,
+  isRecentLoading = false,
+  isOpenLoading = false,
+  recentErrorMessage = null,
+  openErrorMessage = null,
 }: JournalTradesPanelProps) {
   const [activeTab, setActiveTab] = useState<"recent" | "open">("recent");
-  const activeRows = activeTab === "recent" ? rows : [];
+  const activeRows = activeTab === "recent" ? recentRows : openRows;
+  const isLoading = activeTab === "recent" ? isRecentLoading : isOpenLoading;
+  const errorMessage =
+    activeTab === "recent" ? recentErrorMessage : openErrorMessage;
+  const dateHeader = activeTab === "recent" ? "Close Date" : "Open Date";
+  const pnlHeader = activeTab === "recent" ? "Net P&L" : "Floating P&L";
+  const emptyStateMessage =
+    activeTab === "recent"
+      ? "No closed trades found in this date range."
+      : "No open positions right now.";
+  const href =
+    activeTab === "recent"
+      ? "/trade-history"
+      : "/trade-history?tab=open-positions";
 
   return (
     <section className="rounded-xl bg-card-bg ring-1 ring-border-primary/60">
@@ -31,7 +55,7 @@ export function JournalTradesPanel({
         >
           Recent Trades
         </button>
-        {/* <button
+        <button
           onClick={() => setActiveTab("open")}
           className={cn(
             "pb-2 text-sm cursor-pointer",
@@ -41,14 +65,14 @@ export function JournalTradesPanel({
           )}
         >
           Open Positions
-        </button> */}
+        </button>
       </div>
 
       <div className="px-4 py-3">
         <div className="grid grid-cols-3 rounded-full bg-bg-tertiary px-4 py-2 text-xs font-semibold text-text-primary">
-          <span>Close Date</span>
+          <span>{dateHeader}</span>
           <span className="text-center">Symbol</span>
-          <span className="text-right">Net P&L</span>
+          <span className="text-right">{pnlHeader}</span>
         </div>
 
         <div className="mt-2 divide-y divide-border-primary/60">
@@ -65,20 +89,27 @@ export function JournalTradesPanel({
               ))
             : activeRows.map((row) => (
                 <div key={row.id} className="grid grid-cols-3 py-3 text-sm">
-                  <span className="text-text-primary">{row.closeDate}</span>
+                  <span className="text-text-primary">
+                    {"closeDate" in row ? row.closeDate : row.openDate}
+                  </span>
                   <span className="text-center text-text-primary">
                     {row.symbol}
                   </span>
                   <span
                     className={cn(
                       "text-right",
-                      row.netPnl >= 0
+                      ("netPnl" in row ? row.netPnl : row.floatingPnl) >= 0
                         ? "text-kpi-metric-positive"
                         : "text-danger",
                     )}
                   >
-                    {row.netPnl < 0 ? "-" : ""}$
-                    {Math.abs(row.netPnl).toLocaleString(undefined, {
+                    {("netPnl" in row ? row.netPnl : row.floatingPnl) < 0
+                      ? "-"
+                      : ""}
+                    $
+                    {Math.abs(
+                      "netPnl" in row ? row.netPnl : row.floatingPnl,
+                    ).toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}
                   </span>
@@ -86,16 +117,18 @@ export function JournalTradesPanel({
               ))}
         </div>
 
-        {!isLoading && activeRows.length === 0 ? (
+        {!isLoading && errorMessage ? (
+          <p className="py-4 text-center text-sm text-danger">{errorMessage}</p>
+        ) : null}
+
+        {!isLoading && !errorMessage && activeRows.length === 0 ? (
           <p className="py-4 text-center text-sm text-text-secondary">
-            {activeTab === "recent"
-              ? "No closed trades found in this date range."
-              : "Open positions panel will be available soon."}
+            {emptyStateMessage}
           </p>
         ) : null}
 
         <Link
-          href="/trade-history"
+          href={href}
           className="mt-2 block w-full text-center text-sm font-semibold text-(--calendar-selected-ring) transition-colors hover:opacity-90"
         >
           View more

@@ -158,6 +158,33 @@ export interface JournalTradesPanelRow {
   netPnl: number;
 }
 
+export interface JournalOpenPosition {
+  position_id: string;
+  symbol: string;
+  side: "buy" | "sell";
+  volume: number;
+  floating_profit: number;
+  opened_at: string | null;
+  open_price: number;
+  current_price: number;
+  sl?: number | null;
+  tp?: number | null;
+  magic?: number | null;
+  comment?: string | null;
+}
+
+export interface JournalOpenPositionListResponse {
+  as_of: string | null;
+  items: JournalOpenPosition[];
+}
+
+export interface JournalOpenPositionsPanelRow {
+  id: string;
+  openDate: string;
+  symbol: string;
+  floatingPnl: number;
+}
+
 export type JournalMessageType =
   | "text"
   | "voice"

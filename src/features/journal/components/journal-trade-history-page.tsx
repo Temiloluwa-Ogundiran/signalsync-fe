@@ -7,13 +7,16 @@ import { toast } from "sonner";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useInfiniteTradeHistory } from "@/features/journal/hooks/use-infinite-trade-history";
-import type { JournalTrade } from "@/features/journal/types";
+import type { JournalOpenPosition, JournalTrade } from "@/features/journal/types";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import { formatTradeTimestamp } from "./journal-day-modal.utils";
 import { JournalTradeHistoryToolbar } from "./journal-trade-history-toolbar";
 import { JournalTradeHistoryTable } from "./journal-trade-history-table";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { useDeleteManualTrade } from "@/features/journal/hooks/use-manual-trade";
+import { useJournalOpenPositions } from "@/features/journal/hooks/use-journal-open-positions";
+import { JournalOpenPositionsTable } from "./journal-open-positions-table";
+import { cn } from "@/lib/utils";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -59,10 +62,13 @@ function mapTradeRows(items: JournalTrade[]): TradeHistoryRow[] {
 export function JournalTradeHistoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
   const [search, setSearch] = useState("");
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [journalDayTradingDate, setJournalDayTradingDate] = useState<string>();
   const { data: accounts = [] } = useJournalAccounts();
+  const activeTab: "closed-trades" | "open-positions" =
+    requestedTab === "open-positions" ? "open-positions" : "closed-trades";
 
   const resolvedAccountId = useResolvedJournalAccountId();
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
@@ -100,6 +106,21 @@ export function JournalTradeHistoryPage() {
     fromDate,
     toDate,
   });
+  const openPositionsQuery = useJournalOpenPositions({
+    accountId: activeAccountId || undefined,
+    limit: 200,
+  });
+
+  const handleTabChange = (nextTab: "closed-trades" | "open-positions") => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextTab === "open-positions") {
+      params.set("tab", "open-positions");
+    } else {
+      params.delete("tab");
+    }
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `/trade-history?${nextQuery}` : "/trade-history");
+  };
 
   const allRows = useMemo(
     () =>
@@ -123,6 +144,22 @@ export function JournalTradeHistoryPage() {
       );
     });
   }, [allRows, search]);
+
+  const filteredOpenPositions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const allPositions = openPositionsQuery.data?.items ?? [];
+    if (!query) return allPositions;
+
+    return allPositions.filter((row: JournalOpenPosition) => {
+      return (
+        row.symbol.toLowerCase().includes(query) ||
+        row.side.toLowerCase().includes(query) ||
+        (row.opened_at
+          ? formatTradeTimestamp(row.opened_at).toLowerCase().includes(query)
+          : false)
+      );
+    });
+  }, [openPositionsQuery.data?.items, search]);
 
   const onOpenJournal = (row: TradeHistoryRow) => {
     if (!activeAccountId) return;
@@ -158,7 +195,35 @@ export function JournalTradeHistoryPage() {
           setSearch(value);
         }}
         onOpenJournalDay={handleOpenTodayJournalDay}
+        showManualToggle={activeTab === "closed-trades"}
       />
+
+      <section className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => handleTabChange("closed-trades")}
+          className={cn(
+            "rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer",
+            activeTab === "closed-trades"
+              ? "bg-accent text-white"
+              : "bg-bg-secondary text-text-secondary hover:text-text-primary",
+          )}
+        >
+          Closed Trades
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange("open-positions")}
+          className={cn(
+            "rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer",
+            activeTab === "open-positions"
+              ? "bg-accent text-white"
+              : "bg-bg-secondary text-text-secondary hover:text-text-primary",
+          )}
+        >
+          Open Positions
+        </button>
+      </section>
 
       <JournalDayModal
         open={isDayModalOpen}
@@ -167,24 +232,39 @@ export function JournalTradeHistoryPage() {
         tradingDate={journalDayTradingDate}
       />
 
-      {tradeHistoryQuery.isLoading ? (
-        <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Loading trade history...
-        </div>
-      ) : tradeHistoryQuery.isError ? (
-        <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
-          Failed to load trade history. Please retry.
-        </div>
+      {activeTab === "closed-trades" ? (
+        tradeHistoryQuery.isLoading ? (
+          <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading trade history...
+          </div>
+        ) : tradeHistoryQuery.isError ? (
+          <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
+            Failed to load trade history. Please retry.
+          </div>
+        ) : (
+          <JournalTradeHistoryTable
+            rows={filteredRows}
+            onOpenJournal={onOpenJournal}
+            onDeleteManualTrade={handleDeleteManualTrade}
+            canLoadMore={tradeHistoryQuery.hasNextPage}
+            isLoadingMore={tradeHistoryQuery.isFetchingNextPage}
+            onLoadMore={() => void tradeHistoryQuery.fetchNextPage()}
+          />
+        )
       ) : (
-        <JournalTradeHistoryTable
-          rows={filteredRows}
-          onOpenJournal={onOpenJournal}
-          onDeleteManualTrade={handleDeleteManualTrade}
-          canLoadMore={tradeHistoryQuery.hasNextPage}
-          isLoadingMore={tradeHistoryQuery.isFetchingNextPage}
-          onLoadMore={() => void tradeHistoryQuery.fetchNextPage()}
-        />
+        openPositionsQuery.isLoading ? (
+          <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading open positions...
+          </div>
+        ) : openPositionsQuery.isError ? (
+          <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
+            Failed to load open positions. Please retry.
+          </div>
+        ) : (
+          <JournalOpenPositionsTable rows={filteredOpenPositions} />
+        )
       )}
     </div>
   );

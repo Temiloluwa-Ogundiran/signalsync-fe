@@ -2,6 +2,7 @@ import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   JournalCreateMessagePayload,
   JournalMessage,
+  JournalOpenPositionListResponse,
   JournalReviewedAtResponse,
   JournalTradeListResponse,
 } from "../types";
@@ -53,6 +54,25 @@ export const journalTradesApi = {
         include_manual: includeManual !== undefined ? includeManual : undefined,
       },
     });
+
+    return data;
+  },
+
+  listOpenPositions: async (
+    accountId: string,
+    limit = 50,
+    token?: string,
+  ): Promise<JournalOpenPositionListResponse> => {
+    const { data } = await apiClient.get<JournalOpenPositionListResponse>(
+      "/journal/trades/positions",
+      {
+        ...withAuth(token),
+        params: {
+          account_id: accountId,
+          limit,
+        },
+      },
+    );
 
     return data;
   },

@@ -1,4 +1,9 @@
-import type { JournalTradesPanelRow, JournalTrade } from "../types";
+import type {
+  JournalOpenPosition,
+  JournalOpenPositionsPanelRow,
+  JournalTradesPanelRow,
+  JournalTrade,
+} from "../types";
 
 function formatMoney(value: number) {
   return `$${Math.abs(value).toLocaleString(undefined, {
@@ -46,6 +51,19 @@ export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow
     closeDate: new Date(trade.closed_at).toLocaleDateString("en-GB"),
     symbol: trade.symbol,
     netPnl: Number(trade.net_profit) || 0,
+  }));
+}
+
+export function toOpenPositionsPanelRows(
+  positions: JournalOpenPosition[],
+): JournalOpenPositionsPanelRow[] {
+  return positions.slice(0, 10).map((position) => ({
+    id: position.position_id,
+    openDate: position.opened_at
+      ? new Date(position.opened_at).toLocaleDateString("en-GB")
+      : "Live",
+    symbol: position.symbol,
+    floatingPnl: Number(position.floating_profit) || 0,
   }));
 }
 
