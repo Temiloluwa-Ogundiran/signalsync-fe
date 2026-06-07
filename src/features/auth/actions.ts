@@ -3,7 +3,7 @@
 import { signIn, signOut } from "../../auth";
 import { AuthError } from "next-auth";
 import { registerUser } from "@/features/auth/api/auth.api";
-import { ApiException } from "@/lib/api/types";
+import { ApiException, extractValidationFieldErrors } from "@/lib/api/types";
 
 function getCredentialsErrorMessage(error: AuthError) {
   const cause = error.cause;
@@ -46,6 +46,10 @@ export async function registerAction(data: {
     return { success: true };
   } catch (error) {
     if (error instanceof ApiException) {
+      const fieldErrors = extractValidationFieldErrors(error.raw);
+      if (Object.keys(fieldErrors).length > 0) {
+        return { error: error.message, fieldErrors };
+      }
       return { error: error.message };
     }
     return { error: "An unexpected error occurred" };

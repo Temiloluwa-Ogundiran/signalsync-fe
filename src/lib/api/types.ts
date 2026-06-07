@@ -11,6 +11,11 @@
 export interface FastAPIErrorResponse {
   detail:
     | string
+    | Array<{
+        loc: Array<string | number>;
+        msg: string;
+        type: string;
+      }>
     | {
         message: string;
         error_code?: string;
@@ -135,6 +140,15 @@ export function normalizeError(
     };
   }
 
+  if (Array.isArray(data.detail)) {
+    return {
+      status,
+      code: ErrorCodes.VALIDATION_ERROR,
+      message: data.detail[0]?.msg ?? getDefaultMessageForStatus(status),
+      raw: data,
+    };
+  }
+
   return {
       status,
       code: data.detail.error_code || data.detail.code || ErrorCodes.UNKNOWN_ERROR,
@@ -142,6 +156,45 @@ export function normalizeError(
       suggestion: data.detail.suggestion,
       raw: data,
     };
+}
+
+export function extractValidationFieldErrors(raw?: unknown) {
+  if (!raw || typeof raw !== "object" || !("detail" in raw)) {
+    return {};
+  }
+
+  const detail = (raw as { detail?: unknown }).detail;
+  if (!Array.isArray(detail)) {
+    return {};
+  }
+
+  return detail.reduce<Record<string, string>>((fieldErrors, issue) => {
+    if (!issue || typeof issue !== "object") {
+      return fieldErrors;
+    }
+
+    const loc = Array.isArray((issue as { loc?: unknown }).loc)
+      ? (issue as { loc: Array<string | number> }).loc
+      : [];
+    const message = typeof (issue as { msg?: unknown }).msg === "string"
+      ? (issue as { msg: string }).msg
+      : null;
+    let field: string | null = null;
+
+    for (let index = loc.length - 1; index >= 0; index -= 1) {
+      const value = loc[index];
+      if (typeof value === "string") {
+        field = value;
+        break;
+      }
+    }
+
+    if (field && message) {
+      fieldErrors[field] = message;
+    }
+
+    return fieldErrors;
+  }, {});
 }
 
 function getErrorCodeFromStatus(status: number): string {

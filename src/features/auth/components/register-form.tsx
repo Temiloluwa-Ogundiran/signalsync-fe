@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { checkUsernameAvailability } from "../api/auth.api";
+import { PASSWORD_POLICY_MESSAGE, registerPasswordSchema } from "../lib/password-policy";
 
 import {
   Form,
@@ -32,9 +33,7 @@ const registerSchema = z.object({
     .string()
     .min(3, { message: "Username must be at least 3 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" }),
+  password: registerPasswordSchema,
 });
 
 export function RegisterForm() {
@@ -89,7 +88,18 @@ export function RegisterForm() {
   function onSubmit(values: z.infer<typeof registerSchema>) {
     startTransition(async () => {
       const res = await registerAction(values);
-      if (res?.error) {
+      form.clearErrors("root");
+
+      if (res?.fieldErrors) {
+        for (const [field, message] of Object.entries(res.fieldErrors)) {
+          form.setError(field as keyof z.infer<typeof registerSchema>, {
+            type: "server",
+            message,
+          });
+        }
+      }
+
+      if (res?.error && !res?.fieldErrors) {
         form.setError("root", { message: res.error });
       } else if (res?.success) {
         toast.success("Account created successfully", {
@@ -155,6 +165,9 @@ export function RegisterForm() {
                     </div>
                   </div>
                 </FormControl>
+                <p className="text-xs text-text-secondary">
+                  {PASSWORD_POLICY_MESSAGE}
+                </p>
                 <FormMessage />
               </FormItem>
             )}
