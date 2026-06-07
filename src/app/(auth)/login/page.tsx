@@ -1,5 +1,7 @@
 import { Metadata } from "next";
+import { auth } from "@/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
 import {
   Card,
@@ -15,7 +17,13 @@ export const metadata: Metadata = {
   description: "Login to your account",
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+
+  if (session?.accessToken) {
+    redirect("/journal");
+  }
+
   return (
     <Card className="w-full max-w-md border-0 sm:border border-border/50 bg-background/60 sm:bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl shadow-border/5">
       <CardHeader className="space-y-3 pb-6 text-center">

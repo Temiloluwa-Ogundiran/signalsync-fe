@@ -45,3 +45,31 @@ test("authorized callback rejects protected routes when auth state is broken", (
 
   assert.equal(result, false);
 });
+
+test("authorized callback redirects authenticated users away from login", () => {
+  const result = authConfig.callbacks.authorized({
+    auth: {
+      user: {
+        id: "user-1",
+      },
+      accessToken: "access-token",
+    } as never,
+    request: {
+      nextUrl: new URL("http://localhost:3000/login"),
+    } as never,
+  });
+
+  assert.ok(result instanceof Response);
+  assert.equal(result.headers.get("location"), "http://localhost:3000/journal");
+});
+
+test("authorized callback rejects anonymous journal access", () => {
+  const result = authConfig.callbacks.authorized({
+    auth: null,
+    request: {
+      nextUrl: new URL("http://localhost:3000/journal"),
+    } as never,
+  });
+
+  assert.equal(result, false);
+});

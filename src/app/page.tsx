@@ -1,5 +1,8 @@
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  redirect("/journal");
+export default async function HomePage() {
+  const session = await auth();
+
+  redirect(session?.accessToken ? "/journal" : "/login");
 }

@@ -34,7 +34,7 @@ export const authConfig = {
       }
 
       if (isLoggedIn && isAuthRoute) {
-        return Response.redirect(new URL("/overview", nextUrl));
+        return Response.redirect(new URL("/journal", nextUrl));
       }
 
       return true;
