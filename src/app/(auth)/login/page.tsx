@@ -17,8 +17,13 @@ export const metadata: Metadata = {
   description: "Login to your account",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ registered?: string; email?: string }>;
+}) {
   const session = await auth();
+  const params = (await searchParams) ?? {};
 
   if (session?.accessToken) {
     redirect("/journal");
@@ -40,7 +45,10 @@ export default async function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 pb-8">
-        <LoginForm />
+        <LoginForm
+          initialEmail={params.email ?? ""}
+          justRegistered={params.registered === "1"}
+        />
         <div className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link

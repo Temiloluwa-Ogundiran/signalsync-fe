@@ -30,6 +30,10 @@ export interface VerifyEmailResponse {
   message: string;
 }
 
+export interface ResendVerificationResponse {
+  message: string;
+}
+
 export interface UsernameCheckResponse {
   available: boolean;
 }
@@ -49,6 +53,16 @@ export async function registerUser(
 export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
   const res: AxiosResponse<VerifyEmailResponse> = await apiClient.get(
     `/auth/verify-email?token=${token}`
+  );
+  return res.data;
+}
+
+export async function resendVerificationEmail(
+  email: string
+): Promise<ResendVerificationResponse> {
+  const res: AxiosResponse<ResendVerificationResponse> = await apiClient.post(
+    "/auth/resend-verification",
+    { email }
   );
   return res.data;
 }

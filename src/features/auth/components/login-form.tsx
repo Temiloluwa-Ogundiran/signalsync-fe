@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,6 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { ResendVerificationForm } from "./resend-verification-form";
+import { refreshAuthSensitiveQueries } from "../lib/auth-query-state";
+
+const UNVERIFIED_MESSAGE = "Please verify your email before logging in.";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -44,21 +49,30 @@ function getAuthErrorMessage(error?: string | null, code?: string | null) {
   return AUTH_ERROR_MESSAGES[error] ?? "Unable to sign in. Please try again.";
 }
 
-export function LoginForm() {
+export function LoginForm({
+  initialEmail = "",
+  justRegistered = false,
+}: {
+  initialEmail?: string;
+  justRegistered?: boolean;
+}) {
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: initialEmail,
       password: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsPending(true);
+    setShowResend(false);
     form.clearErrors("root");
     try {
       const result = await signIn("credentials", {
@@ -68,8 +82,10 @@ export function LoginForm() {
       });
 
       if (result?.error) {
+        const message = getAuthErrorMessage(result.error, result.code);
+        setShowResend(message === UNVERIFIED_MESSAGE);
         form.setError("root", {
-          message: getAuthErrorMessage(result.error, result.code),
+          message,
         });
         return;
       }
@@ -79,7 +95,8 @@ export function LoginForm() {
         return;
       }
 
-      router.replace("/overview");
+      refreshAuthSensitiveQueries(queryClient);
+      router.replace("/journal");
       router.refresh();
     } catch {
       form.setError("root", { message: "Something went wrong." });
@@ -91,6 +108,11 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {justRegistered ? (
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            Your account was created. Verify your email, then sign in here.
+          </div>
+        ) : null}
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -158,6 +180,13 @@ export function LoginForm() {
             {form.formState.errors.root.message}
           </p>
         )}
+        {showResend ? (
+          <ResendVerificationForm
+            initialEmail={form.getValues("email")}
+            title="Need a new verification email?"
+            description="Use the same email address and we’ll send a fresh verification link."
+          />
+        ) : null}
         <Button
           className="w-full cursor-pointer"
           type="submit"

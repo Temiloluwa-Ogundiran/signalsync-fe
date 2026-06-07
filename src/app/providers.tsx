@@ -9,23 +9,44 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { SessionProvider, useSession } from "next-auth/react";
+import {
+  refreshAuthSensitiveQueries,
+  resetAuthSensitiveQueries,
+} from "@/features/auth/lib/auth-query-state";
 
 function SessionQuerySync() {
   const { data: session, status } = useSession();
   const queryClient = useQueryClient();
   const lastTokenRef = useRef<string | null>(null);
+  const lastAuthStateRef = useRef<"authenticated" | "anonymous">("anonymous");
 
   useEffect(() => {
-    if (status !== "authenticated") return;
-    const token = session?.accessToken ?? null;
-    if (!token || token === lastTokenRef.current) return;
-    lastTokenRef.current = token;
+    const isAuthenticated =
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      session.error !== "RefreshAccessTokenError";
 
-    queryClient.invalidateQueries({ queryKey: ["my-streams"] });
-    queryClient.invalidateQueries({ queryKey: ["discover-streams"] });
-    queryClient.invalidateQueries({ queryKey: ["stream-detail"] });
-    queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-  }, [status, session?.accessToken, queryClient]);
+    if (!isAuthenticated) {
+      if (lastAuthStateRef.current !== "anonymous") {
+        resetAuthSensitiveQueries(queryClient);
+        lastAuthStateRef.current = "anonymous";
+        lastTokenRef.current = null;
+      }
+      return;
+    }
+
+    const token = session.accessToken;
+    const authStateChanged = lastAuthStateRef.current !== "authenticated";
+    const tokenChanged = token !== lastTokenRef.current;
+
+    if (!authStateChanged && !tokenChanged) {
+      return;
+    }
+
+    refreshAuthSensitiveQueries(queryClient);
+    lastAuthStateRef.current = "authenticated";
+    lastTokenRef.current = token;
+  }, [status, session?.accessToken, session?.error, queryClient]);
 
   return null;
 }

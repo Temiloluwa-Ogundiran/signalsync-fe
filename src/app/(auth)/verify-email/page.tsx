@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { verifyEmail } from "@/features/auth/api/auth.api";
 import { ApiException } from "@/lib/api/types";
+import { ResendVerificationForm } from "@/features/auth/components/resend-verification-form";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -90,11 +91,16 @@ function VerifyEmailContent() {
       </CardHeader>
       {!isLoading && (
         <CardFooter>
-          <Button asChild className="w-full">
-            <Link href="/login">
-              Continue to Login <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="w-full space-y-4">
+            {error ? (
+              <ResendVerificationForm />
+            ) : null}
+            <Button asChild className="w-full">
+              <Link href="/login">
+                Continue to Login <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </CardFooter>
       )}
     </Card>

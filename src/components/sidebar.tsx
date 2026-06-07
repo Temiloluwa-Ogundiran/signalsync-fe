@@ -274,7 +274,7 @@ export function Sidebar({
         </div>
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
           title={collapsed ? "Log out" : undefined}
           className={cn(
             "rounded-full text-sm font-medium text-sidebar-nav-inactive-text transition-colors hover:bg-sidebar-nav-active-bg hover:text-sidebar-nav-active-text",

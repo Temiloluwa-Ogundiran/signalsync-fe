@@ -96,7 +96,9 @@ export function RegisterForm() {
           description: "You'll receive a confirmation email shortly.",
         });
         form.reset();
-        router.push("/login"); // Redirect to login without auto-login
+        router.push(
+          `/login?registered=1&email=${encodeURIComponent(values.email)}`,
+        );
       }
     });
   }
