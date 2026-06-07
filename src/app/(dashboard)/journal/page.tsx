@@ -103,6 +103,31 @@ function formatSyncTimestamp(dateString: string | null | undefined) {
   });
 }
 
+const MANUAL_SYNC_BURST_WINDOW_MS = 60_000;
+const MANUAL_SYNC_BURST_MAX_ATTEMPTS = 5;
+
+function pruneRecentSyncAttempts(attempts: number[], nowMs: number) {
+  return attempts.filter((attemptMs) => nowMs - attemptMs < MANUAL_SYNC_BURST_WINDOW_MS);
+}
+
+function getBurstRateLimitUntilMs(attempts: number[], nowMs: number) {
+  const recentAttempts = pruneRecentSyncAttempts(attempts, nowMs);
+  if (recentAttempts.length < MANUAL_SYNC_BURST_MAX_ATTEMPTS) {
+    return null;
+  }
+  return recentAttempts[0] + MANUAL_SYNC_BURST_WINDOW_MS;
+}
+
+function formatRetryCountdown(retryAfterSeconds: number) {
+  const totalSeconds = Math.max(1, Math.ceil(retryAfterSeconds));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes <= 0) {
+    return `${seconds}s`;
+  }
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+}
+
 function JournalPageContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -116,6 +141,12 @@ function JournalPageContent() {
     startedAt: number;
     baselineLastSyncedAtMs: number | null;
   } | null>(null);
+  const [recentManualSyncAttemptMs, setRecentManualSyncAttemptMs] = useState<
+    number[]
+  >([]);
+  const [userSyncRateLimitedUntilMs, setUserSyncRateLimitedUntilMs] = useState<
+    number | null
+  >(null);
   const hasShownNoAccountToastRef = useRef(false);
   const wasConnectionPendingRef = useRef(false);
   const pollingWindowStartedAtRef = useRef<number | null>(null);
@@ -319,6 +350,22 @@ function JournalPageContent() {
   }) => {
     const silent = options?.silent ?? false;
     const targetAccountId = options?.accountId ?? activeAccountId;
+    const nowMs = Date.now();
+    const prunedAttempts = pruneRecentSyncAttempts(
+      recentManualSyncAttemptMs,
+      nowMs,
+    );
+    setRecentManualSyncAttemptMs(prunedAttempts);
+
+    if (syncAccountMutation.isPending || syncUiState) {
+      if (!silent) {
+        toast.info("Sync already in progress", {
+          description: "Please wait for the current sync to finish.",
+        });
+      }
+      return;
+    }
+
     if (!accounts.length) {
       if (!silent) {
         toast.info("No connected account found", {
@@ -341,9 +388,59 @@ function JournalPageContent() {
     const targetAccount = accounts.find(
       (account) => account.id === targetAccountId,
     );
+    if (
+      userSyncRateLimitedUntilMs &&
+      userSyncRateLimitedUntilMs > nowMs
+    ) {
+      if (!silent) {
+        toast.info("Manual sync limit reached", {
+          description: `Retry in ${formatRetryCountdown(
+            (userSyncRateLimitedUntilMs - nowMs) / 1000,
+          )}.`,
+        });
+      }
+      return;
+    }
+
+    const localBurstRateLimitUntilMs = getBurstRateLimitUntilMs(
+      prunedAttempts,
+      nowMs,
+    );
+    if (localBurstRateLimitUntilMs && localBurstRateLimitUntilMs > nowMs) {
+      setUserSyncRateLimitedUntilMs(localBurstRateLimitUntilMs);
+      if (!silent) {
+        toast.info("Manual sync limit reached", {
+          description: `Retry in ${formatRetryCountdown(
+            (localBurstRateLimitUntilMs - nowMs) / 1000,
+          )}.`,
+        });
+      }
+      return;
+    }
+
+    const targetAccountCooldownUntilMs = targetAccount?.next_sync_not_before
+      ? new Date(targetAccount.next_sync_not_before).getTime()
+      : null;
+    if (
+      targetAccountCooldownUntilMs &&
+      !Number.isNaN(targetAccountCooldownUntilMs) &&
+      targetAccountCooldownUntilMs > nowMs
+    ) {
+      if (!silent) {
+        toast.info("Manual sync cooldown active", {
+          description: `Retry in ${formatRetryCountdown(
+            (targetAccountCooldownUntilMs - nowMs) / 1000,
+          )}.`,
+        });
+      }
+      await refetchAccounts();
+      return;
+    }
+
     const baselineLastSyncedAtMs = targetAccount?.last_synced_at
       ? new Date(targetAccount.last_synced_at).getTime()
       : null;
+    setRecentManualSyncAttemptMs([...prunedAttempts, nowMs]);
     setSyncUiState({
       accountId: targetAccountId,
       startedAt: Date.now(),
@@ -355,7 +452,6 @@ function JournalPageContent() {
 
     try {
       const result = await syncAccountMutation.mutateAsync(targetAccountId);
-      await refreshJournalQueriesAfterManualSync(queryClient);
       const refreshed = await refetchAccounts();
       const refreshedAccount = (refreshed.data ?? []).find(
         (account) => account.id === targetAccountId,
@@ -371,11 +467,10 @@ function JournalPageContent() {
         !Number.isNaN(refreshedLastSyncedAtMs) &&
         (!baselineLastSyncedAtMs ||
           refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
-      if ("inserted_trades" in result || didSyncTimestampAdvance) {
+      if ("inserted_trades" in result) {
+        await refreshJournalQueriesAfterManualSync(queryClient);
         setSyncUiState(null);
-      }
-      if (!silent) {
-        if ("inserted_trades" in result) {
+        if (!silent) {
           if (result.inserted_trades === 0) {
             toast.info("Account already up to date", {
               description:
@@ -388,18 +483,83 @@ function JournalPageContent() {
               description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
             });
           }
-        } else {
-          toast.info("Sync deferred", {
+        }
+        return;
+      }
+
+      if (result.status === "in_progress") {
+        if (!silent) {
+          toast.info("Sync already in progress", {
             description:
-              result.message || "Backend deferred this sync attempt. It will retry when allowed.",
+              result.message ||
+              "This account is already syncing. We’ll refresh the dashboard when it finishes.",
           });
         }
+        return;
+      }
+
+      setSyncUiState(null);
+
+      if (
+        result.status === "cooldown" ||
+        result.status === "rate_limited" ||
+        result.status === "backpressure"
+      ) {
+        if (
+          result.status === "rate_limited" &&
+          result.retry_after_seconds &&
+          result.retry_after_seconds > 0
+        ) {
+          setUserSyncRateLimitedUntilMs(
+            Date.now() + result.retry_after_seconds * 1000,
+          );
+        }
+
+        if (!silent) {
+          const title =
+            result.status === "cooldown"
+              ? "Manual sync cooldown active"
+              : result.status === "rate_limited"
+                ? "Manual sync limit reached"
+                : "Sync deferred";
+          const description =
+            result.retry_after_seconds && result.retry_after_seconds > 0
+              ? `${result.message || "Please retry shortly."} Retry in ${formatRetryCountdown(
+                  result.retry_after_seconds,
+                )}.`
+              : result.message || "Please retry shortly.";
+          toast.info(title, { description });
+        }
+        return;
+      }
+
+      if (!silent) {
+        toast.error("Account sync failed", {
+          description:
+            result.message || "Unable to sync this account right now.",
+        });
       }
     } catch (error) {
       setSyncUiState(null);
       await refetchAccounts();
       if (!silent) {
-        if (error instanceof ApiException && error.status === 503) {
+        if (
+          error instanceof ApiException &&
+          (error.status === 409 || error.status === 429)
+        ) {
+          if (error.status === 429 && error.retryAfterSeconds) {
+            setUserSyncRateLimitedUntilMs(
+              Date.now() + error.retryAfterSeconds * 1000,
+            );
+          }
+          const retryDescription =
+            error.retryAfterSeconds && error.retryAfterSeconds > 0
+              ? ` Retry in ${formatRetryCountdown(error.retryAfterSeconds)}.`
+              : "";
+          toast.info("Sync unavailable right now", {
+            description: `${error.message}${retryDescription}`,
+          });
+        } else if (error instanceof ApiException && error.status === 503) {
           toast.error("Sync failed (MetaAPI timeout)", {
             description: error.message,
           });
@@ -587,11 +747,9 @@ function JournalPageContent() {
       <JournalToolbar
         isSyncPending={syncAccountMutation.isPending || !!syncUiState}
         lastSyncedAt={activeAccount?.last_synced_at}
+        nextSyncNotBefore={activeAccount?.next_sync_not_before}
+        userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
         connectionState={activeAccount?.connection_state}
-        connectionError={
-          activeAccount?.bootstrap_error_message ||
-          activeAccount?.sync_error_message
-        }
         onSyncAccount={() => void handleRefreshAccounts()}
         onOpenJournalDay={handleOpenTodayJournalDay}
       />

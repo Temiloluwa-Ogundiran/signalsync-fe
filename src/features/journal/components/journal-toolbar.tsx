@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  Pencil,
   PencilLine,
-  PencilLineIcon,
   Plus,
   RefreshCw,
 } from "lucide-react";
@@ -14,8 +12,9 @@ import { Switch } from "@/components/ui/switch";
 interface JournalToolbarProps {
   isSyncPending: boolean;
   lastSyncedAt?: string | null;
+  nextSyncNotBefore?: string | null;
+  userSyncRateLimitedUntilMs?: number | null;
   connectionState?: string;
-  connectionError?: string | null;
   onSyncAccount: () => void;
   onOpenJournalDay: () => void;
 }
@@ -37,15 +36,27 @@ function getLastSyncText(lastSyncedAt?: string | null) {
   return `Last sync: ${deltaDays} days ago`;
 }
 
+function getCountdownText(targetMs: number) {
+  const remainingMs = Math.max(0, targetMs - Date.now());
+  const totalSeconds = Math.max(1, Math.ceil(remainingMs / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes <= 0) {
+    return `${seconds}s`;
+  }
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+}
+
 export function JournalToolbar({
   isSyncPending,
   lastSyncedAt,
+  nextSyncNotBefore,
+  userSyncRateLimitedUntilMs,
   connectionState,
-  connectionError,
   onSyncAccount,
   onOpenJournalDay,
 }: JournalToolbarProps) {
-  const [, setNowTick] = useState(0);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
   const includeManualTrades = useJournalUiStore((s) => s.includeManualTrades);
@@ -53,13 +64,37 @@ export function JournalToolbar({
     (s) => s.setIncludeManualTrades,
   );
 
+  const nextSyncNotBeforeMs = nextSyncNotBefore
+    ? new Date(nextSyncNotBefore).getTime()
+    : null;
+  const activeUserRateLimitUntilMs =
+    userSyncRateLimitedUntilMs && userSyncRateLimitedUntilMs > nowMs
+      ? userSyncRateLimitedUntilMs
+      : null;
+  const activeAccountCooldownUntilMs =
+    nextSyncNotBeforeMs &&
+    !Number.isNaN(nextSyncNotBeforeMs) &&
+    nextSyncNotBeforeMs > nowMs
+      ? nextSyncNotBeforeMs
+      : null;
+  const isUserRateLimited = !!activeUserRateLimitUntilMs;
+  const cooldownUntilMs =
+    activeUserRateLimitUntilMs ?? activeAccountCooldownUntilMs;
+  const isCooldownActive = !!cooldownUntilMs;
+  const syncCooldownLabel = isUserRateLimited
+    ? `Manual sync limit reached. Retry in ${getCountdownText(cooldownUntilMs as number)}.`
+    : isCooldownActive
+      ? `Manual sync cooldown active. Retry in ${getCountdownText(cooldownUntilMs as number)}.`
+      : null;
+
   useEffect(() => {
-    const intervalMs = lastSyncedAt ? 1_000 : 60_000;
+    const intervalMs =
+      lastSyncedAt || isCooldownActive || isSyncPending ? 1_000 : 60_000;
     const timer = window.setInterval(() => {
-      setNowTick((value) => value + 1);
+      setNowMs(Date.now());
     }, intervalMs);
     return () => window.clearInterval(timer);
-  }, [lastSyncedAt]);
+  }, [isCooldownActive, isSyncPending, lastSyncedAt]);
 
   const stateLabelMap: Record<string, string> = {
     pending_verification: "Verifying credentials...",
@@ -85,16 +120,25 @@ export function JournalToolbar({
             onClick={onSyncAccount}
             className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
             aria-label={
-              isSyncPending ? "Syncing account" : "Sync active account"
+              isSyncPending
+                ? "Syncing account"
+                : syncCooldownLabel || "Sync active account"
             }
-            title={isSyncPending ? "Syncing account" : "Sync active account"}
-            disabled={isSyncPending}
+            title={
+              isSyncPending
+                ? "Syncing account"
+                : syncCooldownLabel || "Sync active account"
+            }
+            disabled={isSyncPending || isCooldownActive}
           >
             <RefreshCw
               className={`h-4 w-4 ${isSyncPending ? "animate-spin" : ""}`}
             />
           </button>
         </div>
+        {syncCooldownLabel ? (
+          <p className="text-sm text-text-secondary">{syncCooldownLabel}</p>
+        ) : null}
         {connectionLabel ? (
           <p className="text-sm text-text-secondary">
             Connection status:{" "}

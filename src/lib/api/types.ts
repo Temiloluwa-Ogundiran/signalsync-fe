@@ -37,6 +37,8 @@ export interface ApiError {
   message: string;
   /** Optional suggestion for the user */
   suggestion?: string;
+  /** Optional retry-after hint in seconds */
+  retryAfterSeconds?: number;
   /** Original error response for debugging */
   raw?: unknown;
 }
@@ -79,6 +81,7 @@ export class ApiException extends Error {
   public readonly status: number;
   public readonly code: string;
   public readonly suggestion?: string;
+  public readonly retryAfterSeconds?: number;
   public readonly raw?: unknown;
 
   constructor(error: ApiError) {
@@ -87,6 +90,7 @@ export class ApiException extends Error {
     this.status = error.status;
     this.code = error.code;
     this.suggestion = error.suggestion;
+    this.retryAfterSeconds = error.retryAfterSeconds;
     this.raw = error.raw;
 
     if (Error.captureStackTrace) {
@@ -112,6 +116,7 @@ export class ApiException extends Error {
       code: this.code,
       message: this.message,
       suggestion: this.suggestion,
+      retryAfterSeconds: this.retryAfterSeconds,
     };
   }
 }
@@ -154,6 +159,7 @@ export function normalizeError(
       code: data.detail.error_code || data.detail.code || ErrorCodes.UNKNOWN_ERROR,
       message: data.detail.message,
       suggestion: data.detail.suggestion,
+      retryAfterSeconds: data.detail.retry_after_seconds,
       raw: data,
     };
 }
