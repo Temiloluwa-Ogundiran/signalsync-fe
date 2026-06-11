@@ -1,8 +1,9 @@
 import NextAuth from "next-auth";
-import { CredentialsSignin } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
+import { isExpectedAuthFlowError } from "./lib/auth-error-logging.ts";
 
 class BackendCredentialsSigninError extends CredentialsSignin {
   constructor(message: string) {
@@ -13,6 +14,43 @@ class BackendCredentialsSigninError extends CredentialsSignin {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  logger: {
+    error(error) {
+      if (isExpectedAuthFlowError(error)) {
+        return;
+      }
+
+      if (error instanceof AuthError) {
+        console.error(`[auth][error] ${error.type}: ${error.message}`);
+
+        if (
+          error.cause &&
+          typeof error.cause === "object" &&
+          "err" in error.cause &&
+          error.cause.err instanceof Error
+        ) {
+          const { err, ...data } = error.cause;
+          console.error("[auth][cause]:", err.stack);
+          if (Object.keys(data).length > 0) {
+            console.error("[auth][details]:", JSON.stringify(data, null, 2));
+          }
+        } else if (error.stack) {
+          console.error(error.stack.replace(/.*/, "").substring(1));
+        }
+        return;
+      }
+
+      if (error instanceof Error) {
+        console.error(`[auth][error] ${error.name}: ${error.message}`);
+        if (error.stack) {
+          console.error(error.stack.replace(/.*/, "").substring(1));
+        }
+        return;
+      }
+
+      console.error("[auth][error]", error);
+    },
+  },
   providers: [
     Credentials({
       name: "Credentials",
@@ -86,7 +124,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             expiresAt: Date.now() + (access_token_expiry_minutes * 60 * 1000),
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          if (!isExpectedAuthFlowError(error)) {
+            console.error("Auth error:", error);
+          }
 
           // Preserve credential failures so the UI can map provider error codes consistently.
           if (error instanceof Error) {
