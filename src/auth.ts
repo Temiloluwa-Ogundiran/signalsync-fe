@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
+import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
 
 class BackendCredentialsSigninError extends CredentialsSignin {
   constructor(message: string) {
@@ -30,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           formData.append('username', credentials.email as string);
           formData.append('password', credentials.password as string);
           
-          const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          const backendUrl = resolveAuthBackendUrl();
           
           const res = await fetch(`${backendUrl}/auth/login`, {
             method: "POST",

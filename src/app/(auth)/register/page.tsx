@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/features/auth/components/register-form";
+import { hasUsableSession } from "@/lib/auth-session";
 import {
   Card,
   CardContent,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 export default async function RegisterPage() {
   const session = await auth();
 
-  if (session?.accessToken) {
+  if (hasUsableSession(session)) {
     redirect("/journal");
   }
 

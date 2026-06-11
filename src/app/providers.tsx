@@ -13,6 +13,7 @@ import {
   refreshAuthSensitiveQueries,
   resetAuthSensitiveQueries,
 } from "@/features/auth/lib/auth-query-state";
+import { hasUsableSession } from "@/lib/auth-session";
 
 function SessionQuerySync() {
   const { data: session, status } = useSession();
@@ -22,9 +23,7 @@ function SessionQuerySync() {
 
   useEffect(() => {
     const isAuthenticated =
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      session.error !== "RefreshAccessTokenError";
+      status === "authenticated" && hasUsableSession(session);
 
     if (!isAuthenticated) {
       if (lastAuthStateRef.current !== "anonymous") {

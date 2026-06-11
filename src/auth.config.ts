@@ -1,4 +1,54 @@
 import type { NextAuthConfig } from "next-auth";
+import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
+
+function parseJsonObjectSafely(
+  rawBody: string,
+  contentType: string | null,
+): Record<string, unknown> | null {
+  if (!rawBody) {
+    return null;
+  }
+
+  const looksJson =
+    contentType?.includes("application/json") ||
+    rawBody.startsWith("{") ||
+    rawBody.startsWith("[");
+
+  if (!looksJson) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawBody);
+    if (parsed && typeof parsed === "object") {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function buildRefreshFailureError(
+  response: Response,
+  rawBody: string,
+): Error {
+  const parsedBody = parseJsonObjectSafely(
+    rawBody,
+    response.headers.get("content-type"),
+  );
+  const detail =
+    typeof parsedBody?.detail === "string"
+      ? parsedBody.detail
+      : rawBody.trim().slice(0, 200);
+
+  return new Error(
+    detail
+      ? `Refresh request failed (${response.status}): ${detail}`
+      : `Refresh request failed with status ${response.status}.`,
+  );
+}
 
 export const authConfig = {
   pages: {
@@ -59,9 +109,14 @@ export const authConfig = {
         return token;
       }
 
+      // Avoid a noisy retry loop when we already know refresh is broken.
+      if (token.error === "RefreshAccessTokenError") {
+        return token;
+      }
+
       // Access token has expired, try to update it using refresh_token
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const backendUrl = resolveAuthBackendUrl();
         const res = await fetch(`${backendUrl}/auth/refresh`, {
           method: "POST",
           headers: {
@@ -69,9 +124,23 @@ export const authConfig = {
           },
         });
 
-        const tokens = await res.json();
-        
-        if (!res.ok) throw tokens;
+        const rawBody = await res.text();
+        const tokens = parseJsonObjectSafely(
+          rawBody,
+          res.headers.get("content-type"),
+        );
+
+        if (!res.ok) {
+          throw buildRefreshFailureError(res, rawBody);
+        }
+
+        if (
+          !tokens ||
+          typeof tokens.access_token !== "string" ||
+          typeof tokens.access_token_expiry_minutes !== "number"
+        ) {
+          throw new Error("Refresh endpoint returned an invalid response payload.");
+        }
         
         // Exract the rotated refresh token if provided
         let newRefreshToken = token.refreshToken as string;
@@ -122,8 +191,7 @@ export const authConfig = {
       }
 
       try {
-        const backendUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const backendUrl = resolveAuthBackendUrl();
 
         await fetch(`${backendUrl}/auth/logout`, {
           method: "POST",

@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { hasUsableSession } from "@/lib/auth-session";
 import {
   Card,
   CardContent,
@@ -25,7 +26,7 @@ export default async function LoginPage({
   const session = await auth();
   const params = (await searchParams) ?? {};
 
-  if (session?.accessToken) {
+  if (hasUsableSession(session)) {
     redirect("/journal");
   }
 

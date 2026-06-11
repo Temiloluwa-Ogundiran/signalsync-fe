@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { hasUsableSession } from "@/lib/auth-session";
 import DashboardShell from "./dashboard-shell";
 
 export default async function DashboardLayout({
@@ -9,7 +10,7 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
-  if (!session?.accessToken || session.error === "RefreshAccessTokenError") {
+  if (!hasUsableSession(session)) {
     redirect("/login");
   }
 

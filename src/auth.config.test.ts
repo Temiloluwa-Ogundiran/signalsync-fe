@@ -73,3 +73,111 @@ test("authorized callback rejects anonymous journal access", () => {
 
   assert.equal(result, false);
 });
+
+test("jwt callback handles non-JSON refresh responses without surfacing a SyntaxError", async () => {
+  const originalFetch = global.fetch;
+  const originalConsoleError = console.error;
+  const consoleCalls: unknown[][] = [];
+
+  global.fetch = (async () =>
+    new Response("<html>bad gateway</html>", {
+      status: 502,
+      headers: {
+        "content-type": "text/html",
+      },
+    })) as typeof fetch;
+  console.error = (...args: unknown[]) => {
+    consoleCalls.push(args);
+  };
+
+  try {
+    const result = await authConfig.callbacks.jwt({
+      token: {
+        accessToken: "expired-token",
+        refreshToken: "refresh-token",
+        expiresAt: Date.now() - 60_000,
+      },
+    } as never);
+
+    assert.equal(result.error, "RefreshAccessTokenError");
+    assert.equal(
+      consoleCalls.some((args) =>
+        args.some((value) => value instanceof SyntaxError),
+      ),
+      false,
+    );
+  } finally {
+    global.fetch = originalFetch;
+    console.error = originalConsoleError;
+  }
+});
+
+test("jwt callback does not retry refresh after a prior refresh failure", async () => {
+  const originalFetch = global.fetch;
+  let fetchCalls = 0;
+
+  global.fetch = (async () => {
+    fetchCalls += 1;
+    return new Response("{}");
+  }) as typeof fetch;
+
+  try {
+    const result = await authConfig.callbacks.jwt({
+      token: {
+        accessToken: "expired-token",
+        refreshToken: "refresh-token",
+        expiresAt: Date.now() - 60_000,
+        error: "RefreshAccessTokenError",
+      },
+    } as never);
+
+    assert.equal(result.error, "RefreshAccessTokenError");
+    assert.equal(fetchCalls, 0);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("jwt callback prefers AUTH_BACKEND_URL for server-side auth requests", async () => {
+  const originalFetch = global.fetch;
+  const originalEnvValue = process.env.AUTH_BACKEND_URL;
+  let requestedUrl = "";
+
+  process.env.AUTH_BACKEND_URL = "http://127.0.0.1:8000";
+  global.fetch = (async (input) => {
+    requestedUrl = String(input);
+    return new Response(
+      JSON.stringify({
+        access_token: "fresh-token",
+        access_token_expiry_minutes: 30,
+      }),
+      {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    );
+  }) as typeof fetch;
+
+  try {
+    const result = await authConfig.callbacks.jwt({
+      token: {
+        accessToken: "expired-token",
+        refreshToken: "refresh-token",
+        expiresAt: Date.now() - 60_000,
+      },
+    } as never);
+
+    assert.equal(result.accessToken, "fresh-token");
+    assert.equal(requestedUrl, "http://127.0.0.1:8000/auth/refresh");
+  } finally {
+    global.fetch = originalFetch;
+
+    if (originalEnvValue === undefined) {
+      delete process.env.AUTH_BACKEND_URL;
+    } else {
+      process.env.AUTH_BACKEND_URL = originalEnvValue;
+    }
+  }
+});
