@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import axios from "axios";
 import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -58,15 +59,14 @@ export function RegisterForm() {
   >("idle");
 
   useEffect(() => {
-    async function checkUsername() {
-      if (!debouncedUsername || debouncedUsername.length < 3) {
-        setUsernameStatus("idle");
-        return;
-      }
-      setUsernameStatus("checking");
-      try {
-        const data = await checkUsernameAvailability(debouncedUsername);
-
+    if (!debouncedUsername || debouncedUsername.length < 3) {
+      setUsernameStatus("idle");
+      return;
+    }
+    const controller = new AbortController();
+    setUsernameStatus("checking");
+    checkUsernameAvailability(debouncedUsername, { signal: controller.signal })
+      .then((data) => {
         if (data.available) {
           setUsernameStatus("available");
           form.clearErrors("username");
@@ -77,12 +77,13 @@ export function RegisterForm() {
             message: "This username is already taken",
           });
         }
-      } catch (err) {
-        console.error(err);
-        setUsernameStatus("error");
-      }
-    }
-    checkUsername();
+      })
+      .catch((err) => {
+        if (!axios.isCancel(err)) {
+          setUsernameStatus("error");
+        }
+      });
+    return () => controller.abort();
   }, [debouncedUsername, form]);
 
   function onSubmit(values: z.infer<typeof registerSchema>) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -30,6 +30,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import { useUpdateManualTrade } from "../hooks/use-manual-trade";
+import { useQueryClient } from "@tanstack/react-query";
+import type { JournalTrade } from "../types";
 import { useJournalSummaryAnalytics } from "../hooks/use-journal-analytics";
 import {
   validateManualTrade,
@@ -53,10 +55,27 @@ export function EditTradeModal() {
   const router = useRouter();
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const editTradeModalOpen = useJournalUiStore((s) => s.editTradeModalOpen);
-  const setEditTradeModalOpen = useJournalUiStore(
-    (s) => s.setEditTradeModalOpen,
-  );
-  const editTradeData = useJournalUiStore((s) => s.editTradeData);
+  const setEditTradeModalOpen = useJournalUiStore((s) => s.setEditTradeModalOpen);
+  const editTradeId = useJournalUiStore((s) => s.editTradeId);
+
+  // Resolve the trade entity from the React Query cache (no extra fetch needed).
+  const queryClient = useQueryClient();
+  const editTradeData = useMemo<JournalTrade | null>(() => {
+    if (!editTradeId) return null;
+    // Search day-journal query caches
+    for (const [, data] of queryClient.getQueriesData<{ trades?: JournalTrade[] }>({ queryKey: ["journal-day"] })) {
+      const found = data?.trades?.find((t) => t.id === editTradeId);
+      if (found) return found;
+    }
+    // Search trade-history infinite query caches
+    for (const [, data] of queryClient.getQueriesData<{ pages?: Array<{ items?: JournalTrade[] }> }>({ queryKey: ["journal-trade-history"] })) {
+      for (const page of data?.pages ?? []) {
+        const found = page?.items?.find((t) => t.id === editTradeId);
+        if (found) return found;
+      }
+    }
+    return null;
+  }, [editTradeId, queryClient]);
 
   const updateManualTrade = useUpdateManualTrade(activeAccountId);
 
@@ -256,7 +275,7 @@ export function EditTradeModal() {
 
     try {
       await updateManualTrade.mutateAsync({
-        tradeId: editTradeData.id,
+        tradeId: editTradeId!,
         payload,
       });
       toast.success(isMissed ? "Missed Setup Updated" : "Trade Updated", {

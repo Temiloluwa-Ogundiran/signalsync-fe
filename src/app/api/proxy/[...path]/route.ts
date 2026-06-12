@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveAuthBackendUrl } from "@/lib/auth-backend-url";
 
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
@@ -30,19 +31,7 @@ type RouteContext = {
 };
 
 function resolveBackendUrl() {
-  const backendUrl =
-    process.env.AUTH_BACKEND_URL ||
-    process.env.BACKEND_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "");
-
-  if (!backendUrl) {
-    throw new Error(
-      "Backend URL is not configured. Set BACKEND_URL or AUTH_BACKEND_URL."
-    );
-  }
-
-  return backendUrl.replace(/\/$/, "");
+  return resolveAuthBackendUrl().replace(/\/$/, "");
 }
 
 function copyRequestHeaders(request: NextRequest) {

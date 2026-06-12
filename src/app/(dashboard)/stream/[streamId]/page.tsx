@@ -376,7 +376,7 @@ function ComposeBox({ streamId }: { streamId: string }) {
 export default function StreamDetailPage() {
   const { streamId } = useParams<{ streamId: string }>();
   const router = useRouter();
-  const { setActiveStream } = useStreamStore();
+  const { setActiveStreamId } = useStreamStore();
 
   const { data: stream, isLoading: streamsLoading } = useStreamById(streamId);
 
@@ -408,18 +408,9 @@ export default function StreamDetailPage() {
   // Set as active stream when viewing
   useEffect(() => {
     if (stream) {
-      setActiveStream({
-        id: stream.id,
-        name: stream.name,
-        description: stream.description,
-        privacy: stream.privacy === "paid" ? "public" : stream.privacy,
-        is_default: false,
-        avatar_url: stream.avatar_url,
-        banner_url: stream.banner_url,
-        price: null,
-      });
+      setActiveStreamId(stream.id);
     }
-  }, [stream, setActiveStream]);
+  }, [stream, setActiveStreamId]);
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);

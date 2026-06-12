@@ -32,6 +32,16 @@ import {
 import { buildDaySummary } from "./journal-day-modal.utils";
 import { requestSkipNextJournalDashboardAutoSync } from "@/features/journal/lib/journal-dashboard-auto-sync-skip";
 
+interface SendingMessage {
+  id: string;
+  content?: string;
+  file?: File;
+  previewUrl?: string;
+  messageType: "text" | "image" | "voice";
+  abortController: AbortController;
+  status: "sending" | "success" | "error";
+}
+
 export function JournalDayChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -57,16 +67,6 @@ export function JournalDayChatPage() {
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
 
-  interface SendingMessage {
-    id: string;
-    content?: string;
-    file?: File;
-    previewUrl?: string;
-    messageType: "text" | "image" | "voice";
-    abortController: AbortController;
-    status?: "sending" | "success" | "error";
-  }
-
   const [sendingMessages, setSendingMessages] = useState<SendingMessage[]>([]);
   const [resolvedBlobUrls, setResolvedBlobUrls] = useState<Record<string, string>>({});
   const createdBlobUrlsRef = useRef<string[]>([]);
@@ -85,8 +85,11 @@ export function JournalDayChatPage() {
     setSendingMessages((prev) => {
       const match = prev.find((sm) => sm.id === messageId);
       if (match) {
-        match.abortController.abort();
-        if (match.previewUrl) URL.revokeObjectURL(match.previewUrl);
+        // Run side effects after the state update — updater must remain pure.
+        queueMicrotask(() => {
+          match.abortController.abort();
+          if (match.previewUrl) URL.revokeObjectURL(match.previewUrl);
+        });
       }
       return prev.filter((sm) => sm.id !== messageId);
     });
@@ -205,7 +208,7 @@ export function JournalDayChatPage() {
           created_at: new Date().toISOString(),
         }] : [],
         created_at: new Date().toISOString(),
-        status: (sm.status ?? "sending") as any,
+        status: (sm.status ?? "sending") as "sending" | "success" | "error",
       };
     });
 
@@ -253,6 +256,7 @@ export function JournalDayChatPage() {
         previewUrl,
         messageType,
         abortController,
+        status: "sending",
       },
     ]);
 
@@ -278,7 +282,7 @@ export function JournalDayChatPage() {
         setSendingMessages((prev) =>
           prev.map((sm) =>
             sm.id === tempId
-              ? { ...sm, id: realMsg.id, status: "success" as any }
+              ? { ...sm, id: realMsg.id, status: "success" as const }
               : sm
           )
         );
@@ -323,7 +327,25 @@ export function JournalDayChatPage() {
 
   const onStartRecording = async () => {
     if (isRecording) return;
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (
+      !window.isSecureContext ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      const { toast } = await import("sonner");
+      toast.error("Voice notes aren't supported in this browser.");
+      return;
+    }
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      const { toast } = await import("sonner");
+      toast.error("Microphone unavailable", {
+        description: "Check browser permissions and try again.",
+      });
+      return;
+    }
     recordingStreamRef.current = stream;
     const recorder = new MediaRecorder(stream);
     recordingChunksRef.current = [];

@@ -29,23 +29,14 @@ import {
   FastAPIErrorResponse,
   normalizeError,
 } from "./types";
+import { resolveAuthBackendUrl } from "@/lib/auth-backend-url";
 
-const API_BASE_URL = typeof window !== "undefined"
-  ? "/api/proxy"
-  : (
-      process.env.AUTH_BACKEND_URL ||
-      process.env.BACKEND_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "")
-    ).replace(/\/$/, "");
+const API_BASE_URL =
+  typeof window !== "undefined"
+    ? "/api/proxy"
+    : resolveAuthBackendUrl().replace(/\/$/, "");
 
-if (!API_BASE_URL) {
-  throw new Error(
-    "Backend URL is not configured. Set BACKEND_URL or AUTH_BACKEND_URL."
-  );
-}
-
-const REQUEST_TIMEOUT = 130_000; // 130 seconds, longer than backend MT5 polling
+const REQUEST_TIMEOUT = 30_000;
 
 let pendingSessionRefresh: Promise<{ accessToken?: string } | null> | null = null;
 
@@ -106,9 +97,11 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: false,
 });
 
+const DEV = process.env.NODE_ENV === "development";
+
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (process.env.NODE_ENV === "development") {
+    if (DEV) {
       console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`);
     }
     return config;
@@ -118,7 +111,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    if (process.env.NODE_ENV === "development") {
+    if (DEV) {
       console.log(`[API] ${response.status} ${response.config.url}`);
     }
     return response;
@@ -130,7 +123,7 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       const msg = error.message || "Network error";
-      if (process.env.NODE_ENV === "development") {
+      if (DEV) {
         console.error("[API] Network Error:", {
           message: msg,
           url: originalRequest?.url,
@@ -150,7 +143,7 @@ apiClient.interceptors.response.use(
 
     const { status, data } = error.response;
 
-    if (process.env.NODE_ENV === "development") {
+    if (DEV) {
       console.error(`[API] ${status} ${originalRequest?.url}`, data);
     }
 

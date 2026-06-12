@@ -119,7 +119,6 @@ export const journalTradesApi = {
         signal: options?.signal,
         headers: {
           ...withAuth(token).headers,
-          "Content-Type": "multipart/form-data",
         },
       },
     );
