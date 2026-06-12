@@ -28,13 +28,7 @@ export const csvImportApi = {
     const { data } = await apiClient.post<CSVPreviewResponse>(
       "/csv-import/preview",
       formData,
-      {
-        ...withAuth(token),
-        headers: {
-          ...withAuth(token).headers,
-          "Content-Type": "multipart/form-data",
-        },
-      },
+      { ...withAuth(token), timeout: 120_000 },
     );
     return data;
   },
@@ -61,13 +55,7 @@ export const csvImportApi = {
     const { data } = await apiClient.post<CSVConfirmResult>(
       "/csv-import/confirm",
       formData,
-      {
-        ...withAuth(token),
-        headers: {
-          ...withAuth(token).headers,
-          "Content-Type": "multipart/form-data",
-        },
-      },
+      { ...withAuth(token), timeout: 120_000 },
     );
     return data;
   },

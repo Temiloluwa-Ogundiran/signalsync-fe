@@ -52,6 +52,24 @@ export interface StreamMemberResponse {
   joined_at: string;
 }
 
+export interface MemberListItem {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  status: "active" | "pending" | "banned" | null;
+  joined_at: string | null;
+}
+
+export interface PaginatedMemberListResponse {
+  items: MemberListItem[];
+  next_cursor: string | null;
+}
+
+export interface PaginatedJoinRequestResponse {
+  items: StreamMemberResponse[];
+  next_cursor: string | null;
+}
+
 export interface CreateStreamPayload {
   name: string;
   description?: string;
@@ -137,6 +155,36 @@ export const streamApi = {
     const { data } = await apiClient.post<Stream>(
       "/streams",
       payload,
+      withAuth(token),
+    );
+    return data;
+  },
+
+  getStreamMembers: async (
+    streamId: string,
+    limit: number,
+    cursor: string | null,
+    token?: string,
+  ): Promise<PaginatedMemberListResponse> => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.set("cursor", cursor);
+    const { data } = await apiClient.get<PaginatedMemberListResponse>(
+      `/streams/${streamId}/members?${params}`,
+      withAuth(token),
+    );
+    return data;
+  },
+
+  getJoinRequests: async (
+    streamId: string,
+    limit: number,
+    cursor: string | null,
+    token?: string,
+  ): Promise<PaginatedJoinRequestResponse> => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.set("cursor", cursor);
+    const { data } = await apiClient.get<PaginatedJoinRequestResponse>(
+      `/streams/${streamId}/join-requests?${params}`,
       withAuth(token),
     );
     return data;

@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
+import { extractRefreshToken } from "./lib/auth/parse-refresh-cookie";
 
 function parseJsonObjectSafely(
   rawBody: string,
@@ -61,26 +62,22 @@ export const authConfig = {
         !!auth?.user && !!auth.accessToken && auth.error !== "RefreshAccessTokenError";
       const pathname = nextUrl.pathname;
 
-      // All dashboard routes that require auth
-      const isProtectedRoute =
-        pathname.startsWith("/overview") ||
-        pathname.startsWith("/discover") ||
-        pathname.startsWith("/feed") ||
-        pathname.startsWith("/copy-trading") ||
-        pathname.startsWith("/journal") ||
-        pathname.startsWith("/spaces") ||
-        pathname.startsWith("/tools") ||
-        pathname.startsWith("/settings") ||
-        pathname.startsWith("/stream") ||
-        pathname.startsWith("/profile") ||
-        pathname.startsWith("/post");
-
+      // Public routes — everything else requires auth
+      const PUBLIC_PREFIXES = [
+        "/login",
+        "/register",
+        "/verify-email",
+        "/forgot-password",
+        "/reset-password",
+      ];
+      const isPublicRoute =
+        pathname === "/" || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
       const isAuthRoute =
         pathname.startsWith("/login") || pathname.startsWith("/register");
 
-      if (isProtectedRoute) {
-        if (isLoggedIn) return true;
-        return false; // NextAuth redirects to signIn page automatically
+      if (!isPublicRoute) {
+        // Protected by default — unauthenticated users are redirected to login
+        return isLoggedIn;
       }
 
       if (isLoggedIn && isAuthRoute) {
@@ -142,15 +139,8 @@ export const authConfig = {
           throw new Error("Refresh endpoint returned an invalid response payload.");
         }
         
-        // Exract the rotated refresh token if provided
-        let newRefreshToken = token.refreshToken as string;
-        const setCookieHeader = res.headers.get("set-cookie");
-        if (setCookieHeader) {
-          const match = setCookieHeader.match(/refresh_token=([^;]+)/);
-          if (match) {
-            newRefreshToken = match[1];
-          }
-        }
+        // Extract the rotated refresh token if provided
+        const newRefreshToken = extractRefreshToken(res) ?? (token.refreshToken as string);
 
         return {
           ...token,

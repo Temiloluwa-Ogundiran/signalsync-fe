@@ -31,10 +31,12 @@ interface CreatePostModalProps {
 }
 
 export function CreatePostModal({ open, onClose }: CreatePostModalProps) {
-  const { activeStream } = useStreamStore();
+  const { activeStreamId } = useStreamStore();
   const { data: myStreams } = useMyStreams();
   const createPost = useCreatePost();
   const uploadMedia = useUploadPostMedia();
+
+  const activeStream = myStreams?.find((s) => s.id === activeStreamId) ?? myStreams?.[0] ?? null;
 
   const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
   const [streamPickerOpen, setStreamPickerOpen] = useState(false);

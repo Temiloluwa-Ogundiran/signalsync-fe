@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
 import { isExpectedAuthFlowError } from "./lib/auth-error-logging.ts";
+import { extractRefreshToken } from "./lib/auth/parse-refresh-cookie";
 
 class BackendCredentialsSigninError extends CredentialsSignin {
   constructor(message: string) {
@@ -99,15 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const data = await res.json();
           const { access_token, user, access_token_expiry_minutes } = data;
           
-          let refreshToken = "";
-          const setCookieHeader = res.headers.get("set-cookie");
-          // Extract refresh_token from the set-cookie header if it exists
-          if (setCookieHeader) {
-            const match = setCookieHeader.match(/refresh_token=([^;]+)/);
-            if (match) {
-              refreshToken = match[1];
-            }
-          }
+          const refreshToken = extractRefreshToken(res) ?? "";
           
           // NextAuth expects 'id', 'email', 'name' by default in user object
           // but we can pass whatever we need defined in our types.ts

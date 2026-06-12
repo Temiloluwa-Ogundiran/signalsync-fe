@@ -68,10 +68,36 @@ export async function resendVerificationEmail(
 }
 
 export async function checkUsernameAvailability(
-  username: string
+  username: string,
+  options?: { signal?: AbortSignal }
 ): Promise<UsernameCheckResponse> {
   const res: AxiosResponse<UsernameCheckResponse> = await apiClient.get(
-    `/users/check-username?username=${encodeURIComponent(username)}`
+    `/users/check-username?username=${encodeURIComponent(username)}`,
+    { signal: options?.signal }
+  );
+  return res.data;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  const res: AxiosResponse<ForgotPasswordResponse> = await apiClient.post(
+    "/auth/forgot-password",
+    { email }
+  );
+  return res.data;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<ResetPasswordResponse> {
+  const res: AxiosResponse<ResetPasswordResponse> = await apiClient.post(
+    "/auth/reset-password",
+    { token, new_password: newPassword }
   );
   return res.data;
 }

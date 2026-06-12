@@ -110,22 +110,8 @@ export function JournalAccountsPage() {
     if (account.connection_state === "bootstrap_failed") {
       return account.bootstrap_error_message || "Background sync failed";
     }
-    if (account.last_sync_outcome === "rate_limited") {
-      return formatNextRetry(account.next_sync_not_before) || "Rate limited";
-    }
-    if (account.last_sync_outcome === "backpressure") {
-      return formatNextRetry(account.next_sync_not_before) || "Server busy";
-    }
-    if (account.last_sync_outcome === "timeout") {
-      return "Timed out, retrying automatically";
-    }
-    if (account.last_sync_outcome === "transient_error") {
-      return "Retrying automatically";
-    }
-    if (account.consecutive_sync_failures > 0) {
-      return `${account.consecutive_sync_failures} recent sync failure${
-        account.consecutive_sync_failures === 1 ? "" : "s"
-      }`;
+    if (account.next_sync_not_before) {
+      return formatNextRetry(account.next_sync_not_before) || "Sync cooling down";
     }
     return null;
   };

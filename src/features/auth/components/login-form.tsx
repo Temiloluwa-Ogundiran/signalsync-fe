@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ResendVerificationForm } from "./resend-verification-form";
 import { refreshAuthSensitiveQueries } from "../lib/auth-query-state";
 
@@ -170,6 +171,14 @@ export function LoginForm({
                     </Button>
                   </div>
                 </FormControl>
+                <div className="flex justify-end">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

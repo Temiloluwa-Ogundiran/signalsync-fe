@@ -48,8 +48,6 @@ export interface JournalAccount {
   bootstrap_error_message: string | null;
   last_sync_attempted_at: string | null;
   next_sync_not_before: string | null;
-  last_sync_outcome: string | null;
-  consecutive_sync_failures: number;
   latest_balance: number | null;
   latest_equity: number | null;
   is_deleted: boolean;

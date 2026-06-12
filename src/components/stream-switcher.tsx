@@ -12,23 +12,23 @@ export function StreamSwitcher() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: streams, isLoading, error } = useMyStreams();
-  const { activeStream, setActiveStream, clearActiveStream } = useStreamStore();
+  const { activeStreamId, setActiveStreamId } = useStreamStore();
 
-  // Validate activeStream belongs to current user's streams; reset if not
+  // Validate activeStreamId belongs to current user's streams; reset if not
   useEffect(() => {
     if (!streams || streams.length === 0) return;
 
-    if (activeStream) {
-      const belongsToUser = streams.some((s) => s.id === activeStream.id);
+    if (activeStreamId) {
+      const belongsToUser = streams.some((s) => s.id === activeStreamId);
       if (!belongsToUser) {
         const defaultStream = streams.find((s) => s.is_default) || streams[0];
-        setActiveStream(defaultStream);
+        setActiveStreamId(defaultStream.id);
       }
     } else {
       const defaultStream = streams.find((s) => s.is_default) || streams[0];
-      setActiveStream(defaultStream);
+      setActiveStreamId(defaultStream.id);
     }
-  }, [streams, activeStream, setActiveStream]);
+  }, [streams, activeStreamId, setActiveStreamId]);
 
   // Handle clicking outside to close
   useEffect(() => {
@@ -90,7 +90,7 @@ export function StreamSwitcher() {
     );
   }
 
-  const currentStream = activeStream || streams[0];
+  const currentStream = streams.find((s) => s.id === activeStreamId) || streams[0];
 
   return (
     <div className="px-3 pt-3 pb-1" ref={dropdownRef}>
@@ -130,7 +130,7 @@ export function StreamSwitcher() {
               <button
                 key={stream.id}
                 onClick={() => {
-                  setActiveStream(stream);
+                  setActiveStreamId(stream.id);
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center px-2 py-2 text-sm rounded-lg transition-colors ${

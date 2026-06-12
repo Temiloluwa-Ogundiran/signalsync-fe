@@ -359,7 +359,7 @@ export function JournalTradeChatPage() {
           isManual={trade?.is_manual}
           isMissed={trade?.is_missed}
           onEdit={() => {
-            if (trade) openEditTradeModal(trade);
+            if (trade) openEditTradeModal(trade.id);
           }}
         />
 

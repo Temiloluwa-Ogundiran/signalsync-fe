@@ -1,9 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
-import { MobileNav } from "@/components/mobile-nav";
+import { Header, MobileNav, Sidebar } from "@/components/layout";
 import { CreatePostModal } from "@/features/post/components/CreatePostModal";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
