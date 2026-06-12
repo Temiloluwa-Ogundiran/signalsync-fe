@@ -30,9 +30,20 @@ import {
   normalizeError,
 } from "./types";
 
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-).replace(/\/$/, "");
+const API_BASE_URL = typeof window !== "undefined"
+  ? "/api/proxy"
+  : (
+      process.env.AUTH_BACKEND_URL ||
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "")
+    ).replace(/\/$/, "");
+
+if (!API_BASE_URL) {
+  throw new Error(
+    "Backend URL is not configured. Set BACKEND_URL or AUTH_BACKEND_URL."
+  );
+}
 
 const REQUEST_TIMEOUT = 130_000; // 130 seconds, longer than backend MT5 polling
 
