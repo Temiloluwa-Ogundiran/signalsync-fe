@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
-  "content-length",
   "host",
   "keep-alive",
   "proxy-authenticate",
@@ -11,6 +10,18 @@ const HOP_BY_HOP_HEADERS = new Set([
   "trailer",
   "transfer-encoding",
   "upgrade",
+]);
+
+const REQUEST_HEADERS_TO_STRIP = new Set([
+  ...HOP_BY_HOP_HEADERS,
+  "accept-encoding",
+  "content-length",
+]);
+
+const RESPONSE_HEADERS_TO_STRIP = new Set([
+  ...HOP_BY_HOP_HEADERS,
+  "content-encoding",
+  "content-length",
 ]);
 
 type RouteContext = {
@@ -38,7 +49,7 @@ function resolveBackendUrl() {
 function copyRequestHeaders(request: NextRequest) {
   const headers = new Headers(request.headers);
 
-  for (const header of HOP_BY_HOP_HEADERS) {
+  for (const header of REQUEST_HEADERS_TO_STRIP) {
     headers.delete(header);
   }
 
@@ -48,7 +59,7 @@ function copyRequestHeaders(request: NextRequest) {
 function copyResponseHeaders(response: Response) {
   const headers = new Headers(response.headers);
 
-  for (const header of HOP_BY_HOP_HEADERS) {
+  for (const header of RESPONSE_HEADERS_TO_STRIP) {
     headers.delete(header);
   }
 
