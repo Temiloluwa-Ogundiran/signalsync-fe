@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Card,
@@ -23,9 +23,11 @@ function VerifyEmailContent() {
   const [isLoading, setIsLoading] = useState(!!token);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const verifiedRef = useRef(false);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || verifiedRef.current) return;
+    verifiedRef.current = true;
 
     verifyEmail(token)
       .then((data) => {

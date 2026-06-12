@@ -498,6 +498,15 @@ function JournalPageContent() {
         return;
       }
 
+      if (result.status === "queued") {
+        if (!silent) {
+          toast.info("Sync queued", {
+            description: "Sync task accepted and queued. Please wait...",
+          });
+        }
+        return;
+      }
+
       setSyncUiState(null);
 
       if (
