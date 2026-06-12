@@ -14,7 +14,6 @@ const HOP_BY_HOP_HEADERS = new Set([
 
 const REQUEST_HEADERS_TO_STRIP = new Set([
   ...HOP_BY_HOP_HEADERS,
-  "accept-encoding",
   "content-length",
 ]);
 

@@ -1,4 +1,4 @@
-import { type QueryClient, useQuery } from "@tanstack/react-query";
+import { type QueryClient, useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
 import { journalTradesApi } from "../api/journal-trades.api";
@@ -85,6 +85,7 @@ export function useJournalCalendarAnalytics({
       !!fromDate &&
       !!toDate,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -153,7 +154,8 @@ export function useJournalTimePerformanceAnalytics({
   fromDate,
   toDate,
   timeBasis = "close",
-}: AnalyticsQueryInput & { timeBasis?: "open" | "close" }) {
+  enabled = true,
+}: AnalyticsQueryInput & { timeBasis?: "open" | "close"; enabled?: boolean }) {
   const { data: session, status } = useSession();
   const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
@@ -171,6 +173,7 @@ export function useJournalTimePerformanceAnalytics({
         session?.accessToken as string,
       ),
     enabled:
+      enabled &&
       status === "authenticated" &&
       !!session?.accessToken &&
       !!accountId &&
@@ -237,6 +240,7 @@ export function useJournalDashboardAnalytics({
       !!fromDate &&
       !!toDate,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -275,5 +279,6 @@ export function useJournalBalanceHistoryAnalytics({
       !!fromDate &&
       !!toDate,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 }

@@ -18,7 +18,10 @@ function SymbolFrequencyTooltip({
   payload,
 }: {
   active?: boolean;
-  payload?: Array<{ payload?: { symbol: string; trades: number }; value?: number | string }>;
+  payload?: Array<{
+    payload?: { symbol: string; trades: number };
+    value?: number | string;
+  }>;
 }) {
   if (!active || !payload?.length) return null;
 
@@ -48,17 +51,14 @@ export function JournalSymbolsWidget({
     symbol: item.symbol,
     trades: item.trade_count,
   }));
-  const chartConfig = chartData.reduce(
-    (acc, item, index) => {
-      const key = item.symbol;
-      acc[key] = {
-        label: item.symbol,
-        color: `var(--chart-${(index % 5) + 1})`,
-      };
-      return acc;
-    },
-    {} as ChartConfig,
-  );
+  const chartConfig = chartData.reduce((acc, item, index) => {
+    const key = item.symbol;
+    acc[key] = {
+      label: item.symbol,
+      color: `var(--chart-${(index % 5) + 1})`,
+    };
+    return acc;
+  }, {} as ChartConfig);
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60">
@@ -69,7 +69,7 @@ export function JournalSymbolsWidget({
         )}
       >
         <h3 className="text-base font-semibold text-text-primary">
-          Symbols Traded!!!
+          Symbols Traded
         </h3>
       </header>
       {chartData.length === 0 ? (
@@ -110,7 +110,11 @@ export function JournalSymbolsWidget({
                 stroke="none"
                 paddingAngle={1}
                 cornerRadius={6}
-                labelLine={{ stroke: "var(--border-secondary)", strokeWidth: 1, opacity: 0.5 }}
+                labelLine={{
+                  stroke: "var(--border-secondary)",
+                  strokeWidth: 1,
+                  opacity: 0.5,
+                }}
                 label={({ payload, x, y, textAnchor, dominantBaseline }) => {
                   if (!payload) return null;
                   return (
@@ -127,7 +131,10 @@ export function JournalSymbolsWidget({
                 }}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={entry.symbol} fill={`var(--chart-${(index % 5) + 1})`} />
+                  <Cell
+                    key={entry.symbol}
+                    fill={`var(--chart-${(index % 5) + 1})`}
+                  />
                 ))}
               </Pie>
             </PieChart>

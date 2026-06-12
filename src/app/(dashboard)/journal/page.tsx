@@ -234,11 +234,13 @@ function JournalPageContent() {
     ? formatDateParam(queryToDate)
     : rollingDefaultRange.toDate;
 
+  const readyAccountId =
+    activeAccountId && activeAccount?.is_data_ready_for_stats
+      ? activeAccountId
+      : undefined;
+
   const dashboardQuery = useJournalDashboardAnalytics({
-    accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats
-        ? activeAccountId
-        : undefined,
+    accountId: readyAccountId,
     fromDate,
     toDate,
   });
@@ -247,15 +249,14 @@ function JournalPageContent() {
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
 
   const timePerformanceQuery = useJournalTimePerformanceAnalytics({
-    accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats
-        ? activeAccountId
-        : undefined,
+    accountId: readyAccountId,
     fromDate,
     toDate,
     timeBasis,
+    enabled: timeBasis !== "close",
   });
-  const timePerformanceAnalytics = timePerformanceQuery.data;
+  const timePerformanceAnalytics =
+    timeBasis === "close" ? dashboardQuery.data?.time_performance : timePerformanceQuery.data;
   const balanceRangeWindow = useMemo(
     () => resolveBalanceRangeWindow(balanceRange),
     [balanceRange],
