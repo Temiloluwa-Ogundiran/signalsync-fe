@@ -182,24 +182,24 @@ export function Header({ onMenuClick }: HeaderProps) {
                   className="w-auto border-chrome-control-border bg-card-bg p-0"
                   align="start"
                 >
-                  <div className="p-2">
-                    <div className="mb-2 flex justify-end">
+                  <CalendarWidget
+                    mode="range"
+                    selected={parsedDateRange}
+                    onSelect={applyDateRange}
+                    numberOfMonths={2}
+                    defaultMonth={parsedDateRange?.from}
+                  />
+                  {parsedDateRange?.from && (
+                    <div className="border-t border-chrome-control-border px-3 py-2 flex justify-end">
                       <button
                         type="button"
                         onClick={() => applyDateRange(undefined)}
-                        className="rounded-md px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+                        className="rounded-md px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary transition-colors"
                       >
-                        Reset
+                        Clear range
                       </button>
                     </div>
-                    <CalendarWidget
-                      mode="range"
-                      selected={parsedDateRange}
-                      onSelect={applyDateRange}
-                      numberOfMonths={2}
-                      defaultMonth={parsedDateRange?.from}
-                    />
-                  </div>
+                  )}
                 </PopoverContent>
               </Popover>
 
@@ -332,24 +332,24 @@ export function Header({ onMenuClick }: HeaderProps) {
               className="w-auto border-chrome-control-border bg-card-bg p-0"
               align="start"
             >
-              <div className="p-2 scale-90 origin-top-left">
-                <div className="mb-2 flex justify-end">
+              <CalendarWidget
+                mode="range"
+                selected={parsedDateRange}
+                onSelect={applyDateRange}
+                numberOfMonths={1}
+                defaultMonth={parsedDateRange?.from}
+              />
+              {parsedDateRange?.from && (
+                <div className="border-t border-chrome-control-border px-3 py-2 flex justify-end">
                   <button
                     type="button"
                     onClick={() => applyDateRange(undefined)}
-                    className="rounded-md px-2 py-1 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+                    className="rounded-md px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary transition-colors"
                   >
-                    Reset
+                    Clear range
                   </button>
                 </div>
-                <CalendarWidget
-                  mode="range"
-                  selected={parsedDateRange}
-                  onSelect={applyDateRange}
-                  numberOfMonths={1}
-                  defaultMonth={parsedDateRange?.from}
-                />
-              </div>
+              )}
             </PopoverContent>
           </Popover>
 

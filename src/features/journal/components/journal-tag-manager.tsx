@@ -55,7 +55,7 @@ interface ColorPickerDialogProps {
 
 function ColorPickerDialog({ isOpen, onClose, initialColor, onApply }: ColorPickerDialogProps) {
   const safeInitial = (() => {
-    try { return parseColor(initialColor); } catch { return parseColor(DEFAULT_COLOR); }
+    try { return parseColor(initialColor).toFormat("hsb"); } catch { return parseColor(DEFAULT_COLOR).toFormat("hsb"); }
   })();
   const [pickedColor, setPickedColor] = useState<Color>(safeInitial);
 
@@ -86,7 +86,7 @@ function ColorPickerDialog({ isOpen, onClose, initialColor, onApply }: ColorPick
           </ColorArea>
 
           {/* Hue slider */}
-          <ColorSlider channel="hue" className="mt-3 w-full">
+          <ColorSlider channel="hue" colorSpace="hsb" className="mt-3 w-full">
             <SliderTrack className="h-3 w-full rounded-full">
               <ColorThumb className="top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-white shadow-md outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-brand" />
             </SliderTrack>
