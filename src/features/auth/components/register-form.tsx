@@ -10,7 +10,10 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { checkUsernameAvailability } from "../api/auth.api";
-import { PASSWORD_POLICY_MESSAGE, registerPasswordSchema } from "../lib/password-policy";
+import {
+  PASSWORD_POLICY_MESSAGE,
+  registerPasswordSchema,
+} from "../lib/password-policy";
 
 import {
   Form,
@@ -166,9 +169,6 @@ export function RegisterForm() {
                     </div>
                   </div>
                 </FormControl>
-                <p className="text-xs text-text-secondary">
-                  {PASSWORD_POLICY_MESSAGE}
-                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -229,6 +229,9 @@ export function RegisterForm() {
                     </Button>
                   </div>
                 </FormControl>
+                <p className="text-xs text-text-secondary">
+                  {PASSWORD_POLICY_MESSAGE}
+                </p>
                 <FormMessage />
               </FormItem>
             )}
