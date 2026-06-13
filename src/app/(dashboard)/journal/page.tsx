@@ -96,13 +96,18 @@ function JournalPageContent() {
   } = useJournalAccounts();
   const syncAccountMutation = useSyncJournalAccount();
 
-  const activeAccount = accounts.find(
-    (account) => account.id === activeAccountId,
+  const activeAccount = useMemo(
+    () => accounts.find((account) => account.id === activeAccountId),
+    [accounts, activeAccountId],
   );
-  const isConnectionPending = accounts.some(
-    (account) =>
-      account.connection_state === "pending_verification" ||
-      account.connection_state === "bootstrapping",
+  const isConnectionPending = useMemo(
+    () =>
+      accounts.some(
+        (account) =>
+          account.connection_state === "pending_verification" ||
+          account.connection_state === "bootstrapping",
+      ),
+    [accounts],
   );
 
   const activeAccountConnectionBusy =
@@ -223,9 +228,9 @@ function JournalPageContent() {
     const mapped: Record<number, JournalCalendarDayStat> = {};
 
     for (const day of calendarAnalytics?.days ?? []) {
-      const parsedDay = new Date(day.date);
+      const parsedDay = parseDateParam(day.date);
       if (
-        Number.isNaN(parsedDay.getTime()) ||
+        !parsedDay ||
         parsedDay.getMonth() !== currentMonth.getMonth() ||
         parsedDay.getFullYear() !== currentMonth.getFullYear()
       ) {

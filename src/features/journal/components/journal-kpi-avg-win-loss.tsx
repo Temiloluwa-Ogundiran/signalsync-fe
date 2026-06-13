@@ -26,15 +26,12 @@ export function JournalKpiAvgWinLoss({
   return (
     <article
       className={cn(
-        "flex min-h-[7.625rem] min-w-0 flex-col items-stretch justify-center gap-3 rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-4 py-3 shadow-sm",
+        "flex min-h-[6.875rem] min-w-0 flex-col items-stretch justify-center gap-2.5 rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-3 py-3 shadow-sm",
         className,
       )}
     >
-      {/* <div className="flex min-w-0 flex-1 flex-col justify-center gap-1"> */}
-      {/* top part */}
-      {/* </div> */}
-      <div className="flex flex-wrap items-center gap-1">
-        <span className="text-xs sm:text-sm font-semibold leading-tight text-footnote-online">
+      <div className="flex min-w-0 items-center gap-1">
+        <span className="truncate text-xs font-semibold leading-tight text-footnote-online min-[1400px]:text-sm">
           Avg Win/Loss Trade
         </span>
         <JournalKpiInfo
@@ -43,23 +40,22 @@ export function JournalKpiAvgWinLoss({
         />
       </div>
 
-      {/* bottom part */}
-      <div className="flex items-center justify-between gap-1">
-        <p className="font-heading text-2xl xl:text-xl min-[1400px]:text-2xl 2xl:text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <p className="min-w-0 shrink-0 font-heading text-[1.55rem] font-bold leading-none tracking-normal text-kpi-metric-neutral tabular-nums min-[1400px]:text-[1.75rem] 2xl:text-[1.95rem]">
           {ratioLabel}
         </p>
-        <div className="flex w-[7.5rem] xl:w-[6.2rem] min-[1400px]:w-[8rem] 2xl:w-[10.0625rem] shrink-0 flex-col justify-center gap-1.5 pt-0.5">
-          <div className="relative h-[9px] w-full overflow-hidden rounded-full bg-kpi-legend-loss-fg">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 pt-0.5">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-kpi-legend-loss-fg">
             <div
               className="absolute left-0 top-0 h-full min-w-0 rounded-full bg-kpi-metric-positive"
               style={{ width: `${share * 100}%` }}
             />
           </div>
-          <div className="flex w-full items-center justify-between gap-1 text-[10px] sm:text-xs md:text-sm font-normal leading-tight">
-            <span className="truncate text-kpi-metric-positive">
+          <div className="flex w-full items-center justify-between gap-1 text-[10px] font-normal leading-tight min-[1400px]:text-xs">
+            <span className="min-w-0 truncate text-kpi-metric-positive tabular-nums">
               {formatCompactMoney(avgWin)}
             </span>
-            <span className="truncate text-right text-kpi-legend-loss-fg">
+            <span className="min-w-0 truncate text-right text-kpi-legend-loss-fg tabular-nums">
               {formatCompactMoney(Math.abs(avgLoss))}
             </span>
           </div>

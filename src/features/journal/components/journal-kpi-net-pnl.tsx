@@ -21,14 +21,14 @@ export function JournalKpiNetPnl({
   return (
     <article
       className={cn(
-        "relative flex min-h-[7.625rem] min-w-0 flex-col justify-between rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg p-4 shadow-sm",
+        "relative flex min-h-[6.875rem] min-w-0 flex-col justify-between rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg p-3 shadow-sm",
         className,
       )}
     >
       <div className="flex h-full justify-between gap-3">
         <div className="min-w-0 flex flex-col justify-center h-full space-y-1">
-          <div className="flex flex-wrap items-center gap-1">
-            <span className="text-sm font-semibold leading-tight text-footnote-online">
+          <div className="flex min-w-0 items-center gap-1">
+            <span className="truncate text-xs font-semibold leading-tight text-footnote-online min-[1400px]:text-sm">
               Net P&L
             </span>
             <JournalKpiInfo
@@ -42,7 +42,7 @@ export function JournalKpiNetPnl({
 
           <p
             className={cn(
-              "font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] sm:text-[2rem] xl:text-[2rem]",
+              "font-heading text-[1.75rem] font-bold leading-none tracking-normal tabular-nums min-[1400px]:text-[1.95rem]",
               isNonNegative ? "text-kpi-metric-positive" : "text-danger",
             )}
           >

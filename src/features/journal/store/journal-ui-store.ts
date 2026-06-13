@@ -55,7 +55,10 @@ export const useJournalUiStore = create<JournalUiState>()(
       openEditTradeModal: (tradeId: string) =>
         set({ editTradeModalOpen: true, editTradeId: tradeId }),
       setEditTradeModalOpen: (open: boolean) =>
-        set({ editTradeModalOpen: open, editTradeId: open ? undefined : null }),
+        set((state) => ({
+          editTradeModalOpen: open,
+          editTradeId: open ? state.editTradeId : null,
+        })),
 
       includeManualTrades: true,
       setIncludeManualTrades: (val: boolean) => set({ includeManualTrades: val }),

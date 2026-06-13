@@ -56,13 +56,13 @@ export function JournalKpiProfitFactor({
   return (
     <article
       className={cn(
-        "flex min-h-[7.625rem] min-w-0 flex-row items-center justify-between gap-3 rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-4 py-3 shadow-sm",
+        "flex min-h-[6.875rem] min-w-0 flex-row items-center justify-between gap-3 rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg px-3 py-3 shadow-sm",
         className,
       )}
     >
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-        <div className="flex flex-wrap items-center gap-1">
-          <span className="text-sm font-semibold leading-tight text-footnote-online">
+        <div className="flex min-w-0 items-center gap-1">
+          <span className="truncate text-xs font-semibold leading-tight text-footnote-online min-[1400px]:text-sm">
             Profit Factor
           </span>
           <JournalKpiInfo
@@ -70,15 +70,15 @@ export function JournalKpiProfitFactor({
             description="Gross profits divided by gross losses for the selected period. Above 1.0 means total profits exceed total losses."
           />
         </div>
-        <p className="font-heading text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-kpi-metric-neutral">
+        <p className="font-heading text-[1.75rem] font-bold leading-none tracking-normal text-kpi-metric-neutral tabular-nums min-[1400px]:text-[1.95rem]">
           {display}
         </p>
       </div>
 
-      <div className="flex size-[3.75rem] shrink-0 items-center justify-center">
+      <div className="flex size-14 shrink-0 items-center justify-center min-[1400px]:size-[3.75rem]">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto h-[3.75rem] w-[3.75rem] max-w-full"
+          className="mx-auto size-14 max-w-full min-[1400px]:size-[3.75rem]"
         >
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Pie
@@ -87,8 +87,8 @@ export function JournalKpiProfitFactor({
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={22}
-              outerRadius={30}
+              innerRadius={20}
+              outerRadius={27}
               startAngle={90}
               endAngle={-270}
               stroke="none"

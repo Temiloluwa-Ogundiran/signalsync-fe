@@ -5,14 +5,14 @@ import type { JournalAccount, JournalAccountConnectPayload } from "../types";
 
 export const JOURNAL_ACCOUNT_KEYS = {
   all: ["journal-accounts"] as const,
-  list: (token?: string) => ["journal-accounts", "list", token] as const,
+  list: () => ["journal-accounts", "list"] as const,
 };
 
 export function useJournalAccounts() {
   const { data: session, status } = useSession();
 
   return useQuery({
-    queryKey: JOURNAL_ACCOUNT_KEYS.list(session?.accessToken),
+    queryKey: JOURNAL_ACCOUNT_KEYS.list(),
     queryFn: () =>
       journalAccountApi.listAccounts(session?.accessToken as string),
     enabled: status === "authenticated" && !!session?.accessToken,

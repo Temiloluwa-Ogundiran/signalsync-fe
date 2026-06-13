@@ -12,13 +12,11 @@ export function useCreateManualTrade(accountId: string) {
     mutationFn: (payload: ManualTradeCreatePayload) =>
       journalManualTradesApi.create(accountId, payload, session?.accessToken as string),
     onSuccess: () => {
-      const token = session?.accessToken;
-      
       // Invalidate day journal cache for the account
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-day" && k[3] === accountId;
+          return Array.isArray(k) && k[0] === "journal-day" && k[2] === accountId;
         },
       });
 
@@ -26,7 +24,7 @@ export function useCreateManualTrade(accountId: string) {
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-trade-history" && k[2] === accountId;
+          return Array.isArray(k) && k[0] === "journal-trade-history" && k[1] === accountId;
         },
       });
 
@@ -44,13 +42,11 @@ export function useUpdateManualTrade(accountId: string) {
     mutationFn: ({ tradeId, payload }: { tradeId: string; payload: ManualTradeUpdatePayload }) =>
       journalManualTradesApi.update(tradeId, payload, session?.accessToken as string),
     onSuccess: () => {
-      const token = session?.accessToken;
-
       // Invalidate day journal cache
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-day" && k[3] === accountId;
+          return Array.isArray(k) && k[0] === "journal-day" && k[2] === accountId;
         },
       });
 
@@ -66,7 +62,7 @@ export function useUpdateManualTrade(accountId: string) {
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-trade-history" && k[2] === accountId;
+          return Array.isArray(k) && k[0] === "journal-trade-history" && k[1] === accountId;
         },
       });
 
@@ -88,7 +84,7 @@ export function useDeleteManualTrade(accountId: string) {
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-day" && k[3] === accountId;
+          return Array.isArray(k) && k[0] === "journal-day" && k[2] === accountId;
         },
       });
 
@@ -96,7 +92,7 @@ export function useDeleteManualTrade(accountId: string) {
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return Array.isArray(k) && k[0] === "journal-trade-history" && k[2] === accountId;
+          return Array.isArray(k) && k[0] === "journal-trade-history" && k[1] === accountId;
         },
       });
 

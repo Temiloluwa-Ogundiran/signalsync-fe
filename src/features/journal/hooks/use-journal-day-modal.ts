@@ -9,21 +9,19 @@ import { useJournalUiStore } from "../store/journal-ui-store";
 
 export const JOURNAL_DAY_MODAL_KEYS = {
   daily: (
-    token: string | undefined,
     accountId?: string,
     day?: string,
     includeMessages = true,
     includeManual = true,
-  ) => ["journal-day", "daily", token, accountId, day, includeMessages, includeManual] as const,
-  trades: (token: string | undefined, accountId?: string, day?: string, includeManual = true) =>
-    ["journal-day", "trades", token, accountId, day, includeManual] as const,
-  tradeMessages: (token: string | undefined, tradeId?: string) =>
-    ["journal-day", "trade-messages", token, tradeId] as const,
+  ) => ["journal-day", "daily", accountId, day, includeMessages, includeManual] as const,
+  trades: (accountId?: string, day?: string, includeManual = true) =>
+    ["journal-day", "trades", accountId, day, includeManual] as const,
+  tradeMessages: (tradeId?: string) =>
+    ["journal-day", "trade-messages", tradeId] as const,
   adjacentTradedDates: (
-    token: string | undefined,
     accountId?: string,
     day?: string,
-  ) => ["journal-day", "adjacent-traded", token, accountId, day] as const,
+  ) => ["journal-day", "adjacent-traded", accountId, day] as const,
 };
 
 export function useJournalDay(
@@ -38,7 +36,6 @@ export function useJournalDay(
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
-      session?.accessToken,
       accountId,
       tradingDate,
       includeMessages,
@@ -72,7 +69,6 @@ export function useJournalDayTrades(
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
-      session?.accessToken,
       accountId,
       tradingDate,
       includeManual,
@@ -118,7 +114,6 @@ export function useCreateJournalDayMessage(
         { signal },
       ),
     onSuccess: () => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -126,9 +121,8 @@ export function useCreateJournalDayMessage(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
@@ -163,7 +157,6 @@ export function useCreateJournalTradeMessage(
         { signal },
       ),
     onSuccess: (_data, variables) => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -171,22 +164,19 @@ export function useCreateJournalTradeMessage(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
-          session?.accessToken,
           accountId,
           tradingDate,
         ),
       });
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
-          session?.accessToken,
           variables.tradeId,
         ),
       });
@@ -202,7 +192,6 @@ export function useTradeJournalMessages(tradeId?: string, enabled = true) {
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
-      session?.accessToken,
       tradeId,
     ),
     queryFn: () =>
@@ -227,7 +216,6 @@ export function useAdjacentTradedDates(
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.adjacentTradedDates(
-      session?.accessToken,
       accountId,
       tradingDate,
     ),
@@ -261,7 +249,6 @@ export function useMarkJournalDayReviewed(
         session?.accessToken as string,
       ),
     onSuccess: () => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -269,14 +256,13 @@ export function useMarkJournalDayReviewed(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
       queryClient.invalidateQueries({
-        queryKey: ["journal-day", "adjacent-traded", token, accountId],
+        queryKey: ["journal-day", "adjacent-traded", accountId],
       });
       if (accountId) {
         invalidateJournalAnalyticsForAccount(queryClient, accountId);
@@ -299,7 +285,6 @@ export function useMarkJournalTradeReviewed(
         session?.accessToken as string,
       ),
     onSuccess: (_data, tradeId) => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -307,22 +292,19 @@ export function useMarkJournalTradeReviewed(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
-          session?.accessToken,
           accountId,
           tradingDate,
         ),
       });
       queryClient.invalidateQueries({
         queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
-          session?.accessToken,
           tradeId,
         ),
       });
@@ -349,7 +331,6 @@ export function useUpdateJournalMessage(
         session?.accessToken as string,
       ),
     onSuccess: () => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -357,16 +338,14 @@ export function useUpdateJournalMessage(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
       if (tradeId) {
         queryClient.invalidateQueries({
           queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
-            token,
             tradeId,
           ),
         });
@@ -393,7 +372,6 @@ export function useDeleteJournalMessage(
         session?.accessToken as string,
       ),
     onSuccess: () => {
-      const token = session?.accessToken;
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -401,16 +379,14 @@ export function useDeleteJournalMessage(
             Array.isArray(k) &&
             k[0] === "journal-day" &&
             k[1] === "daily" &&
-            k[2] === token &&
-            k[3] === accountId &&
-            k[4] === tradingDate
+            k[2] === accountId &&
+            k[3] === tradingDate
           );
         },
       });
       if (tradeId) {
         queryClient.invalidateQueries({
           queryKey: JOURNAL_DAY_MODAL_KEYS.tradeMessages(
-            token,
             tradeId,
           ),
         });

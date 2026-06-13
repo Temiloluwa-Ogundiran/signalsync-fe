@@ -38,7 +38,7 @@ function JournalKpiStripImpl({
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={`kpi-skeleton-${index}`}
-            className="min-h-[7.625rem] animate-pulse rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg"
+            className="min-h-[6.875rem] animate-pulse rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg"
           />
         ))}
       </section>
@@ -65,7 +65,10 @@ function JournalKpiStripImpl({
 
       <JournalKpiDailyWin dailyOutcomeCounts={dailyOutcomeCounts} />
 
-      <JournalKpiAvgWinLoss avgWin={summary?.avg_win ?? 0} avgLoss={summary?.avg_loss ?? 0} />
+      <JournalKpiAvgWinLoss
+        avgWin={summary?.avg_win ?? 0}
+        avgLoss={summary?.avg_loss ?? 0}
+      />
     </section>
   );
 }

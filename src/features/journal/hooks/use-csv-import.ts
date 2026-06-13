@@ -5,14 +5,14 @@ import { JOURNAL_ACCOUNT_KEYS } from "./use-journal-accounts";
 
 export const CSV_IMPORT_KEYS = {
   all: ["csv-import"] as const,
-  platforms: (token?: string) => ["csv-import", "platforms", token] as const,
+  platforms: () => ["csv-import", "platforms"] as const,
 };
 
 export function useCSVPlatforms() {
   const { data: session, status } = useSession();
 
   return useQuery({
-    queryKey: CSV_IMPORT_KEYS.platforms(session?.accessToken),
+    queryKey: CSV_IMPORT_KEYS.platforms(),
     queryFn: () => csvImportApi.listPlatforms(session?.accessToken as string),
     enabled: status === "authenticated" && !!session?.accessToken,
   });
