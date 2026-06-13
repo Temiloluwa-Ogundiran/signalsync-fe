@@ -31,7 +31,7 @@ export function useCreateAiSession() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { title?: string; context_type?: string }) =>
+    mutationFn: (payload: { title?: string; context_type?: string; account_id?: string }) =>
       aiApi.createSession(payload, session?.accessToken),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: AI_SESSION_KEYS.all }),

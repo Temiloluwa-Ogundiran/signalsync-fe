@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { AiChatCore } from "./ai-chat-core";
 import { AiSessionSidebar } from "./ai-session-sidebar";
 import { useAiDockStore } from "../store/ai-dock-store";
@@ -11,6 +12,7 @@ import {
   useCreateAiSession,
   useDeleteAiSession,
 } from "../hooks/use-ai-sessions";
+import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 
 export function AiChatPage() {
   const { activeSessionId, setActiveSessionId } = useAiDockStore();
@@ -18,14 +20,24 @@ export function AiChatPage() {
     activeSessionId,
   );
 
+  const searchParams = useSearchParams();
+  // The header's account selector puts ?accountId=X in the URL when on non-journal routes.
+  const accountId = searchParams.get("accountId") || null;
+
+  const { data: accounts = [] } = useJournalAccounts();
+  const activeAccount = accounts.find((a) => a.id === accountId) ?? null;
+
   const { data: sessions = [] } = useAiSessions();
   const { data: activeSessionData } = useAiSession(localSessionId);
   const { mutateAsync: createSession } = useCreateAiSession();
   const { mutate: deleteSession } = useDeleteAiSession();
 
-  const handleNewChat = async () => {
+  const handleNewChat = async (scopeAccountId?: string | null) => {
     try {
-      const s = await createSession({ title: "New chat" });
+      const s = await createSession({
+        title: "New chat",
+        ...(scopeAccountId ? { account_id: scopeAccountId } : {}),
+      });
       setLocalSessionId(s.id);
       setActiveSessionId(s.id);
     } catch {/* ignore */}
@@ -44,15 +56,21 @@ export function AiChatPage() {
     }
   };
 
-  // Auto-create session on first load if none
-  useState(() => {
-    if (!localSessionId) {
-      createSession({ title: "New chat" }).then((s) => {
-        setLocalSessionId(s.id);
-        setActiveSessionId(s.id);
-      }).catch(() => {});
-    }
-  });
+  // Track the last account we started a session for so we don't create duplicates.
+  const lastSessionAccountId = useRef<string | null | undefined>(undefined);
+
+  // Auto-create a new scoped session whenever the selected account changes.
+  // undefined means "not yet initialised", null means "no account selected".
+  useEffect(() => {
+    if (lastSessionAccountId.current === accountId) return;
+    lastSessionAccountId.current = accountId;
+    handleNewChat(accountId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId]);
+
+  const accountLabel =
+    activeAccount?.display_name ||
+    (activeAccount?.broker_login ? `Account ${activeAccount.broker_login}` : null);
 
   return (
     <div className="flex h-full">
@@ -74,19 +92,32 @@ export function AiChatPage() {
             sessions={sessions.filter((s) => !s.is_deleted)}
             activeSessionId={localSessionId}
             onSelect={handleSelect}
-            onNew={handleNewChat}
+            onNew={() => handleNewChat(accountId)}
             onDelete={handleDelete}
           />
         </div>
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 min-w-0">
-        <AiChatCore
-          sessionId={localSessionId}
-          initialMessages={activeSessionData?.messages}
-          context={null}
-        />
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Account scope chip — only shows when an account is selected */}
+        {accountLabel && (
+          <div className="flex items-center gap-1.5 border-b border-border-secondary/40 px-4 py-2">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">
+              Scoped to
+            </span>
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">
+              {accountLabel}
+            </span>
+          </div>
+        )}
+        <div className="flex-1 min-h-0">
+          <AiChatCore
+            sessionId={localSessionId}
+            initialMessages={activeSessionData?.messages}
+            context={null}
+          />
+        </div>
       </div>
     </div>
   );

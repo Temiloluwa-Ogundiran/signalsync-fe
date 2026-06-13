@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { History, Maximize2, MoreHorizontal, Plus, Sparkles, X } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -9,12 +9,23 @@ import { AiChatCore } from "./ai-chat-core";
 import { AiSessionSidebar } from "./ai-session-sidebar";
 import { useAiDockStore } from "../store/ai-dock-store";
 import { useAiSession, useAiSessions, useCreateAiSession, useDeleteAiSession } from "../hooks/use-ai-sessions";
+import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 
 export function AiDock() {
   const router = useRouter();
   const { data: session } = useSession();
   const { isOpen, context, activeSessionId, close, setActiveSessionId } =
     useAiDockStore();
+
+  // Read the account the user has selected in the journal/dashboard header.
+  // This is persisted in localStorage by useJournalUiStore.
+  const accountId = useJournalUiStore((s) => s.activeAccountId) || null;
+  const { data: accounts = [] } = useJournalAccounts();
+  const activeAccount = accounts.find((a) => a.id === accountId) ?? null;
+  const accountLabel =
+    activeAccount?.display_name ||
+    (activeAccount?.broker_login ? `Account ${activeAccount.broker_login}` : null);
 
   const [showHistory, setShowHistory] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -24,19 +35,33 @@ export function AiDock() {
   const { mutateAsync: createSession, isPending: isCreating } = useCreateAiSession();
   const { mutate: deleteSession } = useDeleteAiSession();
 
-  // Auto-create session when dock opens and there's none
+  // Track which account the current dock session was scoped to.
+  // When the account changes while the dock is open, start a fresh scoped session.
+  const sessionScopedTo = useRef<string | null | undefined>(undefined);
+
+  const startNewSession = async (scopeAccountId?: string | null) => {
+    const s = await createSession({
+      title: "New chat",
+      ...(scopeAccountId ? { account_id: scopeAccountId } : {}),
+    });
+    setActiveSessionId(s.id);
+    sessionScopedTo.current = scopeAccountId ?? null;
+    return s;
+  };
+
   useEffect(() => {
-    if (isOpen && !activeSessionId && !isCreating && session?.accessToken) {
-      createSession({ title: "New chat" }).then((s) => {
-        setActiveSessionId(s.id);
-      }).catch(() => {/* handled by error boundary */});
+    if (!isOpen || isCreating || !session?.accessToken) return;
+    // Create a session if there's none, OR if the account has changed since we last created one.
+    const accountChanged = sessionScopedTo.current !== undefined && sessionScopedTo.current !== accountId;
+    if (!activeSessionId || accountChanged) {
+      startNewSession(accountId).catch(() => {});
     }
-  }, [isOpen, activeSessionId, isCreating, session?.accessToken, createSession, setActiveSessionId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, accountId, session?.accessToken]);
 
   const handleNewChat = async () => {
     try {
-      const s = await createSession({ title: "New chat" });
-      setActiveSessionId(s.id);
+      await startNewSession(accountId);
       setShowHistory(false);
     } catch {/* ignore */}
   };
@@ -151,6 +176,18 @@ export function AiDock() {
             </button>
           </div>
         </div>
+
+        {/* Account scope chip */}
+        {!showHistory && accountLabel && (
+          <div className="flex items-center gap-1.5 border-b border-border-secondary/40 px-4 py-2">
+            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">
+              Scoped to
+            </span>
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">
+              {accountLabel}
+            </span>
+          </div>
+        )}
 
         {/* Body */}
         {showHistory ? (
