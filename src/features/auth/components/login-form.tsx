@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 import {
   Form,
@@ -19,8 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ResendVerificationForm } from "./resend-verification-form";
 import { refreshAuthSensitiveQueries } from "../lib/auth-query-state";
 
 const UNVERIFIED_MESSAGE = "Please verify your email before logging in.";
@@ -59,7 +58,6 @@ export function LoginForm({
 }) {
   const [isPending, setIsPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showResend, setShowResend] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -73,7 +71,6 @@ export function LoginForm({
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setIsPending(true);
-    setShowResend(false);
     form.clearErrors("root");
     try {
       const result = await signIn("credentials", {
@@ -83,10 +80,8 @@ export function LoginForm({
       });
 
       if (result?.error) {
-        const message = getAuthErrorMessage(result.error, result.code);
-        setShowResend(message === UNVERIFIED_MESSAGE);
         form.setError("root", {
-          message,
+          message: getAuthErrorMessage(result.error, result.code),
         });
         return;
       }
@@ -106,12 +101,25 @@ export function LoginForm({
     }
   }
 
+  const rootError = form.formState.errors.root?.message;
+  const isUnverified = rootError === UNVERIFIED_MESSAGE;
+  const resendUrl = `/resend-verification?email=${encodeURIComponent(form.getValues("email"))}`;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {justRegistered ? (
           <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
             Your account was created. Verify your email, then sign in here.
+            <div className="mt-1 text-emerald-200/90">
+              Didn&apos;t get an email?{" "}
+              <Link
+                href={resendUrl}
+                className="font-medium underline underline-offset-4 hover:text-emerald-100"
+              >
+                Resend verification email
+              </Link>
+            </div>
           </div>
         ) : null}
         <div className="space-y-4">
@@ -184,17 +192,20 @@ export function LoginForm({
             )}
           />
         </div>
-        {form.formState.errors.root && (
-          <p className="text-sm font-medium text-destructive">
-            {form.formState.errors.root.message}
-          </p>
-        )}
-        {showResend ? (
-          <ResendVerificationForm
-            initialEmail={form.getValues("email")}
-            title="Need a new verification email?"
-            description="Use the same email address and we’ll send a fresh verification link."
-          />
+        {rootError ? (
+          <div>
+            <p className="text-sm font-medium text-destructive">{rootError}</p>
+            {isUnverified ? (
+              <p className="mt-1 text-sm text-muted-foreground">
+                <Link
+                  href={resendUrl}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Resend verification email
+                </Link>
+              </p>
+            ) : null}
+          </div>
         ) : null}
         <Button
           className="w-full cursor-pointer"

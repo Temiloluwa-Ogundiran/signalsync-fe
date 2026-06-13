@@ -1,8 +1,9 @@
 "use client";
 
-import { Menu, PlugZap, Plus } from "lucide-react";
+import { Menu, PlugZap, Plus, Sparkles } from "lucide-react";
 import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
-import { useAiInsightModal } from "@/features/dashboard/components/ai-insight-modal-provider";
+import { useAiDockStore } from "@/features/ai/store/ai-dock-store";
+import { FEATURE_FLAGS } from "@/config/feature-flags";
 import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo } from "react";
@@ -23,7 +24,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { open: openAi } = useAiInsightModal();
+  const openAi = useAiDockStore((s) => s.open);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -273,6 +274,17 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </PopoverContent>
               </Popover>
             </div>
+
+            {FEATURE_FLAGS.AI && (
+              <Button
+                type="button"
+                onClick={() => openAi({ source: "Header" })}
+                className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] bg-brand/10 text-brand hover:bg-brand/20 border border-brand/25 text-xs font-bold px-3 py-2 h-9 shadow-none transition-all"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Ask Partna AI
+              </Button>
+            )}
 
             <Button
               type="button"
