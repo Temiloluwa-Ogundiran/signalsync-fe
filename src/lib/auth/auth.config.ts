@@ -31,6 +31,16 @@ function parseJsonObjectSafely(
   return null;
 }
 
+class RefreshFailureError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "RefreshFailureError";
+  }
+}
+
 function buildRefreshFailureError(
   response: Response,
   rawBody: string,
@@ -44,7 +54,8 @@ function buildRefreshFailureError(
       ? parsedBody.detail
       : rawBody.trim().slice(0, 200);
 
-  return new Error(
+  return new RefreshFailureError(
+    response.status,
     detail
       ? `Refresh request failed (${response.status}): ${detail}`
       : `Refresh request failed with status ${response.status}.`,
@@ -149,7 +160,11 @@ export const authConfig = {
           expiresAt: Date.now() + (tokens.access_token_expiry_minutes * 60 * 1000),
         };
       } catch (error) {
-        console.error("Error refreshing access token", error);
+        if (error instanceof RefreshFailureError && error.status === 401) {
+          console.warn("Session refresh token expired; user must sign in again.");
+        } else {
+          console.error("Error refreshing access token", error);
+        }
         return {
           ...token,
           error: "RefreshAccessTokenError",

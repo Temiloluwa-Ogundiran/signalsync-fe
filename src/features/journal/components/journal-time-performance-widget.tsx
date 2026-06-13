@@ -231,7 +231,7 @@ export function JournalTimePerformanceWidget({
         </div>
 
         <div className={cn("w-full pt-3", compact ? "h-80" : "h-80")}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <BarChart
               data={data}
               margin={{ top: 8, right: 12, bottom: 28, left: 4 }}

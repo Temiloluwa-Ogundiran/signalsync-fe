@@ -138,6 +138,53 @@ test("jwt callback does not retry refresh after a prior refresh failure", async 
   }
 });
 
+test("jwt callback treats expired refresh token as expected session expiry", async () => {
+  const originalFetch = global.fetch;
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  const errorCalls: unknown[][] = [];
+  const warnCalls: unknown[][] = [];
+
+  global.fetch = (async () =>
+    new Response(
+      JSON.stringify({ detail: "Invalid or expired refresh token." }),
+      {
+        status: 401,
+        headers: {
+          "content-type": "application/json",
+        },
+      },
+    )) as typeof fetch;
+  console.error = (...args: unknown[]) => {
+    errorCalls.push(args);
+  };
+  console.warn = (...args: unknown[]) => {
+    warnCalls.push(args);
+  };
+
+  try {
+    const result = await authConfig.callbacks.jwt({
+      token: {
+        accessToken: "expired-token",
+        refreshToken: "refresh-token",
+        expiresAt: Date.now() - 60_000,
+      },
+    } as never);
+
+    assert.equal(result.error, "RefreshAccessTokenError");
+    assert.equal(errorCalls.length, 0);
+    assert.equal(warnCalls.length, 1);
+    assert.equal(
+      warnCalls[0]?.[0],
+      "Session refresh token expired; user must sign in again.",
+    );
+  } finally {
+    global.fetch = originalFetch;
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  }
+});
+
 test("jwt callback prefers AUTH_BACKEND_URL for server-side auth requests", async () => {
   const originalFetch = global.fetch;
   const originalEnvValue = process.env.AUTH_BACKEND_URL;
