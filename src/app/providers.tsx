@@ -13,7 +13,7 @@ import {
   refreshAuthSensitiveQueries,
   resetAuthSensitiveQueries,
 } from "@/features/auth/lib/auth-query-state";
-import { hasUsableSession } from "@/lib/auth-session";
+import { hasUsableSession } from "@/lib/auth/auth-session";
 
 function SessionQuerySync() {
   const { data: session, status } = useSession();

@@ -2,9 +2,9 @@ import NextAuth from "next-auth";
 import { AuthError, CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
-import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
-import { isExpectedAuthFlowError } from "./lib/auth-error-logging.ts";
-import { extractRefreshToken } from "./lib/auth/parse-refresh-cookie";
+import { resolveAuthBackendUrl } from "./auth-backend-url";
+import { isExpectedAuthFlowError } from "./auth-error-logging";
+import { extractRefreshToken } from "./parse-refresh-cookie";
 
 class BackendCredentialsSigninError extends CredentialsSignin {
   constructor(message: string) {

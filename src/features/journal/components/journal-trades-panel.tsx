@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { cn } from "@/lib/utils";
 import type {
   JournalOpenPositionsPanelRow,
@@ -17,7 +17,7 @@ interface JournalTradesPanelProps {
   openErrorMessage?: string | null;
 }
 
-export function JournalTradesPanel({
+function JournalTradesPanelImpl({
   recentRows,
   openRows,
   isRecentLoading = false,
@@ -137,3 +137,5 @@ export function JournalTradesPanel({
     </section>
   );
 }
+
+export const JournalTradesPanel = memo(JournalTradesPanelImpl);

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 
 import type { ChartConfig } from "@/components/ui/chart";
@@ -39,7 +40,7 @@ function SymbolFrequencyTooltip({
   );
 }
 
-export function JournalSymbolsWidget({
+function JournalSymbolsWidgetImpl({
   instruments,
   compact = false,
 }: JournalSymbolsWidgetProps) {
@@ -144,3 +145,5 @@ export function JournalSymbolsWidget({
     </section>
   );
 }
+
+export const JournalSymbolsWidget = memo(JournalSymbolsWidgetImpl);

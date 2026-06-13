@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
-import { hasUsableSession } from "@/lib/auth-session";
+import { auth } from "@/lib/auth/auth";
+import { hasUsableSession } from "@/lib/auth/auth-session";
 import { redirect } from "next/navigation";
 
 export default async function HomePage() {

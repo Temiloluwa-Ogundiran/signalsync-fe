@@ -1,4 +1,48 @@
+import * as z from "zod";
 import { ManualTradeCreatePayload } from "../types";
+
+/**
+ * Shared zod schema + form-values type for the unified trade form modal
+ * (create + edit). The form keeps number fields as `number | ""` so empty
+ * inputs round-trip cleanly through controlled inputs; the cross-field
+ * semantics (required-when-executed, SL/TP relative to entry, close-after-open)
+ * are enforced by {@link validateManualTrade} which is reused by the resolver.
+ */
+export const tradeFormSchema = z.object({
+  isMissed: z.boolean(),
+  symbol: z.string(),
+  direction: z.enum(["buy", "sell"]),
+  openedAt: z.string(),
+  closedAt: z.string(),
+  volume: z.union([z.number(), z.literal("")]),
+  openPrice: z.union([z.number(), z.literal("")]),
+  netProfit: z.union([z.number(), z.literal("")]),
+  closePrice: z.union([z.number(), z.literal("")]),
+  commission: z.number(),
+  swap: z.number(),
+  sl: z.union([z.number(), z.literal("")]),
+  tp: z.union([z.number(), z.literal("")]),
+  missedDate: z.string(),
+});
+
+export type TradeFormValues = z.infer<typeof tradeFormSchema>;
+
+export const emptyTradeFormValues: TradeFormValues = {
+  isMissed: false,
+  symbol: "",
+  direction: "buy",
+  openedAt: "",
+  closedAt: "",
+  volume: "",
+  openPrice: "",
+  netProfit: "",
+  closePrice: "",
+  commission: 0,
+  swap: 0,
+  sl: "",
+  tp: "",
+  missedDate: "",
+};
 
 export interface ValidationErrors {
   symbol?: string;

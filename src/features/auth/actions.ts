@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn, signOut } from "../../auth";
+import { signIn, signOut } from "@/lib/auth/auth";
 import { AuthError } from "next-auth";
 import { registerUser } from "@/features/auth/api/auth.api";
 import { ApiException, extractValidationFieldErrors } from "@/lib/api/types";

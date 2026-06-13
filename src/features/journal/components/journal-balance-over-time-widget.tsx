@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import {
   Line,
   LineChart,
@@ -74,7 +74,7 @@ function buildBalanceChartRows(
   });
 }
 
-export function JournalBalanceOverTimeWidget({
+function JournalBalanceOverTimeWidgetImpl({
   points,
   isLoading,
   selectedRange,
@@ -218,3 +218,7 @@ export function JournalBalanceOverTimeWidget({
     </section>
   );
 }
+
+export const JournalBalanceOverTimeWidget = memo(
+  JournalBalanceOverTimeWidgetImpl,
+);

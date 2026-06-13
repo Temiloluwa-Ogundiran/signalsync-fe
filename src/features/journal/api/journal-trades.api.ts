@@ -115,10 +115,10 @@ export const journalTradesApi = {
       `/journal/trades/${tradeId}/messages`,
       body,
       {
-        ...withAuth(token),
         signal: options?.signal,
         headers: {
           ...withAuth(token).headers,
+          "Content-Type": null,
         },
       },
     );

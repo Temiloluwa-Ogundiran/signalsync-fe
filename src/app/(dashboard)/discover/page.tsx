@@ -22,7 +22,7 @@ import {
   useFollowStream,
   useUnfollowStream,
 } from "@/features/stream/hooks/use-streams";
-import { CreateStreamModal } from "@/features/stream/components/CreateStreamModal";
+import { CreateStreamModal } from "@/features/stream/components/create-stream-modal";
 import type { StreamDiscoverItem } from "@/features/stream/api/stream.api";
 
 function getErrorMessage(err: unknown): string {

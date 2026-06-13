@@ -296,12 +296,12 @@ export function JournalDayChatPage() {
         setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
         if (previewUrl) URL.revokeObjectURL(previewUrl);
       }
-    } catch (err: any) {
-      if (
-        err.name === "CanceledError" ||
-        err.name === "AbortError" ||
-        axios.isCancel(err)
-      ) {
+    } catch (err: unknown) {
+      const isAbort =
+        axios.isCancel(err) ||
+        (err instanceof Error &&
+          (err.name === "CanceledError" || err.name === "AbortError"));
+      if (isAbort) {
         console.log("Upload aborted by user");
         return;
       }
@@ -309,7 +309,10 @@ export function JournalDayChatPage() {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const [{ toast }] = await Promise.all([import("sonner")]);
       toast.error("Failed to send message", {
-        description: err.message || "An error occurred while uploading.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "An error occurred while uploading.",
       });
     }
   };

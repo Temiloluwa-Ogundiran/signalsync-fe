@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
-import { hasUsableSession } from "@/lib/auth-session";
+import { hasUsableSession } from "@/lib/auth/auth-session";
 import {
   Card,
   CardContent,

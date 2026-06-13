@@ -82,10 +82,10 @@ export const journalDailyApi = {
       `/journal/daily/${dailyJournalId}/messages`,
       body,
       {
-        ...withAuth(token),
         signal: options?.signal,
         headers: {
           ...withAuth(token).headers,
+          "Content-Type": null,
         },
       },
     );

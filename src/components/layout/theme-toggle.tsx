@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useThemeStore } from "@/features/theme/store";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useThemeStore();
 
-  // Apply theme class on mount (handles SSR → client hydration)
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [theme]);
+  // Theme class is managed by the store's onRehydrateStorage + the blocking
+  // inline script in layout.tsx — no useEffect needed here.
 
   return (
     <button
