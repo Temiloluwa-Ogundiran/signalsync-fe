@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { streamChat } from "../lib/sse";
 import type { AiMessage, StreamingMessage } from "../types";
 
-export function useAiChat(sessionId: string | null, token: string | undefined) {
+export function useAiChat(sessionId: string | null) {
   const [messages, setMessages] = useState<StreamingMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingTool, setStreamingTool] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function useAiChat(sessionId: string | null, token: string | undefined) {
 
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!sessionId || !token || isStreaming) return;
+      if (!sessionId || isStreaming) return;
       setError(null);
 
       const userMsg: StreamingMessage = {
@@ -39,7 +39,7 @@ export function useAiChat(sessionId: string | null, token: string | undefined) {
       setIsStreaming(true);
 
       try {
-        for await (const event of streamChat(sessionId, content, token)) {
+        for await (const event of streamChat(sessionId, content)) {
           if (event.type === "token") {
             setMessages((prev) =>
               prev.map((m) =>
@@ -84,7 +84,7 @@ export function useAiChat(sessionId: string | null, token: string | undefined) {
         setIsStreaming(false);
       }
     },
-    [sessionId, token, isStreaming],
+    [sessionId, isStreaming],
   );
 
   const clearError = useCallback(() => setError(null), []);

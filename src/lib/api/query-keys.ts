@@ -25,10 +25,23 @@ export const queryKeys = {
       ["journal-day", accountId, date] as const,
     tradeHistory: (accountId: string) =>
       ["journal-trade-history", accountId] as const,
+    tradeHistoryRange: (
+      accountId: string | undefined,
+      fromDate: string,
+      toDate: string,
+      includeManual: boolean,
+    ) =>
+      ["journal-trade-history", accountId, fromDate, toDate, includeManual] as const,
     feed: (accountId: string) => ["journal-feed", accountId] as const,
     tags: (accountId: string) => ["journal-tags", accountId] as const,
-    openPositions: (accountId: string) =>
-      ["journal-open-positions", accountId] as const,
+    openPositions: (accountId: string | undefined, limit?: number) =>
+      limit === undefined
+        ? (["journal-open-positions", accountId] as const)
+        : (["journal-open-positions", accountId, limit] as const),
+  },
+
+  ai: {
+    suggestions: () => ["ai-suggestions"] as const,
   },
 
   accounts: {

@@ -22,14 +22,13 @@ export function AiChatCore({
   context,
 }: AiChatCoreProps) {
   const { data: session } = useSession();
-  const token = session?.accessToken;
   const firstName =
     session?.user?.displayName?.split(" ")[0] ||
     session?.user?.name?.split(" ")[0] ||
     "Trader";
 
   const { messages, isStreaming, streamingTool, error, sendMessage, initMessages, clearError } =
-    useAiChat(sessionId, token);
+    useAiChat(sessionId);
 
   // Reset to the fetched messages whenever the active session changes.
   // Intentionally omitting initMessages/initialMessages from deps — firing on

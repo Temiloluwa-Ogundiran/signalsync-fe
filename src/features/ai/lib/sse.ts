@@ -3,16 +3,12 @@ import type { SSEEvent } from "../types";
 export async function* streamChat(
   sessionId: string,
   content: string,
-  token: string,
+  _token?: string,
 ): AsyncGenerator<SSEEvent> {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  const res = await fetch(`${apiUrl}/ai/sessions/${sessionId}/stream`, {
+  const res = await fetch(`/api/proxy/ai/sessions/${sessionId}/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ content }),
   });
