@@ -244,6 +244,11 @@ function JournalPageContent() {
     fromDate,
     toDate,
   });
+  // `refetch` is referentially stable in TanStack Query v5; depending on the
+  // whole `dashboardQuery` object (new identity every render) would tear down and
+  // recreate the polling interval/timeout effects on every render (incl. each 4s
+  // poll tick) — see P1-7.
+  const refetchDashboard = dashboardQuery.refetch;
   const calendarAnalytics = dashboardQuery.data?.calendar;
   const summaryAnalytics = dashboardQuery.data?.summary;
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
@@ -673,10 +678,10 @@ function JournalPageContent() {
 
   useEffect(() => {
     if (wasConnectionPendingRef.current && !isConnectionPending) {
-      void dashboardQuery.refetch();
+      void refetchDashboard();
     }
     wasConnectionPendingRef.current = isConnectionPending;
-  }, [dashboardQuery, isConnectionPending]);
+  }, [refetchDashboard, isConnectionPending]);
 
   useEffect(() => {
     if (!syncUiState) {
@@ -713,7 +718,7 @@ function JournalPageContent() {
 
       if (didSyncTimestampAdvance || isFailureState) {
         setSyncUiState(null);
-        void dashboardQuery.refetch();
+        void refetchDashboard();
       }
     }, 4_000);
 
@@ -721,7 +726,7 @@ function JournalPageContent() {
       window.clearTimeout(expiryTimer);
       window.clearInterval(timer);
     };
-  }, [dashboardQuery, refetchAccounts, syncUiState]);
+  }, [refetchDashboard, refetchAccounts, syncUiState]);
 
   const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
   const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);

@@ -58,94 +58,106 @@ export const JOURNAL_ANALYTICS_KEYS = {
     ] as const,
 };
 
-export function useJournalCalendarAnalytics({
-  accountId,
-  fromDate,
-  toDate,
-}: AnalyticsQueryInput) {
+/**
+ * Shared builder for the journal-analytics queries (P2-2). Every quirk of the
+ * original seven hooks is preserved verbatim — callers pass an exact `buildKey`
+ * (so key positions 0–2 and any appended timeBasis/granularity are unchanged),
+ * their own `fetcher`, and per-hook overrides (`requireAccountId`, `staleTime`,
+ * `usePlaceholder`, `enabled`). Behaviour is identical to the hand-written hooks.
+ */
+function useAnalyticsQuery<T>(opts: {
+  buildKey: (includeManual: boolean) => readonly unknown[];
+  fetcher: (
+    input: {
+      accountId?: string;
+      fromDate: string;
+      toDate: string;
+      includeManual: boolean;
+      timeBasis?: "open" | "close";
+      granularity?: "intraday" | "day";
+    },
+    token: string,
+  ) => Promise<T>;
+  accountId?: string;
+  fromDate: string;
+  toDate: string;
+  timeBasis?: "open" | "close";
+  granularity?: "intraday" | "day";
+  requireAccountId?: boolean;
+  enabled?: boolean;
+  staleTime?: number;
+  usePlaceholder?: boolean;
+}) {
   const { data: session, status } = useSession();
   const includeManual = useJournalUiStore((s) => s.includeManualTrades);
+  const requireAccountId = opts.requireAccountId ?? true;
 
   return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.calendar(accountId, fromDate, toDate, includeManual),
+    queryKey: opts.buildKey(includeManual),
     queryFn: () =>
+      opts.fetcher(
+        {
+          accountId: opts.accountId,
+          fromDate: opts.fromDate,
+          toDate: opts.toDate,
+          includeManual,
+          timeBasis: opts.timeBasis,
+          granularity: opts.granularity,
+        },
+        session?.accessToken as string,
+      ),
+    enabled:
+      (opts.enabled ?? true) &&
+      status === "authenticated" &&
+      !!session?.accessToken &&
+      (!requireAccountId || !!opts.accountId) &&
+      !!opts.fromDate &&
+      !!opts.toDate,
+    staleTime: opts.staleTime ?? 60_000,
+    ...(opts.usePlaceholder ? { placeholderData: keepPreviousData } : {}),
+  });
+}
+
+export function useJournalCalendarAnalytics({ accountId, fromDate, toDate }: AnalyticsQueryInput) {
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    usePlaceholder: true,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.calendar(accountId, fromDate, toDate, im),
+    fetcher: (i, t) =>
       journalAnalyticsApi.getCalendar(
-        {
-          accountId: accountId as string,
-          fromDate,
-          toDate,
-          includeManual,
-        },
-          session?.accessToken as string,
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
+        t,
       ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
-    placeholderData: keepPreviousData,
   });
 }
 
-export function useJournalSummaryAnalytics({
-  accountId,
-  fromDate,
-  toDate,
-}: AnalyticsQueryInput) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate, includeManual),
-    queryFn: () =>
+export function useJournalSummaryAnalytics({ accountId, fromDate, toDate }: AnalyticsQueryInput) {
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate, im),
+    fetcher: (i, t) =>
       journalAnalyticsApi.getSummary(
-        {
-          accountId: accountId as string,
-          fromDate,
-          toDate,
-          includeManual,
-        },
-        session?.accessToken as string,
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
+        t,
       ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
   });
 }
 
-export function useJournalInstrumentsAnalytics({
-  accountId,
-  fromDate,
-  toDate,
-}: AnalyticsQueryInput) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.instruments(accountId, fromDate, toDate, includeManual),
-    queryFn: () =>
+export function useJournalInstrumentsAnalytics({ accountId, fromDate, toDate }: AnalyticsQueryInput) {
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.instruments(accountId, fromDate, toDate, im),
+    fetcher: (i, t) =>
       journalAnalyticsApi.getInstruments(
-        {
-          accountId: accountId as string,
-          fromDate,
-          toDate,
-          includeManual,
-        },
-        session?.accessToken as string,
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
+        t,
       ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
   });
 }
 
@@ -156,59 +168,36 @@ export function useJournalTimePerformanceAnalytics({
   timeBasis = "close",
   enabled = true,
 }: AnalyticsQueryInput & { timeBasis?: "open" | "close"; enabled?: boolean }) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, includeManual), timeBasis],
-    queryFn: () =>
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    timeBasis,
+    enabled,
+    buildKey: (im) => [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, im), timeBasis],
+    fetcher: (i, t) =>
       journalAnalyticsApi.getTimePerformance(
         {
-          accountId: accountId as string,
-          fromDate,
-          toDate,
-          timeBasis,
-          includeManual,
+          accountId: i.accountId as string,
+          fromDate: i.fromDate,
+          toDate: i.toDate,
+          timeBasis: i.timeBasis as "open" | "close",
+          includeManual: i.includeManual,
         },
-        session?.accessToken as string,
+        t,
       ),
-    enabled:
-      enabled &&
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
   });
 }
 
-export function useJournalRecentTrades({
-  accountId,
-  fromDate,
-  toDate,
-}: AnalyticsQueryInput) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.recentTrades(accountId, fromDate, toDate, includeManual),
-    queryFn: () =>
-      journalTradesApi.listRecent(
-        accountId as string,
-        fromDate,
-        toDate,
-        8,
-        includeManual,
-        session?.accessToken as string,
-      ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
+export function useJournalRecentTrades({ accountId, fromDate, toDate }: AnalyticsQueryInput) {
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
     staleTime: 30_000,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.recentTrades(accountId, fromDate, toDate, im),
+    fetcher: (i, t) =>
+      journalTradesApi.listRecent(i.accountId as string, i.fromDate, i.toDate, 8, i.includeManual, t),
   });
 }
 
@@ -218,29 +207,26 @@ export function useJournalDashboardAnalytics({
   toDate,
   timeBasis = "close",
 }: AnalyticsQueryInput & { timeBasis?: "open" | "close" }) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate, includeManual), timeBasis],
-    queryFn: () =>
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    timeBasis,
+    // Dashboard intentionally enables for multi-account (no accountId required).
+    requireAccountId: false,
+    usePlaceholder: true,
+    buildKey: (im) => [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate, im), timeBasis],
+    fetcher: (i, t) =>
       journalAnalyticsApi.getDashboard(
         {
-          accountId,
-          fromDate,
-          toDate,
-          timeBasis,
-          includeManual,
+          accountId: i.accountId,
+          fromDate: i.fromDate,
+          toDate: i.toDate,
+          timeBasis: i.timeBasis as "open" | "close",
+          includeManual: i.includeManual,
         },
-        session?.accessToken as string,
+        t,
       ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
-    placeholderData: keepPreviousData,
   });
 }
 
@@ -250,35 +236,23 @@ export function useJournalBalanceHistoryAnalytics({
   toDate,
   granularity,
 }: AnalyticsQueryInput & { granularity: "intraday" | "day" }) {
-  const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
-
-  return useQuery({
-    queryKey: JOURNAL_ANALYTICS_KEYS.balanceHistory(
-      accountId,
-      fromDate,
-      toDate,
-      granularity,
-      includeManual,
-    ),
-    queryFn: () =>
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    granularity,
+    usePlaceholder: true,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.balanceHistory(accountId, fromDate, toDate, granularity, im),
+    fetcher: (i, t) =>
       journalAnalyticsApi.getBalanceHistory(
         {
-          accountId,
-          fromDate,
-          toDate,
-          granularity,
-          includeManual,
+          accountId: i.accountId,
+          fromDate: i.fromDate,
+          toDate: i.toDate,
+          granularity: i.granularity as "intraday" | "day",
+          includeManual: i.includeManual,
         },
-        session?.accessToken as string,
+        t,
       ),
-    enabled:
-      status === "authenticated" &&
-      !!session?.accessToken &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
-    staleTime: 60_000,
-    placeholderData: keepPreviousData,
   });
 }

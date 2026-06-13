@@ -243,9 +243,12 @@ export const useToggleUpvote = () => {
       await queryClient.cancelQueries({ queryKey: ["my-posts"] });
       await queryClient.cancelQueries({ queryKey: ["post", postId] });
 
-      const previousStreamPosts = queryClient.getQueryData<
+      // The real cache keys are ["stream-posts", streamId] — getQueryData needs an
+      // exact match and would always return undefined here, so snapshot with
+      // getQueriesData (prefix match → [key, data] pairs) and restore per-key (P1-9).
+      const previousStreamPosts = queryClient.getQueriesData<
         InfiniteData<PostListResponse>
-      >(["stream-posts"]);
+      >({ queryKey: ["stream-posts"] });
 
       const previousMyPosts = queryClient.getQueryData<
         InfiniteData<PostListResponse>
@@ -308,8 +311,8 @@ export const useToggleUpvote = () => {
       return { previousStreamPosts, previousMyPosts, previousPost };
     },
     onError: (_err, { postId }, context) => {
-      if (context?.previousStreamPosts) {
-        queryClient.setQueryData(["stream-posts"], context.previousStreamPosts);
+      for (const [key, data] of context?.previousStreamPosts ?? []) {
+        queryClient.setQueryData(key, data);
       }
       if (context?.previousMyPosts) {
         queryClient.setQueryData(["my-posts"], context.previousMyPosts);
@@ -337,8 +340,13 @@ export const useDeletePost = () => {
   return useMutation({
     mutationFn: (postId: string) =>
       postApi.deletePost(postId, session?.accessToken as string),
-    onSuccess: () => {
+    onSuccess: (_data, postId) => {
       queryClient.invalidateQueries({ queryKey: ["stream-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      // Drop the now-deleted post's detail + replies so those pages don't keep
+      // rendering it (P2-13).
+      queryClient.removeQueries({ queryKey: ["post", postId] });
+      queryClient.removeQueries({ queryKey: ["post-replies", postId] });
     },
   });
 };
