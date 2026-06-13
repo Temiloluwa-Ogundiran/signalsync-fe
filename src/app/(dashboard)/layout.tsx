@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { hasUsableSession } from "@/lib/auth-session";
+import { auth } from "@/lib/auth/auth";
+import { hasUsableSession } from "@/lib/auth/auth-session";
 import DashboardShell from "./dashboard-shell";
 
 export default async function DashboardLayout({

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+import { authConfig } from "@/lib/auth/auth.config";
 import { NextResponse } from "next/server";
-import { FEATURE_FLAGS } from "@/lib/feature-flags";
+import { FEATURE_FLAGS } from "@/config/feature-flags";
 
 const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [
   { flag: "HOME",     prefix: "/overview" },

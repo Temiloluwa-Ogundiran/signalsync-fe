@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { Header, MobileNav, Sidebar } from "@/components/layout";
-import { CreatePostModal } from "@/features/post/components/CreatePostModal";
+import { CreatePostModal } from "@/features/post/components/create-post-modal";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";

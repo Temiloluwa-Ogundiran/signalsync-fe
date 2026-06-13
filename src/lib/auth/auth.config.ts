@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
-import { resolveAuthBackendUrl } from "./lib/auth-backend-url.ts";
-import { extractRefreshToken } from "./lib/auth/parse-refresh-cookie";
+import { resolveAuthBackendUrl } from "./auth-backend-url";
+import { extractRefreshToken } from "./parse-refresh-cookie";
 
 function parseJsonObjectSafely(
   rawBody: string,

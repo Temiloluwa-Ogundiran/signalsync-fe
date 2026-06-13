@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FEATURE_FLAGS, type FeatureFlag } from "@/lib/feature-flags";
+import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
 
 type MobileNavItem = {
   label: string;

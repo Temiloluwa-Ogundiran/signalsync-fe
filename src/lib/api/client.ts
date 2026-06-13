@@ -29,7 +29,7 @@ import {
   FastAPIErrorResponse,
   normalizeError,
 } from "./types";
-import { resolveAuthBackendUrl } from "@/lib/auth-backend-url";
+import { resolveAuthBackendUrl } from "@/lib/auth/auth-backend-url";
 
 const API_BASE_URL =
   typeof window !== "undefined"

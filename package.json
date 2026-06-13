@@ -26,6 +26,7 @@
     "nuqs": "^2.8.8",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
+    "react-aria-components": "^1.18.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
@@ -45,6 +46,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "eslint-plugin-boundaries": "^6.0.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveAuthBackendUrl } from "@/lib/auth-backend-url";
-import { auth } from "@/auth";
-
-// Backend prefixes that must remain reachable without an authenticated session
-// (registration, email verification, password reset, refresh/logout cookie flows,
-// username availability checks). Everything else requires a valid NextAuth session.
-const PUBLIC_BACKEND_PREFIXES = ["auth/"];
+import { resolveAuthBackendUrl } from "@/lib/auth/auth-backend-url";
+import { auth } from "@/lib/auth/auth";
+import { isPublicBackendPath } from "../public-backend-paths";
 
 const HOP_BY_HOP_HEADERS = new Set([
   "connection",
@@ -83,9 +79,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   // overwrite Authorization from it. A browser can then never inject an arbitrary
   // bearer token through the proxy — the token is sourced from the encrypted
   // NextAuth cookie, not from whatever the client sent.
-  const isPublic = PUBLIC_BACKEND_PREFIXES.some((prefix) =>
-    joinedPath.startsWith(prefix),
-  );
+  const isPublic = isPublicBackendPath(joinedPath);
   if (!isPublic) {
     const session = await auth();
     if (!session?.accessToken || session.error === "RefreshAccessTokenError") {

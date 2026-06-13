@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Check, ChevronsUpDown, Radio } from "lucide-react";
 import { useMyStreams } from "@/features/stream/hooks/use-streams";
 import { useStreamStore } from "@/features/stream/store";
-import { CreateStreamModal } from "@/features/stream/components/CreateStreamModal";
+import { CreateStreamModal } from "@/features/stream/components/create-stream-modal";
 
 export function StreamSwitcher() {
   const [isOpen, setIsOpen] = useState(false);

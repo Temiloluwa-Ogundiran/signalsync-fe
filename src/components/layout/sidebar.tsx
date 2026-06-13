@@ -7,7 +7,7 @@ import { signOut, useSession } from "next-auth/react";
 import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconFeed } from "@/components/icons/syncgram-nav-icons";
-import { FEATURE_FLAGS, type FeatureFlag } from "@/lib/feature-flags";
+import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
 
 // import { StreamSwitcher } from "./stream-switcher";
 
