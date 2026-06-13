@@ -6,7 +6,7 @@ import { CreatePostModal } from "@/features/post/components/create-post-modal";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
-import { AiInsightModalProvider } from "@/features/dashboard/components/ai-insight-modal-provider";
+import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
 
 export default function DashboardShell({
   children,
@@ -29,7 +29,7 @@ export default function DashboardShell({
   }, []);
 
   return (
-    <AiInsightModalProvider>
+    <AiDockProvider>
       <div className="flex h-screen flex-col overflow-hidden bg-bg-primary md:flex-row">
         <div className="relative hidden h-screen shrink-0 md:flex">
           <Sidebar
@@ -83,6 +83,6 @@ export default function DashboardShell({
 
         <MobileNav />
       </div>
-    </AiInsightModalProvider>
+    </AiDockProvider>
   );
 }

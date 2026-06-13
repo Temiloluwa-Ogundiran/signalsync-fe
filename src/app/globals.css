@@ -149,8 +149,8 @@
   --text-muted: #525252;
 
   /* Accent: indigo #6366F1 / #8B5CF6 range (Figma “Ask Sync” / primary actions) */
-  --accent: #6366f1;
-  --accent-hover: #4f46e5;
+  --accent: #6d28d9;
+  --accent-hover: #6c28d9c7;
   --accent-light: rgba(99, 102, 241, 0.15);
 
   /* Semantic: mint green / coral red (screenshot KPI + charts) */
@@ -203,7 +203,11 @@
   --sidebar-divider: rgba(115, 115, 115, 0.2);
   --sidebar-bottom-border: #737373;
   --chrome-control-border: #737373;
-  --ask-sync-gradient: linear-gradient(262.75deg, #818cf8 1.94%, #393b8b 97.07%);
+  --ask-sync-gradient: linear-gradient(
+    262.75deg,
+    #818cf8 1.94%,
+    #393b8b 97.07%
+  );
   --footnote-online: #d4d4d4;
 
   /* Journal KPI row — Figma 523:5256 (Net P&L) / 523:5265 (Trade Win %) */

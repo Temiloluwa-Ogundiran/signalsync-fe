@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconFeed } from "@/components/icons/syncgram-nav-icons";
 import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
@@ -67,6 +67,14 @@ const navGroups: NavEntry[][] = [
       href: "/spaces",
       iconSrc: "/icons/sidebar/spaces.svg",
       flag: "SPACE",
+    },
+  ],
+  [
+    {
+      label: "Partna AI",
+      href: "/ai",
+      iconSrc: "",
+      flag: "AI" as FeatureFlag,
     },
   ],
   [
@@ -209,7 +217,14 @@ export function Sidebar({
                       title={collapsed ? item.label : undefined}
                     >
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                        {item.label === "Feed" ? (
+                        {item.label === "Partna AI" ? (
+                          <Sparkles
+                            className={cn(
+                              "h-5 w-5 transition-opacity",
+                              isActive ? "opacity-100 text-brand" : "opacity-75",
+                            )}
+                          />
+                        ) : item.label === "Feed" ? (
                           <IconFeed active={isActive} />
                         ) : (
                           <Image
@@ -225,7 +240,14 @@ export function Sidebar({
                         )}
                       </span>
                       {!collapsed ? (
-                        <span className="truncate">{item.label}</span>
+                        <span className="flex items-center gap-1.5 truncate">
+                          {item.label}
+                          {item.label === "Partna AI" && (
+                            <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand leading-none">
+                              Beta
+                            </span>
+                          )}
+                        </span>
                       ) : null}
                     </Link>
                   );

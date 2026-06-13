@@ -27,6 +27,9 @@ export const FEATURE_FLAGS = {
 
   /** /tools     — Trading tools */
   TOOLS: false,
+
+  /** /ai  — Partna AI copilot (dock + full page) */
+  AI: true,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;
