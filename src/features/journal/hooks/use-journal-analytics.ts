@@ -214,7 +214,6 @@ export function useJournalDashboardAnalytics({
     timeBasis,
     // Dashboard intentionally enables for multi-account (no accountId required).
     requireAccountId: false,
-    usePlaceholder: true,
     buildKey: (im) => [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate, im), timeBasis],
     fetcher: (i, t) =>
       journalAnalyticsApi.getDashboard(
@@ -241,7 +240,6 @@ export function useJournalBalanceHistoryAnalytics({
     fromDate,
     toDate,
     granularity,
-    usePlaceholder: true,
     buildKey: (im) => JOURNAL_ANALYTICS_KEYS.balanceHistory(accountId, fromDate, toDate, granularity, im),
     fetcher: (i, t) =>
       journalAnalyticsApi.getBalanceHistory(

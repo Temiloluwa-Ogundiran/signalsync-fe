@@ -101,7 +101,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     const params = new URLSearchParams(searchParams.toString());
     if (isJournalArea) {
       setActiveAccountId(accountId);
-      params.delete("accountId");
+      params.set("accountId", accountId);
     } else {
       params.set("accountId", accountId);
     }

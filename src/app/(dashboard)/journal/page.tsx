@@ -159,13 +159,10 @@ function JournalPageContent() {
     };
   }, [fromDateParam, toDateParam]);
 
-  const readyAccountId =
-    activeAccountId && activeAccount?.is_data_ready_for_stats
-      ? activeAccountId
-      : undefined;
+  const scopedAccountId = activeAccountId || undefined;
 
   const dashboardQuery = useJournalDashboardAnalytics({
-    accountId: readyAccountId,
+    accountId: scopedAccountId,
     fromDate,
     toDate,
   });
@@ -198,7 +195,7 @@ function JournalPageContent() {
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
 
   const timePerformanceQuery = useJournalTimePerformanceAnalytics({
-    accountId: readyAccountId,
+    accountId: scopedAccountId,
     fromDate,
     toDate,
     timeBasis,
@@ -211,10 +208,7 @@ function JournalPageContent() {
     [balanceRange],
   );
   const balanceHistoryQuery = useJournalBalanceHistoryAnalytics({
-    accountId:
-      activeAccountId && activeAccount?.is_data_ready_for_stats
-        ? activeAccountId
-        : undefined,
+    accountId: scopedAccountId,
     fromDate: balanceRangeWindow.fromDate,
     toDate: balanceRangeWindow.toDate,
     granularity: balanceRangeWindow.granularity,
@@ -297,21 +291,21 @@ function JournalPageContent() {
   useEffect(() => {
     const aid = searchParams.get("accountId");
     const connectLegacy = searchParams.get("connectAccount");
-    if (!aid && connectLegacy !== "1") return;
 
-    if (aid) {
+    if (aid && aid !== activeAccountId) {
       setActiveAccountId(aid);
     }
     if (connectLegacy === "1") {
       useJournalUiStore.getState().openConnectModal();
     }
+    if (connectLegacy !== "1") return;
+
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("accountId");
     params.delete("connectAccount");
     router.replace(
       params.toString() ? `/journal?${params.toString()}` : "/journal",
     );
-  }, [router, searchParams, setActiveAccountId]);
+  }, [activeAccountId, router, searchParams, setActiveAccountId]);
 
   useEffect(() => {
     if (isAccountsLoading || !accounts.length) {
@@ -320,9 +314,25 @@ function JournalPageContent() {
 
     const exists = accounts.some((account) => account.id === activeAccountId);
     if (!activeAccountId || !exists) {
-      setActiveAccountId(accounts[0].id);
+      const nextAccountId = accounts[0].id;
+      setActiveAccountId(nextAccountId);
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get("accountId")) {
+        params.set("accountId", nextAccountId);
+        router.replace(
+          params.toString() ? `/journal?${params.toString()}` : "/journal",
+        );
+      }
     }
-  }, [activeAccountId, accounts, isAccountsLoading, setActiveAccountId]);
+  }, [
+    activeAccountId,
+    accounts,
+    isAccountsLoading,
+    router,
+    searchParams,
+    setActiveAccountId,
+  ]);
 
   useEffect(() => {
     if (isAccountsError) {
