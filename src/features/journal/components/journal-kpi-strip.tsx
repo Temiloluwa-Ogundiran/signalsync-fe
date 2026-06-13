@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -19,7 +20,7 @@ interface JournalKpiStripProps {
   className?: string;
 }
 
-export function JournalKpiStrip({
+function JournalKpiStripImpl({
   summary,
   tradeOutcomeCounts,
   dailyOutcomeCounts,
@@ -68,3 +69,5 @@ export function JournalKpiStrip({
     </section>
   );
 }
+
+export const JournalKpiStrip = memo(JournalKpiStripImpl);

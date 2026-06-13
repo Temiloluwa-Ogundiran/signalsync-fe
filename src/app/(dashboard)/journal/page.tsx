@@ -2,6 +2,14 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
+import {
+  formatDateParam,
+  getLastDaysInclusiveRange,
+  parseDateParam,
+  resolveBalanceRangeWindow,
+  type BalanceRangeOption,
+} from "@/features/journal/lib/date-window";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import type { JournalCalendarDayStat } from "@/features/journal/types";
@@ -14,7 +22,6 @@ import {
   useJournalBalanceHistoryAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
-import { ApiException } from "@/lib/api/types";
 import { toast } from "sonner";
 import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
@@ -35,98 +42,33 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
 import { cn } from "@/lib/utils";
-import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
 import { useJournalOpenPositions } from "@/features/journal/hooks/use-journal-open-positions";
 
-function formatDateParam(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateParam(value: string | null) {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const parsed = new Date(year, month - 1, day);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed;
-}
-
-/** Inclusive rolling window: `days` calendar days ending today (local). */
-function getLastDaysInclusiveRange(days: number) {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(from.getDate() - (days - 1));
-  return {
-    fromDate: formatDateParam(from),
-    toDate: formatDateParam(to),
-  };
-}
-
-type BalanceRangeOption = "1D" | "1W" | "1M" | "1Y" | "All";
-
-function resolveBalanceRangeWindow(range: BalanceRangeOption) {
-  const now = new Date();
-  const end = formatDateParam(now);
-  if (range === "All") {
-    return { fromDate: "2000-01-01", toDate: end, granularity: "day" as const };
-  }
-  if (range === "1D") {
-    return { fromDate: end, toDate: end, granularity: "intraday" as const };
-  }
-  const start = new Date(now);
-  if (range === "1W") start.setDate(start.getDate() - 7);
-  if (range === "1M") start.setMonth(start.getMonth() - 1);
-  if (range === "1Y") start.setFullYear(start.getFullYear() - 1);
-  return {
-    fromDate: formatDateParam(start),
-    toDate: end,
-    granularity: "day" as const,
-  };
-}
-
-function formatSyncTimestamp(dateString: string | null | undefined) {
-  if (!dateString) return null;
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-const MANUAL_SYNC_BURST_WINDOW_MS = 60_000;
-const MANUAL_SYNC_BURST_MAX_ATTEMPTS = 5;
-
-function pruneRecentSyncAttempts(attempts: number[], nowMs: number) {
-  return attempts.filter((attemptMs) => nowMs - attemptMs < MANUAL_SYNC_BURST_WINDOW_MS);
-}
-
-function getBurstRateLimitUntilMs(attempts: number[], nowMs: number) {
-  const recentAttempts = pruneRecentSyncAttempts(attempts, nowMs);
-  if (recentAttempts.length < MANUAL_SYNC_BURST_MAX_ATTEMPTS) {
-    return null;
-  }
-  return recentAttempts[0] + MANUAL_SYNC_BURST_WINDOW_MS;
-}
-
-function formatRetryCountdown(retryAfterSeconds: number) {
-  const totalSeconds = Math.max(1, Math.ceil(retryAfterSeconds));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes <= 0) {
-    return `${seconds}s`;
-  }
-  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
-}
+const journalWidgetRegistry = getDefaultJournalWidgetRegistry().filter(
+  (widget) => widget.visible,
+);
+const showJournalSymbols = journalWidgetRegistry.some(
+  (widget) => widget.id === "symbols",
+);
+const showTimePerformance = journalWidgetRegistry.some(
+  (widget) => widget.id === "timePerformance",
+);
+const showBalanceHistory = journalWidgetRegistry.some(
+  (widget) => widget.id === "balanceHistory",
+);
+const analyticsRowCount =
+  Number(showJournalSymbols) +
+  Number(showTimePerformance) +
+  Number(showBalanceHistory);
+const showKpiStrip = journalWidgetRegistry.some(
+  (widget) => widget.id === "kpiStrip",
+);
+const showCalendarWidget = journalWidgetRegistry.some(
+  (widget) => widget.id === "calendar",
+);
+const showTradesPanel = journalWidgetRegistry.some(
+  (widget) => widget.id === "tradesPanel",
+);
 
 function JournalPageContent() {
   const router = useRouter();
@@ -136,24 +78,9 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [syncUiState, setSyncUiState] = useState<{
-    accountId: string;
-    startedAt: number;
-    baselineLastSyncedAtMs: number | null;
-  } | null>(null);
-  const [recentManualSyncAttemptMs, setRecentManualSyncAttemptMs] = useState<
-    number[]
-  >([]);
-  const [userSyncRateLimitedUntilMs, setUserSyncRateLimitedUntilMs] = useState<
-    number | null
-  >(null);
   const hasShownNoAccountToastRef = useRef(false);
-  const wasConnectionPendingRef = useRef(false);
-  const pollingWindowStartedAtRef = useRef<number | null>(null);
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
-  // const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
-  // const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
@@ -182,27 +109,6 @@ function JournalPageContent() {
     activeAccount?.connection_state === "bootstrapping" ||
     activeAccount?.connection_state === "pending_verification";
 
-  const showJournalSyncProgress =
-    syncAccountMutation.isPending ||
-    !!syncUiState ||
-    activeAccountConnectionBusy;
-
-  const journalSyncProgressMessage = useMemo(() => {
-    if (syncAccountMutation.isPending) return "Contacting server...";
-    if (syncUiState) return "Waiting for background sync...";
-    if (activeAccount?.connection_state === "bootstrapping") {
-      return "Syncing account history for stats...";
-    }
-    if (activeAccount?.connection_state === "pending_verification") {
-      return "Verifying credentials...";
-    }
-    return "Sync in progress...";
-  }, [
-    syncAccountMutation.isPending,
-    syncUiState,
-    activeAccount?.connection_state,
-  ]);
-
   const monthLabel = useMemo(
     () =>
       currentMonth.toLocaleDateString("en-US", {
@@ -212,27 +118,41 @@ function JournalPageContent() {
     [currentMonth],
   );
 
-  const daysInMonth = new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth() + 1,
-    0,
-  ).getDate();
-  const monthStartOffset = new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth(),
-    1,
-  ).getDay();
+  const daysInMonth = useMemo(
+    () =>
+      new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1,
+        0,
+      ).getDate(),
+    [currentMonth],
+  );
+  const monthStartOffset = useMemo(
+    () =>
+      new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1,
+      ).getDay(),
+    [currentMonth],
+  );
 
-  const queryFromDate = parseDateParam(searchParams.get("fromDate"));
-  const queryToDate = parseDateParam(searchParams.get("toDate"));
-  const hasCustomRange = !!queryFromDate && !!queryToDate;
-  const rollingDefaultRange = getLastDaysInclusiveRange(30);
-  const fromDate = hasCustomRange
-    ? formatDateParam(queryFromDate)
-    : rollingDefaultRange.fromDate;
-  const toDate = hasCustomRange
-    ? formatDateParam(queryToDate)
-    : rollingDefaultRange.toDate;
+  const fromDateParam = searchParams.get("fromDate");
+  const toDateParam = searchParams.get("toDate");
+  const { fromDate, toDate } = useMemo(() => {
+    const queryFromDate = parseDateParam(fromDateParam);
+    const queryToDate = parseDateParam(toDateParam);
+    const hasCustomRange = !!queryFromDate && !!queryToDate;
+    const rollingDefaultRange = getLastDaysInclusiveRange(30);
+    return {
+      fromDate: hasCustomRange
+        ? formatDateParam(queryFromDate)
+        : rollingDefaultRange.fromDate,
+      toDate: hasCustomRange
+        ? formatDateParam(queryToDate)
+        : rollingDefaultRange.toDate,
+    };
+  }, [fromDateParam, toDateParam]);
 
   const readyAccountId =
     activeAccountId && activeAccount?.is_data_ready_for_stats
@@ -249,6 +169,25 @@ function JournalPageContent() {
   // recreate the polling interval/timeout effects on every render (incl. each 4s
   // poll tick) — see P1-7.
   const refetchDashboard = dashboardQuery.refetch;
+
+  const {
+    handleRefreshAccounts,
+    isSyncBusy,
+    showJournalSyncProgress,
+    journalSyncProgressMessage,
+    userSyncRateLimitedUntilMs,
+  } = useManualSyncController({
+    accounts,
+    activeAccountId,
+    activeAccount,
+    isConnectionPending,
+    activeAccountConnectionBusy,
+    syncAccountMutation,
+    refetchAccounts,
+    refetchDashboard,
+    queryClient,
+  });
+
   const calendarAnalytics = dashboardQuery.data?.calendar;
   const summaryAnalytics = dashboardQuery.data?.summary;
   const instrumentsAnalytics = dashboardQuery.data?.instruments;
@@ -350,245 +289,6 @@ function JournalPageContent() {
     setIsDayModalOpen(true);
   };
 
-  const handleRefreshAccounts = async (options?: {
-    silent?: boolean;
-    accountId?: string;
-  }) => {
-    const silent = options?.silent ?? false;
-    const targetAccountId = options?.accountId ?? activeAccountId;
-    const nowMs = Date.now();
-    const prunedAttempts = pruneRecentSyncAttempts(
-      recentManualSyncAttemptMs,
-      nowMs,
-    );
-    setRecentManualSyncAttemptMs(prunedAttempts);
-
-    if (syncAccountMutation.isPending || syncUiState) {
-      if (!silent) {
-        toast.info("Sync already in progress", {
-          description: "Please wait for the current sync to finish.",
-        });
-      }
-      return;
-    }
-
-    if (!accounts.length) {
-      if (!silent) {
-        toast.info("No connected account found", {
-          description: "Add an account to get stats and analytics.",
-        });
-      }
-      return;
-    }
-
-    if (!targetAccountId) {
-      if (!silent) {
-        toast.info("Select an account to sync", {
-          description:
-            "Manual sync runs for a specific account. Choose one from your account filter.",
-        });
-      }
-      await refetchAccounts();
-      return;
-    }
-    const targetAccount = accounts.find(
-      (account) => account.id === targetAccountId,
-    );
-    if (
-      userSyncRateLimitedUntilMs &&
-      userSyncRateLimitedUntilMs > nowMs
-    ) {
-      if (!silent) {
-        toast.info("Manual sync limit reached", {
-          description: `Retry in ${formatRetryCountdown(
-            (userSyncRateLimitedUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
-      return;
-    }
-
-    const localBurstRateLimitUntilMs = getBurstRateLimitUntilMs(
-      prunedAttempts,
-      nowMs,
-    );
-    if (localBurstRateLimitUntilMs && localBurstRateLimitUntilMs > nowMs) {
-      setUserSyncRateLimitedUntilMs(localBurstRateLimitUntilMs);
-      if (!silent) {
-        toast.info("Manual sync limit reached", {
-          description: `Retry in ${formatRetryCountdown(
-            (localBurstRateLimitUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
-      return;
-    }
-
-    const targetAccountCooldownUntilMs = targetAccount?.next_sync_not_before
-      ? new Date(targetAccount.next_sync_not_before).getTime()
-      : null;
-    if (
-      targetAccountCooldownUntilMs &&
-      !Number.isNaN(targetAccountCooldownUntilMs) &&
-      targetAccountCooldownUntilMs > nowMs
-    ) {
-      if (!silent) {
-        toast.info("Manual sync cooldown active", {
-          description: `Retry in ${formatRetryCountdown(
-            (targetAccountCooldownUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
-      await refetchAccounts();
-      return;
-    }
-
-    const baselineLastSyncedAtMs = targetAccount?.last_synced_at
-      ? new Date(targetAccount.last_synced_at).getTime()
-      : null;
-    setRecentManualSyncAttemptMs([...prunedAttempts, nowMs]);
-    setSyncUiState({
-      accountId: targetAccountId,
-      startedAt: Date.now(),
-      baselineLastSyncedAtMs:
-        baselineLastSyncedAtMs && !Number.isNaN(baselineLastSyncedAtMs)
-          ? baselineLastSyncedAtMs
-          : null,
-    });
-
-    try {
-      const result = await syncAccountMutation.mutateAsync(targetAccountId);
-      const refreshed = await refetchAccounts();
-      const refreshedAccount = (refreshed.data ?? []).find(
-        (account) => account.id === targetAccountId,
-      );
-      const refreshedLastSyncedAtMs = refreshedAccount?.last_synced_at
-        ? new Date(refreshedAccount.last_synced_at).getTime()
-        : null;
-      const refreshedSyncLabel = formatSyncTimestamp(
-        refreshedAccount?.last_synced_at ?? null,
-      );
-      const didSyncTimestampAdvance =
-        !!refreshedLastSyncedAtMs &&
-        !Number.isNaN(refreshedLastSyncedAtMs) &&
-        (!baselineLastSyncedAtMs ||
-          refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
-      if ("inserted_trades" in result) {
-        await refreshJournalQueriesAfterManualSync(queryClient);
-        setSyncUiState(null);
-        if (!silent) {
-          if (result.inserted_trades === 0) {
-            toast.info("Account already up to date", {
-              description:
-                didSyncTimestampAdvance
-                  ? `Sync completed${refreshedSyncLabel ? ` at ${refreshedSyncLabel}` : ""}. There were no additional closed trades to ingest.`
-                  : "There were no additional closed trades to ingest yet. Live open positions are shown separately in the Open Positions tab.",
-            });
-          } else {
-            toast.success("Account sync complete", {
-              description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
-            });
-          }
-        }
-        return;
-      }
-
-      if (result.status === "in_progress") {
-        if (!silent) {
-          toast.info("Sync already in progress", {
-            description:
-              result.message ||
-              "This account is already syncing. We’ll refresh the dashboard when it finishes.",
-          });
-        }
-        return;
-      }
-
-      if (result.status === "queued") {
-        if (!silent) {
-          toast.info("Sync queued", {
-            description: "Sync task accepted and queued. Please wait...",
-          });
-        }
-        return;
-      }
-
-      setSyncUiState(null);
-
-      if (
-        result.status === "cooldown" ||
-        result.status === "rate_limited" ||
-        result.status === "backpressure"
-      ) {
-        if (
-          result.status === "rate_limited" &&
-          result.retry_after_seconds &&
-          result.retry_after_seconds > 0
-        ) {
-          setUserSyncRateLimitedUntilMs(
-            Date.now() + result.retry_after_seconds * 1000,
-          );
-        }
-
-        if (!silent) {
-          const title =
-            result.status === "cooldown"
-              ? "Manual sync cooldown active"
-              : result.status === "rate_limited"
-                ? "Manual sync limit reached"
-                : "Sync deferred";
-          const description =
-            result.retry_after_seconds && result.retry_after_seconds > 0
-              ? `${result.message || "Please retry shortly."} Retry in ${formatRetryCountdown(
-                  result.retry_after_seconds,
-                )}.`
-              : result.message || "Please retry shortly.";
-          toast.info(title, { description });
-        }
-        return;
-      }
-
-      if (!silent) {
-        toast.error("Account sync failed", {
-          description:
-            result.message || "Unable to sync this account right now.",
-        });
-      }
-    } catch (error) {
-      setSyncUiState(null);
-      await refetchAccounts();
-      if (!silent) {
-        if (
-          error instanceof ApiException &&
-          (error.status === 409 || error.status === 429)
-        ) {
-          if (error.status === 429 && error.retryAfterSeconds) {
-            setUserSyncRateLimitedUntilMs(
-              Date.now() + error.retryAfterSeconds * 1000,
-            );
-          }
-          const retryDescription =
-            error.retryAfterSeconds && error.retryAfterSeconds > 0
-              ? ` Retry in ${formatRetryCountdown(error.retryAfterSeconds)}.`
-              : "";
-          toast.info("Sync unavailable right now", {
-            description: `${error.message}${retryDescription}`,
-          });
-        } else if (error instanceof ApiException && error.status === 503) {
-          toast.error("Sync failed (MetaAPI timeout)", {
-            description: error.message,
-          });
-        } else {
-          const description =
-            error instanceof ApiException
-              ? error.message
-              : "Unable to sync this account right now.";
-          toast.error("Account sync failed", { description });
-        }
-      }
-    }
-  };
-
   useEffect(() => {
     const aid = searchParams.get("accountId");
     const connectLegacy = searchParams.get("connectAccount");
@@ -645,113 +345,27 @@ function JournalPageContent() {
     }
   }, [accounts.length, isAccountsError, isAccountsFetched, isAccountsLoading]);
 
-  useEffect(() => {
-    if (isConnectionPending) {
-      if (!pollingWindowStartedAtRef.current) {
-        pollingWindowStartedAtRef.current = Date.now();
-      }
-      return;
-    }
-
-    pollingWindowStartedAtRef.current = null;
-  }, [isConnectionPending]);
-
-  useEffect(() => {
-    const pollingWindowStartedAt = pollingWindowStartedAtRef.current;
-    if (!pollingWindowStartedAt || !isConnectionPending) {
-      return;
-    }
-
-    const elapsedMs = Date.now() - pollingWindowStartedAt;
-    if (elapsedMs > 6 * 60 * 1000) {
-      pollingWindowStartedAtRef.current = null;
-      return;
-    }
-
-    const intervalMs = elapsedMs < 90_000 ? 4_000 : 20_000;
-    const timer = window.setInterval(() => {
-      void refetchAccounts();
-    }, intervalMs);
-
-    return () => window.clearInterval(timer);
-  }, [isConnectionPending, refetchAccounts]);
-
-  useEffect(() => {
-    if (wasConnectionPendingRef.current && !isConnectionPending) {
-      void refetchDashboard();
-    }
-    wasConnectionPendingRef.current = isConnectionPending;
-  }, [refetchDashboard, isConnectionPending]);
-
-  useEffect(() => {
-    if (!syncUiState) {
-      return;
-    }
-
-    const elapsedMs = Date.now() - syncUiState.startedAt;
-    const timeoutMs = Math.max(3 * 60_000 - elapsedMs, 0);
-    const expiryTimer = window.setTimeout(() => {
-      setSyncUiState(null);
-    }, timeoutMs);
-
-    const timer = window.setInterval(async () => {
-      const refreshed = await refetchAccounts();
-      const trackedAccount = (refreshed.data ?? []).find(
-        (account) => account.id === syncUiState.accountId,
-      );
-      if (!trackedAccount) {
-        setSyncUiState(null);
-        return;
-      }
-
-      const trackedLastSyncedAtMs = trackedAccount.last_synced_at
-        ? new Date(trackedAccount.last_synced_at).getTime()
-        : null;
-      const didSyncTimestampAdvance =
-        !!trackedLastSyncedAtMs &&
-        !Number.isNaN(trackedLastSyncedAtMs) &&
-        (!syncUiState.baselineLastSyncedAtMs ||
-          trackedLastSyncedAtMs > syncUiState.baselineLastSyncedAtMs);
-      const isFailureState =
-        trackedAccount.connection_state === "bootstrap_failed" ||
-        trackedAccount.connection_state === "verification_failed";
-
-      if (didSyncTimestampAdvance || isFailureState) {
-        setSyncUiState(null);
-        void refetchDashboard();
-      }
-    }, 4_000);
-
-    return () => {
-      window.clearTimeout(expiryTimer);
-      window.clearInterval(timer);
-    };
-  }, [refetchDashboard, refetchAccounts, syncUiState]);
-
-  const tradeOutcomeCounts = aggregateTradeOutcomes(calendarAnalytics?.days);
-  const dailyOutcomeCounts = aggregateDailyOutcomes(calendarAnalytics?.days);
-  const tradesRows = toTradesPanelRows(
-    dashboardQuery.data?.recent_trades?.items ?? [],
+  // Memoize derived props so the React.memo'd chart widgets below don't re-render
+  // on every 4s poll tick (Rule S7) — a new array/object identity each render
+  // would defeat the memo.
+  const tradeOutcomeCounts = useMemo(
+    () => aggregateTradeOutcomes(calendarAnalytics?.days),
+    [calendarAnalytics?.days],
   );
-  const openPositionRows = toOpenPositionsPanelRows(
-    openPositionsQuery.data?.items ?? [],
+  const dailyOutcomeCounts = useMemo(
+    () => aggregateDailyOutcomes(calendarAnalytics?.days),
+    [calendarAnalytics?.days],
   );
-  const widgetRegistry = getDefaultJournalWidgetRegistry().filter(
-    (widget) => widget.visible,
+  const recentTradeItems = dashboardQuery.data?.recent_trades?.items;
+  const tradesRows = useMemo(
+    () => toTradesPanelRows(recentTradeItems ?? []),
+    [recentTradeItems],
   );
-  const showJournalSymbols = widgetRegistry.some(
-    (widget) => widget.id === "symbols",
+  const openPositionItems = openPositionsQuery.data?.items;
+  const openPositionRows = useMemo(
+    () => toOpenPositionsPanelRows(openPositionItems ?? []),
+    [openPositionItems],
   );
-  const showTimePerformance = widgetRegistry.some(
-    (widget) => widget.id === "timePerformance",
-  );
-  const showBalanceHistory = widgetRegistry.some(
-    (widget) => widget.id === "balanceHistory",
-  );
-  const analyticsRowCount =
-    Number(showJournalSymbols) +
-    Number(showTimePerformance) +
-    Number(showBalanceHistory);
 
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
@@ -760,7 +374,7 @@ function JournalPageContent() {
         message={journalSyncProgressMessage}
       />
       <JournalToolbar
-        isSyncPending={syncAccountMutation.isPending || !!syncUiState}
+        isSyncPending={isSyncBusy}
         lastSyncedAt={activeAccount?.last_synced_at}
         nextSyncNotBefore={activeAccount?.next_sync_not_before}
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
@@ -769,7 +383,7 @@ function JournalPageContent() {
         onOpenJournalDay={handleOpenTodayJournalDay}
       />
 
-      {widgetRegistry.some((widget) => widget.id === "kpiStrip") ? (
+      {showKpiStrip ? (
         <JournalKpiStrip
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
@@ -779,7 +393,7 @@ function JournalPageContent() {
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
-        {widgetRegistry.some((widget) => widget.id === "calendar") ? (
+        {showCalendarWidget ? (
           <JournalCalendarWidget
             monthLabel={monthLabel}
             daysInMonth={daysInMonth}
@@ -792,7 +406,7 @@ function JournalPageContent() {
             currentMonth={currentMonth}
           />
         ) : null}
-        {widgetRegistry.some((widget) => widget.id === "tradesPanel") ? (
+        {showTradesPanel ? (
           <JournalTradesPanel
             recentRows={tradesRows}
             openRows={openPositionRows}

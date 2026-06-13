@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { postApi, PostItem, PostListResponse } from "../api/post.api";
+import { queryKeys } from "@/lib/api/query-keys";
 
 // ---------------------------------------------------------------------------
 // Get a single post
@@ -16,7 +17,7 @@ export const usePost = (postId: string | undefined) => {
   const { data: session, status } = useSession();
 
   return useQuery<PostItem>({
-    queryKey: ["post", postId],
+    queryKey: queryKeys.posts.detail(postId),
     queryFn: () => postApi.getPost(postId!, session?.accessToken as string),
     enabled: status === "authenticated" && !!postId,
   });
@@ -30,7 +31,7 @@ export const useStreamPosts = (streamId: string | undefined) => {
   const { data: session, status } = useSession();
 
   return useInfiniteQuery<PostListResponse>({
-    queryKey: ["stream-posts", streamId],
+    queryKey: queryKeys.posts.streamPosts(streamId),
     queryFn: ({ pageParam }) =>
       postApi.listStreamPosts(
         streamId!,
@@ -52,7 +53,7 @@ export const useMyPosts = () => {
   const { data: session, status } = useSession();
 
   return useInfiniteQuery<PostListResponse>({
-    queryKey: ["my-posts"],
+    queryKey: queryKeys.posts.mine(),
     queryFn: ({ pageParam }) =>
       postApi.listMyPosts(
         session?.accessToken as string,
@@ -73,7 +74,7 @@ export const useReplies = (postId: string | undefined, enabled = true) => {
   const { data: session, status } = useSession();
 
   return useInfiniteQuery<PostListResponse>({
-    queryKey: ["post-replies", postId],
+    queryKey: queryKeys.posts.replies(postId),
     queryFn: ({ pageParam }) =>
       postApi.listReplies(
         postId!,
@@ -134,16 +135,16 @@ export const useCreatePost = () => {
       ),
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: ["stream-posts", variables.streamId],
+        queryKey: queryKeys.posts.streamPosts(variables.streamId),
       });
 
       const previousStreamPosts = queryClient.getQueryData<
         InfiniteData<PostListResponse>
-      >(["stream-posts", variables.streamId]);
+      >(queryKeys.posts.streamPosts(variables.streamId));
 
       const previousMyPosts = queryClient.getQueryData<
         InfiniteData<PostListResponse>
-      >(["my-posts"]);
+      >(queryKeys.posts.mine());
 
       const optimisticPost: PostItem = {
         id: `temp-${Date.now()}`,
@@ -170,7 +171,7 @@ export const useCreatePost = () => {
 
       if (previousStreamPosts) {
         queryClient.setQueryData<InfiniteData<PostListResponse>>(
-          ["stream-posts", variables.streamId],
+          queryKeys.posts.streamPosts(variables.streamId),
           {
             pageParams: previousStreamPosts.pageParams,
             pages: previousStreamPosts.pages.map((page, index) =>
@@ -186,7 +187,9 @@ export const useCreatePost = () => {
       }
 
       if (previousMyPosts) {
-        queryClient.setQueryData<InfiniteData<PostListResponse>>(["my-posts"], {
+        queryClient.setQueryData<InfiniteData<PostListResponse>>(
+          queryKeys.posts.mine(),
+          {
           pageParams: previousMyPosts.pageParams,
           pages: previousMyPosts.pages.map((page, index) =>
             index === 0
@@ -196,7 +199,8 @@ export const useCreatePost = () => {
                 }
               : page,
           ),
-        });
+          },
+        );
       }
 
       return { previousStreamPosts, previousMyPosts };
@@ -204,19 +208,22 @@ export const useCreatePost = () => {
     onError: (_err, variables, context) => {
       if (context?.previousStreamPosts) {
         queryClient.setQueryData(
-          ["stream-posts", variables.streamId],
+          queryKeys.posts.streamPosts(variables.streamId),
           context.previousStreamPosts,
         );
       }
       if (context?.previousMyPosts) {
-        queryClient.setQueryData(["my-posts"], context.previousMyPosts);
+        queryClient.setQueryData(
+          queryKeys.posts.mine(),
+          context.previousMyPosts,
+        );
       }
     },
     onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["stream-posts", variables.streamId],
+        queryKey: queryKeys.posts.streamPosts(variables.streamId),
       });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
     },
   });
 };
@@ -239,22 +246,28 @@ export const useToggleUpvote = () => {
     }) =>
       postApi.toggleUpvote(postId, hasUpvoted, session?.accessToken as string),
     onMutate: async ({ postId }) => {
-      await queryClient.cancelQueries({ queryKey: ["stream-posts"] });
-      await queryClient.cancelQueries({ queryKey: ["my-posts"] });
-      await queryClient.cancelQueries({ queryKey: ["post", postId] });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.posts.streamPostsRoot(),
+      });
+      await queryClient.cancelQueries({ queryKey: queryKeys.posts.mine() });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.posts.detail(postId),
+      });
 
       // The real cache keys are ["stream-posts", streamId] — getQueryData needs an
       // exact match and would always return undefined here, so snapshot with
       // getQueriesData (prefix match → [key, data] pairs) and restore per-key (P1-9).
       const previousStreamPosts = queryClient.getQueriesData<
         InfiniteData<PostListResponse>
-      >({ queryKey: ["stream-posts"] });
+      >({ queryKey: queryKeys.posts.streamPostsRoot() });
 
       const previousMyPosts = queryClient.getQueryData<
         InfiniteData<PostListResponse>
-      >(["my-posts"]);
+      >(queryKeys.posts.mine());
 
-      const previousPost = queryClient.getQueryData<PostItem>(["post", postId]);
+      const previousPost = queryClient.getQueryData<PostItem>(
+        queryKeys.posts.detail(postId),
+      );
 
       const togglePost = (post: PostItem) => {
         const wasUpvoted = post.has_upvoted;
@@ -270,7 +283,7 @@ export const useToggleUpvote = () => {
       };
 
       queryClient.setQueriesData<InfiniteData<PostListResponse>>(
-        { queryKey: ["stream-posts"] },
+        { queryKey: queryKeys.posts.streamPostsRoot() },
         (data) => {
           if (!data) return data;
           return {
@@ -286,7 +299,7 @@ export const useToggleUpvote = () => {
       );
 
       queryClient.setQueriesData<InfiniteData<PostListResponse>>(
-        { queryKey: ["my-posts"] },
+        { queryKey: queryKeys.posts.mine() },
         (data) => {
           if (!data) return data;
           return {
@@ -303,7 +316,7 @@ export const useToggleUpvote = () => {
 
       if (previousPost) {
         queryClient.setQueryData<PostItem>(
-          ["post", postId],
+          queryKeys.posts.detail(postId),
           togglePost(previousPost),
         );
       }
@@ -315,16 +328,26 @@ export const useToggleUpvote = () => {
         queryClient.setQueryData(key, data);
       }
       if (context?.previousMyPosts) {
-        queryClient.setQueryData(["my-posts"], context.previousMyPosts);
+        queryClient.setQueryData(
+          queryKeys.posts.mine(),
+          context.previousMyPosts,
+        );
       }
       if (context?.previousPost) {
-        queryClient.setQueryData(["post", postId], context.previousPost);
+        queryClient.setQueryData(
+          queryKeys.posts.detail(postId),
+          context.previousPost,
+        );
       }
     },
     onSettled: (_data, _err, { postId }) => {
-      queryClient.invalidateQueries({ queryKey: ["stream-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.streamPostsRoot(),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.detail(postId),
+      });
     },
   });
 };
@@ -341,12 +364,14 @@ export const useDeletePost = () => {
     mutationFn: (postId: string) =>
       postApi.deletePost(postId, session?.accessToken as string),
     onSuccess: (_data, postId) => {
-      queryClient.invalidateQueries({ queryKey: ["stream-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.streamPostsRoot(),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
       // Drop the now-deleted post's detail + replies so those pages don't keep
       // rendering it (P2-13).
-      queryClient.removeQueries({ queryKey: ["post", postId] });
-      queryClient.removeQueries({ queryKey: ["post-replies", postId] });
+      queryClient.removeQueries({ queryKey: queryKeys.posts.detail(postId) });
+      queryClient.removeQueries({ queryKey: queryKeys.posts.replies(postId) });
     },
   });
 };
@@ -407,11 +432,15 @@ export const useCreateReply = () => {
       ),
     onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["post-replies", variables.postId],
+        queryKey: queryKeys.posts.replies(variables.postId),
       });
-      queryClient.invalidateQueries({ queryKey: ["post", variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ["stream-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.detail(variables.postId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.streamPostsRoot(),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mine() });
     },
   });
 };

@@ -9,12 +9,13 @@ import {
   PaginatedJoinRequestResponse,
 } from "../api/stream.api";
 import { useSession } from "next-auth/react";
+import { queryKeys } from "@/lib/api/query-keys";
 
 export const useMyStreams = () => {
   const { data: session, status } = useSession();
 
   return useQuery<Stream[]>({
-    queryKey: ["my-streams", session?.accessToken],
+    queryKey: queryKeys.streams.mine(session?.accessToken),
     queryFn: () => streamApi.getMyStreams(session?.accessToken as string),
     enabled: status === "authenticated" && !!session?.accessToken,
   });
@@ -24,7 +25,7 @@ export const useDiscoverStreams = () => {
   const { data: session, status } = useSession();
 
   return useQuery<StreamDiscoverItem[]>({
-    queryKey: ["discover-streams", session?.accessToken],
+    queryKey: queryKeys.streams.discover(session?.accessToken),
     queryFn: () => streamApi.discoverStreams(session?.accessToken as string),
     enabled: status === "authenticated" && !!session?.accessToken,
   });
@@ -34,7 +35,7 @@ export const useStreamById = (streamId: string | undefined) => {
   const { data: session, status } = useSession();
 
   return useQuery<StreamDetail>({
-    queryKey: ["stream-detail", streamId, session?.accessToken],
+    queryKey: queryKeys.streams.detailWithToken(streamId, session?.accessToken),
     queryFn: () =>
       streamApi.getStream(streamId!, session?.accessToken as string),
     enabled: status === "authenticated" && !!session?.accessToken && !!streamId,
@@ -50,10 +51,10 @@ export const useFollowStream = () => {
       streamApi.followStream(streamId, session?.accessToken as string),
     onSuccess: (_data, streamId) => {
       queryClient.invalidateQueries({
-        queryKey: ["discover-streams", session?.accessToken],
+        queryKey: queryKeys.streams.discover(session?.accessToken),
       });
       queryClient.invalidateQueries({
-        queryKey: ["stream-detail", streamId],
+        queryKey: queryKeys.streams.detail(streamId),
       });
     },
   });
@@ -68,10 +69,10 @@ export const useUnfollowStream = () => {
       streamApi.unfollowStream(streamId, session?.accessToken as string),
     onSuccess: (_data, streamId) => {
       queryClient.invalidateQueries({
-        queryKey: ["discover-streams", session?.accessToken],
+        queryKey: queryKeys.streams.discover(session?.accessToken),
       });
       queryClient.invalidateQueries({
-        queryKey: ["stream-detail", streamId],
+        queryKey: queryKeys.streams.detail(streamId),
       });
     },
   });
@@ -85,9 +86,9 @@ export const useCreateStream = () => {
     mutationFn: (payload: CreateStreamPayload) =>
       streamApi.createStream(payload, session?.accessToken as string),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-streams"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.streams.mine() });
       queryClient.invalidateQueries({
-        queryKey: ["discover-streams", session?.accessToken],
+        queryKey: queryKeys.streams.discover(session?.accessToken),
       });
     },
   });
@@ -107,7 +108,7 @@ export const useStreamMembers = (streamId: string | undefined) => {
     unknown[],
     string | null
   >({
-    queryKey: ["stream-members", streamId, session?.accessToken],
+    queryKey: queryKeys.streams.members(streamId, session?.accessToken),
     queryFn: ({ pageParam }) =>
       streamApi.getStreamMembers(
         streamId!,
@@ -131,7 +132,7 @@ export const useStreamJoinRequests = (streamId: string | undefined) => {
     unknown[],
     string | null
   >({
-    queryKey: ["stream-join-requests", streamId, session?.accessToken],
+    queryKey: queryKeys.streams.joinRequests(streamId, session?.accessToken),
     queryFn: ({ pageParam }) =>
       streamApi.getJoinRequests(
         streamId!,
