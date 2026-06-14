@@ -49,9 +49,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     if (pathname.includes("/journal")) return "Journal";
     if (pathname.includes("/trade-history")) return "Trade History";
     if (pathname.includes("/accounts")) return "Accounts";
-    if (pathname.includes("/tools")) return "Tools";
-    if (pathname.includes("/overview")) return "Overview";
-    if (pathname.includes("/settings")) return "Settings";
+    if (pathname.includes("/copy-trading")) return "Copy Trading";
+    if (pathname.includes("/ai")) return "Partna AI";
     return "";
   }, [pathname]);
 

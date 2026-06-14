@@ -136,7 +136,7 @@ export function JournalTagSelector({
                 ) : (
                   <Plus className="h-3.5 w-3.5" />
                 )}
-                <span>Create "{searchQuery.trim()}"</span>
+                <span>Create &quot;{searchQuery.trim()}&quot;</span>
               </div>
               <span className="text-[10px] uppercase font-bold text-brand/60 pr-1">
                 Quick Add

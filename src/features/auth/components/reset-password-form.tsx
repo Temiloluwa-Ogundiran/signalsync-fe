@@ -51,8 +51,10 @@ export function ResetPasswordForm() {
       await resetPassword(token, values.password);
       toast.success("Password reset successfully. Please log in.");
       router.push("/login");
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail ?? "Invalid or expired reset link.";
+    } catch (err) {
+      const detail =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data
+          ?.detail ?? "Invalid or expired reset link.";
       form.setError("root", { message: detail });
     } finally {
       setIsLoading(false);

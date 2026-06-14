@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,23 +18,28 @@ import type { JournalAccount } from "../types";
 export function ConnectAccountModal() {
   const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
   const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
+  const csvReimportAccountId = useJournalUiStore((s) => s.csvReimportAccountId);
+
+  return (
+    <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
+      {connectModalOpen && (
+        // Remount on each open (and when the reimport target changes) so the
+        // tab/step state initializes fresh without a cascading-render effect.
+        <ConnectAccountModalBody key={csvReimportAccountId ?? "new"} />
+      )}
+    </Dialog>
+  );
+}
+
+function ConnectAccountModalBody() {
+  const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const csvReimportAccountId = useJournalUiStore((s) => s.csvReimportAccountId);
 
-  const [activeTab, setActiveTab] = useState<"api" | "csv">("api");
+  const [activeTab, setActiveTab] = useState<"api" | "csv">(
+    csvReimportAccountId ? "csv" : "api",
+  );
   const [wizardStep, setWizardStep] = useState<"upload" | "preview" | "confirm">("upload");
-
-  // Force active tab to "csv" when re-importing
-  useEffect(() => {
-    if (connectModalOpen) {
-      if (csvReimportAccountId) {
-        setActiveTab("csv");
-      } else {
-        setActiveTab("api");
-      }
-      setWizardStep("upload"); // Reset step on modal open
-    }
-  }, [csvReimportAccountId, connectModalOpen]);
 
   const handleSuccess = (account: JournalAccount) => {
     setActiveAccountId(account.id);
@@ -60,8 +65,7 @@ export function ConnectAccountModal() {
   const isPreviewStep = activeTab === "csv" && wizardStep === "preview";
 
   return (
-    <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
-      <DialogContent
+    <DialogContent
         className={cn(
           "border border-border-primary bg-card-bg max-h-[90vh] overflow-y-auto scrollbar-thin transition-all duration-300",
           isPreviewStep ? "sm:max-w-xl md:max-w-4xl" : "sm:max-w-xl"
@@ -122,7 +126,6 @@ export function ConnectAccountModal() {
             />
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   );
 }

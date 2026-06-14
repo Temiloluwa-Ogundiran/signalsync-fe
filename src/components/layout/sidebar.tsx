@@ -6,10 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { ChevronLeft, ChevronRight, LogOut, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { IconFeed } from "@/components/icons/syncgram-nav-icons";
 import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
-
-// import { StreamSwitcher } from "./stream-switcher";
 
 type NavEntry = {
   label: string;
@@ -22,12 +19,6 @@ type NavEntry = {
 const navGroups: NavEntry[][] = [
   [
     {
-      label: "Home",
-      href: "/overview",
-      iconSrc: "/icons/sidebar/home.svg",
-      flag: "HOME",
-    },
-    {
       label: "Journal",
       href: "/journal",
       iconSrc: "/icons/sidebar/journal.svg",
@@ -37,7 +28,6 @@ const navGroups: NavEntry[][] = [
       href: "/trade-history",
       iconSrc: "/icons/sidebar/trade-history.svg",
     },
-    { label: "Report", href: "/stream", iconSrc: "/icons/sidebar/report.svg" },
     {
       label: "Accounts",
       href: "/accounts",
@@ -51,55 +41,11 @@ const navGroups: NavEntry[][] = [
   ],
   [
     {
-      label: "Discover",
-      href: "/discover",
-      iconSrc: "/icons/sidebar/discover.svg",
-      flag: "DISCOVER",
-    },
-    {
-      label: "Feed",
-      href: "/feed",
-      iconSrc: "/icons/sidebar/trade-history.svg",
-      flag: "FEED",
-    },
-    {
-      label: "Space",
-      href: "/spaces",
-      iconSrc: "/icons/sidebar/spaces.svg",
-      flag: "SPACE",
-    },
-  ],
-  [
-    {
       label: "Partna AI",
       href: "/ai",
       iconSrc: "",
       flag: "AI" as FeatureFlag,
     },
-  ],
-  [
-    {
-      label: "Profile",
-      href: "/profile",
-      iconSrc: "/icons/sidebar/profile.svg",
-      flag: "PROFILE",
-    },
-    {
-      label: "Tools",
-      href: "/tools",
-      iconSrc: "/icons/sidebar/tools.svg",
-      flag: "TOOLS",
-    },
-    {
-      label: "Notifications",
-      href: "/notifications",
-      iconSrc: "/icons/sidebar/notification.svg",
-    },
-    // {
-    //   label: "Settings",
-    //   href: "/settings",
-    //   iconSrc: "/icons/sidebar/report.svg",
-    // },
   ],
 ];
 
@@ -145,7 +91,7 @@ export function Sidebar({
         )}
       >
         <Link
-          href="/overview"
+          href="/journal"
           onClick={() => onNavigate?.()}
           className={cn(
             "flex min-w-0 flex-1 items-center gap-2",
@@ -198,10 +144,8 @@ export function Sidebar({
               <div className="flex flex-col gap-1">
                 {visibleItems.map((item) => {
                   const isActive =
-                    item.href === "/overview"
-                      ? pathname === "/overview"
-                      : pathname === item.href ||
-                        pathname.startsWith(`${item.href}/`);
+                    pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
                   return (
                     <Link
                       key={item.label + item.href}
@@ -224,8 +168,6 @@ export function Sidebar({
                               isActive ? "opacity-100 text-brand" : "opacity-75",
                             )}
                           />
-                        ) : item.label === "Feed" ? (
-                          <IconFeed active={isActive} />
                         ) : (
                           <Image
                             src={item.iconSrc}

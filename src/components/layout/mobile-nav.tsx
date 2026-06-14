@@ -3,34 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
 
 type MobileNavItem = {
   label: string;
   href: string;
   iconSrc: string;
-  flag?: FeatureFlag;
 };
 
 const navItems: MobileNavItem[] = [
-  {
-    label: "Home",
-    href: "/overview",
-    iconSrc: "/icons/sidebar/home.svg",
-    flag: "HOME",
-  },
-  {
-    label: "Discover",
-    href: "/discover",
-    iconSrc: "/icons/sidebar/discover.svg",
-    flag: "DISCOVER",
-  },
-  {
-    label: "Feed",
-    href: "/feed",
-    iconSrc: "/icons/sidebar/trade-history.svg",
-    flag: "FEED",
-  },
   { label: "Journal", href: "/journal", iconSrc: "/icons/sidebar/journal.svg" },
   {
     label: "History",
@@ -49,21 +29,14 @@ const navItems: MobileNavItem[] = [
   },
 ];
 
-/** Only show items whose feature flag is enabled (or have no flag at all) */
-const visibleNavItems = navItems.filter(
-  (item) => !item.flag || FEATURE_FLAGS[item.flag],
-);
-
 export function MobileNav() {
   const pathname = usePathname();
 
   return (
     <div className="bg-sidebar-chrome-bg border-t border-sidebar-bottom-border pb-safe fixed bottom-0 z-50 flex w-full items-center justify-between px-1 py-2 md:hidden">
-      {visibleNavItems.map((item) => {
+      {navItems.map((item) => {
         const isActive =
-          item.href === "/overview"
-            ? pathname === "/overview"
-            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
           <Link
             key={item.href}

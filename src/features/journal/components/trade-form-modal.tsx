@@ -11,7 +11,7 @@ import {
   Calendar as CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, type PathValue } from "react-hook-form";
 import { format } from "date-fns";
 
 import {
@@ -348,9 +348,11 @@ export function TradeFormModal(props: TradeFormModalProps) {
         // Invalidate page or soft reload the page
         router.refresh();
       }
-    } catch (err: any) {
+    } catch (err) {
       const verb = mode === "create" ? "saving the manual trade" : "updating the trade";
-      const msg = err?.message || `An error occurred while ${verb}.`;
+      const msg =
+        (err as { message?: string })?.message ||
+        `An error occurred while ${verb}.`;
       setErrors({ root: msg });
       toast.error(
         mode === "create" ? "Failed to save trade" : "Failed to update trade",
@@ -390,12 +392,18 @@ export function TradeFormModal(props: TradeFormModalProps) {
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setValue(
         field,
-        e.target.value !== "" ? Number(e.target.value) : ("" as any),
+        (e.target.value !== "" ? Number(e.target.value) : "") as PathValue<
+          TradeFormValues,
+          typeof field
+        >,
       );
   const onNum =
     (field: keyof TradeFormValues) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
-      setValue(field, Number(e.target.value) as any);
+      setValue(
+        field,
+        Number(e.target.value) as PathValue<TradeFormValues, typeof field>,
+      );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

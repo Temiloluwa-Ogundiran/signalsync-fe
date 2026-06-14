@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { Header, MobileNav, Sidebar } from "@/components/layout";
-import { CreatePostModal } from "@/features/post/components/create-post-modal";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
@@ -14,7 +13,6 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [postModalOpen, setPostModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -71,11 +69,6 @@ export default function DashboardShell({
             </div>
           </>
         )}
-
-        <CreatePostModal
-          open={postModalOpen}
-          onClose={() => setPostModalOpen(false)}
-        />
 
         <ConnectAccountModal />
         <AddTradeModal />

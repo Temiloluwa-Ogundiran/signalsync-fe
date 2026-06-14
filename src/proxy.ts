@@ -3,14 +3,7 @@ import { authConfig } from "@/lib/auth/auth.config";
 import { NextResponse } from "next/server";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 
-const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [
-  { flag: "HOME",     prefix: "/overview" },
-  { flag: "DISCOVER", prefix: "/discover" },
-  { flag: "FEED",     prefix: "/feed" },
-  { flag: "SPACE",    prefix: "/spaces" },
-  { flag: "PROFILE",  prefix: "/profile" },
-  { flag: "TOOLS",    prefix: "/tools" },
-];
+const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [];
 
 const FALLBACK_ROUTE = "/journal";
 

@@ -41,9 +41,9 @@ export function JournalDayModal({
     try {
       await deleteManualTrade.mutateAsync(tradeId);
       toast.success("Manual trade deleted successfully");
-    } catch (err: any) {
+    } catch (err) {
       toast.error("Failed to delete manual trade", {
-        description: err?.message || "An error occurred.",
+        description: (err as { message?: string })?.message || "An error occurred.",
       });
     }
   };

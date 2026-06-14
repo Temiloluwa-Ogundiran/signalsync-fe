@@ -109,8 +109,8 @@ export function CSVUploadStep({
           </h3>
         </div>
         <p className="text-xs text-text-secondary mb-4 leading-relaxed">
-          MT5 report files contain naive timestamps from your broker's server clock. 
-          Select your broker's timezone to ensure trade durations and daily statistics are converted to UTC accurately.
+          MT5 report files contain naive timestamps from your broker&apos;s server clock.
+          Select your broker&apos;s timezone to ensure trade durations and daily statistics are converted to UTC accurately.
         </p>
         
         <div className="space-y-1.5">

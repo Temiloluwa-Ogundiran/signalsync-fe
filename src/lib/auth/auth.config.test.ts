@@ -39,7 +39,7 @@ test("authorized callback rejects protected routes when auth state is broken", (
       error: "RefreshAccessTokenError",
     } as never,
     request: {
-      nextUrl: new URL("http://localhost:3000/overview"),
+      nextUrl: new URL("http://localhost:3000/journal"),
     } as never,
   });
 

@@ -37,7 +37,7 @@ export function CSVImportWizard({
   useEffect(() => {
     onStepChange?.(step);
   }, [step, onStepChange]);
-  const [timezone, setTimezone] = useState("UTC");
+  const [timezone, setTimezone] = useState(getBrowserTimezone);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<CSVPreviewResponse | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -51,11 +51,6 @@ export function CSVImportWizard({
   const reimportAccount = reimportAccountId
     ? accounts.find((acc) => acc.id === reimportAccountId)
     : null;
-
-  // Auto-detect timezone on mount
-  useEffect(() => {
-    setTimezone(getBrowserTimezone());
-  }, []);
 
   const handleFileSelect = async (file: File) => {
     setSelectedFile(file);
@@ -80,9 +75,16 @@ export function CSVImportWizard({
       }
 
       setStep("preview");
-    } catch (err: any) {
+    } catch (err) {
       setSelectedFile(null);
-      const msg = err.response?.data?.detail || err.message || "Failed to parse the file. Please verify its format.";
+      const error = err as {
+        response?: { data?: { detail?: string } };
+        message?: string;
+      };
+      const msg =
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to parse the file. Please verify its format.";
       toast.error("Parsing failed", {
         description: msg,
       });
@@ -130,8 +132,15 @@ export function CSVImportWizard({
       });
 
       onSuccess?.(result.account);
-    } catch (err: any) {
-      const msg = err.response?.data?.detail || err.message || "An unexpected error occurred during database ingest.";
+    } catch (err) {
+      const error = err as {
+        response?: { data?: { detail?: string } };
+        message?: string;
+      };
+      const msg =
+        error.response?.data?.detail ||
+        error.message ||
+        "An unexpected error occurred during database ingest.";
       toast.error("Import failed", {
         description: msg,
       });

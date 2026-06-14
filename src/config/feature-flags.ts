@@ -10,24 +10,6 @@
  *  - No page component mounts → no API calls are ever fired
  */
 export const FEATURE_FLAGS = {
-  /** /overview  — Home dashboard */
-  HOME: false,
-
-  /** /discover  — Discover page */
-  DISCOVER: false,
-
-  /** /feed      — Social feed */
-  FEED: false,
-
-  /** /spaces    — Spaces / communities */
-  SPACE: false,
-
-  /** /profile   — User profile (will get new content later) */
-  PROFILE: false,
-
-  /** /tools     — Trading tools */
-  TOOLS: false,
-
   /** /ai  — Partna AI copilot (dock + full page) */
   AI: true,
 } as const;

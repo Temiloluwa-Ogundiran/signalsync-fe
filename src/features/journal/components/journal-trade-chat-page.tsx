@@ -152,7 +152,7 @@ export function JournalTradeChatPage() {
           created_at: new Date().toISOString(),
         }] : [],
         created_at: new Date().toISOString(),
-        status: (sm.status ?? "sending") as any,
+        status: (sm.status ?? "sending") as JournalMessage["status"],
       };
     });
 
@@ -221,7 +221,7 @@ export function JournalTradeChatPage() {
         setSendingMessages((prev) =>
           prev.map((sm) =>
             sm.id === tempId
-              ? { ...sm, id: realMsg.id, status: "success" as any }
+              ? { ...sm, id: realMsg.id, status: "success" as SendingMessage["status"] }
               : sm
           )
         );
@@ -235,10 +235,11 @@ export function JournalTradeChatPage() {
         setSendingMessages((prev) => prev.filter((sm) => sm.id !== tempId));
         if (previewUrl) URL.revokeObjectURL(previewUrl);
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { name?: string; message?: string };
       if (
-        err.name === "CanceledError" ||
-        err.name === "AbortError" ||
+        error.name === "CanceledError" ||
+        error.name === "AbortError" ||
         axios.isCancel(err)
       ) {
         console.log("Upload aborted by user");
@@ -248,7 +249,7 @@ export function JournalTradeChatPage() {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const [{ toast }] = await Promise.all([import("sonner")]);
       toast.error("Failed to send message", {
-        description: err.message || "An error occurred while uploading.",
+        description: error.message || "An error occurred while uploading.",
       });
     }
   };
