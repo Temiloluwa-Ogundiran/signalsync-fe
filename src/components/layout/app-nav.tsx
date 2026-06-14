@@ -118,7 +118,7 @@ export function AppNav() {
       <div className="flex min-h-0 flex-1">
         {/* TIER 1 — icon rail (slightly darkest tone) */}
         <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">
-          <div className="scrollbar-thin flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
+          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
             {topApps.map((app) => (
               <RailIcon
                 key={app.id}
@@ -136,7 +136,11 @@ export function AppNav() {
                 active={settingsApp.id === activeApp.id}
               />
             ) : null}
-            <RailPinned icon={HelpCircle} label="Help" href="/help" />
+            <RailPinned
+              icon={HelpCircle}
+              label="Support"
+              href="mailto:hello@tradepartna.com"
+            />
           </div>
         </div>
 
@@ -224,13 +228,13 @@ function RailPinned({
 }) {
   return (
     <div className="group/rail relative flex justify-center">
-      <Link
+      <a
         href={href}
         aria-label={label}
         className="flex size-11 items-center justify-center rounded-xl text-sidebar-nav-inactive-text transition-colors hover:bg-white/[0.04] hover:text-sidebar-nav-active-text"
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
-      </Link>
+      </a>
       <span
         role="tooltip"
         className="pointer-events-none absolute left-full top-1/2 z-overlay ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"

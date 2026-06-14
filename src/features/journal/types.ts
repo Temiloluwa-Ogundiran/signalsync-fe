@@ -110,6 +110,24 @@ export interface JournalAnalyticsEquityCurveResponse {
   points: JournalAnalyticsEquityCurvePoint[];
 }
 
+export interface JournalAnalyticsEvaluationResponse {
+  total_trades: number;
+  avg_profit_per_trading_day: number;
+  biggest_winner: number;
+  biggest_loser: number;
+  total_fees: number;
+  avg_hold_seconds: number;
+  winrate_wo_be: number;
+  roi: number;
+  max_drawdown_pct: number;
+  winning_days: number;
+  losing_days: number;
+  trades_per_day: number;
+  trades_per_week: number;
+  /** Most recent trade outcomes oldest→newest: "W" | "L" | "B". */
+  recent_streak: string[];
+}
+
 export interface JournalAnalyticsInstrumentItem {
   symbol: string;
   trade_count: number;

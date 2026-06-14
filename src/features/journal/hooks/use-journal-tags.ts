@@ -155,13 +155,14 @@ export function useUpdateTradeRating(accountId?: string) {
     }) =>
       journalTagsApi.updateTradeRating(tradeId, rating, session?.accessToken),
     onSuccess: () => {
-      // Invalidate journal day/trades caches to update trade details & stars immediately
+      // Invalidate journal day/trades + trade-history caches so the star rating
+      // reflects immediately in the day view and the Trade View table.
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
           return (
             Array.isArray(k) &&
-            k[0] === "journal-day"
+            (k[0] === "journal-day" || k[0] === "journal-trade-history")
           );
         },
       });

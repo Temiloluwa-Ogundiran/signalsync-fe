@@ -1,5 +1,12 @@
 import { ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { useCalendarSettingsStore } from "../store/calendar-settings-store";
 
 interface JournalCalendarHeaderProps {
   monthLabel: string;
@@ -66,11 +73,53 @@ export function JournalCalendarHeader({
           {compactMoney(monthlyPnl)}
         </span>
         <span className="text-text-secondary tabular-nums">{activeDays} days</span>
-        <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary">
-          <Settings2 className="h-4 w-4" />
-        </button>
+        <CalendarSettings />
       </div>
     </header>
+  );
+}
+
+/** Calendar settings popover (gear in the header). */
+function CalendarSettings() {
+  const showWeekSummary = useCalendarSettingsStore((s) => s.showWeekSummary);
+  const setShowWeekSummary = useCalendarSettingsStore(
+    (s) => s.setShowWeekSummary,
+  );
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          aria-label="Calendar settings"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary cursor-pointer"
+        >
+          <Settings2 className="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-64 rounded-xl border border-white/[0.08] bg-[#0F1012] p-1.5"
+      >
+        <p className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+          Calendar settings
+        </p>
+        <div className="flex items-center justify-between gap-3 rounded-lg px-2 py-2">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-text-primary">
+              Weekly summary
+            </p>
+            <p className="text-xs text-text-secondary">
+              Show a weekly P&amp;L column
+            </p>
+          </div>
+          <Switch
+            checked={showWeekSummary}
+            onCheckedChange={setShowWeekSummary}
+            aria-label="Toggle weekly summary"
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

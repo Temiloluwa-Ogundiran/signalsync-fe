@@ -1,135 +1,117 @@
 "use client";
 
 import Link from "next/link";
-import { memo, useState } from "react";
+import { memo } from "react";
 import { cn } from "@/lib/utils";
-import type {
-  JournalOpenPositionsPanelRow,
-  JournalTradesPanelRow,
-} from "../types";
+import type { JournalTradesPanelRow } from "../types";
 
 interface JournalTradesPanelProps {
   recentRows: JournalTradesPanelRow[];
-  openRows: JournalOpenPositionsPanelRow[];
   isRecentLoading?: boolean;
-  isOpenLoading?: boolean;
   recentErrorMessage?: string | null;
-  openErrorMessage?: string | null;
+}
+
+const HAIRLINE = "border-[rgba(255,255,255,0.06)]";
+
+function money(value: number): string {
+  const abs = Math.abs(value).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return value < 0 ? `-$${abs}` : `$${abs}`;
 }
 
 function JournalTradesPanelImpl({
   recentRows,
-  openRows,
   isRecentLoading = false,
-  isOpenLoading = false,
   recentErrorMessage = null,
-  openErrorMessage = null,
 }: JournalTradesPanelProps) {
-  const [activeTab, setActiveTab] = useState<"recent" | "open">("recent");
-  const activeRows = activeTab === "recent" ? recentRows : openRows;
-  const isLoading = activeTab === "recent" ? isRecentLoading : isOpenLoading;
-  const errorMessage =
-    activeTab === "recent" ? recentErrorMessage : openErrorMessage;
-  const dateHeader = activeTab === "recent" ? "Close Date" : "Open Date";
-  const pnlHeader = activeTab === "recent" ? "Net P&L" : "Floating P&L";
-  const emptyStateMessage =
-    activeTab === "recent"
-      ? "No closed trades found in this date range."
-      : "No open positions right now.";
-  const href =
-    activeTab === "recent"
-      ? "/trade-history"
-      : "/trade-history?tab=open-positions";
+  const isEmpty =
+    !isRecentLoading && !recentErrorMessage && recentRows.length === 0;
 
   return (
-    <section className="rounded-xl bg-card-bg ring-1 ring-border-primary/60">
-      <div className="flex items-center gap-4 border-b border-border-primary/60 px-4 pt-4 pb-2">
-        <button
-          onClick={() => setActiveTab("recent")}
-          className={cn(
-            "pb-2 text-sm cursor-pointer",
-            activeTab === "recent"
-              ? "border-b-2 border-(--calendar-selected-ring) font-semibold text-(--calendar-selected-ring)"
-              : "text-text-secondary",
-          )}
-        >
+    <section className="flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60">
+      <div className="px-5 pt-5 pb-1">
+        <h2 className="text-sm font-semibold text-text-primary">
           Recent Trades
-        </button>
-        <button
-          onClick={() => setActiveTab("open")}
-          className={cn(
-            "pb-2 text-sm cursor-pointer",
-            activeTab === "open"
-              ? "border-b-2 border-(--calendar-selected-ring) font-semibold text-(--calendar-selected-ring)"
-              : "text-text-secondary",
-          )}
-        >
-          Open Positions
-        </button>
+        </h2>
       </div>
 
-      <div className="px-4 py-3">
-        <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium text-text-secondary">
-          <span>{dateHeader}</span>
-          <span className="text-center">Symbol</span>
-          <span className="text-right">{pnlHeader}</span>
+      <div className="flex min-h-0 flex-1 flex-col px-5 pt-2 pb-4">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-3 pb-2 text-[11px] font-medium tracking-wide text-text-secondary uppercase">
+          <span>Close Date</span>
+          <span>Symbol</span>
+          <span className="text-right">Net P&amp;L</span>
         </div>
 
-        <div className="mt-1 divide-y divide-border-primary">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, idx) => (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isRecentLoading ? (
+            <div className={cn("divide-y", `divide-[rgba(255,255,255,0.06)]`)}>
+              {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={`recent-trade-skeleton-${idx}`}
-                  className="grid grid-cols-3 py-3"
+                  className="grid grid-cols-[1fr_1fr_auto] gap-3 py-2.5"
                 >
-                  <div className="h-5 animate-pulse rounded bg-bg-tertiary" />
-                  <div className="mx-auto h-5 w-16 animate-pulse rounded bg-bg-tertiary" />
-                  <div className="ml-auto h-5 w-20 animate-pulse rounded bg-bg-tertiary" />
+                  <div className="h-4 w-20 animate-pulse rounded bg-bg-tertiary" />
+                  <div className="h-4 w-16 animate-pulse rounded bg-bg-tertiary" />
+                  <div className="ml-auto h-4 w-16 animate-pulse rounded bg-bg-tertiary" />
                 </div>
-              ))
-            : activeRows.map((row) => (
-                <div key={row.id} className="grid grid-cols-3 py-3 text-sm">
+              ))}
+            </div>
+          ) : (
+            <div className={cn("divide-y", "divide-[rgba(255,255,255,0.06)]")}>
+              {recentRows.map((row) => (
+                <div
+                  key={row.id}
+                  className="grid grid-cols-[1fr_1fr_auto] items-center gap-3 py-2.5 text-sm"
+                >
                   <span className="tabular-nums text-text-primary">
-                    {"closeDate" in row ? row.closeDate : row.openDate}
+                    {row.closeDate}
                   </span>
-                  <span className="text-center text-text-primary">
+                  <span className="flex items-center gap-2 text-text-primary">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        row.netPnl >= 0 ? "bg-success" : "bg-danger",
+                      )}
+                      aria-hidden
+                    />
                     {row.symbol}
                   </span>
                   <span
                     className={cn(
-                      "text-right tabular-nums",
-                      ("netPnl" in row ? row.netPnl : row.floatingPnl) >= 0
+                      "text-right tabular-nums font-medium",
+                      row.netPnl >= 0
                         ? "text-kpi-metric-positive"
                         : "text-danger",
                     )}
                   >
-                    {("netPnl" in row ? row.netPnl : row.floatingPnl) < 0
-                      ? "-"
-                      : ""}
-                    $
-                    {Math.abs(
-                      "netPnl" in row ? row.netPnl : row.floatingPnl,
-                    ).toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
+                    {money(row.netPnl)}
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {recentErrorMessage ? (
+            <p className="py-4 text-center text-sm text-danger">
+              {recentErrorMessage}
+            </p>
+          ) : null}
+
+          {isEmpty ? (
+            <p className="py-4 text-center text-sm text-text-secondary">
+              No closed trades found in this date range.
+            </p>
+          ) : null}
         </div>
 
-        {!isLoading && errorMessage ? (
-          <p className="py-4 text-center text-sm text-danger">{errorMessage}</p>
-        ) : null}
-
-        {!isLoading && !errorMessage && activeRows.length === 0 ? (
-          <p className="py-4 text-center text-sm text-text-secondary">
-            {emptyStateMessage}
-          </p>
-        ) : null}
-
         <Link
-          href={href}
-          className="mt-2 block w-full text-center text-sm font-semibold text-(--calendar-selected-ring) transition-colors hover:opacity-90"
+          href="/trade-history"
+          className={cn(
+            "mt-3 block w-full shrink-0 border-t pt-3 text-center text-sm font-semibold text-(--calendar-selected-ring) transition-colors hover:opacity-90",
+            HAIRLINE,
+          )}
         >
           View more
         </Link>

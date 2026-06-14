@@ -7,7 +7,6 @@ import {
   formatDateParam,
   parseDateParam,
 } from "@/features/journal/lib/date-window";
-import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
@@ -19,25 +18,28 @@ import {
 import {
   useJournalDashboardAnalytics,
   useJournalEquityCurveAnalytics,
+  useJournalEvaluationAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import { toast } from "sonner";
 import { JournalPageHeader } from "@/features/journal/components/journal-page-header";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
 import { aggregateTradeOutcomes } from "@/features/journal/lib/journal-kpi-aggregates";
-import {
-  toOpenPositionsPanelRows,
-  toTradesPanelRows,
-} from "@/features/journal/lib/journal-widget-mappers";
+import { toTradesPanelRows } from "@/features/journal/lib/journal-widget-mappers";
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
-import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
-import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
+import { JournalEvaluationPanel } from "@/features/journal/components/journal-evaluation-panel";
+import {
+  JournalCumulativePnlChart,
+  JournalDailyPnlChart,
+} from "@/features/journal/components/journal-pnl-charts";
+import {
+  JournalInstrumentPnlChart,
+  JournalWeekdayPnlChart,
+} from "@/features/journal/components/journal-performance-charts";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
-import { cn } from "@/lib/utils";
-import { useJournalOpenPositions } from "@/features/journal/hooks/use-journal-open-positions";
 
 const journalWidgetRegistry = getDefaultJournalWidgetRegistry().filter(
   (widget) => widget.visible,
@@ -74,7 +76,8 @@ function JournalPageContent() {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
-  const [timeBasis, setTimeBasis] = useState<"open" | "close">("close");
+  // Dashboard analytics use close-time buckets (the time-basis toggle was retired).
+  const timeBasis = "close" as const;
 
   const {
     data: accounts = [],
@@ -153,11 +156,6 @@ function JournalPageContent() {
     return to ? { from, to } : { from };
   }, [fromDateParam, toDateParam]);
 
-  const dateRangeLabel = useMemo(() => {
-    if (!parsedDateRange?.from || !parsedDateRange.to) return "Date range";
-    return `${format(parsedDateRange.from, "LLL dd, y")} - ${format(parsedDateRange.to, "LLL dd, y")}`;
-  }, [parsedDateRange]);
-
   const applyDateRange = (nextRange: DateRange | undefined) => {
     const params = new URLSearchParams(searchParams.toString());
     if (!nextRange?.from) {
@@ -196,6 +194,11 @@ function JournalPageContent() {
     toDate,
   });
   const equityCurveQuery = useJournalEquityCurveAnalytics({
+    accountId: scopedAccountId,
+    fromDate,
+    toDate,
+  });
+  const evaluationQuery = useJournalEvaluationAnalytics({
     accountId: scopedAccountId,
     fromDate,
     toDate,
@@ -245,10 +248,6 @@ function JournalPageContent() {
   });
   const timePerformanceAnalytics =
     timeBasis === "close" ? dashboardQuery.data?.time_performance : timePerformanceQuery.data;
-  const openPositionsQuery = useJournalOpenPositions({
-    accountId: activeAccountId || undefined,
-    limit: 10,
-  });
 
   const visibleCalendar = useMemo(() => {
     const mapped: Record<number, JournalCalendarDayStat> = {};
@@ -390,11 +389,6 @@ function JournalPageContent() {
     () => toTradesPanelRows(recentTradeItems ?? []),
     [recentTradeItems],
   );
-  const openPositionItems = openPositionsQuery.data?.items;
-  const openPositionRows = useMemo(
-    () => toOpenPositionsPanelRows(openPositionItems ?? []),
-    [openPositionItems],
-  );
 
   return (
     <div className="min-w-0 space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
@@ -418,7 +412,6 @@ function JournalPageContent() {
         }
         onSelectAccount={selectAccount}
         dateRange={parsedDateRange}
-        dateRangeLabel={dateRangeLabel}
         onApplyDateRange={applyDateRange}
       />
 
@@ -431,7 +424,8 @@ function JournalPageContent() {
         />
       ) : null}
 
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
+      {/* Row 1: calendar + evaluation, equal height */}
+      <div className="grid min-w-0 items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
         {showCalendarWidget ? (
           <JournalCalendarWidget
             monthLabel={monthLabel}
@@ -445,55 +439,48 @@ function JournalPageContent() {
             currentMonth={currentMonth}
           />
         ) : null}
+        <JournalEvaluationPanel
+          data={evaluationQuery.data}
+          isLoading={evaluationQuery.isLoading}
+        />
+      </div>
+
+      {/* Row 2: recent trades + the two P&L charts, equal height.
+          Recent Trades slightly narrower; the two charts share the rest equally. */}
+      <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1fr)]">
         {showTradesPanel ? (
           <JournalTradesPanel
             recentRows={tradesRows}
-            openRows={openPositionRows}
             isRecentLoading={dashboardQuery.isLoading}
-            isOpenLoading={openPositionsQuery.isLoading}
-            openErrorMessage={
-              openPositionsQuery.isError
-                ? "Unable to load live open positions right now."
-                : null
-            }
           />
         ) : null}
+        <JournalDailyPnlChart
+          points={equityCurveQuery.data?.points ?? []}
+          isLoading={equityCurveQuery.isLoading}
+        />
+        <JournalCumulativePnlChart
+          points={equityCurveQuery.data?.points ?? []}
+          isLoading={equityCurveQuery.isLoading}
+        />
       </div>
 
       {analyticsRowCount > 0 ? (
-        <div
-          className={cn(
-            "grid min-w-0 gap-3 xl:items-stretch",
-            analyticsRowCount === 1 && "xl:grid-cols-1",
-            analyticsRowCount === 2 && "xl:grid-cols-2",
-            analyticsRowCount >= 3 && "xl:grid-cols-3",
-          )}
-        >
+        <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-2">
           {showJournalSymbols ? (
-            <div className="min-h-0 min-w-0 order-3 xl:order-none">
-              <JournalSymbolsWidget
-                compact
-                instruments={instrumentsAnalytics?.instruments ?? []}
-              />
-            </div>
+            <JournalInstrumentPnlChart
+              instruments={instrumentsAnalytics?.instruments ?? []}
+              isLoading={dashboardQuery.isLoading}
+            />
           ) : null}
           {showTimePerformance ? (
-            <div className="min-h-0 min-w-0 order-2 xl:order-none">
-              {timePerformanceQuery.isLoading ? (
-                <div className="h-[396px] animate-pulse rounded-xl bg-kpi-card-bg border border-border-primary/60 flex flex-col justify-between p-4" aria-hidden>
-                  <div className="h-6 w-1/3 bg-bg-tertiary rounded" />
-                  <div className="h-64 bg-bg-tertiary rounded w-full" />
-                </div>
-              ) : (
-                <JournalTimePerformanceWidget
-                  compact
-                  hourly={timePerformanceAnalytics?.hourly ?? []}
-                  daily={timePerformanceAnalytics?.daily ?? []}
-                  timeBasis={timeBasis}
-                  onTimeBasisChange={setTimeBasis}
-                />
-              )}
-            </div>
+            <JournalWeekdayPnlChart
+              daily={timePerformanceAnalytics?.daily ?? []}
+              isLoading={
+                timeBasis === "close"
+                  ? dashboardQuery.isLoading
+                  : timePerformanceQuery.isLoading
+              }
+            />
           ) : null}
         </div>
       ) : null}
@@ -515,7 +502,7 @@ export default function JournalPage() {
         <div className="min-w-0 space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
           <div className="h-12 max-w-2xl animate-pulse rounded-lg bg-bg-tertiary" />
           <div className="h-28 animate-pulse rounded-xl bg-bg-tertiary" />
-          <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
+          <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
             <div className="min-h-[320px] animate-pulse rounded-xl bg-bg-tertiary" />
             <div className="min-h-[200px] animate-pulse rounded-xl bg-bg-tertiary" />
           </div>

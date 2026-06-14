@@ -4,6 +4,7 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 import { formatNetPnlDisplay } from "../lib/journal-widget-mappers";
 import { JournalKpiCard } from "./journal-kpi-card";
+import { JournalKpiInfo } from "./journal-kpi-info";
 
 interface JournalKpiNetPnlProps {
   totalNetPnl: number;
@@ -36,6 +37,12 @@ export function JournalKpiNetPnl({
     <JournalKpiCard
       className={className}
       label="Net P&L"
+      info={
+        <JournalKpiInfo
+          title="Net P&L"
+          description="Total realized profit and loss across closed trades in the selected range, net of commissions and swap. The curve shows your running cumulative P&L."
+        />
+      }
       value={formatNetPnlDisplay(totalNetPnl)}
       chartClassName={
         hasCurve ? "h-[4.5rem] w-[44%] shrink-0 pointer-events-none" : undefined

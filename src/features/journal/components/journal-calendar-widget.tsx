@@ -3,6 +3,8 @@
 import { JournalCalendarHeader } from "./journal-calendar-header";
 import { JournalCalendarGrid } from "./journal-calendar-grid";
 import { JournalWeekSummaryColumn } from "./journal-week-summary-column";
+import { useCalendarSettingsStore } from "../store/calendar-settings-store";
+import { cn } from "@/lib/utils";
 import type { JournalCalendarDayStat } from "../types";
 
 interface JournalCalendarWidgetProps {
@@ -28,6 +30,7 @@ export function JournalCalendarWidget({
   onNextMonth,
   currentMonth,
 }: JournalCalendarWidgetProps) {
+  const showWeekSummary = useCalendarSettingsStore((s) => s.showWeekSummary);
   const totalCells = Math.ceil((monthStartOffset + daysInMonth) / 7) * 7;
   const weekRows = Array.from({ length: totalCells / 7 }, (_, rowIndex) =>
     Array.from({ length: 7 }, (_, colIndex) => {
@@ -54,7 +57,12 @@ export function JournalCalendarWidget({
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
       />
-      <div className="grid min-w-0 gap-4 p-3 lg:grid-cols-[minmax(0,1fr)_6rem]">
+      <div
+        className={cn(
+          "grid min-w-0 gap-4 p-3",
+          showWeekSummary && "lg:grid-cols-[minmax(0,1fr)_6rem]",
+        )}
+      >
         <JournalCalendarGrid
           dayStats={dayStats}
           daysInMonth={daysInMonth}
@@ -62,7 +70,9 @@ export function JournalCalendarWidget({
           onSelectDay={onSelectDay}
           currentMonth={currentMonth}
         />
-        <JournalWeekSummaryColumn weeklyTotals={weeklyTotals} />
+        {showWeekSummary ? (
+          <JournalWeekSummaryColumn weeklyTotals={weeklyTotals} />
+        ) : null}
       </div>
     </section>
   );

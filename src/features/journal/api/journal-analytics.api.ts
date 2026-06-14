@@ -2,6 +2,7 @@ import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   JournalAnalyticsDashboardResponse,
   JournalAnalyticsEquityCurveResponse,
+  JournalAnalyticsEvaluationResponse,
   JournalAnalyticsSummaryResponse,
   JournalAnalyticsTimePerformanceResponse,
 } from "../types";
@@ -62,6 +63,26 @@ export const journalAnalyticsApi = {
   ): Promise<JournalAnalyticsEquityCurveResponse> => {
     const { data } = await apiClient.get<JournalAnalyticsEquityCurveResponse>(
       "/journal/analytics/equity-curve",
+      {
+        ...withAuth(token),
+        params: {
+          ...(params.accountId ? { account_id: params.accountId } : {}),
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
+        },
+      },
+    );
+
+    return data;
+  },
+
+  getEvaluation: async (
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
+    token?: string,
+  ): Promise<JournalAnalyticsEvaluationResponse> => {
+    const { data } = await apiClient.get<JournalAnalyticsEvaluationResponse>(
+      "/journal/analytics/evaluation",
       {
         ...withAuth(token),
         params: {
