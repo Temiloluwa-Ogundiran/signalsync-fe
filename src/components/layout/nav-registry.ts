@@ -1,6 +1,8 @@
 import type { IconSvgElement } from "@hugeicons/react";
 import {
   PencilEdit02Icon,
+  Notebook01Icon,
+  ChartBarLineIcon,
   Analytics01Icon,
   Wallet01Icon,
   ClipboardIcon,
@@ -76,6 +78,19 @@ export function buildNavRegistry(actionFns: {
 }): NavApp[] {
   return [
     {
+      id: "partna-ai",
+      name: "Partna AI",
+      icon: AiMagicIcon,
+      route: "/ai",
+      isAI: true,
+      flag: "AI" as FeatureFlag,
+      groups: [
+        {
+          items: [{ icon: AiMagicIcon, label: "Assistant", route: "/ai" }],
+        },
+      ],
+    },
+    {
       id: "journal",
       name: "Journal",
       icon: PencilEdit02Icon,
@@ -93,7 +108,19 @@ export function buildNavRegistry(actionFns: {
               label: "Trade View",
               route: "/trade-history",
             },
+            {
+              icon: Notebook01Icon,
+              label: "Diary",
+              route: "/diary",
+              comingSoon: true,
+            },
             { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
+            {
+              icon: ChartBarLineIcon,
+              label: "Reports",
+              route: "/reports",
+              comingSoon: true,
+            },
           ],
         },
       ],
@@ -178,32 +205,39 @@ export function buildNavRegistry(actionFns: {
         },
       ],
     },
-    {
-      id: "partna-ai",
-      name: "Partna AI",
-      icon: AiMagicIcon,
-      route: "/ai",
-      isAI: true,
-      flag: "AI" as FeatureFlag,
-      groups: [
-        {
-          items: [
-            { icon: AiMagicIcon, label: "Assistant", route: "/ai" },
-          ],
-        },
-      ],
-    },
   ];
 }
 
-/** Resolve the active app for a given pathname (longest-route match wins). */
+function routeMatches(route: string, pathname: string): boolean {
+  return pathname === route || pathname.startsWith(`${route}/`);
+}
+
+/**
+ * Resolve the active app for a pathname. An app owns a pathname if the app's own
+ * route matches OR any of its (real, non-comingSoon) item routes match. The
+ * longest matching route wins, so the most specific app is chosen regardless of
+ * registry order. Falls back to the first app.
+ */
 export function findActiveApp(apps: NavApp[], pathname: string): NavApp {
-  const matches = apps
-    .filter(
-      (app) => pathname === app.route || pathname.startsWith(`${app.route}/`),
-    )
-    .sort((a, b) => b.route.length - a.route.length);
-  return matches[0] ?? apps[0];
+  let best: NavApp | undefined;
+  let bestLen = -1;
+
+  for (const app of apps) {
+    const candidateRoutes = [
+      app.route,
+      ...app.groups.flatMap((g) =>
+        g.items.filter((it) => !it.comingSoon).map((it) => it.route),
+      ),
+    ];
+    for (const route of candidateRoutes) {
+      if (routeMatches(route, pathname) && route.length > bestLen) {
+        best = app;
+        bestLen = route.length;
+      }
+    }
+  }
+
+  return best ?? apps[0];
 }
 
 /** True when `pathname` is on (or under) this item's route. */

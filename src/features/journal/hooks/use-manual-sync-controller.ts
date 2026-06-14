@@ -87,10 +87,10 @@ export function useManualSyncController({
   const wasConnectionPendingRef = useRef(false);
   const pollingWindowStartedAtRef = useRef<number | null>(null);
 
-  const showJournalSyncProgress =
-    syncAccountMutation.isPending ||
-    !!syncUiState ||
-    activeAccountConnectionBusy;
+  // The full-width progress banner is reserved for the initial account
+  // bootstrap/verification. Manual resync surfaces only the spinner next to the
+  // "Resync" control (via `isSyncBusy`), so don't show the banner for it.
+  const showJournalSyncProgress = activeAccountConnectionBusy;
 
   const journalSyncProgressMessage = useMemo(() => {
     if (syncAccountMutation.isPending) return "Contacting server...";

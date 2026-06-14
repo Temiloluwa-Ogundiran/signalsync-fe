@@ -394,7 +394,6 @@ function JournalPageContent() {
         message={journalSyncProgressMessage}
       />
       <JournalPageHeader
-        title="Dashboard"
         isSyncPending={isSyncBusy}
         lastSyncedAt={activeAccount?.last_synced_at}
         nextSyncNotBefore={activeAccount?.next_sync_not_before}

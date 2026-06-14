@@ -104,7 +104,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <>
-      <header className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome font-sans border-b border-border-secondary/40">
+      <header className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome font-sans border-b border-nav-hairline">
         <div className="flex w-full min-w-0 items-center gap-3">
           <div className="flex shrink-0 items-center gap-2 lg:hidden">
             <button

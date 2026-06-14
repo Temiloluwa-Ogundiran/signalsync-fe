@@ -2,9 +2,11 @@
 
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import type { DateRange } from "react-day-picker";
 import {
+  format,
   endOfMonth,
   startOfMonth,
   startOfQuarter,
@@ -23,8 +25,6 @@ import {
 } from "@/components/ui/popover";
 
 interface JournalPageHeaderProps {
-  /** Page title — the anchor for the dashboard. */
-  title?: string;
   isSyncPending: boolean;
   lastSyncedAt?: string | null;
   nextSyncNotBefore?: string | null;
@@ -66,14 +66,13 @@ function getCountdownText(targetMs: number) {
 /**
  * ROW 2 of the dashboard header zone — the page header.
  *
- * Left: page title + small muted sync metadata ("Last sync: … · Resync").
+ * Left: small muted sync metadata ("Last sync: … · Resync").
  * Right: page-view controls (date range + currency/return-% unit toggle),
  * visually distinct from ROW 1's global chrome.
  *
  * Replaces the old standalone full-width JournalToolbar sync row.
  */
 export function JournalPageHeader({
-  title = "Dashboard",
   isSyncPending,
   lastSyncedAt,
   nextSyncNotBefore,
@@ -134,12 +133,9 @@ export function JournalPageHeader({
   })();
 
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      {/* Left: title + muted sync metadata */}
+    <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {/* Left: muted sync metadata */}
       <div className="flex min-w-0 flex-col gap-1">
-        <h1 className="text-2xl font-semibold leading-tight tracking-tight text-text-primary md:text-[26px]">
-          {title}
-        </h1>
         <div className="inline-flex flex-wrap items-center gap-1.5 text-[13px] text-text-tertiary">
           <span className="truncate">
             Last sync: {getLastSyncDate(lastSyncedAt) ?? "never"}
@@ -301,21 +297,15 @@ function PageHeaderDateRangePicker({
           type="button"
           className="flex items-center gap-2 rounded-lg border border-chrome-control-border bg-card-bg px-3.5 py-2 font-semibold text-sidebar-nav-active-text transition-colors hover:cursor-pointer hover:bg-sidebar-nav-active-bg"
         >
-          <Image
-            src="/icons/navbar/calendar.svg"
-            alt=""
-            width={20}
-            height={20}
+          <HugeiconsIcon
+            icon={Calendar03Icon}
+            size={18}
+            strokeWidth={1.5}
             className="shrink-0"
           />
-          <div className="flex min-w-0 flex-col items-start gap-0.5 leading-none">
-            <span className="select-none text-[10px] font-medium text-text-secondary">
-              Date range
-            </span>
-            <span className="truncate text-[11px] font-semibold text-sidebar-nav-active-text">
-              {hasRange ? rangeLabel : "All time"}
-            </span>
-          </div>
+          <span className="truncate text-sm font-semibold text-sidebar-nav-active-text">
+            {hasRange ? rangeLabel : "Date range"}
+          </span>
           <IconChevronDown />
         </button>
       </PopoverTrigger>
@@ -332,18 +322,44 @@ function PageHeaderDateRangePicker({
               numberOfMonths={2}
               month={month}
               onMonthChange={setMonth}
+              captionLayout="dropdown"
+              startMonth={new Date(2015, 0)}
+              endMonth={new Date(2035, 11)}
+              classNames={{ button_previous: "hidden", button_next: "hidden" }}
             />
-            {range?.from && (
-              <div className="flex justify-end border-t border-chrome-control-border px-3 py-2">
+            {/* Selected-range summary + clear */}
+            <div className="flex items-center justify-between gap-3 border-t border-chrome-control-border px-3 py-2.5">
+              <span className="truncate text-xs font-medium text-text-secondary">
+                {range?.from ? (
+                  <>
+                    <span className="text-text-primary">
+                      {format(range.from, "MMM d, yyyy")}
+                    </span>
+                    {range.to ? (
+                      <>
+                        {" – "}
+                        <span className="text-text-primary">
+                          {format(range.to, "MMM d, yyyy")}
+                        </span>
+                      </>
+                    ) : (
+                      " – select end date"
+                    )}
+                  </>
+                ) : (
+                  "No date range selected"
+                )}
+              </span>
+              {range?.from ? (
                 <button
                   type="button"
                   onClick={() => onApply(undefined)}
-                  className="rounded-md px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+                  className="shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary"
                 >
-                  Clear range
+                  Clear
                 </button>
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
 
           {/* Presets sidebar */}

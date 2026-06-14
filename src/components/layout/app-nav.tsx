@@ -1,37 +1,35 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, Settings, HelpCircle } from "lucide-react";
+import { Settings, HelpCircle } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { PlusSignIcon } from "@hugeicons/core-free-icons";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import {
   buildNavRegistry,
   findActiveApp,
   type NavApp,
 } from "./nav-registry";
-import { useNavUiStore } from "./nav-ui-store";
 import { ContextualNav } from "./nav-shared";
+import { AiNavSidebar } from "./ai-nav-sidebar";
 
 /** A single rail icon (tier 1) with hover tooltip + active violet treatment. */
 function RailIcon({
   app,
   active,
-  onHoverApp,
 }: {
   app: NavApp;
   active: boolean;
-  onHoverApp: (app: NavApp | null) => void;
 }) {
   return (
-    <div
-      className="relative flex justify-center"
-      onMouseEnter={() => onHoverApp(app)}
-    >
+    <div className="relative flex justify-center">
       <Link
         href={app.route}
         aria-label={app.name}
@@ -39,15 +37,15 @@ function RailIcon({
         className={cn(
           "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors",
           active
-            ? "bg-white/[0.06] text-sidebar-nav-active-text"
-            : "text-sidebar-nav-inactive-text hover:bg-white/[0.04] hover:text-sidebar-nav-active-text",
+            ? "bg-[rgba(139,92,246,0.12)] text-[#F4F4F5]"
+            : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
         )}
       >
-        {/* Active app: violet left-edge accent bar */}
+        {/* Active app: 3px violet left-edge accent bar — "you are here". */}
         <span
           aria-hidden
           className={cn(
-            "absolute -left-2 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-ai-accent transition-opacity",
+            "absolute -left-2 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-[#8B5CF6] transition-opacity",
             active ? "opacity-100" : "opacity-0",
           )}
         />
@@ -57,8 +55,8 @@ function RailIcon({
           strokeWidth={1.5}
           className={cn(
             "text-current",
-            // Partna AI keeps a violet identity even at rest
-            app.isAI && !active && "text-ai-accent",
+            // Active icon reinforced with light violet.
+            active && "text-[#A78BFA]",
           )}
         />
         {app.isAI ? (
@@ -89,9 +87,6 @@ function RailIcon({
  */
 export function AppNav() {
   const pathname = usePathname();
-  const expanded = useNavUiStore((s) => s.sidebarExpanded);
-  const toggleSidebar = useNavUiStore((s) => s.toggleSidebar);
-  const [hoverApp, setHoverApp] = useState<NavApp | null>(null);
 
   const apps = useMemo(
     () =>
@@ -108,71 +103,108 @@ export function AppNav() {
     [apps, pathname],
   );
 
-  // When collapsed, the flyout shows the hovered app (fallback: active app).
-  const flyoutApp = hoverApp ?? activeApp;
-
   return (
-    <div
-      className="relative hidden h-screen shrink-0 lg:flex"
-      onMouseLeave={() => setHoverApp(null)}
-    >
-      {/* TIER 1 — icon rail */}
-      <div className="flex h-full w-16 shrink-0 flex-col items-center bg-sidebar-chrome-bg">
-        {/* Logo spans the top of the nav zone */}
-        <div className="flex h-header w-full shrink-0 items-center justify-center border-b border-sidebar-divider">
-          <Link href="/journal" aria-label="TradePartna home">
-            <Image
-              src="/syncgram/logo-mark.svg"
-              alt=""
-              width={28}
-              height={35}
-              priority
-            />
-          </Link>
-        </div>
-
-        <div className="scrollbar-thin flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
-          {apps.map((app) => (
-            <RailIcon
-              key={app.id}
-              app={app}
-              active={app.id === activeApp.id}
-              onHoverApp={setHoverApp}
-            />
-          ))}
-        </div>
-
-        {/* Pinned: Settings + Help */}
-        <div className="flex shrink-0 flex-col items-center gap-1.5 pb-4 pt-2">
-          <RailPinned icon={Settings} label="Settings" href="/settings" />
-          <RailPinned icon={HelpCircle} label="Help" href="/help" />
-        </div>
+    <div className="relative hidden h-screen w-[264px] shrink-0 flex-col bg-nav-rail-bg lg:flex">
+      {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
+          No hard rule: the tonal step below + generous spacing do the work. */}
+      <div className="flex h-header shrink-0 items-center px-4">
+        <Link href="/journal" aria-label="TradePartna home" className="flex">
+          <Image
+            src="/brand/tradepartna-logo-full.svg"
+            alt="TradePartna"
+            width={156}
+            height={20}
+            priority
+            className="h-5 w-auto"
+          />
+        </Link>
       </div>
 
-      {/* TIER 2 — contextual sidebar (expanded) */}
-      {expanded ? (
-        <aside className="relative flex h-full w-[200px] shrink-0 flex-col border-l border-sidebar-divider bg-sidebar-chrome-bg font-sans">
-          <ContextualNav app={activeApp} pathname={pathname} />
-          <CollapseToggle expanded onToggle={toggleSidebar} />
+      <div className="flex min-h-0 flex-1">
+        {/* TIER 1 — icon rail (slightly darkest tone) */}
+        <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">
+          <div className="scrollbar-thin flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
+            {apps.map((app) => (
+              <RailIcon
+                key={app.id}
+                app={app}
+                active={app.id === activeApp.id}
+              />
+            ))}
+          </div>
+
+          {/* Pinned: Settings + Help */}
+          <div className="flex shrink-0 flex-col items-center gap-1.5 pb-4 pt-2">
+            <RailPinned icon={Settings} label="Settings" href="/settings" />
+            <RailPinned icon={HelpCircle} label="Help" href="/help" />
+          </div>
+        </div>
+
+        {/* TIER 2 — contextual sidebar (clear tonal step lighter than the rail).
+            A near-subliminal seam sharpens the boundary without reading as a line.
+            Partna AI hosts its session/history nav here instead of generic groups. */}
+        <aside className="relative flex h-full w-[200px] shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans">
+          {activeApp.isAI ? (
+            <AiNavSidebar app={activeApp} apps={apps} />
+          ) : (
+            <ContextualNav
+              app={activeApp}
+              apps={apps}
+              pathname={pathname}
+              footer={renderAppFooter(activeApp)}
+            />
+          )}
         </aside>
-      ) : (
-        <>
-          {/* Collapsed: expand affordance lives on the rail's edge */}
-          <CollapseToggle expanded={false} onToggle={toggleSidebar} />
-          {/* Hover flyout — the active/hovered app's grouped nav, one hover away */}
-          {hoverApp ? (
-            <div className="absolute left-16 top-0 z-drawer h-full w-[200px]">
-              <aside className="flex h-full w-full flex-col border-l border-sidebar-divider bg-sidebar-chrome-bg font-sans shadow-2xl">
-                <ContextualNav
-                  app={flyoutApp}
-                  pathname={pathname}
-                  onNavigate={() => setHoverApp(null)}
-                />
-              </aside>
-            </div>
-          ) : null}
-        </>
-      )}
+      </div>
+    </div>
+  );
+}
+
+/** Per-app pinned footer. Journal gets its balance card + Add Trade controls. */
+function renderAppFooter(app: NavApp) {
+  if (app.id === "journal") return <JournalNavFooter />;
+  return null;
+}
+
+const balanceFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * Journal sidebar footer: the active account's balance, then an "Add New Trade"
+ * button with a split "import trades" action — mirrors the legacy sidebar.
+ */
+function JournalNavFooter() {
+  const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
+  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
+  const { data: accounts = [] } = useJournalAccounts();
+
+  const activeAccount =
+    accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
+  const balance = activeAccount?.latest_balance;
+
+  return (
+    <div className="flex flex-col gap-3 p-3">
+      {typeof balance === "number" ? (
+        <div className="rounded-xl bg-bg-tertiary/60 px-4 py-3">
+          <p className="text-base font-bold leading-tight text-text-primary">
+            {balanceFormatter.format(balance)}
+          </p>
+          <p className="text-xs text-text-secondary">Account Balance</p>
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => openAddTradeModal(null)}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer"
+      >
+        <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
+        Add New Trade
+      </button>
     </div>
   );
 }
@@ -202,33 +234,5 @@ function RailPinned({
         {label}
       </span>
     </div>
-  );
-}
-
-/** Collapse/expand chevron straddling the tier-1/tier-2 boundary. */
-function CollapseToggle({
-  expanded,
-  onToggle,
-}: {
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
-      title={expanded ? "Collapse sidebar" : "Expand sidebar"}
-      className={cn(
-        "absolute top-1/2 z-overlay flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-sidebar-divider bg-card-bg text-sidebar-nav-inactive-text shadow-md transition-colors hover:text-sidebar-nav-active-text cursor-pointer",
-        expanded ? "-right-3" : "left-[52px]",
-      )}
-    >
-      {expanded ? (
-        <PanelLeftClose className="h-4 w-4" />
-      ) : (
-        <PanelLeftOpen className="h-4 w-4" />
-      )}
-    </button>
   );
 }

@@ -198,15 +198,24 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.55);
 
-  /* Dashboard chrome — sidebar/topbar are DARKER than the lighter canvas */
+  /* Dashboard chrome — sidebar/topbar are DARKER than the lighter canvas.
+     Nav zones step in tone (rail < sidebar < content) so the eye reads the
+     boundaries from contrast, not from hard dividers. */
   --chrome-bar-bg: #0a0a0a;
   --sidebar-chrome-bg: #0a0a0a;
+  --nav-rail-bg: #0a0a0b; /* tier 1 — icon rail (darkest, deepest layer) */
+  --nav-sidebar-bg: #0f1012; /* tier 2 — contextual sidebar (clear step lighter) */
   --sidebar-nav-active-bg: #2a2b2f;
   --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
   --sidebar-nav-inactive-text: #71717a;
   --sidebar-nav-active-text: #f4f4f5;
   --sidebar-divider: rgba(255, 255, 255, 0.06);
   --sidebar-bottom-border: rgba(255, 255, 255, 0.06);
+  /* Barely-there hairline — if you can clearly see it, it's too strong. */
+  --nav-hairline: rgba(255, 255, 255, 0.04);
+  /* Near-subliminal edge at the rail/sidebar seam — crisp with the tonal step,
+     never reads as a line on its own. */
+  --nav-seam: rgba(255, 255, 255, 0.03);
   --chrome-control-border: rgba(255, 255, 255, 0.06);
   --ask-sync-gradient: linear-gradient(
     262.75deg,
@@ -329,6 +338,10 @@
 
   --color-chrome-bar-bg: var(--chrome-bar-bg);
   --color-sidebar-chrome-bg: var(--sidebar-chrome-bg);
+  --color-nav-rail-bg: var(--nav-rail-bg);
+  --color-nav-sidebar-bg: var(--nav-sidebar-bg);
+  --color-nav-hairline: var(--nav-hairline);
+  --color-nav-seam: var(--nav-seam);
   --color-sidebar-nav-active-bg: var(--sidebar-nav-active-bg);
   --color-sidebar-nav-active-border: var(--sidebar-nav-active-border);
   --color-sidebar-nav-inactive-text: var(--sidebar-nav-inactive-text);

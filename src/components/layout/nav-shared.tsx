@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
 import { isItemActive, type NavApp, type NavGroup, type NavItem } from "./nav-registry";
 import { useNavUiStore } from "./nav-ui-store";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 /**
  * One contextual-sidebar item. Active items get the violet left-accent + lifted
@@ -30,12 +36,12 @@ function NavItemRow({
           icon={item.icon}
           size={20}
           strokeWidth={1.5}
-          className="text-current"
+          className={cn("text-current", active && "text-[#A78BFA]")}
         />
       </span>
       <span className="flex-1 truncate">{item.label}</span>
       {item.comingSoon ? (
-        <span className="shrink-0 rounded-full bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-text-tertiary">
+        <span className="shrink-0 rounded-full bg-white/[0.02] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#52525B]">
           Soon
         </span>
       ) : typeof item.count === "number" ? (
@@ -53,7 +59,11 @@ function NavItemRow({
   if (item.comingSoon) {
     return (
       <div
-        className={cn(baseClass, "cursor-default text-text-tertiary")}
+        className={cn(
+          baseClass,
+          // Recessed: clearly not-yet-available, doesn't compete with live items.
+          "cursor-default text-[#52525B] [&_svg]:opacity-70",
+        )}
         aria-disabled
         title="Coming soon"
       >
@@ -70,8 +80,8 @@ function NavItemRow({
       className={cn(
         baseClass,
         active
-          ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
-          : "text-sidebar-nav-inactive-text hover:bg-white/[0.04] hover:text-sidebar-nav-active-text",
+          ? "bg-[rgba(139,92,246,0.15)] text-[#F4F4F5]"
+          : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
       )}
     >
       {inner}
@@ -161,21 +171,25 @@ function NavGroupBlock({
  */
 export function ContextualNav({
   app,
+  apps,
   pathname,
   onNavigate,
+  footer,
 }: {
   app: NavApp;
+  /** All apps, for the switcher dropdown. */
+  apps: NavApp[];
   pathname: string;
   onNavigate?: () => void;
+  /** Pinned bottom area (e.g. Journal's balance card + Add Trade). */
+  footer?: React.ReactNode;
 }) {
   return (
     <>
-      <div className="flex h-header shrink-0 items-center border-b border-sidebar-divider px-5">
-        <span className="truncate text-xl font-bold tracking-tight text-text-primary">
-          {app.name}
-        </span>
-      </div>
       <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
+        {/* App switcher — ties the rail selection to this panel: "you're in
+            Journal, tap to switch". Aligned to the nav-item grid below. */}
+        <AppSwitcher app={app} apps={apps} onNavigate={onNavigate} />
         {app.groups.map((group, i) => (
           <NavGroupBlock
             key={group.header ?? `group-${i}`}
@@ -187,6 +201,87 @@ export function ContextualNav({
           />
         ))}
       </nav>
+
+      {footer ? <div className="shrink-0">{footer}</div> : null}
     </>
+  );
+}
+
+/**
+ * Context header that names the current app (with its rail glyph) and doubles as
+ * an app switcher. Sits on the same grid as the nav items below, so it reads as
+ * "you are in <app>" rather than a competing page title.
+ */
+export function AppSwitcher({
+  app,
+  apps,
+  onNavigate,
+}: {
+  app: NavApp;
+  apps: NavApp[];
+  onNavigate?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`Current app: ${app.name}. Switch app`}
+          className="group/switch mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
+        >
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-secondary">
+            <HugeiconsIcon icon={app.icon} size={20} strokeWidth={1.5} />
+          </span>
+          <span className="flex-1 truncate text-sm font-semibold text-text-primary">
+            {app.name}
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-text-tertiary transition-transform group-data-[state=open]/switch:rotate-180" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[200px] border-chrome-control-border bg-card-bg p-1"
+      >
+        <p className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+          Switch app
+        </p>
+        {apps.map((entry) => {
+          const isCurrent = entry.id === app.id;
+          return (
+            <Link
+              key={entry.id}
+              href={entry.route}
+              onClick={() => {
+                setOpen(false);
+                onNavigate?.();
+              }}
+              aria-current={isCurrent ? "true" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
+                isCurrent
+                  ? "text-[#F4F4F5]"
+                  : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
+              )}
+            >
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                <HugeiconsIcon
+                  icon={entry.icon}
+                  size={18}
+                  strokeWidth={1.5}
+                  className={cn(entry.isAI && "text-ai-accent")}
+                />
+              </span>
+              <span className="flex-1 truncate">{entry.name}</span>
+              {isCurrent ? (
+                <Check className="h-4 w-4 shrink-0 text-ai-accent" />
+              ) : null}
+            </Link>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 }
