@@ -151,7 +151,7 @@ export function JournalFeedPage() {
         showSyncMeta={false}
         leftContent={
           <h1 className="text-xl font-semibold tracking-tight text-text-primary">
-            Journal
+            Day Journal
           </h1>
         }
         accounts={accounts}

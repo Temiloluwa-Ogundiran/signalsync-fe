@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { JournalDayPage } from "@/features/journal/components/journal-day-page";
 
-export const metadata = { title: "Daily log" };
+export const metadata = { title: "Day Journal" };
 
 export default function Page() {
   return (

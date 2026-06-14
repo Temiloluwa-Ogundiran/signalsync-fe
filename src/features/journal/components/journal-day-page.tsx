@@ -112,12 +112,12 @@ export function JournalDayPage() {
           className="inline-flex w-fit items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Journal
+          Back to Day Journal
         </button>
 
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            Daily log
+            Day Journal
           </h1>
           <span className="text-text-tertiary/50">•</span>
           <span className="text-base font-bold text-text-primary">
