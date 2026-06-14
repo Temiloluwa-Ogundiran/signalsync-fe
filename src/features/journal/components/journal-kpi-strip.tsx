@@ -11,6 +11,8 @@ import { JournalKpiTradeWin } from "./journal-kpi-trade-win";
 interface JournalKpiStripProps {
   summary: JournalAnalyticsSummaryResponse | undefined;
   tradeOutcomeCounts: TradeOutcomeCounts;
+  /** Cumulative net-P&L series for the Net P&L sparkline. */
+  netPnlSeries: { i: number; v: number }[];
   isLoading?: boolean;
   className?: string;
 }
@@ -21,6 +23,7 @@ const GRID = "grid min-w-0 grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4";
 function JournalKpiStripImpl({
   summary,
   tradeOutcomeCounts,
+  netPnlSeries,
   isLoading = false,
   className,
 }: JournalKpiStripProps) {
@@ -39,7 +42,10 @@ function JournalKpiStripImpl({
 
   return (
     <section className={cn(GRID, className)}>
-      <JournalKpiNetPnl totalNetPnl={summary?.total_net_pnl ?? 0} />
+      <JournalKpiNetPnl
+        totalNetPnl={summary?.total_net_pnl ?? 0}
+        series={netPnlSeries}
+      />
       <JournalKpiTradeWin
         winRatePercent={summary?.win_rate ?? 0}
         outcomeCounts={tradeOutcomeCounts}

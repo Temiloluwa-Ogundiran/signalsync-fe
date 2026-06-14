@@ -5,9 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
 import {
   formatDateParam,
-  getLastDaysInclusiveRange,
   parseDateParam,
 } from "@/features/journal/lib/date-window";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
 import type { JournalCalendarDayStat } from "@/features/journal/types";
@@ -17,10 +18,11 @@ import {
 } from "@/features/journal/hooks/use-journal-accounts";
 import {
   useJournalDashboardAnalytics,
+  useJournalEquityCurveAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import { toast } from "sonner";
-import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
+import { JournalPageHeader } from "@/features/journal/components/journal-page-header";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
 import { aggregateTradeOutcomes } from "@/features/journal/lib/journal-kpi-aggregates";
 import {
@@ -132,19 +134,50 @@ function JournalPageContent() {
   const fromDateParam = searchParams.get("fromDate");
   const toDateParam = searchParams.get("toDate");
   const { fromDate, toDate } = useMemo(() => {
+    // No date params → no filter (show ALL trades). Only apply a window when
+    // the user picks a custom range.
     const queryFromDate = parseDateParam(fromDateParam);
     const queryToDate = parseDateParam(toDateParam);
     const hasCustomRange = !!queryFromDate && !!queryToDate;
-    const rollingDefaultRange = getLastDaysInclusiveRange(30);
     return {
-      fromDate: hasCustomRange
-        ? formatDateParam(queryFromDate)
-        : rollingDefaultRange.fromDate,
-      toDate: hasCustomRange
-        ? formatDateParam(queryToDate)
-        : rollingDefaultRange.toDate,
+      fromDate: hasCustomRange ? formatDateParam(queryFromDate) : "",
+      toDate: hasCustomRange ? formatDateParam(queryToDate) : "",
     };
   }, [fromDateParam, toDateParam]);
+
+  // Date-range control state for the page header (moved out of the global chrome).
+  const parsedDateRange = useMemo<DateRange | undefined>(() => {
+    const from = parseDateParam(fromDateParam);
+    if (!from) return undefined;
+    const to = parseDateParam(toDateParam);
+    return to ? { from, to } : { from };
+  }, [fromDateParam, toDateParam]);
+
+  const dateRangeLabel = useMemo(() => {
+    if (!parsedDateRange?.from || !parsedDateRange.to) return "Date range";
+    return `${format(parsedDateRange.from, "LLL dd, y")} - ${format(parsedDateRange.to, "LLL dd, y")}`;
+  }, [parsedDateRange]);
+
+  const applyDateRange = (nextRange: DateRange | undefined) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!nextRange?.from) {
+      params.delete("fromDate");
+      params.delete("toDate");
+      router.replace(
+        params.toString() ? `/journal?${params.toString()}` : "/journal",
+      );
+      return;
+    }
+    params.set("fromDate", formatDateParam(nextRange.from));
+    if (nextRange.to) {
+      params.set("toDate", formatDateParam(nextRange.to));
+    } else {
+      params.delete("toDate");
+    }
+    router.replace(
+      params.toString() ? `/journal?${params.toString()}` : "/journal",
+    );
+  };
 
   const scopedAccountId = activeAccountId || undefined;
 
@@ -153,6 +186,19 @@ function JournalPageContent() {
     fromDate,
     toDate,
   });
+  const equityCurveQuery = useJournalEquityCurveAnalytics({
+    accountId: scopedAccountId,
+    fromDate,
+    toDate,
+  });
+  const netPnlSeries = useMemo(
+    () =>
+      (equityCurveQuery.data?.points ?? []).map((p, i) => ({
+        i,
+        v: p.cumulative_pnl,
+      })),
+    [equityCurveQuery.data?.points],
+  );
   // `refetch` is referentially stable in TanStack Query v5; depending on the
   // whole `dashboardQuery` object (new identity every render) would tear down and
   // recreate the polling interval/timeout effects on every render (incl. each 4s
@@ -347,19 +393,24 @@ function JournalPageContent() {
         open={showJournalSyncProgress}
         message={journalSyncProgressMessage}
       />
-      <JournalToolbar
+      <JournalPageHeader
+        title="Dashboard"
         isSyncPending={isSyncBusy}
         lastSyncedAt={activeAccount?.last_synced_at}
         nextSyncNotBefore={activeAccount?.next_sync_not_before}
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
         connectionState={activeAccount?.connection_state}
         onSyncAccount={() => void handleRefreshAccounts()}
+        dateRange={parsedDateRange}
+        dateRangeLabel={dateRangeLabel}
+        onApplyDateRange={applyDateRange}
       />
 
       {showKpiStrip ? (
         <JournalKpiStrip
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
+          netPnlSeries={netPnlSeries}
           isLoading={dashboardQuery.isLoading}
         />
       ) : null}

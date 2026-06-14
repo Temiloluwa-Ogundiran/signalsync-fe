@@ -99,6 +99,16 @@ export interface JournalAnalyticsSummaryResponse {
   max_drawdown: number;
 }
 
+export interface JournalAnalyticsEquityCurvePoint {
+  date: string;
+  cumulative_pnl: number;
+  daily_pnl: number;
+}
+
+export interface JournalAnalyticsEquityCurveResponse {
+  points: JournalAnalyticsEquityCurvePoint[];
+}
+
 export interface JournalAnalyticsInstrumentItem {
   symbol: string;
   trade_count: number;

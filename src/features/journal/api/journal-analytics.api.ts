@@ -1,6 +1,7 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   JournalAnalyticsDashboardResponse,
+  JournalAnalyticsEquityCurveResponse,
   JournalAnalyticsSummaryResponse,
   JournalAnalyticsTimePerformanceResponse,
 } from "../types";
@@ -24,8 +25,8 @@ export const journalAnalyticsApi = {
         ...withAuth(token),
         params: {
           ...(params.accountId ? { account_id: params.accountId } : {}),
-          from_date: params.fromDate,
-          to_date: params.toDate,
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
           include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
@@ -44,9 +45,29 @@ export const journalAnalyticsApi = {
         ...withAuth(token),
         params: {
           ...(params.accountId ? { account_id: params.accountId } : {}),
-          from_date: params.fromDate,
-          to_date: params.toDate,
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
+          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
+        },
+      },
+    );
+
+    return data;
+  },
+
+  getEquityCurve: async (
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
+    token?: string,
+  ): Promise<JournalAnalyticsEquityCurveResponse> => {
+    const { data } = await apiClient.get<JournalAnalyticsEquityCurveResponse>(
+      "/journal/analytics/equity-curve",
+      {
+        ...withAuth(token),
+        params: {
+          ...(params.accountId ? { account_id: params.accountId } : {}),
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
           include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
@@ -65,8 +86,8 @@ export const journalAnalyticsApi = {
         ...withAuth(token),
         params: {
           ...(params.accountId ? { account_id: params.accountId } : {}),
-          from_date: params.fromDate,
-          to_date: params.toDate,
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
           recent_limit: 8,
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
           include_manual: params.includeManual !== undefined ? params.includeManual : undefined,

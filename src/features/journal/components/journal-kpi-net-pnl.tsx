@@ -1,25 +1,83 @@
 "use client";
 
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
+
 import { formatNetPnlDisplay } from "../lib/journal-widget-mappers";
 import { JournalKpiCard } from "./journal-kpi-card";
 
 interface JournalKpiNetPnlProps {
   totalNetPnl: number;
+  /** Cumulative net-P&L series (running total from zero) for the sparkline. */
+  series: { i: number; v: number }[];
   className?: string;
 }
 
-// No sparkline for now — the equity/cumulative-P&L curve is a deliberate
-// future addition (trade-derived). The card shows the realized net P&L value.
+/**
+ * Fraction (0–1) down the chart where the y=0 baseline sits, so a single
+ * gradient can split GREEN above zero / RED below it at the crossing.
+ */
+function zeroOffset(values: number[]): number {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  if (min >= 0) return 1; // all non-negative → zero at bottom (all green)
+  if (max <= 0) return 0; // all non-positive → zero at top (all red)
+  return max / (max - min); // mixed → fraction from the top where y=0 falls
+}
+
 export function JournalKpiNetPnl({
   totalNetPnl,
+  series,
   className,
 }: JournalKpiNetPnlProps) {
+  const hasCurve = series.length >= 2;
+  const off = hasCurve ? zeroOffset(series.map((d) => d.v)) : 1;
+
   return (
     <JournalKpiCard
       className={className}
       label="Net P&L"
       value={formatNetPnlDisplay(totalNetPnl)}
-      chart={null}
+      chartClassName={
+        hasCurve ? "h-[4.5rem] w-[44%] shrink-0 pointer-events-none" : undefined
+      }
+      chart={
+        hasCurve ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={series}
+              margin={{ top: 8, right: 4, bottom: 4, left: 4 }}
+              style={{ pointerEvents: "none" }}
+            >
+              <defs>
+                {/* Stroke: green above the zero offset, red below */}
+                <linearGradient id="kpi-eq-stroke" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset={off} stopColor="#22C55E" />
+                  <stop offset={off} stopColor="#EF4444" />
+                </linearGradient>
+                {/* Fill fades to transparent at the zero seam on both sides */}
+                <linearGradient id="kpi-eq-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22C55E" stopOpacity={0.6} />
+                  <stop offset={off} stopColor="#22C55E" stopOpacity={0.04} />
+                  <stop offset={off} stopColor="#EF4444" stopOpacity={0.04} />
+                  <stop offset="100%" stopColor="#EF4444" stopOpacity={0.6} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="v"
+                stroke="url(#kpi-eq-stroke)"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="url(#kpi-eq-fill)"
+                baseValue={0}
+                isAnimationActive={false}
+                dot={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : null
+      }
     />
   );
 }

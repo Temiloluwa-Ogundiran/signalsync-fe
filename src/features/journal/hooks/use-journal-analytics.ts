@@ -31,6 +31,8 @@ export const JOURNAL_ANALYTICS_KEYS = {
     ["journal-analytics", "summary", accountId, fromDate, toDate, includeManual] as const,
   timePerformance: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
     ["journal-analytics", "time-performance", accountId, fromDate, toDate, includeManual] as const,
+  equityCurve: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
+    ["journal-analytics", "equity-curve", accountId, fromDate, toDate, includeManual] as const,
   dashboard: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
     ["journal-analytics", "dashboard", accountId, fromDate, toDate, includeManual] as const,
 };
@@ -83,9 +85,8 @@ function useAnalyticsQuery<T>(opts: {
       (opts.enabled ?? true) &&
       status === "authenticated" &&
       !!session?.accessToken &&
-      (!requireAccountId || !!opts.accountId) &&
-      !!opts.fromDate &&
-      !!opts.toDate,
+      (!requireAccountId || !!opts.accountId),
+    // Empty fromDate/toDate is valid — it means "all trades" (no date filter).
     staleTime: opts.staleTime ?? 60_000,
     ...(opts.usePlaceholder ? { placeholderData: keepPreviousData } : {}),
   });
@@ -128,6 +129,25 @@ export function useJournalTimePerformanceAnalytics({
           timeBasis: i.timeBasis as "open" | "close",
           includeManual: i.includeManual,
         },
+        t,
+      ),
+  });
+}
+
+export function useJournalEquityCurveAnalytics({
+  accountId,
+  fromDate,
+  toDate,
+}: AnalyticsQueryInput) {
+  return useAnalyticsQuery({
+    accountId,
+    fromDate,
+    toDate,
+    usePlaceholder: true,
+    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.equityCurve(accountId, fromDate, toDate, im),
+    fetcher: (i, t) =>
+      journalAnalyticsApi.getEquityCurve(
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
         t,
       ),
   });
