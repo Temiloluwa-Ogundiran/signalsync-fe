@@ -397,7 +397,7 @@ export function JournalTradeChatStatsCard({
                 type="button"
                 onClick={handleCreateCustomMetric}
                 disabled={!newLabel.trim()}
-                className="rounded px-4 py-2 text-sm font-semibold text-white bg-accent hover:bg-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded px-4 py-2 text-sm font-semibold text-text-primary bg-bg-tertiary hover:bg-bg-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Slider
               </button>

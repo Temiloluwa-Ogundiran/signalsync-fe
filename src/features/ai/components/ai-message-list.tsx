@@ -32,7 +32,7 @@ function MessageBubble({ msg }: { msg: StreamingMessage }) {
         className={cn(
           "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
           isUser
-            ? "bg-brand text-white rounded-tr-sm"
+            ? "bg-brand text-brand-foreground rounded-tr-sm"
             : "bg-card-bg border border-border-secondary/50 text-text-primary rounded-tl-sm",
         )}
       >

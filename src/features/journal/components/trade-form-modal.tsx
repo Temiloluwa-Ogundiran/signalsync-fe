@@ -449,7 +449,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
                     }}
                     className={`flex items-center justify-center py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                       !isMissed
-                        ? "bg-accent text-white shadow-lg shadow-accent/15"
+                        ? "bg-bg-tertiary text-text-primary"
                         : "text-text-secondary hover:text-text-primary"
                     }`}
                   >
@@ -967,7 +967,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
               <button
                 type="button"
                 onClick={handleNext}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-5 text-xs font-bold text-white hover:bg-accent-hover transition-colors cursor-pointer shadow-md"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-bg-tertiary px-5 text-xs font-bold text-text-primary hover:bg-bg-hover transition-colors cursor-pointer shadow-md"
               >
                 Continue
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -977,7 +977,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={mutation.isPending}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-5 text-xs font-bold text-white hover:bg-accent-hover transition-colors cursor-pointer shadow-md disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-bg-tertiary px-5 text-xs font-bold text-text-primary hover:bg-bg-hover transition-colors cursor-pointer shadow-md disabled:opacity-50"
               >
                 {mutation.isPending ? (
                   <>

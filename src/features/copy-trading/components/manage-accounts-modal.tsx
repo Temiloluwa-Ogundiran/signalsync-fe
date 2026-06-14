@@ -33,7 +33,7 @@ export function ManageAccountsModal({
             >
               <div className="flex items-center space-x-4">
                 <div
-                  className={`p-3 rounded-lg ${acc.type === "Prop" ? "bg-indigo-500/10 text-indigo-400" : "bg-success-light text-success"}`}
+                  className={`p-3 rounded-lg ${acc.type === "Prop" ? "bg-bg-tertiary text-text-secondary" : "bg-success-light text-success"}`}
                 >
                   {acc.type === "Prop" ? (
                     <Briefcase className="h-5 w-5" />

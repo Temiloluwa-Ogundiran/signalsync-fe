@@ -1,7 +1,5 @@
 import { PencilLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
 
 interface JournalDayModalFooterProps {
   onClose: () => void;
@@ -24,7 +22,7 @@ export function JournalDayModalFooter({
       </Button>
       <Button
         type="button"
-        className="rounded-full font-semibold bg-violet-700 cursor-pointer text-white hover:bg-violet-600 w-[164px] h-[46px]"
+        className="rounded-full font-semibold bg-brand cursor-pointer text-brand-foreground hover:bg-brand-hover w-[164px] h-[46px]"
         onClick={onOpenDayJournal}
       >
         <PencilLine className="h-4 w-4" />

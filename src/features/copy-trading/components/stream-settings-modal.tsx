@@ -19,7 +19,7 @@ export function StreamSettingsModal({
         {/* Header */}
         <div className="p-6 border-b border-border-primary flex justify-between items-start">
           <div className="flex items-start space-x-4">
-            <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            <div className="h-12 w-12 rounded-xl bg-bg-tertiary flex items-center justify-center text-text-primary font-bold text-xl shadow-lg">
               {stream.name[0]}
             </div>
             <div>
@@ -97,7 +97,7 @@ export function StreamSettingsModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wide mb-3 flex items-center">
-                <Shield className="h-4 w-4 mr-2 text-indigo-400" /> Risk
+                <Shield className="h-4 w-4 mr-2 text-text-secondary" /> Risk
                 Overrides
               </h3>
               <div className="space-y-4">
@@ -141,7 +141,7 @@ export function StreamSettingsModal({
             </div>
             <div>
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wide mb-3 flex items-center">
-                <Filter className="h-4 w-4 mr-2 text-purple-400" /> Filters
+                <Filter className="h-4 w-4 mr-2 text-text-secondary" /> Filters
                 &amp; Execution
               </h3>
               <div className="space-y-4">
@@ -195,7 +195,7 @@ export function StreamSettingsModal({
             </button>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-colors text-sm flex items-center"
+              className="px-6 py-2.5 bg-bg-tertiary text-text-primary font-bold rounded-xl hover:bg-accent-hover transition-colors text-sm flex items-center"
             >
               <Save className="h-4 w-4 mr-2" /> Save Changes
             </button>

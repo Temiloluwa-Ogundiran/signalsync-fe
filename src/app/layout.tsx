@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Onest } from "next/font/google";
+import { Geist } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const onest = Onest({
-  variable: "--font-onest",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-});
-
-const cabinetGrotesk = localFont({
-  src: "../../public/fonts/CabinetGrotesk-Variable.woff2",
-  variable: "--font-cabinet",
-  weight: "100 900",
   display: "swap",
 });
 
@@ -42,9 +35,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${onest.variable} ${cabinetGrotesk.variable} font-sans antialiased`}
-      >
+      <body className={`${geist.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

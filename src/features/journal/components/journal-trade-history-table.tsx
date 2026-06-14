@@ -171,7 +171,7 @@ export function JournalTradeHistoryTable({
                   onClick={() => openEditTradeModal(row.original.id)}
                   title="Edit manual trade"
                   aria-label="Edit manual trade"
-                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-accent hover:text-white transition-all hover:bg-accent cursor-pointer border border-transparent"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-full bg-bg-secondary text-text-secondary hover:text-text-primary transition-all hover:bg-bg-tertiary cursor-pointer border border-transparent"
                 >
                   <Pencil className="h-4 w-4" />
                 </button>

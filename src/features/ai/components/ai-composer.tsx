@@ -63,7 +63,7 @@ export function AiComposer({
           className={cn(
             "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
             value.trim() && !disabled
-              ? "bg-brand text-white hover:bg-brand/90"
+              ? "bg-brand text-brand-foreground hover:bg-brand/90"
               : "bg-bg-tertiary text-text-tertiary cursor-not-allowed",
           )}
         >

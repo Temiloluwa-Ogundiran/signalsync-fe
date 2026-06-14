@@ -24,9 +24,9 @@
   --text-muted: #cbd5e1; /* slate-300 */
   --footnote-online: #64748b;
 
-  /* Journal KPI (light — aligned with dark tokens until light pass) */
+  /* Journal KPI (light — aligned with mint/coral system) */
   --kpi-card-bg: var(--card-bg);
-  --kpi-metric-positive: #059669;
+  --kpi-metric-positive: #16a86d;
   --kpi-metric-neutral: var(--text-primary);
   --kpi-badge-border: var(--border-primary);
   --kpi-trend-bg: #d1fae5;
@@ -40,18 +40,19 @@
   --kpi-legend-loss-bg: #fee2e2;
   --kpi-legend-loss-fg: #b91c1c;
 
-  /* Brand / Accent — Blue (matches original Vite codebase) */
-  --accent: #2563eb; /* blue-600 */
-  --accent-hover: #1d4ed8; /* blue-700 */
-  --accent-light: rgba(37, 99, 235, 0.08);
+  /* Brand / Accent — monochrome (dark primary on light surfaces) */
+  --accent: #0f172a; /* near-black primary fill */
+  --accent-hover: #1e293b;
+  --accent-foreground: #f8fafc; /* light text on dark fill */
+  --accent-light: rgba(15, 23, 42, 0.06);
 
-  /* Semantic */
-  --success: #10b981;
-  --success-light: rgba(16, 185, 129, 0.08);
+  /* Semantic — exact green/red (aligned with dark spec) */
+  --success: #22c55e;
+  --success-light: rgba(34, 197, 94, 0.1);
   --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.08);
-  --warning: #f59e0b;
-  --warning-light: rgba(245, 158, 11, 0.08);
+  --danger-light: rgba(239, 68, 68, 0.1);
+  --warning: #eab308;
+  --warning-light: rgba(234, 179, 8, 0.1);
   --info: #3b82f6;
   --info-light: rgba(59, 130, 246, 0.08);
 
@@ -129,102 +130,108 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* ===== Dark Theme (Syncgram Trades Figma — node 460:2163, dashboard screenshot) ===== */
+/* ===== Dark Theme (Edgewonk-style reference — sampled from dashboard screenshot) =====
+   Flat & dark: near-black canvas, barely-lifted cards, near-invisible borders,
+   slightly cool neutrals, mint/coral accents. */
 .dark {
-  /* Surfaces: canvas #0D0D0D, cards/sidebar #161616, hover/pill #2A2A2A (Figma greyscale + screenshot) */
-  --bg-primary: #0d0d0d;
-  --bg-secondary: #161616;
-  --bg-tertiary: #2a2a2a;
-  --bg-hover: #2a2a2a;
-  --bg-input: #1f1f1f;
+  /* Premium-restrained spec (RECESSED model): canvas is a lighter charcoal,
+     cards are DARKER and inset (wells, not tiles). Borders almost invisible. */
+  --bg-primary: #141518; /* canvas — lighter charcoal */
+  --bg-secondary: #0a0a0a; /* card surface — DARKER than canvas (recessed) */
+  --bg-tertiary: #26272b; /* hover / pill / raised controls (above canvas) */
+  --bg-hover: #2d2e33;
+  --bg-input: #0a0a0a;
 
-  /* Borders: subtle UI rails; Figma greyscale default #737373 reserved for stronger strokes */
-  --border-primary: #333333;
-  --border-secondary: #525252;
+  /* Borders: almost invisible hairlines (white @ 6%) */
+  --border-primary: rgba(255, 255, 255, 0.06);
+  --border-secondary: rgba(255, 255, 255, 0.06);
 
-  /* Text: primary #FFF, secondary #9CA3AF (screenshot) */
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-tertiary: #737373;
-  --text-muted: #525252;
+  /* Text: primary / secondary / tertiary per spec */
+  --text-primary: #f4f4f5; /* number / primary */
+  --text-secondary: #71717a; /* label / secondary */
+  --text-tertiary: #52525b; /* meta / tertiary */
+  --text-muted: #3f3f46;
 
-  /* Accent: indigo #6366F1 / #8B5CF6 range (Figma “Ask Sync” / primary actions) */
-  --accent: #6d28d9;
-  --accent-hover: #6c28d9c7;
-  --accent-light: rgba(99, 102, 241, 0.15);
+  /* Accent: monochrome — primary actions are subtle-surface, not colored.
+     Color is rationed to green/red data only. */
+  --accent: #f4f4f5; /* white primary fill */
+  --accent-hover: #e4e4e7;
+  --accent-foreground: #0a0a0b; /* dark text on white fill */
+  --accent-light: rgba(244, 244, 245, 0.08);
 
-  /* Semantic: mint green / coral red (screenshot KPI + charts) */
-  --success: #4ade80;
-  --success-light: rgba(74, 222, 128, 0.12);
-  --danger: #f87171;
-  --danger-light: rgba(248, 113, 113, 0.12);
-  --warning: #f59e0b;
-  --warning-light: rgba(245, 158, 11, 0.12);
-  --info: #3b82f6;
-  --info-light: rgba(59, 130, 246, 0.12);
+  /* Semantic: exact green/red per spec, desaturated */
+  --success: #22c55e;
+  --success-light: rgba(34, 197, 94, 0.1);
+  --danger: #ef4444;
+  --danger-light: rgba(239, 68, 68, 0.1);
+  --warning: #eab308;
+  --warning-light: rgba(234, 179, 8, 0.1);
+  --info: #71717a;
+  --info-light: rgba(113, 113, 122, 0.1);
 
-  --sidebar-bg: #161616;
-  --card-bg: #161616;
-  --card-bg-hover: #2a2a2a;
-  --modal-bg: #161616;
-  --modal-overlay: rgba(0, 0, 0, 0.65);
+  --sidebar-bg: #0a0a0a;
+  --card-bg: #0a0a0a;
+  --card-bg-hover: #121214;
+  --modal-bg: #0a0a0a;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
 
-  --gradient-accent: linear-gradient(135deg, #6366f1, #8b5cf6);
-  --gradient-card: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.08),
-    rgba(139, 92, 246, 0.04)
-  );
+  /* No lit-from-above gradients — cards are a flat dark fill (recessed wells) */
+  --gradient-accent: linear-gradient(135deg, #2a2b2f, #18191c);
+  --gradient-card: var(--card-bg);
 
-  /* Calendar / heatmap on neutral dark base */
-  --calendar-cell-neutral: #1e1e1e;
-  --calendar-cell-win-bg: rgba(74, 222, 128, 0.14);
-  --calendar-cell-loss-bg: rgba(248, 113, 113, 0.14);
-  --calendar-selected-ring: #818cf8;
-  --calendar-selected-fill: #2a2a2a;
-  --calendar-cell-date: #9ca3af;
-  --calendar-cell-subtle: #737373;
-  --calendar-pnl-win-text: #4ade80;
-  --calendar-pnl-loss-text: #f87171;
+  /* Calendar — cells sit LIFTED above the dark panel (panel #0A0A0A);
+     neutral/empty cells use a clearly lighter surface so they read as tiles. */
+  --calendar-cell-neutral: #1f1f1f;
+  --calendar-cell-win-bg: rgba(34, 197, 94, 0.18);
+  --calendar-cell-loss-bg: rgba(239, 68, 68, 0.18);
+  --calendar-selected-ring: #f4f4f5;
+  --calendar-selected-fill: #121214;
+  --calendar-cell-date: #71717a;
+  --calendar-cell-subtle: #52525b;
+  --calendar-pnl-win-text: #22c55e;
+  --calendar-pnl-loss-text: #ef4444;
 
-  /* Elevation/S-style (Figma design context) */
+  /* Elevation: minimal on a flat dark surface */
   --shadow-sm:
-    0 2px 4px rgba(22, 26, 32, 0.04), 0 16px 32px -4px rgba(22, 26, 32, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.45);
+    0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.55);
 
-  /* Dashboard chrome — Figma sidebar 504:5116 / top bar 497:5078 */
-  --chrome-bar-bg: #181818;
-  --sidebar-chrome-bg: #181818;
-  --sidebar-nav-active-bg: #2a2a2a;
-  --sidebar-nav-active-border: #e5e5e5;
-  --sidebar-nav-inactive-text: #737373;
-  --sidebar-nav-active-text: #f5f5f5;
-  --sidebar-divider: rgba(115, 115, 115, 0.2);
-  --sidebar-bottom-border: #737373;
-  --chrome-control-border: #737373;
+  /* Dashboard chrome — sidebar/topbar are DARKER than the lighter canvas */
+  --chrome-bar-bg: #0a0a0a;
+  --sidebar-chrome-bg: #0a0a0a;
+  --sidebar-nav-active-bg: #2a2b2f;
+  --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
+  --sidebar-nav-inactive-text: #71717a;
+  --sidebar-nav-active-text: #f4f4f5;
+  --sidebar-divider: rgba(255, 255, 255, 0.06);
+  --sidebar-bottom-border: rgba(255, 255, 255, 0.06);
+  --chrome-control-border: rgba(255, 255, 255, 0.06);
   --ask-sync-gradient: linear-gradient(
     262.75deg,
-    #818cf8 1.94%,
-    #393b8b 97.07%
+    #3f3f46 1.94%,
+    #27272a 97.07%
   );
-  --footnote-online: #d4d4d4;
+  --footnote-online: #71717a;
 
-  /* Journal KPI row — Figma 523:5256 (Net P&L) / 523:5265 (Trade Win %) */
-  --kpi-card-bg: #181818;
-  --kpi-metric-positive: #3fc487;
-  --kpi-metric-neutral: #fafafa;
-  --kpi-badge-border: #333333;
-  --kpi-trend-bg: #0d5233;
-  --kpi-trend-fg: #a9e6c6;
-  --kpi-trend-loss-bg: #7f1d1d;
-  --kpi-trend-loss-fg: #fca5a5;
-  --kpi-legend-win-bg: #0d5233;
-  --kpi-legend-win-fg: #3fc487;
-  --kpi-legend-be-bg: #312e81;
-  --kpi-legend-be-fg: #818cf8;
-  --kpi-legend-loss-bg: #7f1d1d;
-  --kpi-legend-loss-fg: #f87171;
+  /* Journal KPI row — card surface darker than canvas (recessed) */
+  --kpi-card-bg: #0a0a0a;
+  --kpi-label: #a1a1aa; /* card label text per spec */
+  --chip-grey: #27272a; /* neutral chip fill per spec */
+  --neutral-grey: #3f3f46; /* inactive segment / gauge grey */
+  --kpi-metric-positive: #22c55e;
+  --kpi-metric-neutral: #f4f4f5;
+  --kpi-badge-border: rgba(255, 255, 255, 0.06);
+  --kpi-trend-bg: rgba(34, 197, 94, 0.1);
+  --kpi-trend-fg: #22c55e;
+  --kpi-trend-loss-bg: rgba(239, 68, 68, 0.1);
+  --kpi-trend-loss-fg: #ef4444;
+  --kpi-legend-win-bg: rgba(34, 197, 94, 0.1);
+  --kpi-legend-win-fg: #22c55e;
+  --kpi-legend-be-bg: rgba(113, 113, 122, 0.12);
+  --kpi-legend-be-fg: #a1a1aa;
+  --kpi-legend-loss-bg: rgba(239, 68, 68, 0.1);
+  --kpi-legend-loss-fg: #ef4444;
 
   /* Journal voice bubble (neutral, dark) */
   --journal-voice-outer: rgba(255, 255, 255, 0.08);
@@ -236,37 +243,38 @@
   --journal-voice-speed-bg: rgba(255, 255, 255, 0.12);
   --journal-voice-speed-fg: #fafafa;
 
-  /* shadcn tokens (oklch from hex) */
-  --background: oklch(0.159 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.2 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.2 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.585 0.204 277.1);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.285 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.285 0 0);
-  --muted-foreground: oklch(0.714 0.019 261.3);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.711 0.166 22.2);
-  --border: oklch(0.321 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.68 0.158 276.9);
-  --chart-1: oklch(0.585 0.204 277.1);
-  --chart-2: oklch(0.8 0.182 151.7);
-  --chart-3: oklch(0.711 0.166 22.2);
-  --chart-4: oklch(0.623 0.188 259.8);
-  --chart-5: oklch(0.606 0.219 292.7);
-  --sidebar: oklch(0.2 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.585 0.204 277.1);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.285 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.321 0 0);
-  --sidebar-ring: oklch(0.68 0.158 276.9);
+  /* shadcn tokens (oklch — RECESSED: canvas lighter, cards darker) */
+  --background: oklch(0.195 0.004 250); /* #141518 canvas (lighter charcoal) */
+  --foreground: oklch(0.96 0 0); /* #f4f4f5 */
+  --card: oklch(0.135 0 0); /* #0a0a0a card (darker, recessed) */
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.135 0 0);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.96 0 0); /* neutral white primary */
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.25 0 0);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.25 0 0);
+  --muted-foreground: oklch(0.55 0 0); /* #71717a */
+  --accent: oklch(0.25 0 0);
+  --accent-foreground: oklch(0.96 0 0);
+  --destructive: oklch(0.637 0.208 25.3); /* #ef4444 red */
+  --border: oklch(1 0 0 / 6%); /* white @ 6% */
+  --input: oklch(1 0 0 / 8%);
+  --ring: oklch(0.55 0 0);
+  --chart-1: oklch(0.723 0.193 149.6); /* #22c55e green */
+  --chart-2: oklch(0.637 0.208 25.3); /* #ef4444 red */
+  --chart-3: oklch(0.55 0 0); /* grey */
+  --chart-4: oklch(0.45 0 0);
+  --chart-5: oklch(0.7 0 0);
+  --sidebar: oklch(0.135 0 0); /* #0a0a0a — darker than canvas */
+  --sidebar-foreground: oklch(0.96 0 0);
+  --sidebar-primary: oklch(0.96 0 0);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.25 0 0);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.6 0.006 286);
 }
 
 /* ===== Register tokens for Tailwind v4 ===== */
@@ -291,6 +299,7 @@
 
   --color-brand: var(--accent);
   --color-brand-hover: var(--accent-hover);
+  --color-brand-foreground: var(--accent-foreground);
 
   --color-success: var(--success);
   --color-success-light: var(--success-light);
@@ -306,8 +315,8 @@
   --color-card-bg-hover: var(--card-bg-hover);
   --color-modal-bg: var(--modal-bg);
 
-  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-cabinet), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 
   --color-chrome-bar-bg: var(--chrome-bar-bg);
   --color-sidebar-chrome-bg: var(--sidebar-chrome-bg);
@@ -321,6 +330,9 @@
   --color-footnote-online: var(--footnote-online);
 
   --color-kpi-card-bg: var(--kpi-card-bg);
+  --color-kpi-label: var(--kpi-label);
+  --color-chip-grey: var(--chip-grey);
+  --color-neutral-grey: var(--neutral-grey);
   --color-kpi-metric-positive: var(--kpi-metric-positive);
   --color-kpi-metric-neutral: var(--kpi-metric-neutral);
   --color-kpi-badge-border: var(--kpi-badge-border);
@@ -395,19 +407,27 @@
 
   --color-background: var(--background);
 
-  --radius-sm: calc(var(--radius) * 0.6);
+  /* Radius scale per spec — one family: chips 6 / buttons-inputs 8 / cards 12 */
+  --radius-sm: 6px; /* chips / badges */
+  --radius-md: 8px; /* buttons / pills / inputs */
+  --radius-lg: 8px; /* buttons / pills / inputs */
+  --radius-xl: 12px; /* cards */
+  --radius-2xl: 12px; /* cards (cap — no softer corners) */
+  --radius-3xl: 12px;
+  --radius-4xl: 12px;
 
-  --radius-md: calc(var(--radius) * 0.8);
+  /* Layout dimensions — single source of truth for chrome sizing.
+     Use as utilities: h-header, w-sidebar, w-sidebar-collapsed, px-chrome, etc. */
+  --spacing-header: 60px; /* header + sidebar header height */
+  --spacing-sidebar: 240px; /* expanded sidebar width */
+  --spacing-sidebar-collapsed: 72px; /* collapsed sidebar width */
+  --spacing-rail: 31%; /* journal right rail (trades panel) width */
+  --spacing-chrome: 26px; /* header/chrome horizontal padding */
 
-  --radius-lg: var(--radius);
-
-  --radius-xl: calc(var(--radius) * 1.4);
-
-  --radius-2xl: calc(var(--radius) * 1.8);
-
-  --radius-3xl: calc(var(--radius) * 2.2);
-
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Z-index scale — replaces ad-hoc 30/40/50 magic */
+  --z-header: 30;
+  --z-overlay: 40;
+  --z-drawer: 50;
 }
 
 /* ===== Global resets ===== */
@@ -415,13 +435,33 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family:
-    var(--font-onest),
+    var(--font-geist),
     system-ui,
     -apple-system,
     sans-serif;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+}
+
+/* ===== Tabular figures (spec: every number) =====
+   Override Tailwind's tabular-nums to also enable slashed zero, and expose a
+   reusable .tnum utility. Numbers should carry font-feature-settings tnum+zero. */
+.tabular-nums,
+.tnum {
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* ===== Calendar out-of-month hatch (diagonal stripe texture) ===== */
+.calendar-hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.03) 0,
+    rgba(255, 255, 255, 0.03) 1.5px,
+    transparent 1.5px,
+    transparent 16px
+  );
 }
 
 /* ===== Scrollbar hiding utility ===== */

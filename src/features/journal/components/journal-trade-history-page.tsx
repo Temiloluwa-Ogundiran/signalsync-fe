@@ -205,7 +205,7 @@ export function JournalTradeHistoryPage() {
           className={cn(
             "rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer",
             activeTab === "closed-trades"
-              ? "bg-accent text-white"
+              ? "bg-bg-tertiary text-text-primary"
               : "bg-bg-secondary text-text-secondary hover:text-text-primary",
           )}
         >
@@ -217,7 +217,7 @@ export function JournalTradeHistoryPage() {
           className={cn(
             "rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer",
             activeTab === "open-positions"
-              ? "bg-accent text-white"
+              ? "bg-bg-tertiary text-text-primary"
               : "bg-bg-secondary text-text-secondary hover:text-text-primary",
           )}
         >

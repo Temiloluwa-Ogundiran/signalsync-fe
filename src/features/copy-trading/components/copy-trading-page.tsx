@@ -54,7 +54,7 @@ export function CopyTradingPage() {
             className="flex items-center space-x-3 bg-card-bg border border-border-primary hover:border-accent/30 rounded-xl px-4 py-3 shadow-sm transition-all min-w-[260px]"
           >
             <div
-              className={`p-2 rounded-lg ${selectedAccount.type === "Prop" ? "bg-indigo-500/10 text-indigo-400" : "bg-accent-light text-accent"}`}
+              className={`p-2 rounded-lg ${selectedAccount.type === "Prop" ? "bg-bg-tertiary text-text-secondary" : "bg-accent-light text-accent"}`}
             >
               {selectedAccount.type === "Prop" ? (
                 <Briefcase className="h-5 w-5" />

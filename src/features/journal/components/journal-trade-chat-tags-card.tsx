@@ -102,7 +102,7 @@ export function JournalTradeChatTagsCard({
               <Button
                 size="sm"
                 onClick={() => setIsTagManagerOpen(true)}
-                className="mt-2 bg-brand text-white hover:bg-brand-hover text-xs font-semibold"
+                className="mt-2 bg-brand text-brand-foreground hover:bg-brand-hover text-xs font-semibold"
               >
                 Create Tag Category
               </Button>

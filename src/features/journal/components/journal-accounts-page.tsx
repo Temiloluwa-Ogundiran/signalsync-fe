@@ -142,7 +142,7 @@ export function JournalAccountsPage() {
               </div>
               <Button
                 onClick={openConnectModal}
-                className="bg-brand text-white hover:bg-brand-hover text-sm font-bold h-10 px-6 rounded-full shadow-lg hover:shadow-brand/20 transition-all"
+                className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-6 rounded-full shadow-lg hover:shadow-brand/20 transition-all"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Connect MT5 Account
@@ -241,7 +241,7 @@ export function JournalAccountsPage() {
                                 CSV
                               </span>
                             ) : (
-                              <span className="rounded bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                              <span className="rounded bg-bg-tertiary px-2 py-0.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">
                                 API
                               </span>
                             )}

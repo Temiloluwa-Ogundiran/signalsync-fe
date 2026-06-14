@@ -239,7 +239,7 @@ export function CSVImportWizard({
               type="button"
               onClick={handleNext}
               disabled={isPending || previewData?.errors.some((e) => e.severity === "error")}
-              className="bg-brand text-white hover:bg-brand-hover shadow-lg hover:shadow-brand/20 transition-all font-semibold"
+              className="bg-brand text-brand-foreground hover:bg-brand-hover shadow-lg hover:shadow-brand/20 transition-all font-semibold"
             >
               Next
               <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -249,7 +249,7 @@ export function CSVImportWizard({
               type="button"
               onClick={handleConfirm}
               disabled={isPending}
-              className="bg-brand text-white hover:bg-brand-hover shadow-lg hover:shadow-brand/20 transition-all font-semibold"
+              className="bg-brand text-brand-foreground hover:bg-brand-hover shadow-lg hover:shadow-brand/20 transition-all font-semibold"
             >
               {confirmMutation.isPending ? (
                 <>

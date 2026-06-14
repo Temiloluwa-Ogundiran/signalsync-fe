@@ -73,7 +73,7 @@ export function JournalDayModalOverview({
   const profitFactor = useMemo(() => buildProfitFactor(trades), [trades]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr_1fr]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_minmax(0,1fr)]">
       <section className="rounded-2xl p-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-base font-semibold text-text-primary">

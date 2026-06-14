@@ -405,7 +405,7 @@ export function JournalDayChatRail({
                             </Button>
                             <Button
                               size="sm"
-                              className="h-7 px-3 bg-brand text-white hover:bg-brand-hover cursor-pointer rounded-lg font-bold"
+                              className="h-7 px-3 bg-brand text-brand-foreground hover:bg-brand-hover cursor-pointer rounded-lg font-bold"
                               onClick={() => handleSaveEdit(message.id)}
                             >
                               Save
@@ -649,7 +649,7 @@ export function JournalDayChatRail({
           {isRecording ? (
             <Button
               size="icon"
-              className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
+              className="rounded-full hover:cursor-pointer bg-bg-tertiary text-text-primary hover:bg-accent-hover"
               onClick={onRecordToggle}
               title="Stop recording"
             >
@@ -667,7 +667,7 @@ export function JournalDayChatRail({
           ) : (
             <Button
               size="icon"
-              className="rounded-full hover:cursor-pointer bg-accent text-white hover:bg-accent-hover"
+              className="rounded-full hover:cursor-pointer bg-bg-tertiary text-text-primary hover:bg-accent-hover"
               onClick={onRecordToggle}
               title="Record voice note"
             >

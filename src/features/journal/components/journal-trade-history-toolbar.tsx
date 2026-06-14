@@ -75,7 +75,7 @@ export function JournalTradeHistoryToolbar({
         <Button
           type="button"
           onClick={onOpenJournalDay}
-          className="h-12 rounded-full bg-accent px-6 text-sm font-semibold text-white hover:bg-accent-hover cursor-pointer shrink-0"
+          className="h-12 rounded-full bg-bg-tertiary px-6 text-sm font-semibold text-text-primary hover:bg-bg-hover cursor-pointer shrink-0"
         >
           <PencilLine className="h-4 w-4" />
           Journal Day

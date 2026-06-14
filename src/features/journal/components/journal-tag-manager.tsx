@@ -128,7 +128,7 @@ function ColorPickerDialog({ isOpen, onClose, initialColor, onApply }: ColorPick
           <Button
             size="sm"
             onClick={handleApply}
-            className="flex-1 bg-brand text-white hover:bg-brand-hover"
+            className="flex-1 bg-brand text-brand-foreground hover:bg-brand-hover"
           >
             Apply
           </Button>
@@ -206,7 +206,7 @@ export function JournalTagManager({ isOpen, onOpenChange }: JournalTagManagerPro
             <Button
               type="submit"
               disabled={createCategory.isPending || !newCategoryTitle.trim()}
-              className="flex items-center gap-1 bg-brand text-white hover:bg-brand-hover"
+              className="flex items-center gap-1 bg-brand text-brand-foreground hover:bg-brand-hover"
             >
               <Plus className="h-4 w-4" />
               Add
@@ -233,7 +233,7 @@ export function JournalTagManager({ isOpen, onOpenChange }: JournalTagManagerPro
                           System Default
                         </span>
                       ) : (
-                        <span className="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-indigo-400">
+                        <span className="rounded-full bg-bg-tertiary px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-text-secondary">
                           Custom
                         </span>
                       )}
@@ -331,7 +331,7 @@ export function JournalTagManager({ isOpen, onOpenChange }: JournalTagManagerPro
                           createOption.isPending ||
                           !newOptionValues[category.id]?.trim()
                         }
-                        className="self-end bg-brand text-white hover:bg-brand-hover h-8 px-4 text-xs font-bold"
+                        className="self-end bg-brand text-brand-foreground hover:bg-brand-hover h-8 px-4 text-xs font-bold"
                       >
                         Add Option
                       </Button>
