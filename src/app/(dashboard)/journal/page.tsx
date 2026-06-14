@@ -7,8 +7,6 @@ import {
   formatDateParam,
   getLastDaysInclusiveRange,
   parseDateParam,
-  resolveBalanceRangeWindow,
-  type BalanceRangeOption,
 } from "@/features/journal/lib/date-window";
 import { JournalCalendarWidget } from "@/features/journal/components/journal-calendar-widget";
 import { JournalDayModal } from "@/features/journal/components/journal-day-modal";
@@ -19,16 +17,12 @@ import {
 } from "@/features/journal/hooks/use-journal-accounts";
 import {
   useJournalDashboardAnalytics,
-  useJournalBalanceHistoryAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
 import { toast } from "sonner";
 import { JournalToolbar } from "@/features/journal/components/journal-toolbar";
 import { JournalKpiStrip } from "@/features/journal/components/journal-kpi-strip";
-import {
-  aggregateDailyOutcomes,
-  aggregateTradeOutcomes,
-} from "@/features/journal/lib/journal-kpi-aggregates";
+import { aggregateTradeOutcomes } from "@/features/journal/lib/journal-kpi-aggregates";
 import {
   toOpenPositionsPanelRows,
   toTradesPanelRows,
@@ -36,7 +30,6 @@ import {
 import { JournalTradesPanel } from "@/features/journal/components/journal-trades-panel";
 import { JournalSymbolsWidget } from "@/features/journal/components/journal-symbols-widget";
 import { JournalTimePerformanceWidget } from "@/features/journal/components/journal-time-performance-widget";
-import { JournalBalanceOverTimeWidget } from "@/features/journal/components/journal-balance-over-time-widget";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
@@ -53,13 +46,8 @@ const showJournalSymbols = journalWidgetRegistry.some(
 const showTimePerformance = journalWidgetRegistry.some(
   (widget) => widget.id === "timePerformance",
 );
-const showBalanceHistory = journalWidgetRegistry.some(
-  (widget) => widget.id === "balanceHistory",
-);
 const analyticsRowCount =
-  Number(showJournalSymbols) +
-  Number(showTimePerformance) +
-  Number(showBalanceHistory);
+  Number(showJournalSymbols) + Number(showTimePerformance);
 const showKpiStrip = journalWidgetRegistry.some(
   (widget) => widget.id === "kpiStrip",
 );
@@ -84,7 +72,6 @@ function JournalPageContent() {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
-  const [balanceRange, setBalanceRange] = useState<BalanceRangeOption>("1M");
   const [timeBasis, setTimeBasis] = useState<"open" | "close">("close");
 
   const {
@@ -203,16 +190,6 @@ function JournalPageContent() {
   });
   const timePerformanceAnalytics =
     timeBasis === "close" ? dashboardQuery.data?.time_performance : timePerformanceQuery.data;
-  const balanceRangeWindow = useMemo(
-    () => resolveBalanceRangeWindow(balanceRange),
-    [balanceRange],
-  );
-  const balanceHistoryQuery = useJournalBalanceHistoryAnalytics({
-    accountId: scopedAccountId,
-    fromDate: balanceRangeWindow.fromDate,
-    toDate: balanceRangeWindow.toDate,
-    granularity: balanceRangeWindow.granularity,
-  });
   const openPositionsQuery = useJournalOpenPositions({
     accountId: activeAccountId || undefined,
     limit: 10,
@@ -271,20 +248,6 @@ function JournalPageContent() {
       return;
     }
     setSelectedDay(day);
-    setIsDayModalOpen(true);
-  };
-
-  const handleOpenTodayJournalDay = () => {
-    if (!activeAccountId) {
-      toast.info("Select an account first", {
-        description: "Journal Day requires a specific trading account.",
-      });
-      return;
-    }
-    const today = new Date();
-    const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    setCurrentMonth(todayMonth);
-    setSelectedDay(today.getDate());
     setIsDayModalOpen(true);
   };
 
@@ -367,10 +330,6 @@ function JournalPageContent() {
     () => aggregateTradeOutcomes(calendarAnalytics?.days),
     [calendarAnalytics?.days],
   );
-  const dailyOutcomeCounts = useMemo(
-    () => aggregateDailyOutcomes(calendarAnalytics?.days),
-    [calendarAnalytics?.days],
-  );
   const recentTradeItems = dashboardQuery.data?.recent_trades?.items;
   const tradesRows = useMemo(
     () => toTradesPanelRows(recentTradeItems ?? []),
@@ -383,7 +342,7 @@ function JournalPageContent() {
   );
 
   return (
-    <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+    <div className="min-w-0 space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
       <JournalSyncProgressBanner
         open={showJournalSyncProgress}
         message={journalSyncProgressMessage}
@@ -395,19 +354,17 @@ function JournalPageContent() {
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
         connectionState={activeAccount?.connection_state}
         onSyncAccount={() => void handleRefreshAccounts()}
-        onOpenJournalDay={handleOpenTodayJournalDay}
       />
 
       {showKpiStrip ? (
         <JournalKpiStrip
           summary={summaryAnalytics}
           tradeOutcomeCounts={tradeOutcomeCounts}
-          dailyOutcomeCounts={dailyOutcomeCounts}
           isLoading={dashboardQuery.isLoading}
         />
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
         {showCalendarWidget ? (
           <JournalCalendarWidget
             monthLabel={monthLabel}
@@ -471,17 +428,6 @@ function JournalPageContent() {
               )}
             </div>
           ) : null}
-          {showBalanceHistory ? (
-            <div className="min-h-0 min-w-0 order-1 xl:order-none">
-              <JournalBalanceOverTimeWidget
-                compact
-                points={balanceHistoryQuery.data?.points ?? []}
-                isLoading={balanceHistoryQuery.isLoading}
-                selectedRange={balanceRange}
-                onRangeChange={setBalanceRange}
-              />
-            </div>
-          ) : null}
         </div>
       ) : null}
 
@@ -499,10 +445,10 @@ export default function JournalPage() {
   return (
     <Suspense
       fallback={
-        <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+        <div className="min-w-0 space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
           <div className="h-12 max-w-2xl animate-pulse rounded-lg bg-bg-tertiary" />
           <div className="h-28 animate-pulse rounded-xl bg-bg-tertiary" />
-          <div className="grid gap-4 xl:grid-cols-[1fr_31%]">
+          <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
             <div className="min-h-[320px] animate-pulse rounded-xl bg-bg-tertiary" />
             <div className="min-h-[200px] animate-pulse rounded-xl bg-bg-tertiary" />
           </div>

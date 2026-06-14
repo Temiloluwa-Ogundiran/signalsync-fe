@@ -28,25 +28,3 @@ export function getLastDaysInclusiveRange(days: number) {
     toDate: formatDateParam(to),
   };
 }
-
-export type BalanceRangeOption = "1D" | "1W" | "1M" | "1Y" | "All";
-
-export function resolveBalanceRangeWindow(range: BalanceRangeOption) {
-  const now = new Date();
-  const end = formatDateParam(now);
-  if (range === "All") {
-    return { fromDate: "2000-01-01", toDate: end, granularity: "day" as const };
-  }
-  if (range === "1D") {
-    return { fromDate: end, toDate: end, granularity: "intraday" as const };
-  }
-  const start = new Date(now);
-  if (range === "1W") start.setDate(start.getDate() - 7);
-  if (range === "1M") start.setMonth(start.getMonth() - 1);
-  if (range === "1Y") start.setFullYear(start.getFullYear() - 1);
-  return {
-    fromDate: formatDateParam(start),
-    toDate: end,
-    granularity: "day" as const,
-  };
-}

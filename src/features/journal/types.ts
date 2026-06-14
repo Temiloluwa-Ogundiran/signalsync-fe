@@ -96,7 +96,6 @@ export interface JournalAnalyticsSummaryResponse {
   avg_trade_duration_seconds: number;
   total_net_pnl: number;
   starting_balance: number;
-  net_pnl_percent: number;
   max_drawdown: number;
 }
 
@@ -140,8 +139,7 @@ export type JournalWidgetId =
   | "calendar"
   | "tradesPanel"
   | "symbols"
-  | "timePerformance"
-  | "balanceHistory";
+  | "timePerformance";
 
 export interface JournalWidgetConfig {
   id: JournalWidgetId;
@@ -298,17 +296,6 @@ export interface JournalAnalyticsDashboardResponse {
   instruments: JournalAnalyticsInstrumentsResponse;
   time_performance: JournalAnalyticsTimePerformanceResponse;
   recent_trades: JournalTradeListResponse;
-}
-
-export interface JournalAnalyticsBalanceHistoryPoint {
-  timestamp: string;
-  balance: number;
-  equity?: number | null;
-  source: string;
-}
-
-export interface JournalAnalyticsBalanceHistoryResponse {
-  points: JournalAnalyticsBalanceHistoryPoint[];
 }
 
 export interface TagOption {
