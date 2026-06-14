@@ -69,13 +69,13 @@ function JournalTradesPanelImpl({
       </div>
 
       <div className="px-4 py-3">
-        <div className="grid grid-cols-3 rounded-full bg-bg-tertiary px-4 py-2 text-xs font-semibold text-text-primary">
+        <div className="grid grid-cols-3 px-4 py-2 text-xs font-medium text-text-secondary">
           <span>{dateHeader}</span>
           <span className="text-center">Symbol</span>
           <span className="text-right">{pnlHeader}</span>
         </div>
 
-        <div className="mt-2 divide-y divide-border-primary/60">
+        <div className="mt-1 divide-y divide-border-primary">
           {isLoading
             ? Array.from({ length: 8 }).map((_, idx) => (
                 <div
@@ -89,7 +89,7 @@ function JournalTradesPanelImpl({
               ))
             : activeRows.map((row) => (
                 <div key={row.id} className="grid grid-cols-3 py-3 text-sm">
-                  <span className="text-text-primary">
+                  <span className="tabular-nums text-text-primary">
                     {"closeDate" in row ? row.closeDate : row.openDate}
                   </span>
                   <span className="text-center text-text-primary">
@@ -97,7 +97,7 @@ function JournalTradesPanelImpl({
                   </span>
                   <span
                     className={cn(
-                      "text-right",
+                      "text-right tabular-nums",
                       ("netPnl" in row ? row.netPnl : row.floatingPnl) >= 0
                         ? "text-kpi-metric-positive"
                         : "text-danger",

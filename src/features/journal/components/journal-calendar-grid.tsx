@@ -11,7 +11,6 @@ interface JournalCalendarGridProps {
   dayStats: Record<number, JournalCalendarDayStat>;
   daysInMonth: number;
   monthStartOffset: number;
-  selectedDay: number;
   onSelectDay: (day: number) => void;
   currentMonth: Date;
 }
@@ -20,7 +19,9 @@ const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THUR", "FRI", "SAT"];
 
 function heatStyle(value: number, maxAbs: number) {
   if (!value) return {};
-  const blend = 35 + Math.min(1, Math.abs(value) / Math.max(1, maxAbs)) * 60;
+  // Floor at 65% so even small winning/losing days read clearly, scaling up
+  // to the full 14% token fill for the biggest days.
+  const blend = 65 + Math.min(1, Math.abs(value) / Math.max(1, maxAbs)) * 35;
   return {
     backgroundColor:
       value > 0
@@ -49,16 +50,35 @@ export function JournalCalendarGrid({
   dayStats,
   daysInMonth,
   monthStartOffset,
-  selectedDay,
   onSelectDay,
   currentMonth,
 }: JournalCalendarGridProps) {
   const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
-  
+
+  // "Today" — only highlight when the displayed month is the current month.
+  const now = new Date();
+  const isCurrentMonth =
+    currentMonth.getFullYear() === now.getFullYear() &&
+    currentMonth.getMonth() === now.getMonth();
+  const todayDay = isCurrentMonth ? now.getDate() : null;
+
+  const daysInPrevMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    0,
+  ).getDate();
+
   const totalCells = Math.ceil((monthStartOffset + daysInMonth) / 7) * 7;
+  // Each cell carries its label number and whether it belongs to this month.
   const cells = Array.from({ length: totalCells }, (_, index) => {
-    const day = index - monthStartOffset + 1;
-    return day >= 1 && day <= daysInMonth ? day : null;
+    const dayOffset = index - monthStartOffset + 1;
+    if (dayOffset < 1) {
+      return { label: daysInPrevMonth + dayOffset, day: null, inMonth: false };
+    }
+    if (dayOffset > daysInMonth) {
+      return { label: dayOffset - daysInMonth, day: null, inMonth: false };
+    }
+    return { label: dayOffset, day: dayOffset, inMonth: true };
   });
 
   const maxAbsDayPnl = Math.max(
@@ -67,29 +87,35 @@ export function JournalCalendarGrid({
   );
 
   return (
-    <div className="space-y-1.5">
-      <div className="grid grid-cols-7 gap-1.5">
+    <div className="space-y-1">
+      <div className="grid min-w-0 grid-cols-7 gap-1">
         {DAY_NAMES.map((dayName) => (
           <div
             key={dayName}
-            className="rounded-lg border border-border-primary/55 bg-card-bg py-1 sm:py-1.5 text-center text-[0.6rem] sm:text-[0.68rem] font-semibold text-text-primary"
+            className="py-1 text-center text-[0.6rem] sm:text-[0.68rem] font-medium uppercase tracking-wide text-text-secondary"
           >
             {dayName}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5">
-        {cells.map((day, index) => {
-          if (!day) {
+      <div className="grid min-w-0 grid-cols-7 gap-1">
+        {cells.map((cell, index) => {
+          // Out-of-month trailing/leading days: filled surface + hatch texture.
+          if (!cell.inMonth) {
             return (
               <div
-                key={`empty-${index}`}
-                className="min-h-[4.2rem] sm:min-h-22 rounded-md border border-border-primary/45 bg-(--calendar-cell-neutral)/45"
-              />
+                key={`out-${index}`}
+                className="calendar-hatch relative flex min-h-[4.2rem] sm:min-h-[5.25rem] flex-col rounded-lg border border-transparent bg-card-bg p-2 text-right"
+              >
+                <span className="ml-auto flex h-5 w-5 items-center justify-center text-[0.58rem] sm:text-[0.65rem] font-medium tabular-nums text-text-tertiary">
+                  {cell.label}
+                </span>
+              </div>
             );
           }
 
+          const day = cell.day as number;
           const stats = dayStats[day];
           const pnl = stats?.pnl ?? 0;
           const trades = stats?.trades ?? 0;
@@ -97,14 +123,15 @@ export function JournalCalendarGrid({
             <button
               key={`day-${day}`}
               onClick={() => onSelectDay(day)}
-              style={heatStyle(pnl, maxAbsDayPnl)}
+              style={pnl !== 0 ? heatStyle(pnl, maxAbsDayPnl) : undefined}
               className={cn(
-                "group relative flex min-h-[4.2rem] sm:min-h-22 cursor-pointer flex-col justify-between rounded-md border border-border-primary/60 p-1 sm:p-2 text-right transition-all",
-                day === selectedDay && "ring-2 ring-(--calendar-selected-ring)",
+                "group relative flex min-h-[4.6rem] sm:min-h-[5.5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary",
+                day === todayDay &&
+                  "ring-2 ring-(--calendar-selected-ring) ring-offset-0",
               )}
             >
               <div className="flex items-center justify-between w-full">
-                {/* Left side: either journal activity icon or hover plus icon */}
+                {/* Left side: journal activity icon or hover add-trade button */}
                 <div className="flex items-center gap-0.5 sm:gap-1">
                   {stats?.hasJournalActivity ? (
                     <span className="pointer-events-none flex h-3.5 w-3.5 items-center justify-center opacity-95" title="Has journal activity">
@@ -119,8 +146,7 @@ export function JournalCalendarGrid({
                       />
                     </span>
                   ) : null}
-                  
-                  {/* Floating Add Trade indicator on hover (hidden on mobile, shown on md+ hover) */}
+
                   <span
                     onClick={(e) => {
                       e.stopPropagation();
@@ -129,20 +155,22 @@ export function JournalCalendarGrid({
                       const dStr = String(day).padStart(2, "0");
                       openAddTradeModal(`${y}-${m}-${dStr}`);
                     }}
-                    className="opacity-0 md:group-hover:opacity-100 p-0.5 rounded bg-accent/15 hover:bg-accent text-accent hover:text-white transition-all duration-150 cursor-pointer flex items-center justify-center"
+                    className="opacity-0 md:group-hover:opacity-100 p-0.5 rounded-md bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all duration-150 cursor-pointer flex items-center justify-center"
                     title="Add trade manually for this day"
                   >
                     <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </span>
                 </div>
-                <span className="text-[0.58rem] sm:text-[0.65rem] font-semibold text-text-primary">{day}</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-[0.58rem] sm:text-[0.65rem] font-semibold tabular-nums text-text-primary">
+                  {day}
+                </span>
               </div>
-              
+
               {stats ? (
-                <div className="w-full">
+                <div className="flex w-full flex-1 flex-col items-center justify-center text-center">
                   <p
                     className={cn(
-                      "mt-0.5 sm:mt-1 text-[0.68rem] sm:text-xs md:text-sm font-bold tracking-tight",
+                      "text-[0.68rem] sm:text-xs md:text-sm font-bold tracking-tight tabular-nums",
                       pnl > 0 && "text-success",
                       pnl < 0 && "text-danger",
                       pnl === 0 && "text-text-secondary",
@@ -150,7 +178,7 @@ export function JournalCalendarGrid({
                   >
                     {compactMoney(pnl)}
                   </p>
-                  <p className="text-[0.52rem] sm:text-[0.62rem] text-text-tertiary font-medium">
+                  <p className="text-[0.52rem] sm:text-[0.62rem] text-text-tertiary font-medium tabular-nums">
                     <span>{trades}</span>
                     <span className="hidden sm:inline"> {trades === 1 ? "trade" : "trades"}</span>
                     <span className="inline sm:hidden">t</span>

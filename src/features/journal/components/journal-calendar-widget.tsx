@@ -52,7 +52,7 @@ export function JournalCalendarWidget({
   const activeDays = Object.values(dayStats).filter((day) => day.trades > 0).length;
 
   return (
-    <section className="rounded-xl bg-card-bg ring-1 ring-border-primary/60">
+    <section className="min-w-0 rounded-xl bg-card-bg ring-1 ring-border-primary/60">
       <JournalCalendarHeader
         monthLabel={monthLabel}
         monthlyPnl={monthlyPnl}
@@ -60,12 +60,11 @@ export function JournalCalendarWidget({
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
       />
-      <div className="grid gap-2 p-3 lg:grid-cols-[1fr_5.3rem]">
+      <div className="grid min-w-0 gap-2 p-3 lg:grid-cols-[minmax(0,1fr)_5.3rem]">
         <JournalCalendarGrid
           dayStats={dayStats}
           daysInMonth={daysInMonth}
           monthStartOffset={monthStartOffset}
-          selectedDay={selectedDay}
           onSelectDay={onSelectDay}
           currentMonth={currentMonth}
         />
