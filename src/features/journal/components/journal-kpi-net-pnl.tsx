@@ -1,71 +1,25 @@
-import { TrendingDown, TrendingUp } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+"use client";
 
 import { formatNetPnlDisplay } from "../lib/journal-widget-mappers";
-import { JournalKpiInfo } from "./journal-kpi-info";
+import { JournalKpiCard } from "./journal-kpi-card";
 
 interface JournalKpiNetPnlProps {
   totalNetPnl: number;
-  totalTrades: number;
   className?: string;
 }
 
+// No sparkline for now — the equity/cumulative-P&L curve is a deliberate
+// future addition (trade-derived). The card shows the realized net P&L value.
 export function JournalKpiNetPnl({
   totalNetPnl,
-  totalTrades,
   className,
 }: JournalKpiNetPnlProps) {
-  const isNonNegative = totalNetPnl >= 0;
-
   return (
-    <article
-      className={cn(
-        "relative flex min-h-[6.875rem] min-w-0 flex-col justify-between rounded-xl border border-kpi-badge-border/80 bg-kpi-card-bg p-3 shadow-sm",
-        className,
-      )}
-    >
-      <div className="flex h-full justify-between gap-3">
-        <div className="min-w-0 flex flex-col justify-center h-full space-y-1">
-          <div className="flex min-w-0 items-center gap-1">
-            <span className="truncate text-xs font-semibold leading-tight text-footnote-online min-[1400px]:text-sm">
-              Net P&L
-            </span>
-            <JournalKpiInfo
-              title="Net P&L"
-              description="Your total realized profit or loss for the selected date range, after costs. Positive means net gain; negative means net loss."
-            />
-            <span className="inline-flex min-h-[1.3125rem] ml-[7.5px] items-center justify-center rounded-full border border-kpi-badge-border bg-kpi-card-bg px-1.5 text-xs font-bold tabular-nums tracking-wide text-footnote-online">
-              {totalTrades}
-            </span>
-          </div>
-
-          <p
-            className={cn(
-              "font-heading text-[1.75rem] font-bold leading-none tracking-normal tabular-nums min-[1400px]:text-[1.95rem]",
-              isNonNegative ? "text-kpi-metric-positive" : "text-danger",
-            )}
-          >
-            {formatNetPnlDisplay(totalNetPnl)}
-          </p>
-        </div>
-
-        <div
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg",
-            isNonNegative
-              ? "bg-kpi-trend-bg text-kpi-trend-fg"
-              : "bg-kpi-trend-loss-bg text-kpi-trend-loss-fg",
-          )}
-          aria-hidden
-        >
-          {isNonNegative ? (
-            <TrendingUp className="size-5" strokeWidth={2} />
-          ) : (
-            <TrendingDown className="size-5" strokeWidth={2} />
-          )}
-        </div>
-      </div>
-    </article>
+    <JournalKpiCard
+      className={className}
+      label="Net P&L"
+      value={formatNetPnlDisplay(totalNetPnl)}
+      chart={null}
+    />
   );
 }

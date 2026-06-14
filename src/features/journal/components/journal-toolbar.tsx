@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  PencilLine,
-  Plus,
-  RefreshCw,
-} from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useJournalUiStore } from "../store/journal-ui-store";
-import { Switch } from "@/components/ui/switch";
 
 interface JournalToolbarProps {
   isSyncPending: boolean;
@@ -16,7 +10,6 @@ interface JournalToolbarProps {
   userSyncRateLimitedUntilMs?: number | null;
   connectionState?: string;
   onSyncAccount: () => void;
-  onOpenJournalDay: () => void;
 }
 
 function getLastSyncText(lastSyncedAt?: string | null) {
@@ -54,15 +47,8 @@ export function JournalToolbar({
   userSyncRateLimitedUntilMs,
   connectionState,
   onSyncAccount,
-  onOpenJournalDay,
 }: JournalToolbarProps) {
   const [nowMs, setNowMs] = useState(() => Date.now());
-
-  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
-  const includeManualTrades = useJournalUiStore((s) => s.includeManualTrades);
-  const setIncludeManualTrades = useJournalUiStore(
-    (s) => s.setIncludeManualTrades,
-  );
 
   const nextSyncNotBeforeMs = nextSyncNotBefore
     ? new Date(nextSyncNotBefore).getTime()
@@ -112,7 +98,7 @@ export function JournalToolbar({
   })();
 
   return (
-    <section className="flex flex-col gap-4 border-b border-border-primary/35 pb-5 lg:flex-row lg:items-center lg:justify-between">
+    <section className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-col gap-2">
         <div className="inline-flex items-center gap-2 text-sm text-text-secondary">
           <span>{getLastSyncText(lastSyncedAt)}</span>
@@ -147,42 +133,6 @@ export function JournalToolbar({
             </span>
           </p>
         ) : null}
-      </div>
-
-      <div className="flex flex-row items-center gap-3 md:gap-4 md:flex-nowrap shrink-0 flex-wrap">
-        {/* Compact Analytics Toggle */}
-        <div className="flex items-center gap-3 border border-border-primary/45 bg-bg-tertiary/40 rounded-full py-1.5 px-4 h-11 transition-all hover:border-border-primary select-none shrink-0">
-          <span className="text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-            Include manual trades
-          </span>
-          <Switch
-            checked={includeManualTrades}
-            onCheckedChange={setIncludeManualTrades}
-            title={
-              includeManualTrades
-                ? "Click to exclude manual trades from stats"
-                : "Click to include manual trades in stats"
-            }
-          />
-        </div>
-
-        {/* Add Trade Button (secondary bordered style) */}
-        <button
-          onClick={() => openAddTradeModal(null)}
-          className="inline-flex h-11 items-center gap-2 rounded-full border-2 border-border-primary/60 bg-card-bg px-5 text-sm font-semibold text-text-primary transition-all hover:bg-bg-secondary hover:border-border-primary cursor-pointer shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          Add Trade
-        </button>
-
-        {/* Journal Day Button */}
-        <button
-          onClick={onOpenJournalDay}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover cursor-pointer shrink-0"
-        >
-          <PencilLine className="h-4 w-4" />
-          Journal Day
-        </button>
       </div>
     </section>
   );
