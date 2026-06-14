@@ -17,23 +17,23 @@ interface JournalCalendarGridProps {
 
 const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THUR", "FRI", "SAT"];
 
-function heatStyle(value: number, maxAbs: number) {
+function heatStyle(value: number) {
   if (!value) return {};
-  // Floor at 65% so even small winning/losing days read clearly, scaling up
-  // to the full 14% token fill for the biggest days.
-  const blend = 65 + Math.min(1, Math.abs(value) / Math.max(1, maxAbs)) * 35;
+  // Flat equal-weight wash: win/loss are distinguished by hue, not magnitude,
+  // so green and red days read as equal-weight siblings (both at 12% token).
   return {
     backgroundColor:
       value > 0
-        ? `color-mix(in srgb, var(--calendar-cell-win-bg) ${blend.toFixed(1)}%, var(--calendar-cell-neutral))`
-        : `color-mix(in srgb, var(--calendar-cell-loss-bg) ${blend.toFixed(1)}%, var(--calendar-cell-neutral))`,
+        ? "var(--calendar-cell-win-bg)"
+        : "var(--calendar-cell-loss-bg)",
   };
 }
 
 function compactMoney(value: number) {
   const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
   if (abs < 1000) {
-    return `${value >= 0 ? "+" : "-"}$${abs.toLocaleString("en-US", {
+    return `${sign}$${abs.toLocaleString("en-US", {
       minimumFractionDigits: abs < 1 ? 2 : 0,
       maximumFractionDigits: 2,
     })}`;
@@ -43,7 +43,7 @@ function compactMoney(value: number) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(abs);
-  return `${value >= 0 ? "+" : "-"}$${compact}`;
+  return `${sign}$${compact}`;
 }
 
 export function JournalCalendarGrid({
@@ -81,14 +81,9 @@ export function JournalCalendarGrid({
     return { label: dayOffset, day: dayOffset, inMonth: true };
   });
 
-  const maxAbsDayPnl = Math.max(
-    1,
-    ...Object.values(dayStats).map((stat) => Math.abs(stat.pnl)),
-  );
-
   return (
     <div className="space-y-1">
-      <div className="grid min-w-0 grid-cols-7 gap-1">
+      <div className="grid min-w-0 grid-cols-7 gap-1.5">
         {DAY_NAMES.map((dayName) => (
           <div
             key={dayName}
@@ -99,14 +94,14 @@ export function JournalCalendarGrid({
         ))}
       </div>
 
-      <div className="grid min-w-0 grid-cols-7 gap-1">
+      <div className="grid min-w-0 grid-cols-7 gap-1.5">
         {cells.map((cell, index) => {
           // Out-of-month trailing/leading days: filled surface + hatch texture.
           if (!cell.inMonth) {
             return (
               <div
                 key={`out-${index}`}
-                className="calendar-hatch relative flex min-h-[4.2rem] sm:min-h-[5.25rem] flex-col rounded-lg border border-transparent bg-card-bg p-2 text-right"
+                className="calendar-hatch relative flex min-h-[4.4rem] sm:min-h-[5rem] flex-col rounded-lg border border-transparent bg-card-bg p-2 text-right"
               >
                 <span className="ml-auto flex h-5 w-5 items-center justify-center text-[0.58rem] sm:text-[0.65rem] font-medium tabular-nums text-text-tertiary">
                   {cell.label}
@@ -123,9 +118,9 @@ export function JournalCalendarGrid({
             <button
               key={`day-${day}`}
               onClick={() => onSelectDay(day)}
-              style={pnl !== 0 ? heatStyle(pnl, maxAbsDayPnl) : undefined}
+              style={pnl !== 0 ? heatStyle(pnl) : undefined}
               className={cn(
-                "group relative flex min-h-[4.6rem] sm:min-h-[5.5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary",
+                "group relative flex min-h-[4.4rem] sm:min-h-[5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary",
                 day === todayDay &&
                   "ring-2 ring-(--calendar-selected-ring) ring-offset-0",
               )}
@@ -178,7 +173,7 @@ export function JournalCalendarGrid({
                   >
                     {compactMoney(pnl)}
                   </p>
-                  <p className="text-[0.52rem] sm:text-[0.62rem] text-text-tertiary font-medium tabular-nums">
+                  <p className="text-[0.52rem] sm:text-[0.62rem] text-[rgba(255,255,255,0.55)] font-medium tabular-nums">
                     <span>{trades}</span>
                     <span className="hidden sm:inline"> {trades === 1 ? "trade" : "trades"}</span>
                     <span className="inline sm:hidden">t</span>

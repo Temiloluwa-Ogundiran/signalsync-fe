@@ -11,8 +11,9 @@ interface JournalCalendarHeaderProps {
 
 function compactMoney(value: number) {
   const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
   if (abs < 1000) {
-    return `${value >= 0 ? "+" : "-"}$${abs.toLocaleString("en-US", {
+    return `${sign}$${abs.toLocaleString("en-US", {
       minimumFractionDigits: abs < 1 ? 2 : 0,
       maximumFractionDigits: 2,
     })}`;
@@ -22,7 +23,7 @@ function compactMoney(value: number) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(abs);
-  return `${value >= 0 ? "+" : "-"}$${compact}`;
+  return `${sign}$${compact}`;
 }
 
 export function JournalCalendarHeader({
