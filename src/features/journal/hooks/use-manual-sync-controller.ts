@@ -421,6 +421,10 @@ export function useManualSyncController({
       if (didSyncTimestampAdvance || isFailureState) {
         setSyncUiState(null);
         void refetchDashboard();
+        // Background sync finished → invalidate ALL journal queries (trade
+        // history, open positions, day, analytics) so other pages like Trade
+        // View pick up the newly-ingested trades without a manual refresh.
+        void refreshJournalQueriesAfterManualSync(queryClient);
       }
     }, 4_000);
 
@@ -428,7 +432,7 @@ export function useManualSyncController({
       window.clearTimeout(expiryTimer);
       window.clearInterval(timer);
     };
-  }, [refetchDashboard, refetchAccounts, syncUiState]);
+  }, [refetchDashboard, refetchAccounts, syncUiState, queryClient]);
 
   return {
     handleRefreshAccounts,
