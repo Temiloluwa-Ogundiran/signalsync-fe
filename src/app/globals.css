@@ -180,10 +180,11 @@
   --gradient-card: var(--card-bg);
 
   /* Calendar — cells sit LIFTED above the dark panel (panel #0A0A0A);
-     neutral/empty cells use a clearly lighter surface so they read as tiles. */
+     neutral/empty cells use a clearly lighter surface so they read as tiles.
+     Win/loss fills are equal-weight washes (both 12%) so neither dominates. */
   --calendar-cell-neutral: #1f1f1f;
-  --calendar-cell-win-bg: rgba(34, 197, 94, 0.18);
-  --calendar-cell-loss-bg: rgba(239, 68, 68, 0.18);
+  --calendar-cell-win-bg: rgba(34, 197, 94, 0.12);
+  --calendar-cell-loss-bg: rgba(239, 68, 68, 0.12);
   --calendar-selected-ring: #f4f4f5;
   --calendar-selected-fill: #121214;
   --calendar-cell-date: #71717a;
@@ -300,6 +301,14 @@
   --color-brand: var(--accent);
   --color-brand-hover: var(--accent-hover);
   --color-brand-foreground: var(--accent-foreground);
+
+  /* Partna AI — RESERVED violet accent. Scoped to the AI assistant panel only.
+     Never use outside the AI dock (no dashboard cards / charts / P&L). */
+  --color-ai-accent: #8b5cf6; /* violet-500 — identity / primary */
+  --color-ai-accent-bright: #a78bfa; /* violet-400 — hover / active */
+  --color-ai-accent-deep: #6d28d9; /* violet-700 — gradient end */
+  --color-ai-glow: rgba(139, 92, 246, 0.15); /* low-opacity wash */
+  --color-ai-border: rgba(139, 92, 246, 0.3); /* accent border */
 
   --color-success: var(--success);
   --color-success-light: var(--success-light);
@@ -516,5 +525,50 @@ body {
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ===== Partna AI trigger ("Ask Partna AI") =====
+   The entry point to the AI assistant — the one place violet should feel
+   premium and alive. Reserved AI accent; must not appear elsewhere. */
+.ai-trigger {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 20px rgba(139, 92, 246, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+.ai-trigger:hover {
+  background: linear-gradient(135deg, #b794f6 0%, #8b5cf6 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 28px rgba(139, 92, 246, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+.ai-trigger__spark {
+  color: #c4b5fd; /* bright violet — catches the eye */
+  animation: ai-trigger-breathe 3s ease-in-out infinite;
+}
+@keyframes ai-trigger-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-trigger__spark {
+    animation: none;
   }
 }

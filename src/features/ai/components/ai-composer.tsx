@@ -44,7 +44,7 @@ export function AiComposer({
 
   return (
     <div className="border-t border-border-secondary/40 bg-sidebar-chrome-bg px-3 py-3">
-      <div className="flex items-end gap-2 rounded-xl border border-border-secondary/60 bg-bg-primary px-3 py-2 focus-within:border-brand/50 transition-colors">
+      <div className="flex items-end gap-2 rounded-xl border border-border-secondary/60 bg-bg-primary px-3 py-2 transition-colors focus-within:border-ai-border focus-within:ring-2 focus-within:ring-ai-glow">
         <textarea
           ref={textareaRef}
           rows={1}
@@ -63,7 +63,7 @@ export function AiComposer({
           className={cn(
             "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
             value.trim() && !disabled
-              ? "bg-brand text-brand-foreground hover:bg-brand/90"
+              ? "bg-ai-accent text-white hover:bg-ai-accent-bright"
               : "bg-bg-tertiary text-text-tertiary cursor-not-allowed",
           )}
         >

@@ -103,13 +103,19 @@ export function AiDock() {
         {/* Header */}
         <div className="flex h-[60px] shrink-0 items-center justify-between border-b border-border-secondary/40 px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand/15">
-              <Sparkles className="h-3.5 w-3.5 text-brand" />
+            <div
+              className="flex h-7 w-7 items-center justify-center rounded-full"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--color-ai-accent-bright), var(--color-ai-accent-deep))",
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="font-heading text-sm font-bold text-text-primary">
+            <span className="font-heading text-sm font-bold text-ai-accent">
               Partna AI
             </span>
-            <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand">
+            <span className="rounded-full bg-[rgba(139,92,246,0.12)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ai-accent">
               Beta
             </span>
           </div>
@@ -199,7 +205,18 @@ export function AiDock() {
             onDelete={handleDeleteSession}
           />
         ) : (
-          <div className="flex-1 min-h-0">
+          <div className="relative flex-1 min-h-0">
+            {/* Header moment: a single soft violet glow bleeding from the top,
+                behind the greeting. The one expressive accent in the panel. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-0 h-48"
+              style={{
+                background:
+                  "radial-gradient(120% 80% at 50% 0%, var(--color-ai-glow), transparent 70%)",
+              }}
+            />
+            <div className="relative z-10 h-full">
             {isCreating && !activeSessionId ? (
               <div className="flex h-full items-center justify-center">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
@@ -211,6 +228,7 @@ export function AiDock() {
                 context={context}
               />
             )}
+            </div>
           </div>
         )}
       </div>

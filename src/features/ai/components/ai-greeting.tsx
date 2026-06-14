@@ -57,9 +57,9 @@ export function AiGreeting({
             key={prompt}
             type="button"
             onClick={() => onPromptClick(prompt)}
-            className="flex items-start gap-2.5 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-2.5 text-left text-sm text-text-primary transition-colors hover:border-brand/40 hover:bg-brand/5"
+            className="flex items-start gap-2.5 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-2.5 text-left text-sm text-text-primary transition-all hover:border-ai-border hover:bg-ai-glow hover:shadow-[0_0_0_1px_var(--color-ai-border),0_4px_16px_-6px_var(--color-ai-glow)]"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ai-accent" />
             {prompt}
           </button>
         ))}
@@ -68,7 +68,7 @@ export function AiGreeting({
       {/* Take Action chips */}
       <div>
         <p className="mb-2 text-xs font-semibold text-text-tertiary uppercase tracking-wide flex items-center gap-1">
-          <Zap className="h-3 w-3 fill-current text-yellow-500" />
+          <Zap className="h-3 w-3 fill-current text-ai-accent" />
           Quick Analysis
         </p>
         <div className="flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export function AiGreeting({
               key={chip}
               type="button"
               onClick={() => onPromptClick(chip)}
-              className="rounded-full border border-border-secondary/60 bg-card-bg px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-brand/40 hover:text-brand"
+              className="rounded-full border border-border-secondary/60 bg-card-bg px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-ai-border hover:text-ai-accent-bright"
             >
               {chip}
             </button>
