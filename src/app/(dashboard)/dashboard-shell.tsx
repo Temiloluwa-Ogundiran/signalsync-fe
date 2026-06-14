@@ -28,8 +28,8 @@ export default function DashboardShell({
 
   return (
     <AiDockProvider>
-      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary md:flex-row">
-        <div className="relative hidden h-screen shrink-0 md:flex">
+      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary lg:flex-row">
+        <div className="relative hidden h-screen shrink-0 lg:flex">
           <Sidebar
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
@@ -40,7 +40,7 @@ export default function DashboardShell({
           <Suspense
             fallback={
               <div
-                className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-[26px] pr-[26px]"
+                className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome"
                 aria-hidden
               />
             }
@@ -48,7 +48,7 @@ export default function DashboardShell({
             <Header onMenuClick={() => setMobileMenuOpen((prev) => !prev)} />
           </Suspense>
 
-          <main className="scrollbar-thin flex-1 overflow-y-auto pb-20 md:pb-0">
+          <main className="scrollbar-thin min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0">
             {children}
           </main>
         </div>
@@ -58,10 +58,10 @@ export default function DashboardShell({
             <button
               type="button"
               aria-label="Close menu"
-              className="fixed inset-0 top-[60px] z-40 bg-black/50 md:hidden"
+              className="fixed inset-0 top-header z-overlay bg-black/50 lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="fixed left-0 top-[60px] z-50 h-[calc(100vh-60px)] w-[240px] md:hidden">
+            <div className="fixed left-0 top-header z-drawer h-[calc(100vh-var(--spacing-header))] w-sidebar lg:hidden">
               <Sidebar
                 collapsed={false}
                 onNavigate={() => setMobileMenuOpen(false)}

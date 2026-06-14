@@ -3,60 +3,58 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { ChevronLeft, ChevronRight, LogOut, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { IconSvgElement } from "@hugeicons/react";
+import {
+  Home01Icon,
+  Analytics01Icon,
+  Wallet01Icon,
+  ArrowDataTransferHorizontalIcon,
+  AiMagicIcon,
+  PlusSignIcon,
+  Upload04Icon,
+} from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { FEATURE_FLAGS, type FeatureFlag } from "@/config/feature-flags";
+import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 
 type NavEntry = {
   label: string;
   href: string;
-  iconSrc: string;
+  icon: IconSvgElement;
   /** When set, this item is hidden if the corresponding feature flag is false */
   flag?: FeatureFlag;
 };
 
-const navGroups: NavEntry[][] = [
-  [
-    {
-      label: "Journal",
-      href: "/journal",
-      iconSrc: "/icons/sidebar/journal.svg",
-    },
-    {
-      label: "Trade History",
-      href: "/trade-history",
-      iconSrc: "/icons/sidebar/trade-history.svg",
-    },
-    {
-      label: "Accounts",
-      href: "/accounts",
-      iconSrc: "/icons/sidebar/accounts.svg",
-    },
-    {
-      label: "Copy Trading",
-      href: "/copy-trading",
-      iconSrc: "/icons/sidebar/copy-trading.svg",
-    },
-  ],
-  [
-    {
-      label: "Partna AI",
-      href: "/ai",
-      iconSrc: "",
-      flag: "AI" as FeatureFlag,
-    },
-  ],
+const navItems: NavEntry[] = [
+  {
+    label: "Dashboard",
+    href: "/journal",
+    icon: Home01Icon,
+  },
+  {
+    label: "Trade History",
+    href: "/trade-history",
+    icon: Analytics01Icon,
+  },
+  {
+    label: "Accounts",
+    href: "/accounts",
+    icon: Wallet01Icon,
+  },
+  {
+    label: "Copy Trading",
+    href: "/copy-trading",
+    icon: ArrowDataTransferHorizontalIcon,
+  },
+  {
+    label: "Partna AI",
+    href: "/ai",
+    icon: AiMagicIcon,
+    flag: "AI" as FeatureFlag,
+  },
 ];
-
-/** Filter a group down to only items whose feature flag is enabled (or have no flag) */
-function filterByFlags(group: NavEntry[]): NavEntry[] {
-  return group.filter((item) => !item.flag || FEATURE_FLAGS[item.flag]);
-}
-
-function NavDivider() {
-  return <div className="my-3 h-px w-full bg-sidebar-divider" aria-hidden />;
-}
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -71,22 +69,23 @@ export function Sidebar({
   onToggleCollapsed,
 }: SidebarProps) {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
-  const user = session?.user;
-  const displayName =
-    user?.displayName || user?.name || user?.username || "Trader";
-  const avatarUrl = user?.avatarUrl;
+  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
+  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
+
+  const visibleItems = navItems.filter(
+    (item) => !item.flag || FEATURE_FLAGS[item.flag],
+  );
 
   return (
     <aside
       className={cn(
         "relative flex h-full shrink-0 flex-col bg-sidebar-chrome-bg font-sans transition-[width] duration-200 ease-out",
-        collapsed ? "w-[72px]" : "w-[240px]",
+        collapsed ? "w-sidebar-collapsed" : "w-sidebar",
       )}
     >
       <div
         className={cn(
-          "relative flex h-[60px] shrink-0 items-center",
+          "relative flex h-header shrink-0 items-center border-b border-sidebar-divider",
           collapsed ? "justify-center px-2" : "pl-4 pr-2",
         )}
       >
@@ -118,7 +117,7 @@ export function Sidebar({
             type="button"
             onClick={onToggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="absolute right-0 top-1/2 z-40 flex size-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-sidebar-chrome-bg p-2 text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
+            className="absolute right-0 top-1/2 z-overlay flex size-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-sidebar-chrome-bg p-2 text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
           >
             {collapsed ? (
               <ChevronRight className="size-5 shrink-0" strokeWidth={2} />
@@ -131,128 +130,93 @@ export function Sidebar({
 
       <nav
         className={cn(
-          "scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pt-4",
+          "scrollbar-thin flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto py-4",
           collapsed ? "items-center px-2" : "px-3",
         )}
       >
-        {navGroups.map((group, gi) => {
-          const visibleItems = filterByFlags(group);
-          if (visibleItems.length === 0) return null;
+        {visibleItems.map((item) => {
+          const isActive =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
-            <div key={gi}>
-              {gi > 0 && <NavDivider />}
-              <div className="flex flex-col gap-1">
-                {visibleItems.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`);
-                  return (
-                    <Link
-                      key={item.label + item.href}
-                      href={item.href}
-                      onClick={() => onNavigate?.()}
-                      className={cn(
-                        "flex min-h-[44px] items-center rounded-full py-2.5 text-base font-semibold leading-snug transition-colors",
-                        collapsed ? "w-11 justify-center px-0" : "gap-3 px-4",
-                        isActive
-                          ? "border border-sidebar-nav-active-border bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
-                          : "border border-transparent bg-transparent text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/40 hover:text-sidebar-nav-active-text",
-                      )}
-                      title={collapsed ? item.label : undefined}
-                    >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                        {item.label === "Partna AI" ? (
-                          <Sparkles
-                            className={cn(
-                              "h-5 w-5 transition-opacity",
-                              isActive ? "opacity-100 text-brand" : "opacity-75",
-                            )}
-                          />
-                        ) : (
-                          <Image
-                            src={item.iconSrc}
-                            alt=""
-                            width={24}
-                            height={24}
-                            className={cn(
-                              "h-6 w-6 transition-opacity",
-                              isActive ? "opacity-100" : "opacity-75",
-                            )}
-                          />
-                        )}
-                      </span>
-                      {!collapsed ? (
-                        <span className="flex items-center gap-1.5 truncate">
-                          {item.label}
-                          {item.label === "Partna AI" && (
-                            <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand leading-none">
-                              Beta
-                            </span>
-                          )}
-                        </span>
-                      ) : null}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+            <Link
+              key={item.label + item.href}
+              href={item.href}
+              onClick={() => onNavigate?.()}
+              className={cn(
+                "group flex min-h-[48px] items-center rounded-lg text-[15px] font-medium leading-snug transition-colors",
+                collapsed ? "w-11 justify-center px-0" : "gap-3 px-3",
+                isActive
+                  ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
+                  : "text-sidebar-nav-inactive-text hover:bg-sidebar-nav-active-bg/50 hover:text-sidebar-nav-active-text",
+              )}
+              title={collapsed ? item.label : undefined}
+            >
+              <span
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center transition-opacity",
+                  isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100",
+                )}
+              >
+                <HugeiconsIcon
+                  icon={item.icon}
+                  size={22}
+                  strokeWidth={1.5}
+                  className="text-current"
+                />
+              </span>
+              {!collapsed ? (
+                <span className="flex flex-1 items-center gap-1.5 truncate">
+                  {item.label}
+                  {item.label === "Partna AI" && (
+                    <span className="rounded-full bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand leading-none">
+                      Beta
+                    </span>
+                  )}
+                </span>
+              ) : null}
+            </Link>
           );
         })}
       </nav>
 
       <div
         className={cn(
-          "shrink-0 border-t border-sidebar-bottom-border bg-sidebar-chrome-bg pb-4 pt-5",
+          "shrink-0 bg-sidebar-chrome-bg pb-4 pt-3",
           collapsed ? "px-2" : "px-3",
         )}
       >
-        <div
-          className={cn(
-            "flex items-center px-1",
-            collapsed ? "flex-col gap-2" : "gap-3",
-          )}
-        >
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-indigo-600 ring-1 ring-white/10">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
-                {displayName.charAt(0).toUpperCase()}
-              </span>
-            )}
+        {collapsed ? (
+          <button
+            type="button"
+            onClick={() => openAddTradeModal(null)}
+            aria-label="Add new trade"
+            title="Add new trade"
+            className="mx-auto flex size-11 items-center justify-center rounded-xl bg-bg-tertiary text-text-primary transition-colors hover:bg-bg-hover cursor-pointer"
+          >
+            <HugeiconsIcon icon={PlusSignIcon} size={20} strokeWidth={2} />
+          </button>
+        ) : (
+          <div className="flex items-stretch overflow-hidden rounded-xl bg-bg-tertiary">
+            <button
+              type="button"
+              onClick={() => openAddTradeModal(null)}
+              className="flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-hover cursor-pointer"
+            >
+              <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
+              Add New Trade
+            </button>
+            <div className="my-2 w-px shrink-0 bg-border-secondary/60" aria-hidden />
+            <button
+              type="button"
+              onClick={() => openConnectModal()}
+              aria-label="Import trades"
+              title="Import trades"
+              className="flex w-12 shrink-0 items-center justify-center text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary cursor-pointer"
+            >
+              <HugeiconsIcon icon={Upload04Icon} size={16} strokeWidth={1.5} />
+            </button>
           </div>
-          {!collapsed ? (
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-sans text-base font-normal text-sidebar-nav-active-text">
-                {status === "authenticated" ? displayName : "—"}
-              </p>
-              <p className="text-[10px] leading-normal text-footnote-online">
-                Online
-              </p>
-            </div>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
-          title={collapsed ? "Log out" : undefined}
-          className={cn(
-            "rounded-full text-sm font-medium text-sidebar-nav-inactive-text transition-colors hover:bg-sidebar-nav-active-bg hover:text-sidebar-nav-active-text",
-            collapsed
-              ? "mx-auto mt-3 flex size-10 items-center justify-center p-0"
-              : "mt-4 w-full px-4 py-2.5 text-center",
-          )}
-        >
-          {collapsed ? (
-            <LogOut className="size-4 shrink-0" aria-hidden />
-          ) : (
-            "Log out"
-          )}
-        </button>
+        )}
       </div>
     </aside>
   );

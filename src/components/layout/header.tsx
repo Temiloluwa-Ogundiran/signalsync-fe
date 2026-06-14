@@ -1,7 +1,6 @@
 "use client";
 
-import { Menu, PlugZap, Plus, Sparkles } from "lucide-react";
-import { IconChevronDown } from "@/components/icons/syncgram-nav-icons";
+import { Menu, Sparkles } from "lucide-react";
 import { useAiDockStore } from "@/features/ai/store/ai-dock-store";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 import Image from "next/image";
@@ -11,12 +10,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarWidget } from "@/components/ui/calendar";
+import { UserMenu } from "./user-menu";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  HeaderDateRangePicker,
+  HeaderAccountSelector,
+} from "./header-controls";
 import type { DateRange } from "react-day-picker";
 
 interface HeaderProps {
@@ -44,15 +42,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const activeAccount = accounts.find(
     (account) => account.id === activeAccountId,
   );
-
-  const title = useMemo(() => {
-    if (pathname.includes("/journal")) return "Journal";
-    if (pathname.includes("/trade-history")) return "Trade History";
-    if (pathname.includes("/accounts")) return "Accounts";
-    if (pathname.includes("/copy-trading")) return "Copy Trading";
-    if (pathname.includes("/ai")) return "Partna AI";
-    return "";
-  }, [pathname]);
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
     const fromDate = searchParams.get("fromDate");
@@ -115,9 +104,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <>
-      <header className="relative z-30 flex h-[60px] shrink-0 items-center bg-chrome-bar-bg pl-[26px] pr-[26px] font-sans border-b border-border-secondary/40">
+      <header className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome font-sans border-b border-border-secondary/40">
         <div className="flex w-full min-w-0 items-center gap-3">
-          <div className="flex shrink-0 items-center gap-2 md:hidden">
+          <div className="flex shrink-0 items-center gap-2 lg:hidden">
             <button
               type="button"
               onClick={onMenuClick}
@@ -132,146 +121,37 @@ export function Header({ onMenuClick }: HeaderProps) {
                 alt=""
                 width={28}
                 height={35}
-                className="shrink-0 hidden md:inline-block"
+                className="shrink-0"
                 priority
               />
-              <span className="truncate hidden md:inline-block font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">
+              <span className="truncate font-heading text-xl font-bold leading-tight tracking-tight text-text-primary">
                 TradePartna
               </span>
             </div>
           </div>
 
-          <div className="min-w-0 flex-1 text-left">
-            {title ? (
-              <h1 className="truncate font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-text-primary">
-                {title}
-              </h1>
-            ) : null}
-          </div>
+          <div className="min-w-0 flex-1" />
 
           <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3">
             <div className="relative hidden items-stretch lg:flex">
-              {/* Date Range Picker (Desktop) */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 rounded-l-full border border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg hover:cursor-pointer"
-                  >
-                    <Image
-                      src="/icons/navbar/calendar.svg"
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                    <div className="flex flex-col items-start leading-none gap-0.5">
-                      <span className="text-[10px] font-medium text-text-secondary select-none">
-                        Date range
-                      </span>
-                      <span className="text-[11px] font-semibold text-sidebar-nav-active-text">
-                        {parsedDateRange?.from && parsedDateRange?.to
-                          ? rangeLabel
-                          : "Last 30 days"}
-                      </span>
-                    </div>
-                    <IconChevronDown />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto border-chrome-control-border bg-card-bg p-0"
-                  align="start"
-                >
-                  <CalendarWidget
-                    mode="range"
-                    selected={parsedDateRange}
-                    onSelect={applyDateRange}
-                    numberOfMonths={2}
-                    defaultMonth={parsedDateRange?.from}
-                  />
-                  {parsedDateRange?.from && (
-                    <div className="border-t border-chrome-control-border px-3 py-2 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => applyDateRange(undefined)}
-                        className="rounded-md px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary transition-colors"
-                      >
-                        Clear range
-                      </button>
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
-
-              {/* Accounts Selector (Desktop) */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 rounded-r-full border border-l-0 border-chrome-control-border px-4 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg hover:cursor-pointer"
-                  >
-                    <Image
-                      src="/icons/navbar/accounts.svg"
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                    <span>
-                      {activeAccount?.display_name ||
-                        activeAccount?.broker_login ||
-                        (accounts.length === 0
-                          ? "Connect Account"
-                          : "Select account")}
-                    </span>
-                    <IconChevronDown />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-72 border-chrome-control-border bg-card-bg p-2"
-                  align="end"
-                >
-                  {accounts.length ? (
-                    <>
-                      <div className="max-h-64 overflow-y-auto">
-                        {accounts.map((account) => (
-                          <button
-                            key={account.id}
-                            type="button"
-                            onClick={() => selectAccount(account.id)}
-                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-sidebar-nav-active-bg"
-                          >
-                            <span className="truncate pr-2">
-                              {account.display_name ||
-                                `Account ${account.broker_login}`}
-                            </span>
-                            {account.id === activeAccountId ? (
-                              <span className="text-xs font-bold text-brand shrink-0">
-                                Active
-                              </span>
-                            ) : null}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={openAddAccount}
-                        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-chrome-control-border px-3 py-2 text-sm font-semibold text-text-primary hover:bg-sidebar-nav-active-bg cursor-pointer"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add account
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={openAddAccount}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-chrome-control-border px-3 py-2 text-sm font-semibold text-text-primary hover:bg-sidebar-nav-active-bg cursor-pointer"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add account
-                    </button>
-                  )}
-                </PopoverContent>
-              </Popover>
+              <HeaderDateRangePicker
+                variant="desktop"
+                range={parsedDateRange}
+                rangeLabel={rangeLabel}
+                onApply={applyDateRange}
+              />
+              <HeaderAccountSelector
+                variant="desktop"
+                accounts={accounts}
+                activeAccountId={activeAccountId}
+                activeLabel={
+                  activeAccount?.display_name ||
+                  activeAccount?.broker_login ||
+                  (accounts.length === 0 ? "Connect Account" : "Select account")
+                }
+                onSelect={selectAccount}
+                onAddAccount={openAddAccount}
+              />
             </div>
 
             {FEATURE_FLAGS.AI && (
@@ -285,153 +165,37 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             )}
 
-            <Button
-              type="button"
-              onClick={openAddAccount}
-              className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] bg-brand text-white hover:bg-brand-hover text-xs font-bold px-4 py-2 h-9 border-0 shadow-sm transition-all"
-            >
-              <PlugZap className="h-4 w-4" />
-              Connect Account
-            </Button>
+            <UserMenu />
           </div>
         </div>
       </header>
 
       {/* Mobile Sub-Header controls bar (only visible on mobile lg:hidden) */}
-      <div className="flex lg:hidden items-center justify-between gap-2 border-b border-border-secondary/40 bg-chrome-bar-bg/95 px-[26px] py-2">
+      <div className="flex lg:hidden items-center justify-between gap-2 border-b border-border-secondary/40 bg-chrome-bar-bg/95 px-chrome py-2">
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          {/* Calendar Picker (Mobile) */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-full border border-chrome-control-border px-3 py-1 text-xs font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg min-w-0"
-              >
-                <Image
-                  src="/icons/navbar/calendar.svg"
-                  alt=""
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
-                <div className="flex flex-col items-start leading-none gap-0.5 min-w-0">
-                  <span className="text-[9px] font-medium text-text-secondary select-none">
-                    Date range
-                  </span>
-                  <span className="text-[10px] font-semibold text-sidebar-nav-active-text truncate">
-                    {parsedDateRange?.from && parsedDateRange?.to
-                      ? rangeLabel
-                      : "Last 30 days"}
-                  </span>
-                </div>
-                <IconChevronDown className="h-3 w-3 shrink-0" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto border-chrome-control-border bg-card-bg p-0"
-              align="start"
-            >
-              <CalendarWidget
-                mode="range"
-                selected={parsedDateRange}
-                onSelect={applyDateRange}
-                numberOfMonths={1}
-                defaultMonth={parsedDateRange?.from}
-              />
-              {parsedDateRange?.from && (
-                <div className="border-t border-chrome-control-border px-3 py-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => applyDateRange(undefined)}
-                    className="rounded-md px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-sidebar-nav-active-bg hover:text-text-primary transition-colors"
-                  >
-                    Clear range
-                  </button>
-                </div>
-              )}
-            </PopoverContent>
-          </Popover>
-
-          {/* Account Selector (Mobile) */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-full border border-chrome-control-border px-3 py-1.5 text-xs font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg min-w-0"
-              >
-                <Image
-                  src="/icons/navbar/accounts.svg"
-                  alt=""
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
-                <span className="truncate">
-                  {activeAccount?.display_name ||
-                    activeAccount?.broker_login ||
-                    (accounts.length === 0 ? "Connect" : "Select")}
-                </span>
-                <IconChevronDown className="h-3 w-3 shrink-0" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-64 border-chrome-control-border bg-card-bg p-2"
-              align="start"
-            >
-              {accounts.length ? (
-                <>
-                  <div className="max-h-48 overflow-y-auto">
-                    {accounts.map((account) => (
-                      <button
-                        key={account.id}
-                        type="button"
-                        onClick={() => selectAccount(account.id)}
-                        className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs text-text-primary hover:bg-sidebar-nav-active-bg"
-                      >
-                        <span className="truncate pr-2">
-                          {account.display_name ||
-                            `Account ${account.broker_login}`}
-                        </span>
-                        {account.id === activeAccountId ? (
-                          <span className="text-[10px] font-bold text-brand shrink-0">
-                            Active
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={openAddAccount}
-                    className="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-chrome-control-border px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-sidebar-nav-active-bg cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add account
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={openAddAccount}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-chrome-control-border px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-sidebar-nav-active-bg cursor-pointer"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add account
-                </button>
-              )}
-            </PopoverContent>
-          </Popover>
+          <HeaderDateRangePicker
+            variant="mobile"
+            range={parsedDateRange}
+            rangeLabel={rangeLabel}
+            onApply={applyDateRange}
+          />
+          <HeaderAccountSelector
+            variant="mobile"
+            accounts={accounts}
+            activeAccountId={activeAccountId}
+            activeLabel={
+              activeAccount?.display_name ||
+              activeAccount?.broker_login ||
+              (accounts.length === 0 ? "Connect" : "Select")
+            }
+            onSelect={selectAccount}
+            onAddAccount={openAddAccount}
+          />
         </div>
 
-        {/* Connect Button (Mobile) */}
-        <Button
-          type="button"
-          onClick={openAddAccount}
-          className="flex shrink-0 items-center gap-1 rounded-[10px] bg-brand text-white hover:bg-brand-hover text-[10px] font-bold px-3 py-1 h-7 border-0 shadow-sm transition-all cursor-pointer"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Connect
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <UserMenu />
+        </div>
       </div>
     </>
   );

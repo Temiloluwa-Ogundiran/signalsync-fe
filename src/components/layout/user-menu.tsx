@@ -1,0 +1,90 @@
+"use client";
+
+import { LogOut, User } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+export function UserMenu() {
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const displayName =
+    user?.displayName || user?.name || user?.username || "Trader";
+  const email = user?.email ?? "";
+  const avatarUrl = user?.avatarUrl;
+  const initial = displayName.charAt(0).toUpperCase();
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Account menu"
+          className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-tertiary ring-1 ring-border-secondary/60 transition-opacity hover:opacity-90 cursor-pointer"
+        >
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-sm font-bold text-white">{initial}</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-60 border-chrome-control-border bg-card-bg p-1.5"
+        align="end"
+      >
+        <div className="flex items-center gap-3 px-2.5 py-2">
+          <div className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-tertiary ring-1 ring-border-secondary/60">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-sm font-bold text-white">{initial}</span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-text-primary">
+              {status === "authenticated" ? displayName : "—"}
+            </p>
+            {email ? (
+              <p className="truncate text-xs text-text-secondary">{email}</p>
+            ) : (
+              <p className="text-xs text-footnote-online">Online</p>
+            )}
+          </div>
+        </div>
+
+        <div className="my-1 h-px bg-border-secondary/50" aria-hidden />
+
+        <button
+          type="button"
+          disabled
+          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-secondary opacity-60"
+        >
+          <User className="size-4 shrink-0" />
+          Profile
+        </button>
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
+          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
+        >
+          <LogOut className="size-4 shrink-0" />
+          Log out
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
+}

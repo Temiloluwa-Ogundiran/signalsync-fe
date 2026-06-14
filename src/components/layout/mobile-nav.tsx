@@ -1,39 +1,34 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { IconSvgElement } from "@hugeicons/react";
+import {
+  Home01Icon,
+  Analytics01Icon,
+  Wallet01Icon,
+  ArrowDataTransferHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 
 type MobileNavItem = {
   label: string;
   href: string;
-  iconSrc: string;
+  icon: IconSvgElement;
 };
 
 const navItems: MobileNavItem[] = [
-  { label: "Journal", href: "/journal", iconSrc: "/icons/sidebar/journal.svg" },
-  {
-    label: "History",
-    href: "/trade-history",
-    iconSrc: "/icons/sidebar/trade-history.svg",
-  },
-  {
-    label: "Accounts",
-    href: "/accounts",
-    iconSrc: "/icons/sidebar/accounts.svg",
-  },
-  {
-    label: "Copy",
-    href: "/copy-trading",
-    iconSrc: "/icons/sidebar/copy-trading.svg",
-  },
+  { label: "Dashboard", href: "/journal", icon: Home01Icon },
+  { label: "History", href: "/trade-history", icon: Analytics01Icon },
+  { label: "Accounts", href: "/accounts", icon: Wallet01Icon },
+  { label: "Copy", href: "/copy-trading", icon: ArrowDataTransferHorizontalIcon },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="bg-sidebar-chrome-bg border-t border-sidebar-bottom-border pb-safe fixed bottom-0 z-50 flex w-full items-center justify-between px-1 py-2 md:hidden">
+    <div className="bg-sidebar-chrome-bg border-t border-sidebar-bottom-border pb-safe fixed bottom-0 z-drawer flex w-full items-center justify-between px-1 py-2 lg:hidden">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -47,13 +42,16 @@ export function MobileNav() {
                 : "text-sidebar-nav-inactive-text"
             }`}
           >
-            <span className="flex h-6 w-6 items-center justify-center">
-              <Image
-                src={item.iconSrc}
-                alt=""
-                width={24}
-                height={24}
-                className={isActive ? "opacity-100" : "opacity-75"}
+            <span
+              className={`flex h-6 w-6 items-center justify-center ${
+                isActive ? "opacity-100" : "opacity-75"
+              }`}
+            >
+              <HugeiconsIcon
+                icon={item.icon}
+                size={22}
+                strokeWidth={1.5}
+                className="text-current"
               />
             </span>
             <span className="mt-1 text-[10px] font-medium leading-tight">
