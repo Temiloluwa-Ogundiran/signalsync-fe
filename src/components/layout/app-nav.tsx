@@ -193,11 +193,11 @@ function JournalNavFooter() {
   return (
     <div className="flex flex-col gap-3 p-3">
       {hasBalance ? (
-        <div className="rounded-xl bg-bg-tertiary px-4 py-3">
-          <p className="text-xs text-text-secondary">Account Balance</p>
-          <p className="mt-0.5 text-lg font-bold leading-tight text-text-primary tabular-nums">
+        <div className="rounded-xl bg-white/[0.05] px-4 py-3">
+          <p className="text-lg font-bold leading-tight text-text-primary tabular-nums">
             {balanceFormatter.format(balance as number)}
           </p>
+          <p className="mt-0.5 text-sm text-text-secondary">Account Balance</p>
         </div>
       ) : null}
 

@@ -175,7 +175,7 @@ export function JournalAccountsPage() {
                       const balanceText =
                         account.latest_balance == null
                           ? "--"
-                          : formatCurrency(account.latest_balance);
+                          : formatCurrency(Number(account.latest_balance));
                       const syncStatusDetail = getSyncStatusDetail(account);
                       
                       return (
