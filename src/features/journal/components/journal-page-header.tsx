@@ -2,8 +2,13 @@
 
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Calendar03Icon } from "@hugeicons/core-free-icons";
+import {
+  Calendar03Icon,
+  CreditCardIcon,
+  Settings02Icon,
+} from "@hugeicons/core-free-icons";
 import type { DateRange } from "react-day-picker";
 import {
   format,
@@ -31,10 +36,21 @@ interface JournalPageHeaderProps {
   userSyncRateLimitedUntilMs?: number | null;
   connectionState?: string;
   onSyncAccount: () => void;
+  /** Account selector (moved out of the global chrome into page-view controls). */
+  accounts: AccountOption[];
+  activeAccountId: string;
+  activeAccountLabel: string;
+  onSelectAccount: (accountId: string) => void;
   /** Date-range control (moved out of the global chrome into page-view controls). */
   dateRange: DateRange | undefined;
   dateRangeLabel: string;
   onApplyDateRange: (range: DateRange | undefined) => void;
+}
+
+interface AccountOption {
+  id: string;
+  display_name?: string | null;
+  broker_login?: string | null;
 }
 
 function getLastSyncDate(lastSyncedAt?: string | null) {
@@ -79,6 +95,10 @@ export function JournalPageHeader({
   userSyncRateLimitedUntilMs,
   connectionState,
   onSyncAccount,
+  accounts,
+  activeAccountId,
+  activeAccountLabel,
+  onSelectAccount,
   dateRange,
   dateRangeLabel,
   onApplyDateRange,
@@ -172,8 +192,15 @@ export function JournalPageHeader({
         ) : null}
       </div>
 
-      {/* Right: page-view controls — date range + unit toggle, grouped together */}
-      <div className="flex shrink-0 items-stretch gap-2">
+      {/* Right: page-view controls joined into one filter family — single frame,
+          internal dividers between account · date range · unit toggle. */}
+      <div className="flex shrink-0 items-stretch divide-x divide-chrome-control-border overflow-hidden rounded-lg border border-chrome-control-border bg-card-bg">
+        <AccountSelector
+          accounts={accounts}
+          activeAccountId={activeAccountId}
+          activeLabel={activeAccountLabel}
+          onSelect={onSelectAccount}
+        />
         <PageHeaderDateRangePicker
           range={dateRange}
           rangeLabel={dateRangeLabel}
@@ -247,6 +274,121 @@ function isSameDay(a: Date | undefined, b: Date | undefined) {
 }
 
 /**
+ * Account selector styled as a page-view control, sitting next to the date
+ * range (moved out of the global top bar).
+ */
+function AccountSelector({
+  accounts,
+  activeAccountId,
+  activeLabel,
+  onSelect,
+}: {
+  accounts: AccountOption[];
+  activeAccountId: string;
+  activeLabel: string;
+  onSelect: (accountId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const manageAccounts = (
+    <button
+      type="button"
+      onClick={() => {
+        router.push("/accounts");
+        setOpen(false);
+      }}
+      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-[#A1A1AA] transition-colors hover:bg-white/[0.04] hover:text-[#F4F4F5] cursor-pointer"
+    >
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+        <HugeiconsIcon icon={Settings02Icon} size={18} strokeWidth={1.5} />
+      </span>
+      Manage accounts
+    </button>
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-sidebar-nav-active-text transition-colors hover:cursor-pointer hover:bg-sidebar-nav-active-bg"
+        >
+          <HugeiconsIcon
+            icon={CreditCardIcon}
+            size={18}
+            strokeWidth={1.5}
+            className="shrink-0 text-text-secondary"
+          />
+          <span className="truncate">{activeLabel}</span>
+          <IconChevronDown />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-64 rounded-xl border border-white/[0.08] bg-[#0F1012] p-1.5"
+      >
+        {accounts.length ? (
+          <>
+            <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71717A]">
+              My accounts
+            </p>
+            <div className="max-h-64 overflow-y-auto">
+              {accounts.map((account) => {
+                const isActive = account.id === activeAccountId;
+                return (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() => {
+                      if (!isActive) onSelect(account.id);
+                      setOpen(false);
+                    }}
+                    aria-current={isActive ? "true" : undefined}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-white/[0.04]"
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center",
+                        isActive ? "text-[#A78BFA]" : "text-[#71717A]",
+                      )}
+                    >
+                      <HugeiconsIcon
+                        icon={CreditCardIcon}
+                        size={18}
+                        strokeWidth={1.5}
+                      />
+                    </span>
+                    <span
+                      className={cn(
+                        "flex-1 truncate text-sm font-medium",
+                        isActive ? "text-[#F4F4F5]" : "text-[#A1A1AA]",
+                      )}
+                    >
+                      {account.display_name ||
+                        `Account ${account.broker_login}`}
+                    </span>
+                    {isActive ? (
+                      <span className="shrink-0 rounded-full bg-[rgba(139,92,246,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#A78BFA]">
+                        Active
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="my-1.5 h-px bg-white/[0.06]" />
+            {manageAccounts}
+          </>
+        ) : (
+          manageAccounts
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/**
  * Date-range selector styled as a page-view control (not global chrome).
  * Dual-month calendar with a quick-pick presets sidebar (Today, This week,
  * This month, Last 30 days, Last month, This quarter, YTD).
@@ -295,7 +437,7 @@ function PageHeaderDateRangePicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg border border-chrome-control-border bg-card-bg px-3.5 py-2 font-semibold text-sidebar-nav-active-text transition-colors hover:cursor-pointer hover:bg-sidebar-nav-active-bg"
+          className="flex items-center gap-2 px-3.5 py-2 font-semibold text-sidebar-nav-active-text transition-colors hover:cursor-pointer hover:bg-sidebar-nav-active-bg"
         >
           <HugeiconsIcon
             icon={Calendar03Icon}
@@ -401,7 +543,7 @@ function UnitToggle() {
     <div
       role="group"
       aria-label="Value unit"
-      className="inline-flex items-stretch rounded-lg border border-chrome-control-border bg-card-bg p-0.5"
+      className="flex items-stretch divide-x divide-chrome-control-border"
     >
       <button
         type="button"
@@ -409,7 +551,7 @@ function UnitToggle() {
         aria-pressed={unit === "currency"}
         title="Currency"
         className={cn(
-          "flex min-w-9 items-center justify-center rounded-md px-3 text-sm font-semibold transition-colors cursor-pointer",
+          "flex min-w-10 items-center justify-center px-3 text-sm font-semibold transition-colors cursor-pointer",
           unit === "currency"
             ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
             : "text-text-secondary hover:text-text-primary",
@@ -423,7 +565,7 @@ function UnitToggle() {
         aria-pressed={unit === "percent"}
         title="Return %"
         className={cn(
-          "flex min-w-9 items-center justify-center rounded-md px-3 text-sm font-semibold transition-colors cursor-pointer",
+          "flex min-w-10 items-center justify-center px-3 text-sm font-semibold transition-colors cursor-pointer",
           unit === "percent"
             ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
             : "text-text-secondary hover:text-text-primary",

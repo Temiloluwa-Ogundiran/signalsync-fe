@@ -132,24 +132,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
           <div className="min-w-0 flex-1" />
 
-          {/* ROW 1 right group — global chrome: account selector → Ask Partna AI → avatar.
-              Kept tight and right-weighted. Date range now lives in the page header (ROW 2). */}
+          {/* ROW 1 right group — global chrome: Ask Partna AI → avatar.
+              Account selector + date range now live in the page header (ROW 2). */}
           <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2">
-            <div className="hidden items-stretch lg:flex">
-              <HeaderAccountSelector
-                variant="desktop"
-                accounts={accounts}
-                activeAccountId={activeAccountId}
-                activeLabel={
-                  activeAccount?.display_name ||
-                  activeAccount?.broker_login ||
-                  (accounts.length === 0 ? "Connect Account" : "Select account")
-                }
-                onSelect={selectAccount}
-                onAddAccount={openAddAccount}
-              />
-            </div>
-
             {FEATURE_FLAGS.AI && (
               <Button
                 type="button"

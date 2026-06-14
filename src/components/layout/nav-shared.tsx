@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Check, ChevronLeft } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
 import { isItemActive, type NavApp, type NavGroup, type NavItem } from "./nav-registry";
@@ -80,8 +81,10 @@ function NavItemRow({
       className={cn(
         baseClass,
         active
-          ? "bg-[rgba(139,92,246,0.15)] text-[#F4F4F5]"
-          : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
+          ? "bg-[rgba(139,92,246,0.10)] text-[#F4F4F5]"
+          : // Hover (0.03) stays LIGHTER than the switcher's resting fill (0.05)
+            // so a hovered item never reads as the switcher.
+            "text-[#A1A1AA] hover:bg-white/[0.03] hover:text-[#F4F4F5]",
       )}
     >
       {inner}
@@ -131,7 +134,15 @@ function NavGroupBlock({
               <span className="truncate">{group.header}</span>
             </button>
           ) : (
-            <span className="flex-1 truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+              {group.headerIcon ? (
+                <HugeiconsIcon
+                  icon={group.headerIcon}
+                  size={14}
+                  strokeWidth={1.8}
+                  className="shrink-0"
+                />
+              ) : null}
               {group.header}
             </span>
           )}
@@ -187,9 +198,13 @@ export function ContextualNav({
   return (
     <>
       <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
-        {/* App switcher — ties the rail selection to this panel: "you're in
-            Journal, tap to switch". Aligned to the nav-item grid below. */}
-        <AppSwitcher app={app} apps={apps} onNavigate={onNavigate} />
+        {/* Standalone apps (Settings) are a context you enter/exit → back header.
+            Main apps get the switcher to hop between them. */}
+        {app.standalone ? (
+          <BackHeader app={app} onNavigate={onNavigate} />
+        ) : (
+          <AppSwitcher app={app} apps={apps} onNavigate={onNavigate} />
+        )}
         {app.groups.map((group, i) => (
           <NavGroupBlock
             key={group.header ?? `group-${i}`}
@@ -212,6 +227,39 @@ export function ContextualNav({
  * an app switcher. Sits on the same grid as the nav items below, so it reads as
  * "you are in <app>" rather than a competing page title.
  */
+/**
+ * Header for a standalone context (e.g. Settings): a back button + title. Reads
+ * as "you entered Settings, tap back to leave" — not an app switcher.
+ */
+function BackHeader({
+  app,
+  onNavigate,
+}: {
+  app: NavApp;
+  onNavigate?: () => void;
+}) {
+  const router = useRouter();
+
+  return (
+    <div className="mb-2 flex items-center gap-2 px-1 py-1">
+      <button
+        type="button"
+        aria-label="Back"
+        onClick={() => {
+          router.push("/journal");
+          onNavigate?.();
+        }}
+        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-text-secondary transition-colors hover:bg-white/[0.08] hover:text-text-primary cursor-pointer"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <span className="truncate text-base font-semibold text-text-primary">
+        {app.name}
+      </span>
+    </div>
+  );
+}
+
 export function AppSwitcher({
   app,
   apps,
@@ -229,7 +277,7 @@ export function AppSwitcher({
         <button
           type="button"
           aria-label={`Current app: ${app.name}. Switch app`}
-          className="group/switch mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[0.04]"
+          className="group/switch mb-2 flex items-center gap-3 rounded-lg bg-white/[0.05] px-3 py-3 text-left transition-colors hover:bg-white/[0.08]"
         >
           <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-secondary">
             <HugeiconsIcon icon={app.icon} size={20} strokeWidth={1.5} />

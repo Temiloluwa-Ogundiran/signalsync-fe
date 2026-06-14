@@ -48,7 +48,8 @@ export interface JournalAccount {
   bootstrap_error_message: string | null;
   last_sync_attempted_at: string | null;
   next_sync_not_before: string | null;
-  latest_balance: number | null;
+  // Backend serializes the Decimal as a string ("583.61"); may also be a number.
+  latest_balance: string | number | null;
   latest_equity: number | null;
   is_deleted: boolean;
   sync_provider?: string;

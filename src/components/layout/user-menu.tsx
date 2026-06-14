@@ -1,6 +1,8 @@
 "use client";
 
 import { LogOut, User } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { User03Icon } from "@hugeicons/core-free-icons";
 import { signOut, useSession } from "next-auth/react";
 import {
   Popover,
@@ -33,7 +35,12 @@ export function UserMenu() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-sm font-bold text-white">{initial}</span>
+            <HugeiconsIcon
+              icon={User03Icon}
+              size={20}
+              strokeWidth={1.8}
+              className="text-text-secondary"
+            />
           )}
         </button>
       </PopoverTrigger>

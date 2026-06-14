@@ -179,6 +179,15 @@ function JournalPageContent() {
     );
   };
 
+  const selectAccount = (accountId: string) => {
+    setActiveAccountId(accountId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("accountId", accountId);
+    router.replace(
+      params.toString() ? `/journal?${params.toString()}` : "/journal",
+    );
+  };
+
   const scopedAccountId = activeAccountId || undefined;
 
   const dashboardQuery = useJournalDashboardAnalytics({
@@ -400,6 +409,14 @@ function JournalPageContent() {
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
         connectionState={activeAccount?.connection_state}
         onSyncAccount={() => void handleRefreshAccounts()}
+        accounts={accounts}
+        activeAccountId={activeAccountId}
+        activeAccountLabel={
+          activeAccount?.display_name ||
+          activeAccount?.broker_login ||
+          (accounts.length === 0 ? "Connect Account" : "Select account")
+        }
+        onSelectAccount={selectAccount}
         dateRange={parsedDateRange}
         dateRangeLabel={dateRangeLabel}
         onApplyDateRange={applyDateRange}

@@ -37,27 +37,18 @@ function RailIcon({
         className={cn(
           "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors",
           active
-            ? "bg-[rgba(139,92,246,0.12)] text-[#F4F4F5]"
-            : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
+            ? // Neutral highlight — app selection, no violet (reserved for the
+              // sidebar active page + Partna identity).
+              "bg-white/[0.06] text-[#F4F4F5]"
+            : "text-[#71717A] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
         )}
       >
-        {/* Active app: 3px violet left-edge accent bar — "you are here". */}
-        <span
-          aria-hidden
-          className={cn(
-            "absolute -left-2 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-[#8B5CF6] transition-opacity",
-            active ? "opacity-100" : "opacity-0",
-          )}
-        />
         <HugeiconsIcon
           icon={app.icon}
           size={22}
-          strokeWidth={1.5}
-          className={cn(
-            "text-current",
-            // Active icon reinforced with light violet.
-            active && "text-[#A78BFA]",
-          )}
+          // Active reads via a heavier stroke, not color.
+          strokeWidth={active ? 2 : 1.5}
+          className="text-current"
         />
         {app.isAI ? (
           <Sparkles
@@ -103,6 +94,10 @@ export function AppNav() {
     [apps, pathname],
   );
 
+  // Settings is a real app but pins to the bottom of the rail, like Help.
+  const topApps = apps.filter((app) => app.id !== "settings");
+  const settingsApp = apps.find((app) => app.id === "settings");
+
   return (
     <div className="relative hidden h-screen w-[264px] shrink-0 flex-col bg-nav-rail-bg lg:flex">
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
@@ -124,7 +119,7 @@ export function AppNav() {
         {/* TIER 1 — icon rail (slightly darkest tone) */}
         <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">
           <div className="scrollbar-thin flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
-            {apps.map((app) => (
+            {topApps.map((app) => (
               <RailIcon
                 key={app.id}
                 app={app}
@@ -133,9 +128,14 @@ export function AppNav() {
             ))}
           </div>
 
-          {/* Pinned: Settings + Help */}
+          {/* Pinned: Settings (real app) + Help */}
           <div className="flex shrink-0 flex-col items-center gap-1.5 pb-4 pt-2">
-            <RailPinned icon={Settings} label="Settings" href="/settings" />
+            {settingsApp ? (
+              <RailIcon
+                app={settingsApp}
+                active={settingsApp.id === activeApp.id}
+              />
+            ) : null}
             <RailPinned icon={HelpCircle} label="Help" href="/help" />
           </div>
         </div>
@@ -145,11 +145,11 @@ export function AppNav() {
             Partna AI hosts its session/history nav here instead of generic groups. */}
         <aside className="relative flex h-full w-[200px] shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans">
           {activeApp.isAI ? (
-            <AiNavSidebar app={activeApp} apps={apps} />
+            <AiNavSidebar app={activeApp} apps={topApps} />
           ) : (
             <ContextualNav
               app={activeApp}
-              apps={apps}
+              apps={topApps}
               pathname={pathname}
               footer={renderAppFooter(activeApp)}
             />
@@ -184,16 +184,20 @@ function JournalNavFooter() {
 
   const activeAccount =
     accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
-  const balance = activeAccount?.latest_balance;
+  // Backend serializes the Decimal as a string ("583.61"); coerce to number.
+  const rawBalance = activeAccount?.latest_balance;
+  const balance =
+    rawBalance == null ? null : Number(rawBalance);
+  const hasBalance = balance != null && Number.isFinite(balance);
 
   return (
     <div className="flex flex-col gap-3 p-3">
-      {typeof balance === "number" ? (
-        <div className="rounded-xl bg-bg-tertiary/60 px-4 py-3">
-          <p className="text-base font-bold leading-tight text-text-primary">
-            {balanceFormatter.format(balance)}
-          </p>
+      {hasBalance ? (
+        <div className="rounded-xl bg-bg-tertiary px-4 py-3">
           <p className="text-xs text-text-secondary">Account Balance</p>
+          <p className="mt-0.5 text-lg font-bold leading-tight text-text-primary tabular-nums">
+            {balanceFormatter.format(balance as number)}
+          </p>
         </div>
       ) : null}
 

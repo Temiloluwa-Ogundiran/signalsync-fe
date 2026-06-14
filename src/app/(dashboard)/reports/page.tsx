@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ChartBarLineIcon } from "@hugeicons/core-free-icons";
+import { AnalyticsUpIcon } from "@hugeicons/core-free-icons";
 
 export default function ReportsPage() {
   return (
@@ -12,7 +12,7 @@ export default function ReportsPage() {
 
       <div className="mt-8 flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-xl border border-border-primary/60 bg-kpi-card-bg p-8 text-center">
         <span className="flex size-12 items-center justify-center rounded-full bg-white/[0.04] text-text-secondary">
-          <HugeiconsIcon icon={ChartBarLineIcon} size={24} strokeWidth={1.5} />
+          <HugeiconsIcon icon={AnalyticsUpIcon} size={24} strokeWidth={1.5} />
         </span>
         <div className="flex flex-col gap-1">
           <p className="text-base font-semibold text-text-primary">

@@ -2,7 +2,7 @@ import type { IconSvgElement } from "@hugeicons/react";
 import {
   PencilEdit02Icon,
   Notebook01Icon,
-  ChartBarLineIcon,
+  AnalyticsUpIcon,
   Analytics01Icon,
   Wallet01Icon,
   ClipboardIcon,
@@ -17,6 +17,15 @@ import {
   Search01Icon,
   Home04Icon,
   PlusSignIcon,
+  UserCircleIcon,
+  UserIcon,
+  SecurityCheckIcon,
+  CreditCardIcon,
+  Settings02Icon,
+  Target01Icon,
+  Coins01Icon,
+  ArrowUpDownIcon,
+  GlobeIcon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -49,6 +58,8 @@ export interface NavGroupAction {
 export interface NavGroup {
   /** Optional uppercase section label, e.g. "STRATEGIES". */
   header?: string;
+  /** Optional icon shown before the section label. */
+  headerIcon?: IconSvgElement;
   /** Optional inline "+" action rendered on the right of the header. */
   action?: NavGroupAction;
   /** When true the group can expand/collapse (state persisted per group). */
@@ -66,6 +77,11 @@ export interface NavApp {
   isAI?: boolean;
   /** Hidden entirely when the flag is off. */
   flag?: FeatureFlag;
+  /**
+   * A context you enter and exit (e.g. Settings) rather than switch between like
+   * the main apps. Its tier-2 header is a back button + title, not the switcher.
+   */
+  standalone?: boolean;
   groups: NavGroup[];
 }
 
@@ -114,9 +130,8 @@ export function buildNavRegistry(actionFns: {
               route: "/diary",
               comingSoon: true,
             },
-            { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
             {
-              icon: ChartBarLineIcon,
+              icon: AnalyticsUpIcon,
               label: "Reports",
               route: "/reports",
               comingSoon: true,
@@ -199,6 +214,71 @@ export function buildNavRegistry(actionFns: {
               icon: Clock01Icon,
               label: "History",
               route: "/backtesting/history",
+              comingSoon: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "settings",
+      name: "Settings",
+      icon: Settings01Icon,
+      // Rail icon lands on the first real page (Accounts) until /settings exists.
+      route: "/accounts",
+      standalone: true,
+      groups: [
+        {
+          header: "USER",
+          headerIcon: UserCircleIcon,
+          items: [
+            {
+              icon: UserIcon,
+              label: "Profile",
+              route: "/settings/profile",
+              comingSoon: true,
+            },
+            {
+              icon: SecurityCheckIcon,
+              label: "Security",
+              route: "/settings/security",
+              comingSoon: true,
+            },
+            {
+              icon: CreditCardIcon,
+              label: "Subscription",
+              route: "/settings/subscription",
+              comingSoon: true,
+            },
+          ],
+        },
+        {
+          header: "GENERAL",
+          headerIcon: Settings02Icon,
+          items: [
+            { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
+            {
+              icon: Target01Icon,
+              label: "PT / SL settings",
+              route: "/settings/pt-sl",
+              comingSoon: true,
+            },
+            {
+              icon: Coins01Icon,
+              label: "Commissions & fees",
+              route: "/settings/commissions",
+              comingSoon: true,
+            },
+            {
+              icon: ArrowUpDownIcon,
+              label: "Trade settings",
+              route: "/settings/trade",
+              comingSoon: true,
+            },
+            {
+              icon: GlobeIcon,
+              label: "Global settings",
+              route: "/settings/global",
               comingSoon: true,
             },
           ],
