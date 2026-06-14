@@ -113,7 +113,7 @@ function PerfChartCard({
 }: PerfChartCardProps) {
   const isEmpty = !isLoading && data.length === 0;
   return (
-    <section className="flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60">
+    <section className="flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg">
       <div className="px-5 pt-5 pb-1">
         <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
       </div>

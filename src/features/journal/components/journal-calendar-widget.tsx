@@ -49,7 +49,7 @@ export function JournalCalendarWidget({
   const activeDays = Object.values(dayStats).filter((day) => day.trades > 0).length;
 
   return (
-    <section className="min-w-0 rounded-xl bg-card-bg ring-1 ring-border-primary/60">
+    <section className="min-w-0 rounded-xl bg-card-bg">
       <JournalCalendarHeader
         monthLabel={monthLabel}
         monthlyPnl={monthlyPnl}

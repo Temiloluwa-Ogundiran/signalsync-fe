@@ -30,7 +30,7 @@ type NavEntry = {
 const navItems: NavEntry[] = [
   {
     label: "Dashboard",
-    href: "/journal",
+    href: "/dashboard",
     icon: Home01Icon,
   },
   {
@@ -90,7 +90,7 @@ export function Sidebar({
         )}
       >
         <Link
-          href="/journal"
+          href="/dashboard"
           onClick={() => onNavigate?.()}
           className={cn(
             "flex min-w-0 flex-1 items-center gap-2",

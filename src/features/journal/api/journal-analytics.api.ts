@@ -5,6 +5,7 @@ import type {
   JournalAnalyticsEvaluationResponse,
   JournalAnalyticsSummaryResponse,
   JournalAnalyticsTimePerformanceResponse,
+  JournalIntradayCurvesResponse,
 } from "../types";
 
 interface AnalyticsQueryParams {
@@ -70,6 +71,27 @@ export const journalAnalyticsApi = {
           ...(params.fromDate ? { from_date: params.fromDate } : {}),
           ...(params.toDate ? { to_date: params.toDate } : {}),
           include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
+        },
+      },
+    );
+
+    return data;
+  },
+
+  getIntradayCurves: async (
+    params: Omit<AnalyticsQueryParams, "timeBasis">,
+    token?: string,
+  ): Promise<JournalIntradayCurvesResponse> => {
+    const { data } = await apiClient.get<JournalIntradayCurvesResponse>(
+      "/journal/analytics/intraday-curves",
+      {
+        ...withAuth(token),
+        params: {
+          ...(params.accountId ? { account_id: params.accountId } : {}),
+          ...(params.fromDate ? { from_date: params.fromDate } : {}),
+          ...(params.toDate ? { to_date: params.toDate } : {}),
+          include_manual:
+            params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );

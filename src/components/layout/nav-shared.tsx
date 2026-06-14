@@ -246,7 +246,7 @@ function BackHeader({
         type="button"
         aria-label="Back"
         onClick={() => {
-          router.push("/journal");
+          router.push("/dashboard");
           onNavigate?.();
         }}
         className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-text-secondary transition-colors hover:bg-white/[0.08] hover:text-text-primary cursor-pointer"

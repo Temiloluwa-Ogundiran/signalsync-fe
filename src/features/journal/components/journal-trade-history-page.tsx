@@ -154,7 +154,7 @@ export function JournalTradeHistoryPage() {
   const onOpenJournal = (row: TradeHistoryRow) => {
     if (!activeAccountId) return;
     router.push(
-      `/journal/trade?date=${encodeURIComponent(row.tradingDate)}&tradeId=${encodeURIComponent(row.id)}`,
+      `/dashboard/trade?date=${encodeURIComponent(row.tradingDate)}&tradeId=${encodeURIComponent(row.id)}`,
     );
   };
 

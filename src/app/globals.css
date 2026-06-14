@@ -654,3 +654,63 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+/* ===== TipTap day-note editor ===== */
+.tiptap p {
+  margin: 0 0 0.5rem;
+}
+.tiptap p:last-child {
+  margin-bottom: 0;
+}
+.tiptap h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.5rem;
+  color: var(--text-primary);
+}
+.tiptap h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.4rem;
+  color: var(--text-primary);
+}
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+.tiptap ul {
+  list-style: disc;
+}
+.tiptap ol {
+  list-style: decimal;
+}
+.tiptap blockquote {
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+}
+.tiptap pre {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8125rem;
+  overflow-x: auto;
+  margin: 0 0 0.5rem;
+}
+.tiptap code {
+  font-family: ui-monospace, monospace;
+}
+.tiptap a {
+  color: var(--color-ai-accent-bright);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--text-tertiary);
+}

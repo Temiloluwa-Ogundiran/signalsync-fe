@@ -100,7 +100,7 @@ export function JournalDayModal({
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
     router.push(
-      `/journal/chat?date=${encodeURIComponent(tradingDate)}&context=day`,
+      `/dashboard/chat?date=${encodeURIComponent(tradingDate)}&context=day`,
     );
   };
 
@@ -108,7 +108,7 @@ export function JournalDayModal({
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
     router.push(
-      `/journal/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}&from=day&context=day`,
+      `/dashboard/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}&from=day&context=day`,
     );
   };
 

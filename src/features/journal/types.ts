@@ -110,6 +110,21 @@ export interface JournalAnalyticsEquityCurveResponse {
   points: JournalAnalyticsEquityCurvePoint[];
 }
 
+export interface JournalIntradayCurvePoint {
+  t: string;
+  cumulative_pnl: number;
+}
+
+export interface JournalIntradayDay {
+  date: string;
+  net_pnl: number;
+  points: JournalIntradayCurvePoint[];
+}
+
+export interface JournalIntradayCurvesResponse {
+  days: JournalIntradayDay[];
+}
+
 export interface JournalAnalyticsEvaluationResponse {
   total_trades: number;
   avg_profit_per_trading_day: number;
@@ -181,6 +196,7 @@ export interface JournalTradesPanelRow {
   closeDate: string;
   symbol: string;
   netPnl: number;
+  holdTime: string;
 }
 
 export interface JournalOpenPosition {

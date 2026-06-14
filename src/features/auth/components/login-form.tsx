@@ -92,7 +92,7 @@ export function LoginForm({
       }
 
       refreshAuthSensitiveQueries(queryClient);
-      router.replace("/journal");
+      router.replace("/dashboard");
       router.refresh();
     } catch {
       form.setError("root", { message: "Something went wrong." });

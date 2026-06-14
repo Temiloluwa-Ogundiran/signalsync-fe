@@ -332,7 +332,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
         // Post-creation flow: router.push to the trade chat page!
         const closedDate = createdTrade.closed_at.split("T")[0];
         router.push(
-          `/journal/trade?tradeId=${createdTrade.id}&date=${closedDate}`,
+          `/dashboard/trade?tradeId=${createdTrade.id}&date=${closedDate}`,
         );
       } else {
         if (!trade) return;

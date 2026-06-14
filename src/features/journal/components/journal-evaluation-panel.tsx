@@ -99,7 +99,7 @@ export function JournalEvaluationPanel({
   return (
     <section
       className={cn(
-        "flex h-full flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60",
+        "flex h-full flex-col rounded-xl bg-card-bg",
         className,
       )}
     >

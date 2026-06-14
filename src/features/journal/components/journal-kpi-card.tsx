@@ -33,7 +33,7 @@ export function JournalKpiCard({
   return (
     <article
       className={cn(
-        "flex min-h-[6.875rem] min-w-0 items-center justify-between gap-3 rounded-xl border border-kpi-badge-border bg-kpi-card-bg p-5",
+        "flex min-h-[6.875rem] min-w-0 items-center justify-between gap-3 rounded-xl bg-kpi-card-bg p-5",
         className,
       )}
     >

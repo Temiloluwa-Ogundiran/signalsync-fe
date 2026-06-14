@@ -27,11 +27,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: accounts = [] } = useJournalAccounts();
-  const isJournalRoute = pathname.includes("/journal");
+  const isJournalRoute =
+    pathname.includes("/dashboard") || pathname.includes("/journal");
   const storeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const isJournalArea =
+    pathname.includes("/dashboard") ||
     pathname.includes("/journal") ||
     pathname.includes("/trade-history") ||
     pathname.includes("/accounts");

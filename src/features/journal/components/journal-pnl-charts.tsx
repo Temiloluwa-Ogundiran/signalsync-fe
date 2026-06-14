@@ -103,7 +103,7 @@ function ChartCard({
   return (
     <section
       className={cn(
-        "flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg ring-1 ring-border-primary/60",
+        "flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg",
         className,
       )}
     >

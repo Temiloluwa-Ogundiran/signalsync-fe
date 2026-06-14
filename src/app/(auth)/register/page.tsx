@@ -22,7 +22,7 @@ export default async function RegisterPage() {
   const session = await auth();
 
   if (hasUsableSession(session)) {
-    redirect("/journal");
+    redirect("/dashboard");
   }
 
   return (

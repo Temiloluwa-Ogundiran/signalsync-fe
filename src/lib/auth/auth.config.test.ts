@@ -39,7 +39,7 @@ test("authorized callback rejects protected routes when auth state is broken", (
       error: "RefreshAccessTokenError",
     } as never,
     request: {
-      nextUrl: new URL("http://localhost:3000/journal"),
+      nextUrl: new URL("http://localhost:3000/dashboard"),
     } as never,
   });
 
@@ -60,14 +60,14 @@ test("authorized callback redirects authenticated users away from login", () => 
   });
 
   assert.ok(result instanceof Response);
-  assert.equal(result.headers.get("location"), "http://localhost:3000/journal");
+  assert.equal(result.headers.get("location"), "http://localhost:3000/dashboard");
 });
 
 test("authorized callback rejects anonymous journal access", () => {
   const result = authConfig.callbacks.authorized({
     auth: null,
     request: {
-      nextUrl: new URL("http://localhost:3000/journal"),
+      nextUrl: new URL("http://localhost:3000/dashboard"),
     } as never,
   });
 

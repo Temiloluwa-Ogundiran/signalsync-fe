@@ -33,7 +33,7 @@ function JournalKpiStripImpl({
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`kpi-skeleton-${index}`}
-            className="min-h-[6.875rem] animate-pulse rounded-xl border border-kpi-badge-border bg-kpi-card-bg"
+            className="min-h-[6.875rem] animate-pulse rounded-xl bg-kpi-card-bg"
           />
         ))}
       </section>

@@ -92,7 +92,7 @@ export const authConfig = {
       }
 
       if (isLoggedIn && isAuthRoute) {
-        return Response.redirect(new URL("/journal", nextUrl));
+        return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
       return true;

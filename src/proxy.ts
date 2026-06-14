@@ -5,7 +5,7 @@ import { FEATURE_FLAGS } from "@/config/feature-flags";
 
 const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [];
 
-const FALLBACK_ROUTE = "/journal";
+const FALLBACK_ROUTE = "/dashboard";
 
 const { auth } = NextAuth(authConfig);
 

@@ -386,7 +386,7 @@ export function JournalDayChatPage() {
     params.set("tradeId", id);
     params.set("from", "day");
     params.set("context", chatContext);
-    router.push(`/journal/trade?${params.toString()}`);
+    router.push(`/dashboard/trade?${params.toString()}`);
   };
 
   const isDayReviewed = Boolean(dayQuery.data?.reviewed_at);
@@ -399,7 +399,7 @@ export function JournalDayChatPage() {
     if (chatContext === "trade" && tradeId) {
       params.set("tradeId", tradeId);
     }
-    router.push(`/journal/chat?${params.toString()}`);
+    router.push(`/dashboard/chat?${params.toString()}`);
   };
 
   if (!accountId || !tradingDate) {

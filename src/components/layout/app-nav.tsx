@@ -103,7 +103,7 @@ export function AppNav() {
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
           No hard rule: the tonal step below + generous spacing do the work. */}
       <div className="flex h-header shrink-0 items-center px-4">
-        <Link href="/journal" aria-label="TradePartna home" className="flex">
+        <Link href="/dashboard" aria-label="TradePartna home" className="flex">
           <Image
             src="/brand/tradepartna-logo-full.svg"
             alt="TradePartna"
@@ -164,9 +164,9 @@ export function AppNav() {
   );
 }
 
-/** Per-app pinned footer. Journal gets its balance card + Add Trade controls. */
+/** Per-app pinned footer. Performance gets its balance card + Add Trade controls. */
 function renderAppFooter(app: NavApp) {
-  if (app.id === "journal") return <JournalNavFooter />;
+  if (app.id === "performance") return <JournalNavFooter />;
   return null;
 }
 

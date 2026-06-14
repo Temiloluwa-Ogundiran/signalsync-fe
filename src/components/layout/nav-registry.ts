@@ -2,6 +2,7 @@ import type { IconSvgElement } from "@hugeicons/react";
 import {
   PencilEdit02Icon,
   Notebook01Icon,
+  Book02Icon,
   AnalyticsUpIcon,
   StrategyIcon,
   Analytics01Icon,
@@ -108,26 +109,31 @@ export function buildNavRegistry(actionFns: {
       ],
     },
     {
-      id: "journal",
-      name: "Journal",
+      id: "performance",
+      name: "Performance",
       icon: PencilEdit02Icon,
-      route: "/journal",
+      route: "/dashboard",
       groups: [
         {
           items: [
             {
               icon: Home04Icon,
               label: "Dashboard",
+              route: "/dashboard",
+            },
+            {
+              icon: Book02Icon,
+              label: "Day Journal",
               route: "/journal",
             },
             {
               icon: Analytics01Icon,
-              label: "Trade View",
+              label: "Trades",
               route: "/trade-history",
             },
             {
               icon: Notebook01Icon,
-              label: "Diary",
+              label: "Notebook",
               route: "/diary",
               comingSoon: true,
             },

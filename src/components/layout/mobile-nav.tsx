@@ -18,7 +18,7 @@ type MobileNavItem = {
 };
 
 const navItems: MobileNavItem[] = [
-  { label: "Dashboard", href: "/journal", icon: Home01Icon },
+  { label: "Dashboard", href: "/dashboard", icon: Home01Icon },
   { label: "History", href: "/trade-history", icon: Analytics01Icon },
   { label: "Accounts", href: "/accounts", icon: Wallet01Icon },
   { label: "Copy", href: "/copy-trading", icon: ArrowDataTransferHorizontalIcon },

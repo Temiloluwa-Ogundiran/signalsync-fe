@@ -306,7 +306,7 @@ export function JournalTradeChatPage() {
       params.set("tradeId", id);
       if (fromParam) params.set("from", fromParam);
       if (contextParam) params.set("context", contextParam);
-      return `/journal/trade?${params.toString()}`;
+      return `/dashboard/trade?${params.toString()}`;
     },
     [tradingDate, fromParam, contextParam],
   );
@@ -321,7 +321,7 @@ export function JournalTradeChatPage() {
     if (fromParam === "day" && tradingDate && tradeId) {
       const ctx = contextParam ?? "trade";
       router.push(
-        `/journal/chat?date=${encodeURIComponent(tradingDate)}&context=${encodeURIComponent(ctx)}&tradeId=${encodeURIComponent(tradeId)}`,
+        `/dashboard/chat?date=${encodeURIComponent(tradingDate)}&context=${encodeURIComponent(ctx)}&tradeId=${encodeURIComponent(tradeId)}`,
       );
       return;
     }

@@ -203,7 +203,6 @@ export function JournalPageHeader({
           max={new Date()}
           onChange={onApplyDateRange}
         />
-        <UnitToggle />
       </div>
     </section>
   );
@@ -321,50 +320,5 @@ function AccountSelector({
         )}
       </PopoverContent>
     </Popover>
-  );
-}
-
-/**
- * Currency vs Return% unit toggle (visual only for now — not yet wired to data).
- * Segmented control: "$" = currency, "%" = Return%.
- */
-function UnitToggle() {
-  const [unit, setUnit] = useState<"currency" | "percent">("currency");
-
-  return (
-    <div
-      role="group"
-      aria-label="Value unit"
-      className="flex items-stretch divide-x divide-chrome-control-border"
-    >
-      <button
-        type="button"
-        onClick={() => setUnit("currency")}
-        aria-pressed={unit === "currency"}
-        title="Currency"
-        className={cn(
-          "flex min-w-10 items-center justify-center px-3 text-sm font-semibold transition-colors cursor-pointer",
-          unit === "currency"
-            ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
-            : "text-text-secondary hover:text-text-primary",
-        )}
-      >
-        $
-      </button>
-      <button
-        type="button"
-        onClick={() => setUnit("percent")}
-        aria-pressed={unit === "percent"}
-        title="Return %"
-        className={cn(
-          "flex min-w-10 items-center justify-center px-3 text-sm font-semibold transition-colors cursor-pointer",
-          unit === "percent"
-            ? "bg-sidebar-nav-active-bg text-sidebar-nav-active-text"
-            : "text-text-secondary hover:text-text-primary",
-        )}
-      >
-        %
-      </button>
-    </div>
   );
 }

@@ -45,12 +45,32 @@ export function winLossShare(avgWin: number, avgLoss: number): number {
   return w / t;
 }
 
+/** Compact hold-time label from open→close (e.g. `45s`, `12m`, `3h 20m`, `2d 4h`). */
+export function formatHoldTime(openedAt: string, closedAt: string): string {
+  const start = new Date(openedAt).getTime();
+  const end = new Date(closedAt).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return "—";
+  const seconds = Math.max(0, Math.round((end - start) / 1000));
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    const remMin = minutes % 60;
+    return remMin ? `${hours}h ${remMin}m` : `${hours}h`;
+  }
+  const days = Math.floor(hours / 24);
+  const remHrs = hours % 24;
+  return remHrs ? `${days}d ${remHrs}h` : `${days}d`;
+}
+
 export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow[] {
   return trades.slice(0, 10).map((trade) => ({
     id: trade.id,
     closeDate: new Date(trade.closed_at).toLocaleDateString("en-GB"),
     symbol: trade.symbol,
     netPnl: Number(trade.net_profit) || 0,
+    holdTime: formatHoldTime(trade.opened_at, trade.closed_at),
   }));
 }
 

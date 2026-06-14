@@ -27,7 +27,7 @@ export default async function LoginPage({
   const params = (await searchParams) ?? {};
 
   if (hasUsableSession(session)) {
-    redirect("/journal");
+    redirect("/dashboard");
   }
 
   return (
