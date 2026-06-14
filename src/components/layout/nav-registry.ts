@@ -1,0 +1,213 @@
+import type { IconSvgElement } from "@hugeicons/react";
+import {
+  PencilEdit02Icon,
+  Analytics01Icon,
+  Wallet01Icon,
+  ClipboardIcon,
+  AiMagicIcon,
+  FlaskConicalIcon,
+  UserGroupIcon,
+  Bookmark02Icon,
+  Settings01Icon,
+  Rocket01Icon,
+  ChartLineData01Icon,
+  Clock01Icon,
+  Search01Icon,
+  Home04Icon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons";
+import type { FeatureFlag } from "@/config/feature-flags";
+
+/**
+ * Two-tier navigation, defined as data.
+ *
+ * Tier 1 (icon rail) renders one entry per {@link NavApp}.
+ * Tier 2 (contextual sidebar) renders the active app's {@link NavGroup}s.
+ *
+ * Adding a future app/page is a registry change — no component edits.
+ */
+
+export interface NavItem {
+  icon: IconSvgElement;
+  label: string;
+  /** Target route. Items whose route does not exist yet should set `comingSoon`. */
+  route: string;
+  /** Right-aligned quiet metadata badge (open positions, unread insights, …). */
+  count?: number;
+  /** Renders muted + "Soon", does not navigate (route not built yet). */
+  comingSoon?: boolean;
+}
+
+export interface NavGroupAction {
+  icon: IconSvgElement;
+  label: string;
+  onClick: () => void;
+}
+
+export interface NavGroup {
+  /** Optional uppercase section label, e.g. "STRATEGIES". */
+  header?: string;
+  /** Optional inline "+" action rendered on the right of the header. */
+  action?: NavGroupAction;
+  /** When true the group can expand/collapse (state persisted per group). */
+  collapsible?: boolean;
+  items: NavItem[];
+}
+
+export interface NavApp {
+  id: string;
+  name: string;
+  icon: IconSvgElement;
+  /** Route the rail icon points at (usually the app's first page). */
+  route: string;
+  /** Partna AI gets the violet sparkle treatment even at rest. */
+  isAI?: boolean;
+  /** Hidden entirely when the flag is off. */
+  flag?: FeatureFlag;
+  groups: NavGroup[];
+}
+
+/**
+ * The single source of truth for navigation. `actionFns` lets the registry stay
+ * pure data while still wiring real handlers (modals, etc.) supplied by the shell.
+ */
+export function buildNavRegistry(actionFns: {
+  onNewBacktest?: () => void;
+}): NavApp[] {
+  return [
+    {
+      id: "journal",
+      name: "Journal",
+      icon: PencilEdit02Icon,
+      route: "/journal",
+      groups: [
+        {
+          items: [
+            {
+              icon: Home04Icon,
+              label: "Dashboard",
+              route: "/journal",
+            },
+            {
+              icon: Analytics01Icon,
+              label: "Trade View",
+              route: "/trade-history",
+            },
+            { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "copy-trading",
+      name: "Copy Trading",
+      icon: ClipboardIcon,
+      route: "/copy-trading",
+      groups: [
+        {
+          items: [
+            {
+              icon: Search01Icon,
+              label: "Browse Traders",
+              route: "/copy-trading",
+            },
+            {
+              icon: UserGroupIcon,
+              label: "My Subscriptions",
+              route: "/copy-trading/subscriptions",
+              comingSoon: true,
+            },
+            {
+              icon: Settings01Icon,
+              label: "Settings",
+              route: "/copy-trading/settings",
+              comingSoon: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "backtesting",
+      name: "Backtesting",
+      icon: FlaskConicalIcon,
+      route: "/backtesting",
+      groups: [
+        {
+          header: "STRATEGIES",
+          collapsible: true,
+          action: actionFns.onNewBacktest
+            ? {
+                icon: PlusSignIcon,
+                label: "New strategy",
+                onClick: actionFns.onNewBacktest,
+              }
+            : undefined,
+          items: [
+            {
+              icon: Bookmark02Icon,
+              label: "My Strategies",
+              route: "/backtesting/strategies",
+              comingSoon: true,
+            },
+            {
+              icon: Rocket01Icon,
+              label: "New Backtest",
+              route: "/backtesting/new",
+              comingSoon: true,
+            },
+          ],
+        },
+        {
+          header: "RESULTS",
+          collapsible: true,
+          items: [
+            {
+              icon: ChartLineData01Icon,
+              label: "Results",
+              route: "/backtesting/results",
+              comingSoon: true,
+            },
+            {
+              icon: Clock01Icon,
+              label: "History",
+              route: "/backtesting/history",
+              comingSoon: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "partna-ai",
+      name: "Partna AI",
+      icon: AiMagicIcon,
+      route: "/ai",
+      isAI: true,
+      flag: "AI" as FeatureFlag,
+      groups: [
+        {
+          items: [
+            { icon: AiMagicIcon, label: "Assistant", route: "/ai" },
+          ],
+        },
+      ],
+    },
+  ];
+}
+
+/** Resolve the active app for a given pathname (longest-route match wins). */
+export function findActiveApp(apps: NavApp[], pathname: string): NavApp {
+  const matches = apps
+    .filter(
+      (app) => pathname === app.route || pathname.startsWith(`${app.route}/`),
+    )
+    .sort((a, b) => b.route.length - a.route.length);
+  return matches[0] ?? apps[0];
+}
+
+/** True when `pathname` is on (or under) this item's route. */
+export function isItemActive(item: NavItem, pathname: string): boolean {
+  if (item.comingSoon) return false;
+  return pathname === item.route || pathname.startsWith(`${item.route}/`);
+}

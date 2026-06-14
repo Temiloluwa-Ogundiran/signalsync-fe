@@ -65,7 +65,7 @@ export function HeaderDateRangePicker({
                 isDesktop ? "text-[11px]" : "text-[10px]",
               )}
             >
-              {hasRange ? rangeLabel : "Last 30 days"}
+              {hasRange ? rangeLabel : "All time"}
             </span>
           </div>
           <IconChevronDown className={isDesktop ? undefined : "h-3 w-3 shrink-0"} />
@@ -146,7 +146,7 @@ export function HeaderAccountSelector({
           className={cn(
             "flex items-center font-semibold text-sidebar-nav-active-text transition-colors hover:bg-sidebar-nav-active-bg hover:cursor-pointer border border-chrome-control-border",
             isDesktop
-              ? "gap-2 rounded-r-lg border-l-0 px-4 py-2 text-sm"
+              ? "gap-2 rounded-lg px-4 py-2 text-sm"
               : "gap-1.5 rounded-lg px-3 py-1.5 text-xs min-w-0",
           )}
         >

@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { Header, MobileNav, Sidebar } from "@/components/layout";
+import { AppNav } from "@/components/layout/app-nav";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
@@ -13,28 +14,12 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setSidebarCollapsed(true);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   return (
     <AiDockProvider>
       <div className="flex h-screen flex-col overflow-hidden bg-bg-primary lg:flex-row">
-        <div className="relative hidden h-screen shrink-0 lg:flex">
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
-          />
-        </div>
+        {/* Desktop: two-tier icon rail + contextual sidebar (registry-driven). */}
+        <AppNav />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <Suspense

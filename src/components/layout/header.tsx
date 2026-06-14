@@ -132,14 +132,10 @@ export function Header({ onMenuClick }: HeaderProps) {
 
           <div className="min-w-0 flex-1" />
 
-          <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2 md:gap-3">
-            <div className="relative hidden items-stretch lg:flex">
-              <HeaderDateRangePicker
-                variant="desktop"
-                range={parsedDateRange}
-                rangeLabel={rangeLabel}
-                onApply={applyDateRange}
-              />
+          {/* ROW 1 right group — global chrome: account selector → Ask Partna AI → avatar.
+              Kept tight and right-weighted. Date range now lives in the page header (ROW 2). */}
+          <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2">
+            <div className="hidden items-stretch lg:flex">
               <HeaderAccountSelector
                 variant="desktop"
                 accounts={accounts}
@@ -157,10 +153,11 @@ export function Header({ onMenuClick }: HeaderProps) {
             {FEATURE_FLAGS.AI && (
               <Button
                 type="button"
+                variant="ghost"
                 onClick={() => openAi({ source: "Header" })}
-                className="hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] bg-brand/10 text-brand hover:bg-brand/20 border border-brand/25 text-xs font-bold px-3 py-2 h-9 shadow-none transition-all"
+                className="ai-trigger hidden sm:flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] text-xs px-3 py-2 h-9"
               >
-                <Sparkles className="h-3.5 w-3.5" />
+                <Sparkles className="ai-trigger__spark h-3.5 w-3.5" />
                 Ask Partna AI
               </Button>
             )}
