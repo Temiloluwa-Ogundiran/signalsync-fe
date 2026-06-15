@@ -152,7 +152,7 @@ export function EquityCurve({
             </defs>
             <YAxis hide domain={["dataMin", "dataMax"]} />
             <Area
-              type="monotone"
+              type="linear"
               dataKey="cumulative_pnl"
               stroke={color}
               strokeWidth={2}
@@ -235,7 +235,7 @@ export function EquityCurve({
           )}
 
           <Area
-            type="monotone"
+            type="linear"
             dataKey="cumulative_pnl"
             stroke={`url(#${strokeId})`}
             strokeWidth={2}
