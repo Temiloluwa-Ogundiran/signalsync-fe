@@ -13,7 +13,14 @@ import { useJournalAccounts } from "@/features/journal/hooks/use-journal-account
  * session selected there via the shared store.
  */
 export function AiChatPage() {
-  const { activeSessionId, setActiveSessionId } = useAiDockStore();
+  const { activeSessionId, setActiveSessionId, close } = useAiDockStore();
+
+  // Mutual exclusion: the slide-over dock and this full-page surface share the
+  // same store. If the dock is open when we land here, close it so only one
+  // surface renders (and they don't race on activeSessionId).
+  useEffect(() => {
+    close();
+  }, [close]);
 
   const searchParams = useSearchParams();
   // The header's account selector puts ?accountId=X in the URL when on non-journal routes.
@@ -32,7 +39,13 @@ export function AiChatPage() {
         ...(scopeAccountId ? { account_id: scopeAccountId } : {}),
       });
       setActiveSessionId(s.id);
-    } catch {/* ignore */}
+    } catch (err) {
+      // Don't swallow: a failed session create leaves the composer permanently
+      // disabled with no cursor. Reset the guard so the effect can retry, and
+      // log so the failure is visible in the console / error reporting.
+      lastSessionAccountId.current = undefined;
+      console.error("Failed to create AI session", err);
+    }
   };
 
   // Track the last account we started a session for so we don't create duplicates.

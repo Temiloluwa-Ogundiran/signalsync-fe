@@ -54,16 +54,26 @@ export function AiDock() {
     // Create a session if there's none, OR if the account has changed since we last created one.
     const accountChanged = sessionScopedTo.current !== undefined && sessionScopedTo.current !== accountId;
     if (!activeSessionId || accountChanged) {
-      startNewSession(accountId).catch(() => {});
+      startNewSession(accountId).catch((err) => {
+        // Don't swallow: a failed create leaves the composer permanently
+        // disabled. Reset the scope guard so a later run can retry, and log.
+        sessionScopedTo.current = undefined;
+        console.error("Failed to create AI session", err);
+      });
     }
+  // activeSessionId is intentionally included: when it's cleared (deleted/reset)
+  // while the dock is open, this effect must re-run to create a fresh session.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, accountId, session?.accessToken]);
+  }, [isOpen, accountId, activeSessionId, session?.accessToken]);
 
   const handleNewChat = async () => {
     try {
       await startNewSession(accountId);
       setShowHistory(false);
-    } catch {/* ignore */}
+    } catch (err) {
+      sessionScopedTo.current = undefined;
+      console.error("Failed to create AI session", err);
+    }
   };
 
   const handleSelectSession = (id: string) => {
@@ -87,9 +97,11 @@ export function AiDock() {
 
   return (
     <>
-      {/* Backdrop (subtle) */}
+      {/* Backdrop (subtle) — mobile only. On desktop it's display:none, but we
+          also disable pointer events as a guard so it can never intercept
+          clicks meant for content behind it. */}
       <div
-        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] md:hidden"
+        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] md:hidden md:pointer-events-none"
         onClick={close}
       />
 
