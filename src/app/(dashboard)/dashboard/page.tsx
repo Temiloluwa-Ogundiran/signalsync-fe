@@ -210,7 +210,10 @@ function JournalPageContent() {
     [dailyCurveQuery.data],
   );
   const netPnlSeries = useMemo(
-    () => dailyCurvePoints.map((p, i) => ({ i, v: p.cumulative_pnl })),
+    () =>
+      dailyCurvePoints
+        .filter((p) => !p.is_baseline)
+        .map((p, i) => ({ i, v: p.cumulative_pnl })),
     [dailyCurvePoints],
   );
   // `refetch` is referentially stable in TanStack Query v5; depending on the

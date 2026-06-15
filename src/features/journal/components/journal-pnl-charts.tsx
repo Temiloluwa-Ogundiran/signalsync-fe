@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -15,6 +13,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import type { CurveDailyPoint } from "../types";
+import { EquityCurve } from "./equity-curve";
 
 const GREEN = "#22C55E";
 const RED = "#EF4444";
@@ -75,15 +74,6 @@ function ChartTooltip({
   );
 }
 
-/** Fraction (0–1) down the chart where y=0 sits, for the green/red split gradient. */
-function zeroOffset(values: number[]): number {
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  if (min >= 0) return 1;
-  if (max <= 0) return 0;
-  return max / (max - min);
-}
-
 interface ChartCardProps {
   title: string;
   info?: string;
@@ -134,14 +124,20 @@ interface ChartProps {
 const AXIS_TICK = { fill: "#71717A", fontSize: 11 };
 const GRID_STROKE = "rgba(255,255,255,0.05)";
 
-/** Left chart: cumulative net P&L area, green above zero / red below. */
+/** Left chart: cumulative net P&L area, green above zero / red below.
+    Rendered through the shared EquityCurve (date axis, green/red zero-split
+    stroke + fill, monotone, auto y-axis) so both curves share one renderer. */
 export function JournalCumulativePnlChart({
   points,
   isLoading,
   className,
 }: ChartProps) {
-  const data = points.map((p) => ({ date: p.date, v: p.cumulative_pnl }));
-  const off = data.length ? zeroOffset(data.map((d) => d.v)) : 1;
+  // `points` may include the synthetic $0 baseline (first day - 1); it belongs
+  // in the cumulative curve, so it's kept here. The line starts at $0 there.
+  const data = points.map((p) => ({
+    date: p.date,
+    cumulative_pnl: p.cumulative_pnl,
+  }));
 
   return (
     <ChartCard
@@ -150,52 +146,16 @@ export function JournalCumulativePnlChart({
       isEmpty={!isLoading && data.length === 0}
       className={className}
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
-          <defs>
-            <linearGradient id="cum-stroke" x1="0" y1="0" x2="0" y2="1">
-              <stop offset={off} stopColor={GREEN} />
-              <stop offset={off} stopColor={RED} />
-            </linearGradient>
-            <linearGradient id="cum-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={GREEN} stopOpacity={0.45} />
-              <stop offset={off} stopColor={GREEN} stopOpacity={0.02} />
-              <stop offset={off} stopColor={RED} stopOpacity={0.02} />
-              <stop offset="100%" stopColor={RED} stopOpacity={0.45} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid vertical={false} stroke={GRID_STROKE} strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatXDate}
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            minTickGap={32}
-          />
-          <YAxis
-            tickFormatter={formatYAxis}
-            tick={AXIS_TICK}
-            axisLine={false}
-            tickLine={false}
-            width={56}
-          />
-          <Tooltip
-            content={<ChartTooltip />}
-            cursor={{ stroke: GRID_STROKE, strokeWidth: 1 }}
-          />
-          <Area
-            type="monotone"
-            dataKey="v"
-            stroke="url(#cum-stroke)"
-            strokeWidth={2}
-            fill="url(#cum-fill)"
-            baseValue={0}
-            isAnimationActive={false}
-            dot={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <EquityCurve
+        data={data}
+        xKey="date"
+        colorMode="split"
+        strokeMode="zeroSplit"
+        interpolation="monotone"
+        yMode="auto"
+        showAxes
+        className="h-full w-full"
+      />
     </ChartCard>
   );
 }
@@ -231,7 +191,10 @@ export function JournalDailyPnlChart({
   isLoading,
   className,
 }: ChartProps) {
-  const data = points.map((p) => ({ date: p.date, v: p.daily_pnl }));
+  // Drop the synthetic $0 baseline (it has no daily P&L) so no phantom bar shows.
+  const data = points
+    .filter((p) => !p.is_baseline)
+    .map((p) => ({ date: p.date, v: p.daily_pnl ?? 0 }));
 
   return (
     <ChartCard

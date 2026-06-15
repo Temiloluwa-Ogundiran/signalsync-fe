@@ -77,6 +77,12 @@ interface EquityCurveProps {
   // Render style
   colorMode: "split" | "solid";
   solidVariant?: "win" | "loss"; // Only used when colorMode="solid"
+  // Split-mode stroke: "violet" (day page) or "zeroSplit" green/red (dashboard).
+  strokeMode?: "violet" | "zeroSplit";
+  // Line interpolation: "linear" (day page) or "monotone" (dashboard).
+  interpolation?: "linear" | "monotone";
+  // Y-axis ticks: "nice" (padded round, day page) or "auto" (compact, dashboard).
+  yMode?: "nice" | "auto";
   // Display options
   showAxes?: boolean;
   size?: "spark" | "full"; // spark=tiny (feed rows), full=larger (dashboard, day page)
@@ -113,9 +119,20 @@ function fmtClock(iso?: string) {
       });
 }
 
+/** "02/27/25" from a YYYY-MM-DD date string. */
+function fmtMDY(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
+}
+
 /**
- * Tradezella-style hover tooltip for the day curve: bold close time, then a
- * row of "SYMBOL HH:MM:SS: $cumulative" with a violet swatch.
+ * Hover tooltip. Intraday: "SYMBOL HH:MM:SS: $cumulative" with the close time as
+ * the header. Daily: the date as header + "$cumulative". Violet swatch.
  */
 function CurveTooltip({
   active,
@@ -123,17 +140,24 @@ function CurveTooltip({
 }: {
   active?: boolean;
   payload?: Array<{
-    payload?: { t?: string; symbol?: string | null; cumulative_pnl: number };
+    payload?: {
+      t?: string;
+      date?: string;
+      symbol?: string | null;
+      cumulative_pnl: number;
+    };
   }>;
 }) {
   if (!active || !payload?.length) return null;
   const p = payload[0]?.payload;
   if (!p) return null;
-  const time = fmtClock(p.t);
+  const header = p.t ? fmtClock(p.t) : fmtMDY(p.date);
   const val = p.cumulative_pnl;
   return (
     <div className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-xs shadow-lg">
-      <p className="mb-1 font-semibold tabular-nums text-text-primary">{time}</p>
+      <p className="mb-1 font-semibold tabular-nums text-text-primary">
+        {header}
+      </p>
       <p className="flex items-center gap-2 tabular-nums text-text-secondary">
         <span
           className="inline-block h-2.5 w-2.5 rounded-[3px]"
@@ -141,7 +165,7 @@ function CurveTooltip({
           aria-hidden
         />
         {p.symbol ? `${p.symbol} ` : ""}
-        {time}:{" "}
+        {header ? `${header}: ` : ""}
         <span className={val < 0 ? "text-danger" : "text-success"}>
           {fmtMoney(val)}
         </span>
@@ -188,6 +212,9 @@ export function EquityCurve({
   xKey,
   colorMode,
   solidVariant,
+  strokeMode = "violet",
+  interpolation = "linear",
+  yMode = "nice",
   showAxes = false,
   size = "full",
   className,
@@ -234,21 +261,25 @@ export function EquityCurve({
     );
   }
 
-  // Split mode (day page, dashboard) — Tradezella day curve:
-  //   • ONE solid purple line (never green/red on the stroke).
-  //   • Zero-split fill: green above $0, red below, fading to transparent at
-  //     the baseline. The split lands exactly on $0 via `zeroOffset`.
-  //   • Round y-ticks that always include $0, with a padded domain.
-  const { domain, ticks } = niceAxis(values);
-  const off = zeroOffset(domain[0], domain[1]);
+  // Split mode (shared by the day-page curve and the dashboard cumulative):
+  //   • Zero-split fill: green above $0, red below, fading to transparent at the
+  //     baseline; the split lands exactly on $0 via `zeroOffset`.
+  //   • Stroke: "violet" (day page) or "zeroSplit" green/red (dashboard).
+  //   • X axis: "date" (dashboard), sequence "i" (day page), or time "t".
+  //   • Y axis: "nice" padded round ticks, or "auto" compact.
+  const nice = niceAxis(values);
+  const dataMin = Math.min(0, ...values);
+  const dataMax = Math.max(0, ...values);
+  // `off` (the green→red fill boundary) must be computed from the SAME y-domain
+  // the chart plots in, so the color flip lands on the $0 pixel row.
+  const off =
+    yMode === "nice"
+      ? zeroOffset(nice.domain[0], nice.domain[1])
+      : zeroOffset(dataMin, dataMax);
   const strokeId = `${chartId}-stroke`;
   const fillId = `${chartId}-fill`;
 
-  // Intraday axis modes:
-  //  • bySeq (xKey="i"): per-trade sequence axis — equal-width slots keyed on the
-  //    unique index `i` (NOT `t`, which would collapse duplicate timestamps).
-  //    Tick labels are each point's HH:MM:SS close time (derived from `t`).
-  //  • byTime (xKey="t"): real-time spacing via epoch ms (kept for completeness).
+  const byDate = xKey === "date";
   const bySeq = xKey === "i";
   const byTime = xKey === "t";
   const plotData = byTime
@@ -269,14 +300,21 @@ export function EquityCurve({
           }
         >
           <defs>
-            {/* Purple stroke gradient (light top → base bottom) for subtle depth. */}
-            <linearGradient id={strokeId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={VIOLET_LIGHT} />
-              <stop offset="100%" stopColor={VIOLET} />
-            </linearGradient>
+            {strokeMode === "zeroSplit" ? (
+              // Green above $0 / red below — hard switch exactly at the baseline.
+              <linearGradient id={strokeId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset={off} stopColor={WIN} />
+                <stop offset={off} stopColor={LOSS} />
+              </linearGradient>
+            ) : (
+              // Violet line (light top → base bottom) for subtle depth.
+              <linearGradient id={strokeId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={VIOLET_LIGHT} />
+                <stop offset="100%" stopColor={VIOLET} />
+              </linearGradient>
+            )}
             {/* Zero-split fill: green above $0 (deep at the line → 0 at zero),
-                red below $0 (0 at zero → deep at the bottom). `off` is the
-                fraction down the plot where $0 sits. */}
+                red below $0 (0 at zero → deep at the bottom). */}
             <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={WIN} stopOpacity={0.4} />
               <stop offset={off} stopColor={WIN} stopOpacity={0} />
@@ -293,9 +331,22 @@ export function EquityCurve({
             />
           )}
 
-          {/* Sequence x-axis: equal-width slot per trade, keyed on unique `i`.
-              Labels are the HH:MM:SS close time derived from each point's `t`
-              (labels may repeat for same-second batches). */}
+          {/* Date x-axis (dashboard): MM/DD/YY labels, category-spaced. */}
+          {byDate && (
+            <XAxis
+              dataKey="date"
+              tickFormatter={fmtMDY}
+              tick={{ fill: "#71717A", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              minTickGap={32}
+              hide={!showAxes}
+            />
+          )}
+
+          {/* Sequence x-axis (day page): equal-width slot per trade, keyed on
+              unique `i`. Labels are the HH:MM:SS close time from each point's
+              `t` (may repeat for same-second batches). */}
           {bySeq && (
             <XAxis
               dataKey="i"
@@ -310,8 +361,7 @@ export function EquityCurve({
             />
           )}
 
-          {/* Time x-axis: numeric epoch scale so points space by real close
-              time. Hidden — no x labels. */}
+          {/* Time x-axis: numeric epoch scale (real-time spacing). Hidden. */}
           {byTime && (
             <XAxis
               dataKey="tms"
@@ -323,17 +373,17 @@ export function EquityCurve({
           )}
 
           <YAxis
-            domain={domain}
-            ticks={showAxes ? ticks : undefined}
+            domain={yMode === "nice" ? nice.domain : ["dataMin", "dataMax"]}
+            ticks={showAxes && yMode === "nice" ? nice.ticks : undefined}
             hide={!showAxes}
-            width={showAxes ? 48 : 0}
+            width={showAxes ? (yMode === "nice" ? 48 : 56) : 0}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#71717A", fontSize: 12 }}
+            tick={{ fill: "#71717A", fontSize: yMode === "nice" ? 12 : 11 }}
             tickFormatter={fmtAxis}
           />
 
-          {showAxes && (
+          {showAxes && yMode === "nice" && (
             <ReferenceLine
               y={0}
               stroke="rgba(255,255,255,0.12)"
@@ -341,15 +391,18 @@ export function EquityCurve({
             />
           )}
 
-          {(byTime || bySeq) && (
-            <Tooltip
-              content={<CurveTooltip />}
-              cursor={{ stroke: VIOLET, strokeWidth: 1, strokeOpacity: 0.5 }}
-            />
-          )}
+          <Tooltip
+            content={<CurveTooltip />}
+            cursor={{
+              stroke:
+                strokeMode === "zeroSplit" ? "rgba(255,255,255,0.18)" : VIOLET,
+              strokeWidth: 1,
+              strokeOpacity: 0.6,
+            }}
+          />
 
           <Area
-            type="linear"
+            type={interpolation}
             dataKey="cumulative_pnl"
             stroke={`url(#${strokeId})`}
             strokeWidth={2}

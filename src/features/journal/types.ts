@@ -427,8 +427,9 @@ export interface PlatformInfo {
 
 export interface CurveDailyPoint {
   date: string; // YYYY-MM-DD
-  daily_pnl: number; // P&L on this day alone
+  daily_pnl: number | null; // P&L on this day alone (null for the $0 baseline)
   cumulative_pnl: number; // cumulative from start of range
+  is_baseline?: boolean; // true for the synthetic $0 baseline (first day - 1)
 }
 
 export interface CurveDailyResponse {
