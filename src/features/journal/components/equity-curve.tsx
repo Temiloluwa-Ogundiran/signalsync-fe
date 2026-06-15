@@ -145,7 +145,7 @@ export function EquityCurve({
             </defs>
             <YAxis hide domain={["dataMin", "dataMax"]} />
             <Area
-              type="monotone"
+              type="linear"
               dataKey="cumulative_pnl"
               stroke={color}
               strokeWidth={2}
@@ -211,9 +211,12 @@ export function EquityCurve({
 
           {showAxes && <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" />}
 
-          {/* Positive (green) channel — fills down to $0 */}
+          {/* Positive (green) channel — fills down to $0.
+              `linear` (not monotone): with few trades, monotone smoothing
+              invents a long flat sag near zero that isn't in the data. Straight
+              segments between points plot the cumulative honestly. */}
           <Area
-            type="monotone"
+            type="linear"
             dataKey="pos"
             stroke={WIN}
             strokeWidth={2}
@@ -225,7 +228,7 @@ export function EquityCurve({
           />
           {/* Negative (red) channel — fills up to $0 */}
           <Area
-            type="monotone"
+            type="linear"
             dataKey="neg"
             stroke={LOSS}
             strokeWidth={2}
