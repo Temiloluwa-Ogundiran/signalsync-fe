@@ -1,6 +1,6 @@
 /**
- * Branded loading state. "TP" = TradePartna and Take Profit — a single price
- * line draws up to a take-profit level. Monochrome, minimal, no gradients/glow.
+ * Branded loading state — the TradePartna blade mark. Two purple blades rise in
+ * a staggered loop.
  */
 export function AppLoader({
   label = "Loading",
@@ -18,7 +18,7 @@ export function AppLoader({
           : "relative flex min-h-[50vh] w-full flex-col items-center justify-center gap-5 font-sans"
       }
     >
-      <TpMark />
+      <BladeMark />
       <span className="tp-loader-label text-xs font-medium uppercase tracking-[0.2em] text-text-tertiary">
         {label}
       </span>
@@ -26,53 +26,23 @@ export function AppLoader({
   );
 }
 
-/**
- * "TP" letters with a price line that draws from a low entry up to the TP level,
- * marked by a horizontal target tick. Monochrome; the line loops.
- */
-function TpMark() {
+/** The TradePartna blade mark — two blades that rise in a staggered loop. */
+function BladeMark() {
   return (
     <svg
-      viewBox="0 0 180 96"
-      className="h-[64px] w-[120px]"
-      fill="none"
+      viewBox="0 0 1306 1092"
+      className="h-20 w-24"
       role="img"
       aria-label="TradePartna"
     >
-      {/* TP target level — a thin dashed line the price climbs to */}
-      <line
-        x1="8"
-        y1="22"
-        x2="172"
-        y2="22"
-        stroke="rgba(255,255,255,0.12)"
-        strokeWidth="1"
-        strokeDasharray="3 4"
+      <path
+        className="tp-blade tp-blade-b"
+        d="M499.767 353.288L927.552 353.293C948.212 353.293 964.96 370.041 964.96 390.701C964.96 396.153 963.793 401.335 961.694 406.007C960.274 409.17 958.43 412.099 956.228 414.723L570.771 1029.3L566.984 1035.34C564.346 1040.56 562.86 1046.46 562.86 1052.72C562.86 1074.04 580.143 1091.32 601.463 1091.32H1266.62C1287.94 1091.32 1305.22 1074.04 1305.22 1052.72C1305.22 1050.09 1304.96 1047.53 1304.46 1045.05L1301.63 1036.43C1297.76 1024.64 1293.88 1012.85 1290.01 1001.06C1286.54 990.512 1283.08 979.963 1279.61 969.417C1267.38 932.188 1255.15 894.961 1242.92 857.732C1218.45 783.276 1193.99 708.82 1169.53 634.364C1157.3 597.137 1145.06 559.908 1132.83 522.681C1129.37 512.132 1125.9 501.586 1122.44 491.037C1118.77 479.866 1115.1 468.698 1111.43 457.53C1107.35 445.121 1103.28 432.712 1099.2 420.303C1093.65 403.424 1088.16 386.804 1082.36 370.005C1075.23 349.357 1084.52 341.583 1094.85 325.089C1149.26 238.263 1203.67 151.442 1258.07 64.6183L1264.35 54.6063C1266.41 49.8537 1267.55 44.608 1267.55 39.0985C1267.55 17.5056 1250.04 0 1228.45 0H674.32C662.512 0 651.943 5.30076 644.864 13.6498L638.999 23.0059L469.022 294.198L466.666 297.955C463.755 303.279 462.099 309.387 462.099 315.88C462.099 336.455 478.706 353.151 499.246 353.288H499.507H499.767Z"
       />
-
-      {/* "T" */}
-      <g stroke="#F4F4F5" strokeWidth="7">
-        <line x1="18" y1="40" x2="66" y2="40" />
-        <line x1="42" y1="40" x2="42" y2="84" />
-      </g>
-
-      {/* "P" */}
-      <g stroke="#F4F4F5" strokeWidth="7" strokeLinejoin="miter">
-        <line x1="92" y1="40" x2="92" y2="84" />
-        <path d="M92 40 H120 A14 14 0 0 1 120 68 H92" fill="none" />
-      </g>
-
-      {/* Take-profit price line: climbs from low to the TP level (y=22) */}
-      <polyline
-        className="tp-priceline"
-        points="10,80 44,66 80,72 116,40 168,22"
-        stroke="#A1A1AA"
-        strokeWidth="2.5"
-        strokeLinecap="butt"
-        strokeLinejoin="miter"
+      <path
+        className="tp-blade tp-blade-a"
+        d="M723.683 459.744H711.251H386.345H385.971H385.597C373.943 459.854 363.525 465.129 356.52 473.384L350.648 482.747L182.827 750.324L176.42 760.54L8.49589 1028.28L3.7548 1035.83C1.3487 1040.89 0 1046.54 0 1052.51C0 1073.94 17.3748 1091.32 38.8095 1091.32H370.294C381.283 1091.32 391.166 1086.58 398.013 1079.03L578.659 791.008L746.751 523.004L752.893 513.208C754.937 508.501 756.07 503.308 756.07 497.849C756.07 478.644 742.046 462.716 723.683 459.744Z"
       />
-      {/* Square marker landing on the TP level */}
-      <rect className="tp-target" x="165" y="19" width="6" height="6" fill="#F4F4F5" />
     </svg>
   );
 }

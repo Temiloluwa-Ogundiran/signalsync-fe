@@ -600,40 +600,40 @@ body {
   }
 }
 
-/* ===== Branded app loader (TP / Take Profit) — restrained, monochrome ===== */
-.tp-priceline {
-  stroke-dasharray: 300;
-  stroke-dashoffset: 300;
-  animation: tp-priceline-draw 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+/* ===== Branded app loader — the TradePartna blade mark, staggered rise ===== */
+.tp-blade {
+  fill: #635bff;
+  /* scale/translate each blade about its own center */
+  transform-box: fill-box;
+  transform-origin: center;
 }
-@keyframes tp-priceline-draw {
+.tp-blade-b {
+  animation: tp-rise 2.1s ease infinite;
+}
+.tp-blade-a {
+  animation: tp-rise 2.1s ease infinite 0.16s;
+}
+@keyframes tp-rise {
   0% {
-    stroke-dashoffset: 300;
-  }
-  60%,
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Target tick appears once the line reaches the TP level, then resets. */
-.tp-target {
-  opacity: 0;
-  animation: tp-target-show 1.8s steps(1) infinite;
-}
-@keyframes tp-target-show {
-  0%,
-  58% {
     opacity: 0;
+    transform: translateY(14px) scale(0.94);
   }
-  62%,
-  100% {
+  30% {
     opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-7px) scale(0.97);
   }
 }
 
 .tp-loader-label {
-  animation: tp-label-fade 1.8s ease-in-out infinite;
+  animation: tp-label-fade 2.1s ease-in-out infinite;
 }
 @keyframes tp-label-fade {
   0%,
@@ -646,12 +646,11 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tp-priceline,
-  .tp-target,
+  .tp-blade,
   .tp-loader-label {
     animation: none;
     opacity: 1;
-    stroke-dashoffset: 0;
+    transform: none;
   }
 }
 
