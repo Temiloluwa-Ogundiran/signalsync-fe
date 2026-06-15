@@ -106,6 +106,7 @@ export function JournalTradeHistoryPage() {
   // Shared page-header filter family (account + date range), reused from the
   // dashboard. Sync metadata is hidden here (Trade View has no sync line).
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
@@ -153,7 +154,7 @@ export function JournalTradeHistoryPage() {
 
   const onOpenJournal = (row: TradeHistoryRow) => {
     if (!activeAccountId) return;
-    router.push(`/journal/day?date=${encodeURIComponent(row.tradingDate)}`);
+    openNoteModal(row.tradingDate);
   };
 
   if (!activeAccountId) {

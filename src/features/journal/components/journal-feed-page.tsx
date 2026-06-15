@@ -46,6 +46,7 @@ export function JournalFeedPage() {
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
 
   const queryFrom = parseDateParam(searchParams.get("fromDate"));
   const queryTo = parseDateParam(searchParams.get("toDate"));
@@ -129,10 +130,8 @@ export function JournalFeedPage() {
 
   const journaledCount = allDays.filter((d) => d.hasNote).length;
 
-  // Add/View note opens the day-details page (journaling lives there).
-  const openDayNote = (date: string) => {
-    router.push(`/journal/day?date=${encodeURIComponent(date)}`);
-  };
+  // Add/View note opens the day-note modal in place (no navigation).
+  const openDayNote = (date: string) => openNoteModal(date);
   // AI review is a placeholder for now — no day-context AI yet.
   const openDayReview = () => {};
 

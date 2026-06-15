@@ -583,18 +583,19 @@ body {
 /* Dimmed variant — a quieter AI accent for in-card CTAs (e.g. the day card's
    "Review with Partna AI"), so it doesn't out-shout the primary entry point. */
 .ai-trigger--dim {
-  background: linear-gradient(135deg, #8b7bd6 0%, #6d3fc4 100%) !important;
+  background: linear-gradient(135deg, #5b4a8f 0%, #43308a 100%) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 10px rgba(139, 92, 246, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.3) !important;
 }
 .ai-trigger--dim:hover {
-  background: linear-gradient(135deg, #9a8ae0 0%, #7c4dd6 100%) !important;
+  background: linear-gradient(135deg, #6a589f 0%, #503a9c 100%) !important;
+  color: #ffffff !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 16px rgba(139, 92, 246, 0.3),
-    0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 10px rgba(139, 92, 246, 0.2),
+    0 1px 4px rgba(0, 0, 0, 0.3) !important;
 }
 .ai-trigger__spark {
   color: #c4b5fd; /* bright violet — catches the eye */

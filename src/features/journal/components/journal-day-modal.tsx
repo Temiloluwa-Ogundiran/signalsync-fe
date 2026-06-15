@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useJournalUiStore } from "../store/journal-ui-store";
 import { useJournalDay } from "../hooks/use-journal-day-modal";
 import { useDeleteManualTrade } from "../hooks/use-manual-trade";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ export function JournalDayModal({
   accountId,
   tradingDate,
 }: JournalDayModalProps) {
-  const router = useRouter();
+  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
 
   const deleteManualTrade = useDeleteManualTrade(accountId || "");
 
@@ -99,15 +99,15 @@ export function JournalDayModal({
   const openDayJournal = () => {
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
-    router.push(`/journal/day?date=${encodeURIComponent(tradingDate)}`);
+    openNoteModal(tradingDate);
   };
 
-  // Trade-level journaling will be rebuilt; for now any trade opens the day page.
+  // Trade-level journaling will be rebuilt; for now any trade opens the day note.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const openTradeJournal = (tradeId: string) => {
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
-    router.push(`/journal/day?date=${encodeURIComponent(tradingDate)}`);
+    openNoteModal(tradingDate);
   };
 
   return (

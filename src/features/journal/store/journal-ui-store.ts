@@ -25,6 +25,11 @@ type JournalUiState = {
   csvReimportAccountId: string | null;
   openCSVReimportModal: (accountId: string) => void;
   setCSVReimportAccountId: (id: string | null) => void;
+
+  // Day-note modal: the trading date being noted (YYYY-MM-DD), or null when closed.
+  noteModalDate: string | null;
+  openNoteModal: (date: string) => void;
+  closeNoteModal: () => void;
 };
 
 export const useJournalUiStore = create<JournalUiState>()(
@@ -67,6 +72,10 @@ export const useJournalUiStore = create<JournalUiState>()(
       openCSVReimportModal: (accountId: string) =>
         set({ csvReimportAccountId: accountId, connectModalOpen: true }),
       setCSVReimportAccountId: (id: string | null) => set({ csvReimportAccountId: id }),
+
+      noteModalDate: null,
+      openNoteModal: (date: string) => set({ noteModalDate: date }),
+      closeNoteModal: () => set({ noteModalDate: null }),
     }),
     {
       name: "journal-ui",
