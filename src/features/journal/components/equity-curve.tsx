@@ -355,7 +355,6 @@ export function EquityCurve({
               tick={false}
               tickLine={false}
               axisLine={false}
-              height={0}
             />
           )}
 
