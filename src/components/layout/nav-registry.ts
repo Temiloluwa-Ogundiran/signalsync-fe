@@ -135,7 +135,6 @@ export function buildNavRegistry(actionFns: {
               icon: Notebook01Icon,
               label: "Notebook",
               route: "/diary",
-              comingSoon: true,
             },
             {
               icon: AnalyticsUpIcon,
@@ -147,7 +146,6 @@ export function buildNavRegistry(actionFns: {
               icon: StrategyIcon,
               label: "Strategies",
               route: "/strategies",
-              comingSoon: true,
             },
           ],
         },

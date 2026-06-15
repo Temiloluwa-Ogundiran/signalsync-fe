@@ -99,17 +99,15 @@ export function JournalDayModal({
   const openDayJournal = () => {
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
-    router.push(
-      `/dashboard/chat?date=${encodeURIComponent(tradingDate)}&context=day`,
-    );
+    router.push(`/journal/day?date=${encodeURIComponent(tradingDate)}`);
   };
 
+  // Trade-level journaling will be rebuilt; for now any trade opens the day page.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const openTradeJournal = (tradeId: string) => {
     if (!accountId || !tradingDate) return;
     onOpenChange(false);
-    router.push(
-      `/dashboard/trade?date=${encodeURIComponent(tradingDate)}&tradeId=${encodeURIComponent(tradeId)}&from=day&context=day`,
-    );
+    router.push(`/journal/day?date=${encodeURIComponent(tradingDate)}`);
   };
 
   return (

@@ -329,11 +329,9 @@ export function TradeFormModal(props: TradeFormModalProps) {
         });
         onOpenChange(false);
 
-        // Post-creation flow: router.push to the trade chat page!
+        // Post-creation: open the day's journal page for that trade's date.
         const closedDate = createdTrade.closed_at.split("T")[0];
-        router.push(
-          `/dashboard/trade?tradeId=${createdTrade.id}&date=${closedDate}`,
-        );
+        router.push(`/journal/day?date=${encodeURIComponent(closedDate)}`);
       } else {
         if (!trade) return;
         await updateManualTrade.mutateAsync({

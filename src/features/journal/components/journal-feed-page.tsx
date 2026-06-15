@@ -128,14 +128,11 @@ export function JournalFeedPage() {
 
   const journaledCount = allDays.filter((d) => d.hasNote).length;
 
-  // Notes are the primary journaling action → open the day-details page (note
-  // editor lives there). AI review opens the assistant chat for the day.
+  // Both note + review open the new day-details page (journaling lives there).
   const openDayNote = (date: string) => {
     router.push(`/journal/day?date=${encodeURIComponent(date)}`);
   };
-  const openDayReview = (date: string) => {
-    router.push(`/dashboard/chat?date=${encodeURIComponent(date)}&context=day`);
-  };
+  const openDayReview = openDayNote;
 
   if (!activeAccountId) {
     return (

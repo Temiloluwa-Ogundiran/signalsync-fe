@@ -125,6 +125,12 @@ export interface JournalIntradayCurvesResponse {
   days: JournalIntradayDay[];
 }
 
+export interface JournalDayNote {
+  trading_date: string;
+  note_html: string | null;
+  note_updated_at: string | null;
+}
+
 export interface JournalAnalyticsEvaluationResponse {
   total_trades: number;
   avg_profit_per_trading_day: number;

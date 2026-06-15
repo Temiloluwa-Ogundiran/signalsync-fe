@@ -3,6 +3,7 @@ import type {
   JournalAdjacentTradedDatesResponse,
   JournalCreateMessagePayload,
   JournalDailyResponse,
+  JournalDayNote,
   JournalMessage,
   JournalReviewedAtResponse,
 } from "../types";
@@ -24,6 +25,32 @@ export const journalDailyApi = {
           include_manual: includeManual !== undefined ? includeManual : undefined,
         },
       },
+    );
+    return data;
+  },
+
+  getDayNote: async (
+    accountId: string,
+    tradingDate: string,
+    token?: string,
+  ): Promise<JournalDayNote> => {
+    const { data } = await apiClient.get<JournalDayNote>(
+      `/journal/daily/${accountId}/${tradingDate}/note`,
+      withAuth(token),
+    );
+    return data;
+  },
+
+  saveDayNote: async (
+    accountId: string,
+    tradingDate: string,
+    noteHtml: string | null,
+    token?: string,
+  ): Promise<JournalDayNote> => {
+    const { data } = await apiClient.put<JournalDayNote>(
+      `/journal/daily/${accountId}/${tradingDate}/note`,
+      { note_html: noteHtml },
+      withAuth(token),
     );
     return data;
   },

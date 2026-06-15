@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DayEquityCurve } from "./day-equity-curve";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useJournalDayTrades } from "../hooks/use-journal-day-modal";
+import { useDayNote, useSaveDayNote } from "../hooks/use-day-note";
 import { asNumber } from "./journal-day-modal.utils";
 import { DayNoteEditor } from "./day-note-editor";
 import { AppLoader } from "@/components/app-loader";
@@ -96,6 +97,37 @@ export function JournalDayPage() {
   const curve = useMemo(() => buildCurve(trades), [trades]);
   const hasCurve = curve.length > 1;
 
+  // Day note queries and mutations
+  const dayNoteQuery = useDayNote(activeAccountId, date, !!activeAccountId && !!date);
+  const saveDayNoteMutation = useSaveDayNote(activeAccountId, date);
+
+  // Local state for the editor
+  const [noteContent, setNoteContent] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update local state when the note loads from the server
+  useMemo(() => {
+    if (dayNoteQuery.data?.note_html) {
+      setNoteContent(dayNoteQuery.data.note_html);
+    }
+  }, [dayNoteQuery.data?.note_html]);
+
+  // Auto-save the note with debounce
+  const handleNoteChange = useCallback(
+    (html: string) => {
+      setNoteContent(html);
+      // Save immediately (could be debounced in the future)
+      setIsSaving(true);
+      saveDayNoteMutation.mutate(html, {
+        onSettled: () => setIsSaving(false),
+      });
+    },
+    [saveDayNoteMutation],
+  );
+
+  const isSaved = !isSaving && !saveDayNoteMutation.isPending;
+  const hasError = saveDayNoteMutation.isError;
+
   if (!date) {
     return (
       <div className="p-6 text-sm text-text-secondary">No day selected.</div>
@@ -135,9 +167,30 @@ export function JournalDayPage() {
           >
             Net P&amp;L {stats.net === 0 ? "$0" : money(stats.net)}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Not saved
+          <span className={cn(
+            "inline-flex items-center gap-1 text-xs",
+            hasError
+              ? "text-danger"
+              : isSaved
+                ? "text-text-tertiary"
+                : "text-text-secondary",
+          )}>
+            {hasError ? (
+              <>
+                <AlertCircle className="h-3.5 w-3.5" />
+                Save failed
+              </>
+            ) : isSaved ? (
+              <>
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Saved
+              </>
+            ) : (
+              <>
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Saving
+              </>
+            )}
           </span>
         </div>
       </div>
@@ -191,7 +244,14 @@ export function JournalDayPage() {
             <h2 className="text-sm font-semibold text-text-primary">
               Daily note
             </h2>
-            <DayNoteEditor />
+            {dayNoteQuery.isLoading ? (
+              <div className="min-h-[320px] animate-pulse rounded-xl bg-bg-tertiary" />
+            ) : (
+              <DayNoteEditor 
+                content={noteContent} 
+                onChange={handleNoteChange}
+              />
+            )}
           </section>
 
           {/* Compact trades — supporting context, links out to the Trades tab */}
