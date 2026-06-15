@@ -244,8 +244,12 @@ export function EquityCurve({
   const strokeId = `${chartId}-stroke`;
   const fillId = `${chartId}-fill`;
 
-  // Plot by real close time when xKey="t": convert each ISO `t` to epoch ms so
-  // the x-axis spaces points by when they actually closed (Tradezella style).
+  // Intraday axis modes:
+  //  • bySeq (xKey="i"): per-trade sequence axis — equal-width slots keyed on the
+  //    unique index `i` (NOT `t`, which would collapse duplicate timestamps).
+  //    Tick labels are each point's HH:MM:SS close time (derived from `t`).
+  //  • byTime (xKey="t"): real-time spacing via epoch ms (kept for completeness).
+  const bySeq = xKey === "i";
   const byTime = xKey === "t";
   const plotData = byTime
     ? data.map((d) => ({ ...d, tms: d.t ? new Date(d.t).getTime() : 0 }))
@@ -289,8 +293,25 @@ export function EquityCurve({
             />
           )}
 
+          {/* Sequence x-axis: equal-width slot per trade, keyed on unique `i`.
+              Labels are the HH:MM:SS close time derived from each point's `t`
+              (labels may repeat for same-second batches). */}
+          {bySeq && (
+            <XAxis
+              dataKey="i"
+              type="number"
+              domain={[0, data.length - 1]}
+              tickFormatter={(i: number) => fmtClock(data[i]?.t)}
+              interval="preserveStartEnd"
+              tick={showAxes ? { fill: "#71717A", fontSize: 11 } : false}
+              tickLine={false}
+              axisLine={false}
+              hide={!showAxes}
+            />
+          )}
+
           {/* Time x-axis: numeric epoch scale so points space by real close
-              time. Hidden — the day curve shows no x labels (Tradezella). */}
+              time. Hidden — no x labels. */}
           {byTime && (
             <XAxis
               dataKey="tms"
@@ -320,7 +341,7 @@ export function EquityCurve({
             />
           )}
 
-          {byTime && (
+          {(byTime || bySeq) && (
             <Tooltip
               content={<CurveTooltip />}
               cursor={{ stroke: VIOLET, strokeWidth: 1, strokeOpacity: 0.5 }}
