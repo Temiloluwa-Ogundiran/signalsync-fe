@@ -21,6 +21,7 @@ import {
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AppLoader } from "@/components/app-loader";
 import { formatCurrency } from "./journal-day-modal.utils";
 import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
 
@@ -130,17 +131,14 @@ export function JournalAccountsPage() {
               className="flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer shrink-0"
             >
               <Plus className="h-4 w-4" />
-              Connect MT5 Account
+              Connect Account
             </Button>
           ) : null}
         </div>
 
         {/* Main content area */}
         {isLoading ? (
-          <div className="flex h-60 flex-col items-center justify-center gap-3 text-text-tertiary">
-            <RefreshCw className="h-7 w-7 animate-spin text-brand" />
-            <span className="text-sm font-semibold">Loading your connected accounts...</span>
-          </div>
+          <AppLoader fullScreen={false} label="Loading accounts" />
         ) : accounts.length === 0 ? (
           /* Empty State */
           <Card className="border-border-secondary bg-card-bg py-16 text-center shadow-sm">
