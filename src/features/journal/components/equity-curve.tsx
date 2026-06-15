@@ -327,7 +327,6 @@ export function EquityCurve({
             <CartesianGrid
               vertical={false}
               stroke="rgba(255,255,255,0.05)"
-              strokeWidth={0.5}
               strokeDasharray="3 3"
             />
           )}
@@ -388,7 +387,6 @@ export function EquityCurve({
             <ReferenceLine
               y={0}
               stroke="rgba(255,255,255,0.12)"
-              strokeWidth={0.5}
               strokeDasharray="4 4"
             />
           )}
@@ -407,7 +405,7 @@ export function EquityCurve({
             type={interpolation}
             dataKey="cumulative_pnl"
             stroke={`url(#${strokeId})`}
-            strokeWidth={strokeMode === "zeroSplit" ? 2 : 0.5}
+            strokeWidth={strokeMode === "zeroSplit" ? 2 : 1}
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={`url(#${fillId})`}
