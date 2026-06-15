@@ -207,7 +207,7 @@ export function JournalDayPage() {
                 {dayCurve.length > 1 ? (
                   <EquityCurve
                     data={dayCurve}
-                    xKey="i"
+                    xKey="t"
                     colorMode="split"
                     size="full"
                     showAxes

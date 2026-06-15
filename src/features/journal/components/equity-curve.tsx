@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   ReferenceLine,
   ResponsiveContainer,
+  XAxis,
   YAxis,
 } from "recharts";
 
@@ -61,10 +62,16 @@ function niceAxis(values: number[]): { domain: [number, number]; ticks: number[]
 }
 
 interface EquityCurveProps {
-  // Data: daily format {date, cumulative_pnl} OR intraday format {i, cumulative_pnl}
-  data: Array<{ date?: string; i?: number; cumulative_pnl: number }>;
-  // Which axis field to use: "date" for daily, "i" for intraday
-  xKey: "date" | "i";
+  // Data: daily {date, cumulative_pnl}, intraday-by-sequence {i, cumulative_pnl},
+  // or intraday-by-time {t (ISO), cumulative_pnl}.
+  data: Array<{
+    date?: string;
+    i?: number;
+    t?: string;
+    cumulative_pnl: number;
+  }>;
+  // Which axis field to plot on: "date" (daily), "i" (sequence), "t" (real time)
+  xKey: "date" | "i" | "t";
   // Render style
   colorMode: "split" | "solid";
   solidVariant?: "win" | "loss"; // Only used when colorMode="solid"
@@ -177,11 +184,18 @@ export function EquityCurve({
   const strokeId = `${chartId}-stroke`;
   const fillId = `${chartId}-fill`;
 
+  // Plot by real close time when xKey="t": convert each ISO `t` to epoch ms so
+  // the x-axis spaces points by when they actually closed (Tradezella style).
+  const byTime = xKey === "t";
+  const plotData = byTime
+    ? data.map((d) => ({ ...d, tms: d.t ? new Date(d.t).getTime() : 0 }))
+    : data;
+
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={data}
+          data={plotData}
           margin={
             showAxes
               ? { top: 10, right: 10, bottom: 6, left: 8 }
@@ -212,6 +226,18 @@ export function EquityCurve({
               vertical={false}
               stroke="rgba(255,255,255,0.05)"
               strokeDasharray="3 3"
+            />
+          )}
+
+          {/* Time x-axis: numeric epoch scale so points space by real close
+              time. Hidden — the day curve shows no x labels (Tradezella). */}
+          {byTime && (
+            <XAxis
+              dataKey="tms"
+              type="number"
+              scale="time"
+              domain={["dataMin", "dataMax"]}
+              hide
             />
           )}
 

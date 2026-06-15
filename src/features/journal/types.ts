@@ -437,6 +437,7 @@ export interface CurveDailyResponse {
 
 export interface CurveIntradayPoint {
   i: number; // sequence index (0, 1, 2, ...)
+  t: string; // account-local close time (ISO) — for plotting by real time
   cumulative_pnl: number; // cumulative within the day at this trade
 }
 
