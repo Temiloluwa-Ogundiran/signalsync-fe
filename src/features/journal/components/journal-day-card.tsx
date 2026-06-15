@@ -139,11 +139,7 @@ export function JournalDayCard({
 
         <div className="grid flex-1 grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-4">
           <Stat label="Total Trades" value={String(trades)} />
-          <Stat
-            label="Gross P&L"
-            value={day ? money(day.gross_pnl) : "--"}
-            tone={day && day.gross_pnl < 0 ? "loss" : day && day.gross_pnl > 0 ? "win" : undefined}
-          />
+          <Stat label="Gross P&L" value={day ? money(day.gross_pnl) : "--"} />
           <Stat label="Winners / Losers" value={`${wins} / ${losses}`} />
           <Stat
             label="Commissions"
