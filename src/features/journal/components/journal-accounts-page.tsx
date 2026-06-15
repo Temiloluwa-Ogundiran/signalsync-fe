@@ -125,10 +125,12 @@ export function JournalAccountsPage() {
           <h1 className="text-xl font-bold tracking-tight">Trading Accounts</h1>
           {!isLoading && accounts.length > 0 ? (
             <Button
+              type="button"
+              variant="outline"
               onClick={openConnectModal}
-              className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-5 rounded-full shadow-lg hover:shadow-brand/20 transition-all"
+              className="h-10 rounded-full border-2 border-border-primary/60 bg-bg-secondary px-6 text-sm font-semibold text-text-primary hover:bg-bg-hover hover:border-border-primary cursor-pointer shrink-0"
             >
-              <Plus className="h-4 w-4 mr-1.5" />
+              <Plus className="h-4 w-4" />
               Connect MT5 Account
             </Button>
           ) : null}
