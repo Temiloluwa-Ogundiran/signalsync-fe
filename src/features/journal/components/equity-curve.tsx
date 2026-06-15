@@ -11,6 +11,54 @@ import {
 
 const WIN = "#22C55E";
 const LOSS = "#EF4444";
+const VIOLET = "#8B5CF6";
+const VIOLET_LIGHT = "#A78BFA";
+
+/** "Nice" step sizes for round y-axis ticks (1-2-5 sequence, scaled). */
+const NICE_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
+
+/**
+ * Build a padded domain + round ticks that always include $0, aiming for ~4–5
+ * ticks. Domain is rounded outward to the chosen step so the curve is never
+ * crushed against the top/bottom edge.
+ */
+function niceAxis(values: number[]): { domain: [number, number]; ticks: number[] } {
+  const dataMin = Math.min(0, ...values);
+  const dataMax = Math.max(0, ...values);
+  const range = dataMax - dataMin || 1;
+
+  // Pick the smallest "nice" step that yields ~4 segments or fewer (so the
+  // tick count lands around 4–5 including $0, not 6–7). Scale beyond the table
+  // for very large ranges.
+  let step = NICE_STEPS[NICE_STEPS.length - 1];
+  for (const s of NICE_STEPS) {
+    if (range / s <= 4) {
+      step = s;
+      break;
+    }
+  }
+  if (range / step > 4) {
+    const pow = Math.pow(10, Math.floor(Math.log10(range / 4)));
+    step = Math.ceil(range / 4 / pow) * pow;
+  }
+
+  // Round the domain outward to the step, but don't add a spurious negative
+  // (or positive) band when the data barely crosses zero — a value within a
+  // tenth of a step of zero shouldn't earn a whole extra tick on that side.
+  const eps = step * 0.1;
+  const niceMin = dataMin < -eps ? Math.floor(dataMin / step) * step : 0;
+  const niceMax = dataMax > eps ? Math.ceil(dataMax / step) * step : 0;
+
+  // Flat $0 day (no movement): show a small symmetric band so it's not a line.
+  const lo = niceMin;
+  const hi = niceMin === 0 && niceMax === 0 ? step : niceMax;
+
+  const ticks: number[] = [];
+  for (let t = lo; t <= hi + step / 2; t += step) {
+    ticks.push(Math.abs(t) < step / 2 ? 0 : Math.round(t));
+  }
+  return { domain: [lo, hi], ticks };
+}
 
 interface EquityCurveProps {
   // Data: daily format {date, cumulative_pnl} OR intraday format {i, cumulative_pnl}
@@ -26,13 +74,6 @@ interface EquityCurveProps {
   className?: string;
 }
 
-interface SplitPoint {
-  date?: string;
-  i?: number;
-  pos: number | null; // value when >= 0 (green series)
-  neg: number | null; // value when <= 0 (red series)
-}
-
 function fmtAxis(v: number) {
   const abs = Math.abs(v);
   const compact =
@@ -43,48 +84,14 @@ function fmtAxis(v: number) {
 }
 
 /**
- * Split the series into positive (green) and negative (red) channels so each
- * is drawn as ONE solid-colored line that meets exactly at $0 — no overlap.
- * Interpolates a {cumulative_pnl:0} point at every zero-crossing so the two
- * lines connect. Preserves xKey metadata (date or i).
+ * Fraction (0–1) down the plot where $0 sits within [domainMin, domainMax],
+ * for anchoring the green→transparent→red fill gradient exactly on the zero
+ * line. domainMax is at the top (offset 0), domainMin at the bottom (offset 1).
  */
-function splitAtZero(
-  data: Array<{ date?: string; i?: number; cumulative_pnl: number }>,
-  xKey: "date" | "i",
-): SplitPoint[] {
-  const out: SplitPoint[] = [];
-  for (let k = 0; k < data.length; k++) {
-    const cur = data[k];
-    const prev = data[k - 1];
-
-    if (prev) {
-      const a = prev.cumulative_pnl;
-      const b = cur.cumulative_pnl;
-      // Crossed zero between prev and cur → insert a $0 crossing point so the
-      // green and red channels meet exactly at the baseline.
-      if ((a < 0 && b > 0) || (a > 0 && b < 0)) {
-        const point: SplitPoint = { pos: 0, neg: 0 };
-        if (xKey === "date") {
-          point.date = prev.date; // Keep the previous date
-        } else {
-          point.i = prev.i; // Keep the previous index
-        }
-        out.push(point);
-      }
-    }
-
-    const point: SplitPoint = {
-      pos: cur.cumulative_pnl >= 0 ? cur.cumulative_pnl : null,
-      neg: cur.cumulative_pnl <= 0 ? cur.cumulative_pnl : null,
-    };
-    if (xKey === "date") {
-      point.date = cur.date;
-    } else {
-      point.i = cur.i;
-    }
-    out.push(point);
-  }
-  return out;
+function zeroOffset(domainMin: number, domainMax: number): number {
+  if (domainMax <= 0) return 0; // all below zero → fully red
+  if (domainMin >= 0) return 1; // all above zero → fully green
+  return domainMax / (domainMax - domainMin);
 }
 
 /**
@@ -145,7 +152,7 @@ export function EquityCurve({
             </defs>
             <YAxis hide domain={["dataMin", "dataMax"]} />
             <Area
-              type="linear"
+              type="monotone"
               dataKey="cumulative_pnl"
               stroke={color}
               strokeWidth={2}
@@ -160,34 +167,43 @@ export function EquityCurve({
     );
   }
 
-  // Split mode (day page, dashboard): green >= $0, red < $0
-  const max = Math.max(0, ...values);
-  const min = Math.min(0, ...values);
-  const split = splitAtZero(data, xKey);
-
-  const gradientId = `${chartId}-split`;
+  // Split mode (day page, dashboard) — Tradezella day curve:
+  //   • ONE solid purple line (never green/red on the stroke).
+  //   • Zero-split fill: green above $0, red below, fading to transparent at
+  //     the baseline. The split lands exactly on $0 via `zeroOffset`.
+  //   • Round y-ticks that always include $0, with a padded domain.
+  const { domain, ticks } = niceAxis(values);
+  const off = zeroOffset(domain[0], domain[1]);
+  const strokeId = `${chartId}-stroke`;
+  const fillId = `${chartId}-fill`;
 
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={split}
+          data={data}
           margin={
             showAxes
-              ? { top: 8, right: 8, bottom: 4, left: 8 }
+              ? { top: 10, right: 10, bottom: 6, left: 8 }
               : size === "spark"
                 ? { top: 2, right: 0, bottom: 2, left: 0 }
-                : { top: 4, right: 0, bottom: 4, left: 0 }
+                : { top: 6, right: 4, bottom: 6, left: 4 }
           }
         >
           <defs>
-            <linearGradient id={`${gradientId}-pos`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={WIN} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={WIN} stopOpacity={0.02} />
+            {/* Purple stroke gradient (light top → base bottom) for subtle depth. */}
+            <linearGradient id={strokeId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={VIOLET_LIGHT} />
+              <stop offset="100%" stopColor={VIOLET} />
             </linearGradient>
-            <linearGradient id={`${gradientId}-neg`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={LOSS} stopOpacity={0.02} />
-              <stop offset="100%" stopColor={LOSS} stopOpacity={0.35} />
+            {/* Zero-split fill: green above $0 (deep at the line → 0 at zero),
+                red below $0 (0 at zero → deep at the bottom). `off` is the
+                fraction down the plot where $0 sits. */}
+            <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={WIN} stopOpacity={0.4} />
+              <stop offset={off} stopColor={WIN} stopOpacity={0} />
+              <stop offset={off} stopColor={LOSS} stopOpacity={0} />
+              <stop offset="100%" stopColor={LOSS} stopOpacity={0.4} />
             </linearGradient>
           </defs>
 
@@ -200,41 +216,33 @@ export function EquityCurve({
           )}
 
           <YAxis
-            domain={[min, max]}
+            domain={domain}
+            ticks={showAxes ? ticks : undefined}
             hide={!showAxes}
             width={showAxes ? 48 : 0}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
+            tick={{ fill: "#71717A", fontSize: 12 }}
             tickFormatter={fmtAxis}
           />
 
-          {showAxes && <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" />}
+          {showAxes && (
+            <ReferenceLine
+              y={0}
+              stroke="rgba(255,255,255,0.12)"
+              strokeDasharray="4 4"
+            />
+          )}
 
-          {/* Positive (green) channel — fills down to $0.
-              `linear` (not monotone): with few trades, monotone smoothing
-              invents a long flat sag near zero that isn't in the data. Straight
-              segments between points plot the cumulative honestly. */}
           <Area
-            type="linear"
-            dataKey="pos"
-            stroke={WIN}
+            type="monotone"
+            dataKey="cumulative_pnl"
+            stroke={`url(#${strokeId})`}
             strokeWidth={2}
-            fill={`url(#${gradientId}-pos)`}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill={`url(#${fillId})`}
             baseValue={0}
-            connectNulls={false}
-            isAnimationActive={false}
-            dot={false}
-          />
-          {/* Negative (red) channel — fills up to $0 */}
-          <Area
-            type="linear"
-            dataKey="neg"
-            stroke={LOSS}
-            strokeWidth={2}
-            fill={`url(#${gradientId}-neg)`}
-            baseValue={0}
-            connectNulls={false}
             isAnimationActive={false}
             dot={false}
           />
