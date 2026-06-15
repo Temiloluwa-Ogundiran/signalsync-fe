@@ -107,9 +107,9 @@ export function JournalDayCard({
             <button
               type="button"
               onClick={() => onReview(date)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#8B5CF6] px-3.5 py-2 text-xs font-semibold text-white shadow-[0_2px_12px_rgba(139,92,246,0.35)] transition-colors hover:bg-[#7C4DF0] cursor-pointer"
+              className="ai-trigger inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-xs"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="ai-trigger__spark h-3.5 w-3.5" />
               Review with Partna AI
             </button>
             <button
