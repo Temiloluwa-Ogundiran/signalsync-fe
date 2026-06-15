@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, NotebookText, Plus, ChevronRight } from "lucide-react";
+import { Sparkles, NotebookText, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EquityCurve } from "./equity-curve";
 import type { CurveIntradayDay } from "../types";
@@ -66,12 +66,8 @@ export function JournalDayCard({
 
   return (
     <section className="rounded-2xl bg-card-bg px-5 py-4 ring-1 ring-white/[0.04] md:px-6 md:py-5">
-      {/* Header row: chevron · date · • · Net P&L … actions */}
+      {/* Header row: date · • · Net P&L … actions */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <ChevronRight
-          aria-hidden
-          className="h-5 w-5 shrink-0 text-text-tertiary"
-        />
         {hasNote ? (
           <span
             aria-hidden
