@@ -82,58 +82,60 @@ export function JournalDayCard({
         <span className={cn("text-base font-bold tabular-nums", pnlColor)}>
           Net P&amp;L {net === 0 ? "$0" : money(net)}
         </span>
-
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onReview(date)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[rgba(139,92,246,0.10)] px-3 py-2 text-xs font-semibold text-[#A78BFA] transition-colors hover:bg-[rgba(139,92,246,0.16)] cursor-pointer"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Review with Partna AI</span>
-            <span className="sm:hidden">Review</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onNote(date)}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer",
-              hasNote
-                ? "bg-[rgba(139,92,246,0.12)] text-[#A78BFA] hover:bg-[rgba(139,92,246,0.18)]"
-                : "bg-white font-bold text-[#0a0a0b] hover:bg-white/90",
-            )}
-          >
-            {hasNote ? (
-              <>
-                <NotebookText className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">View note</span>
-              </>
-            ) : (
-              <>
-                <Plus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Add note</span>
-              </>
-            )}
-          </button>
-        </div>
       </div>
 
-      {/* Body: equity curve + 2×4 stat grid */}
-      <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-center">
-        {hasCurve ? (
-          <EquityCurve
-            data={curve}
-            xKey="i"
-            colorMode="split"
-            size="full"
-            showAxes
-            className="h-40 w-full shrink-0 lg:w-[34%]"
-          />
-        ) : (
-          <div className="flex h-40 w-full shrink-0 items-center justify-center text-sm text-text-secondary lg:w-[34%]">
-            No trade data for this day
+      {/* Body: left column (chart + actions under it) · right column (stat grid) */}
+      <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-start">
+        <div className="flex w-full shrink-0 flex-col gap-3 lg:w-[34%]">
+          {hasCurve ? (
+            <EquityCurve
+              data={curve}
+              xKey="i"
+              colorMode="split"
+              size="full"
+              showAxes
+              className="h-40 w-full"
+            />
+          ) : (
+            <div className="flex h-40 w-full items-center justify-center text-sm text-text-secondary">
+              No trade data for this day
+            </div>
+          )}
+
+          {/* Actions — directly under the chart */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onReview(date)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[rgba(139,92,246,0.10)] px-3 py-2 text-xs font-semibold text-[#A78BFA] transition-colors hover:bg-[rgba(139,92,246,0.16)] cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Review with Partna AI
+            </button>
+            <button
+              type="button"
+              onClick={() => onNote(date)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer",
+                hasNote
+                  ? "bg-[rgba(139,92,246,0.12)] text-[#A78BFA] hover:bg-[rgba(139,92,246,0.18)]"
+                  : "bg-white font-bold text-[#0a0a0b] hover:bg-white/90",
+              )}
+            >
+              {hasNote ? (
+                <>
+                  <NotebookText className="h-3.5 w-3.5" />
+                  View note
+                </>
+              ) : (
+                <>
+                  <Plus className="h-3.5 w-3.5" />
+                  Add note
+                </>
+              )}
+            </button>
           </div>
-        )}
+        </div>
 
         <div className="grid flex-1 grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-4">
           <Stat label="Total Trades" value={String(trades)} />
