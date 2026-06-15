@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -68,6 +69,7 @@ interface EquityCurveProps {
     date?: string;
     i?: number;
     t?: string;
+    symbol?: string | null;
     cumulative_pnl: number;
   }>;
   // Which axis field to plot on: "date" (daily), "i" (sequence), "t" (real time)
@@ -88,6 +90,64 @@ function fmtAxis(v: number) {
       ? `${(abs / 1000).toFixed(abs % 1000 === 0 ? 0 : 1)}k`
       : abs.toLocaleString("en-US");
   return `${v < 0 ? "-" : ""}$${compact}`;
+}
+
+function fmtMoney(v: number) {
+  const abs = Math.abs(v).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return v < 0 ? `-$${abs}` : `$${abs}`;
+}
+
+function fmtClock(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+}
+
+/**
+ * Tradezella-style hover tooltip for the day curve: bold close time, then a
+ * row of "SYMBOL HH:MM:SS: $cumulative" with a violet swatch.
+ */
+function CurveTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{
+    payload?: { t?: string; symbol?: string | null; cumulative_pnl: number };
+  }>;
+}) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0]?.payload;
+  if (!p) return null;
+  const time = fmtClock(p.t);
+  const val = p.cumulative_pnl;
+  return (
+    <div className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-xs shadow-lg">
+      <p className="mb-1 font-semibold tabular-nums text-text-primary">{time}</p>
+      <p className="flex items-center gap-2 tabular-nums text-text-secondary">
+        <span
+          className="inline-block h-2.5 w-2.5 rounded-[3px]"
+          style={{ backgroundColor: VIOLET }}
+          aria-hidden
+        />
+        {p.symbol ? `${p.symbol} ` : ""}
+        {time}:{" "}
+        <span className={val < 0 ? "text-danger" : "text-success"}>
+          {fmtMoney(val)}
+        </span>
+      </p>
+    </div>
+  );
 }
 
 /**
@@ -257,6 +317,13 @@ export function EquityCurve({
               y={0}
               stroke="rgba(255,255,255,0.12)"
               strokeDasharray="4 4"
+            />
+          )}
+
+          {byTime && (
+            <Tooltip
+              content={<CurveTooltip />}
+              cursor={{ stroke: VIOLET, strokeWidth: 1, strokeOpacity: 0.5 }}
             />
           )}
 
