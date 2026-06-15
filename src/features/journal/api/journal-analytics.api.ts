@@ -1,11 +1,10 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
+  CurveResponse,
   JournalAnalyticsDashboardResponse,
-  JournalAnalyticsEquityCurveResponse,
   JournalAnalyticsEvaluationResponse,
   JournalAnalyticsSummaryResponse,
   JournalAnalyticsTimePerformanceResponse,
-  JournalIntradayCurvesResponse,
 } from "../types";
 
 interface AnalyticsQueryParams {
@@ -58,46 +57,6 @@ export const journalAnalyticsApi = {
     return data;
   },
 
-  getEquityCurve: async (
-    params: Omit<AnalyticsQueryParams, "timeBasis">,
-    token?: string,
-  ): Promise<JournalAnalyticsEquityCurveResponse> => {
-    const { data } = await apiClient.get<JournalAnalyticsEquityCurveResponse>(
-      "/journal/analytics/equity-curve",
-      {
-        ...withAuth(token),
-        params: {
-          ...(params.accountId ? { account_id: params.accountId } : {}),
-          ...(params.fromDate ? { from_date: params.fromDate } : {}),
-          ...(params.toDate ? { to_date: params.toDate } : {}),
-          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
-        },
-      },
-    );
-
-    return data;
-  },
-
-  getIntradayCurves: async (
-    params: Omit<AnalyticsQueryParams, "timeBasis">,
-    token?: string,
-  ): Promise<JournalIntradayCurvesResponse> => {
-    const { data } = await apiClient.get<JournalIntradayCurvesResponse>(
-      "/journal/analytics/intraday-curves",
-      {
-        ...withAuth(token),
-        params: {
-          ...(params.accountId ? { account_id: params.accountId } : {}),
-          ...(params.fromDate ? { from_date: params.fromDate } : {}),
-          ...(params.toDate ? { to_date: params.toDate } : {}),
-          include_manual:
-            params.includeManual !== undefined ? params.includeManual : undefined,
-        },
-      },
-    );
-
-    return data;
-  },
 
   getEvaluation: async (
     params: Omit<AnalyticsQueryParams, "timeBasis">,
@@ -139,4 +98,26 @@ export const journalAnalyticsApi = {
     );
     return data;
   },
+
+  getCurve: async (
+    params: Omit<AnalyticsQueryParams, "timeBasis"> & { granularity: "daily" | "intraday" },
+    token?: string,
+  ): Promise<CurveResponse> => {
+    const { granularity, ...queryParams } = params;
+    const { data } = await apiClient.get<CurveResponse>(
+      "/journal/analytics/curve",
+      {
+        ...withAuth(token),
+        params: {
+          ...(queryParams.accountId ? { account_id: queryParams.accountId } : {}),
+          ...(queryParams.fromDate ? { from_date: queryParams.fromDate } : {}),
+          ...(queryParams.toDate ? { to_date: queryParams.toDate } : {}),
+          granularity,
+          include_manual: queryParams.includeManual !== undefined ? queryParams.includeManual : undefined,
+        },
+      },
+    );
+    return data;
+  },
 };
+

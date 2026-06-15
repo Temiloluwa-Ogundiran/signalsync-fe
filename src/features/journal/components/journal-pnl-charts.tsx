@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import type { JournalAnalyticsEquityCurvePoint } from "../types";
+import type { CurveDailyPoint } from "../types";
 
 const GREEN = "#22C55E";
 const RED = "#EF4444";
@@ -126,7 +126,7 @@ function ChartCard({
 }
 
 interface ChartProps {
-  points: JournalAnalyticsEquityCurvePoint[];
+  points: CurveDailyPoint[];
   isLoading?: boolean;
   className?: string;
 }

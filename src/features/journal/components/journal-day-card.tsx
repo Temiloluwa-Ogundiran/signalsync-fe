@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { Sparkles, NotebookText, Plus, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DayEquityCurve } from "./day-equity-curve";
-import type { JournalIntradayCurvePoint } from "../types";
+import { EquityCurve } from "./equity-curve";
+import type { CurveIntradayPoint } from "../types";
 
 interface DaySummary {
   /** YYYY-MM-DD */
@@ -18,8 +17,8 @@ interface DaySummary {
 
 interface JournalDayCardProps {
   day: DaySummary;
-  /** Intraday cumulative-P&L points for the mini sparkline. */
-  curve: JournalIntradayCurvePoint[];
+  /** Intraday running-P&L points for this day (sequence-indexed). */
+  curve?: CurveIntradayPoint[];
   onReview: (date: string) => void;
   onNote: (date: string) => void;
   /** Open the full day-details page. */
@@ -45,15 +44,6 @@ function formatDateLabel(iso: string) {
   });
 }
 
-/** Cumulative curve → chart points, prefixed with a 0 baseline. */
-function toChartData(points: JournalIntradayCurvePoint[]) {
-  if (points.length === 0) return [];
-  return [
-    { i: 0, v: 0 },
-    ...points.map((p, idx) => ({ i: idx + 1, v: p.cumulative_pnl })),
-  ];
-}
-
 export function JournalDayCard({
   day,
   curve,
@@ -67,9 +57,6 @@ export function JournalDayCard({
       : day.netPnl > 0
         ? "text-kpi-metric-positive"
         : "text-text-tertiary";
-
-  const chartData = useMemo(() => toChartData(curve), [curve]);
-  const hasCurve = chartData.length > 1;
 
   return (
     <section
@@ -121,19 +108,22 @@ export function JournalDayCard({
         </div>
       </div>
 
-      {/* Middle: day-shape sparkline — fixed, modest size (doesn't stretch). */}
-      <div className="hidden h-10 w-[180px] shrink-0 items-center md:flex">
-        {hasCurve ? (
-          <DayEquityCurve
-            data={chartData}
-            solidColor={day.netPnl < 0 ? "loss" : "win"}
-            className="h-full w-full"
-          />
-        ) : null}
-      </div>
+      {/* Middle: intraday running-P&L sparkline (one fetch covers all days) */}
+      {curve && curve.length > 1 ? (
+        <EquityCurve
+          data={curve}
+          xKey="i"
+          colorMode="solid"
+          solidVariant={day.netPnl < 0 ? "loss" : "win"}
+          size="spark"
+          className="hidden h-10 flex-1 sm:block"
+        />
+      ) : (
+        <div className="hidden flex-1 sm:block" />
+      )}
 
       {/* Right: actions — Add note is the hero on the Journal page */}
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={(e) => {

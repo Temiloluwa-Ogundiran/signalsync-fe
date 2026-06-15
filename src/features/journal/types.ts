@@ -100,31 +100,6 @@ export interface JournalAnalyticsSummaryResponse {
   max_drawdown: number;
 }
 
-export interface JournalAnalyticsEquityCurvePoint {
-  date: string;
-  cumulative_pnl: number;
-  daily_pnl: number;
-}
-
-export interface JournalAnalyticsEquityCurveResponse {
-  points: JournalAnalyticsEquityCurvePoint[];
-}
-
-export interface JournalIntradayCurvePoint {
-  t: string;
-  cumulative_pnl: number;
-}
-
-export interface JournalIntradayDay {
-  date: string;
-  net_pnl: number;
-  points: JournalIntradayCurvePoint[];
-}
-
-export interface JournalIntradayCurvesResponse {
-  days: JournalIntradayDay[];
-}
-
 export interface JournalDayNote {
   trading_date: string;
   note_html: string | null;
@@ -444,3 +419,39 @@ export interface PlatformInfo {
   max_file_size_mb: number;
 }
 
+
+
+// ============================================================================
+// Unified Curve Types (Phase 2)
+// ============================================================================
+
+export interface CurveDailyPoint {
+  date: string; // YYYY-MM-DD
+  daily_pnl: number; // P&L on this day alone
+  cumulative_pnl: number; // cumulative from start of range
+}
+
+export interface CurveDailyResponse {
+  points: CurveDailyPoint[];
+}
+
+export interface CurveIntradayPoint {
+  i: number; // sequence index (0, 1, 2, ...)
+  cumulative_pnl: number; // cumulative within the day at this trade
+}
+
+export interface CurveIntradayDay {
+  date: string; // YYYY-MM-DD
+  net_pnl: number; // total P&L for the day
+  trades_count: number; // number of trades
+  points: CurveIntradayPoint[]; // zero-baselined (i=0, cumulative_pnl=0.0 prepended)
+}
+
+export interface CurveIntradayResponse {
+  days: CurveIntradayDay[];
+}
+
+export interface CurveResponse {
+  daily_curve?: CurveDailyResponse | null;
+  intraday_curve?: CurveIntradayResponse | null;
+}

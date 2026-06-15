@@ -7,14 +7,12 @@ import { AppLoader } from "@/components/app-loader";
 import { cn } from "@/lib/utils";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
-import {
-  useJournalDashboardAnalytics,
-  useJournalIntradayCurves,
-} from "@/features/journal/hooks/use-journal-analytics";
+import { useJournalDashboardAnalytics } from "@/features/journal/hooks/use-journal-analytics";
+import { useCurve } from "../hooks/use-curve";
+import type { CurveIntradayPoint } from "../types";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
-import type { JournalIntradayCurvePoint } from "../types";
 
 type FeedFilter = "all" | "journaled" | "not-journaled";
 
@@ -92,16 +90,19 @@ export function JournalFeedPage() {
     fromDate,
     toDate,
   });
-  const curvesQuery = useJournalIntradayCurves({
+
+  // One intraday fetch covers every day's sparkline → date → points map.
+  const curvesQuery = useCurve({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
+    granularity: "intraday",
   });
-
-  // date → intraday curve points (one fetch covers every day).
   const curveByDate = useMemo(() => {
-    const map = new Map<string, JournalIntradayCurvePoint[]>();
-    for (const d of curvesQuery.data?.days ?? []) map.set(d.date, d.points);
+    const map = new Map<string, CurveIntradayPoint[]>();
+    for (const d of curvesQuery.data?.intraday_curve?.days ?? []) {
+      map.set(d.date, d.points);
+    }
     return map;
   }, [curvesQuery.data]);
 
@@ -203,7 +204,7 @@ export function JournalFeedPage() {
             <JournalDayCard
               key={day.date}
               day={day}
-              curve={curveByDate.get(day.date) ?? []}
+              curve={curveByDate.get(day.date)}
               onReview={openDayReview}
               onNote={openDayNote}
               onOpenDay={openDayNote}

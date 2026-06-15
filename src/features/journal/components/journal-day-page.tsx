@@ -10,13 +10,14 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DayEquityCurve } from "./day-equity-curve";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useJournalDayTrades } from "../hooks/use-journal-day-modal";
 import { useDayNote, useSaveDayNote } from "../hooks/use-day-note";
+import { useCurve } from "../hooks/use-curve";
 import { asNumber } from "./journal-day-modal.utils";
 import { DayNoteEditor } from "./day-note-editor";
+import { EquityCurve } from "./equity-curve";
 import { AppLoader } from "@/components/app-loader";
 import type { JournalTrade } from "../types";
 
@@ -72,19 +73,6 @@ function computeStats(trades: JournalTrade[]) {
   };
 }
 
-function buildCurve(trades: JournalTrade[]) {
-  const ordered = [...trades].sort(
-    (a, b) => new Date(a.closed_at).getTime() - new Date(b.closed_at).getTime(),
-  );
-  let running = 0;
-  const pts = [{ i: 0, v: 0 }];
-  ordered.forEach((t, idx) => {
-    running += asNumber(t.net_profit);
-    pts.push({ i: idx + 1, v: running });
-  });
-  return pts;
-}
-
 export function JournalDayPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -104,8 +92,19 @@ export function JournalDayPage() {
     [tradesQuery.data],
   );
   const stats = useMemo(() => computeStats(trades), [trades]);
-  const curve = useMemo(() => buildCurve(trades), [trades]);
-  const hasCurve = curve.length > 1;
+
+  // Intraday running-P&L curve for this single day (deterministic backend sort).
+  const curveQuery = useCurve({
+    accountId: activeAccountId || undefined,
+    fromDate: date,
+    toDate: date,
+    granularity: "intraday",
+    enabled: !!activeAccountId && !!date,
+  });
+  const dayCurve = useMemo(
+    () => curveQuery.data?.intraday_curve?.days?.[0]?.points ?? [],
+    [curveQuery.data],
+  );
 
   // Day note: load once, then debounce-autosave edits.
   const dayNoteQuery = useDayNote(
@@ -197,7 +196,7 @@ export function JournalDayPage() {
         <AppLoader fullScreen={false} label="Loading day" />
       ) : (
         <>
-          {/* Context: equity curve ($0-anchored, Tradezella style) + stats */}
+          {/* Context: equity curve ($0-split) + day stats */}
           <section className="rounded-xl bg-card-bg p-5">
             {trades.length === 0 ? (
               <p className="py-6 text-center text-sm text-text-secondary">
@@ -205,10 +204,13 @@ export function JournalDayPage() {
               </p>
             ) : (
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
-                {hasCurve ? (
-                  <DayEquityCurve
-                    data={curve}
-                    showAxis
+                {dayCurve.length > 1 ? (
+                  <EquityCurve
+                    data={dayCurve}
+                    xKey="i"
+                    colorMode="split"
+                    size="full"
+                    showAxes
                     className="h-40 w-full shrink-0 lg:w-1/2"
                   />
                 ) : null}

@@ -17,7 +17,6 @@ import {
 } from "@/features/journal/hooks/use-journal-accounts";
 import {
   useJournalDashboardAnalytics,
-  useJournalEquityCurveAnalytics,
   useJournalEvaluationAnalytics,
   useJournalTimePerformanceAnalytics,
 } from "@/features/journal/hooks/use-journal-analytics";
@@ -36,6 +35,7 @@ import {
   JournalInstrumentPnlChart,
   JournalWeekdayPnlChart,
 } from "@/features/journal/components/journal-performance-charts";
+import { useCurve } from "@/features/journal/hooks/use-curve";
 import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-registry";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
@@ -193,23 +193,25 @@ function JournalPageContent() {
     fromDate,
     toDate,
   });
-  const equityCurveQuery = useJournalEquityCurveAnalytics({
-    accountId: scopedAccountId,
-    fromDate,
-    toDate,
-  });
   const evaluationQuery = useJournalEvaluationAnalytics({
     accountId: scopedAccountId,
     fromDate,
     toDate,
   });
+  // Unified daily curve feeds both P&L charts and the Net-P&L KPI sparkline.
+  const dailyCurveQuery = useCurve({
+    accountId: scopedAccountId,
+    fromDate,
+    toDate,
+    granularity: "daily",
+  });
+  const dailyCurvePoints = useMemo(
+    () => dailyCurveQuery.data?.daily_curve?.points ?? [],
+    [dailyCurveQuery.data],
+  );
   const netPnlSeries = useMemo(
-    () =>
-      (equityCurveQuery.data?.points ?? []).map((p, i) => ({
-        i,
-        v: p.cumulative_pnl,
-      })),
-    [equityCurveQuery.data?.points],
+    () => dailyCurvePoints.map((p, i) => ({ i, v: p.cumulative_pnl })),
+    [dailyCurvePoints],
   );
   // `refetch` is referentially stable in TanStack Query v5; depending on the
   // whole `dashboardQuery` object (new identity every render) would tear down and
@@ -455,12 +457,12 @@ function JournalPageContent() {
           />
         ) : null}
         <JournalDailyPnlChart
-          points={equityCurveQuery.data?.points ?? []}
-          isLoading={equityCurveQuery.isLoading}
+          points={dailyCurvePoints}
+          isLoading={dailyCurveQuery.isLoading}
         />
         <JournalCumulativePnlChart
-          points={equityCurveQuery.data?.points ?? []}
-          isLoading={equityCurveQuery.isLoading}
+          points={dailyCurvePoints}
+          isLoading={dailyCurveQuery.isLoading}
         />
       </div>
 
