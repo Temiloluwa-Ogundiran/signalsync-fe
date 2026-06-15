@@ -126,9 +126,8 @@ export function JournalAccountsPage() {
           {!isLoading && accounts.length > 0 ? (
             <Button
               type="button"
-              variant="outline"
               onClick={openConnectModal}
-              className="h-10 rounded-full border-2 border-border-primary/60 bg-bg-secondary px-6 text-sm font-semibold text-text-primary hover:bg-bg-hover hover:border-border-primary cursor-pointer shrink-0"
+              className="flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer shrink-0"
             >
               <Plus className="h-4 w-4" />
               Connect MT5 Account
