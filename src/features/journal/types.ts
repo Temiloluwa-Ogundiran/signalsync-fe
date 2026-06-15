@@ -445,8 +445,15 @@ export interface CurveIntradayPoint {
 
 export interface CurveIntradayDay {
   date: string; // YYYY-MM-DD
-  net_pnl: number; // total P&L for the day
+  net_pnl: number; // total net P&L for the day
   trades_count: number; // number of trades
+  gross_pnl: number; // sum of gross profit (before commission/swap)
+  win_count: number; // trades with net P&L > 0
+  loss_count: number; // trades with net P&L < 0
+  commissions: number; // sum of commission
+  win_rate: number; // win_count / trades_count * 100
+  volume: number; // sum of trade volume (lots)
+  profit_factor: number | null; // gross wins / |gross losses|; null if no losses
   points: CurveIntradayPoint[]; // zero-baselined (i=0, cumulative_pnl=0.0 prepended)
 }
 

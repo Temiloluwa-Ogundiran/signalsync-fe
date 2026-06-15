@@ -9,7 +9,7 @@ import { useJournalAccounts } from "@/features/journal/hooks/use-journal-account
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useJournalDashboardAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { useCurve } from "../hooks/use-curve";
-import type { CurveIntradayPoint } from "../types";
+import type { CurveIntradayDay } from "../types";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
@@ -91,17 +91,17 @@ export function JournalFeedPage() {
     toDate,
   });
 
-  // One intraday fetch covers every day's sparkline → date → points map.
+  // One intraday fetch covers every day's curve + stats → date → day map.
   const curvesQuery = useCurve({
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
     granularity: "intraday",
   });
-  const curveByDate = useMemo(() => {
-    const map = new Map<string, CurveIntradayPoint[]>();
+  const dayByDate = useMemo(() => {
+    const map = new Map<string, CurveIntradayDay>();
     for (const d of curvesQuery.data?.intraday_curve?.days ?? []) {
-      map.set(d.date, d.points);
+      map.set(d.date, d);
     }
     return map;
   }, [curvesQuery.data]);
@@ -129,11 +129,12 @@ export function JournalFeedPage() {
 
   const journaledCount = allDays.filter((d) => d.hasNote).length;
 
-  // Both note + review open the new day-details page (journaling lives there).
+  // Add/View note opens the day-details page (journaling lives there).
   const openDayNote = (date: string) => {
     router.push(`/journal/day?date=${encodeURIComponent(date)}`);
   };
-  const openDayReview = openDayNote;
+  // AI review is a placeholder for now — no day-context AI yet.
+  const openDayReview = () => {};
 
   if (!activeAccountId) {
     return (
@@ -203,11 +204,15 @@ export function JournalFeedPage() {
           {days.map((day) => (
             <JournalDayCard
               key={day.date}
-              day={day}
-              curve={curveByDate.get(day.date)}
+              date={day.date}
+              day={dayByDate.get(day.date)}
+              netPnl={day.netPnl}
+              tradeCount={day.tradeCount}
+              winCount={day.winCount}
+              lossCount={day.lossCount}
+              hasNote={day.hasNote}
               onReview={openDayReview}
               onNote={openDayNote}
-              onOpenDay={openDayNote}
             />
           ))}
         </div>
