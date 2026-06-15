@@ -345,19 +345,17 @@ export function EquityCurve({
           )}
 
           {/* Sequence x-axis (day page): equal-width slot per trade, keyed on
-              unique `i`. Labels are the HH:MM:SS close time from each point's
-              `t` (may repeat for same-second batches). */}
+              unique `i`. No x labels are shown (the close time appears in the
+              hover tooltip instead). */}
           {bySeq && (
             <XAxis
               dataKey="i"
               type="number"
               domain={[0, data.length - 1]}
-              tickFormatter={(i: number) => fmtClock(data[i]?.t)}
-              interval="preserveStartEnd"
-              tick={showAxes ? { fill: "#71717A", fontSize: 11 } : false}
+              tick={false}
               tickLine={false}
               axisLine={false}
-              hide={!showAxes}
+              height={0}
             />
           )}
 
