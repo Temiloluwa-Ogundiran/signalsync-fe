@@ -119,6 +119,21 @@ export function JournalAccountsPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-bg-primary px-4 pb-6 pt-4 lg:px-6 font-sans text-text-primary">
       <div className="mx-auto max-w-[1680px] space-y-6">
+        {/* Page header — title + add-account action (when accounts exist;
+            the empty state has its own primary CTA). */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-xl font-bold tracking-tight">Trading Accounts</h1>
+          {!isLoading && accounts.length > 0 ? (
+            <Button
+              onClick={openConnectModal}
+              className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-5 rounded-full shadow-lg hover:shadow-brand/20 transition-all"
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Connect MT5 Account
+            </Button>
+          ) : null}
+        </div>
+
         {/* Main content area */}
         {isLoading ? (
           <div className="flex h-60 flex-col items-center justify-center gap-3 text-text-tertiary">
