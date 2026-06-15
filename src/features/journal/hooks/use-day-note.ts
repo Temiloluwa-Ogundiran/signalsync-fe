@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalDailyApi } from "../api/journal-daily.api";
-import type { JournalDayNote } from "../types";
 
 export const DAY_NOTE_KEYS = {
   dayNote: (accountId?: string, tradingDate?: string) =>

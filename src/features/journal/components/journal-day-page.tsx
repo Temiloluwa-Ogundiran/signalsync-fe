@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DayEquityCurve } from "./day-equity-curve";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
@@ -13,6 +19,10 @@ import { asNumber } from "./journal-day-modal.utils";
 import { DayNoteEditor } from "./day-note-editor";
 import { AppLoader } from "@/components/app-loader";
 import type { JournalTrade } from "../types";
+
+// Constants and types
+const AUTOSAVE_DELAY_MS = 1000; // Wait 1s after last edit before saving
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 function money(v: number, withSign = true) {
   const abs = Math.abs(v).toLocaleString("en-US", {
@@ -97,36 +107,66 @@ export function JournalDayPage() {
   const curve = useMemo(() => buildCurve(trades), [trades]);
   const hasCurve = curve.length > 1;
 
-  // Day note queries and mutations
-  const dayNoteQuery = useDayNote(activeAccountId, date, !!activeAccountId && !!date);
+  // Day note: load once, then debounce-autosave edits.
+  const dayNoteQuery = useDayNote(
+    activeAccountId,
+    date,
+    !!activeAccountId && !!date,
+  );
   const saveDayNoteMutation = useSaveDayNote(activeAccountId, date);
 
-  // Local state for the editor
-  const [noteContent, setNoteContent] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  // The note loaded from the server — the editor's initial content. We gate the
+  // editor's render on the query so TipTap mounts with the right content (it
+  // only reads `content` once, at mount).
+  const initialNote = dayNoteQuery.data?.note_html ?? "";
 
-  // Update local state when the note loads from the server
-  useMemo(() => {
-    if (dayNoteQuery.data?.note_html) {
-      setNoteContent(dayNoteQuery.data.note_html);
-    }
-  }, [dayNoteQuery.data?.note_html]);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedRef = useRef<string | null>(null);
+  // Tracks which day the baseline was seeded for, so switching days re-seeds.
+  const seededDateRef = useRef<string | null>(null);
 
-  // Auto-save the note with debounce
+  // Seed the "last saved" baseline during render (no effect / no setState) the
+  // first time the note resolves for a given day. The change handler compares
+  // against this to know what's already persisted.
+  if (
+    dayNoteQuery.isSuccess &&
+    seededDateRef.current !== date &&
+    !!activeAccountId
+  ) {
+    lastSavedRef.current = dayNoteQuery.data?.note_html ?? "";
+    seededDateRef.current = date;
+  }
+
+  // Clear any pending autosave timer on unmount / day change.
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [date]);
+
   const handleNoteChange = useCallback(
     (html: string) => {
-      setNoteContent(html);
-      // Save immediately (could be debounced in the future)
-      setIsSaving(true);
-      saveDayNoteMutation.mutate(html, {
-        onSettled: () => setIsSaving(false),
-      });
+      // TipTap emits "<p></p>" for an empty doc — treat that as a blank note.
+      const normalized = html === "<p></p>" ? "" : html;
+      if (normalized === lastSavedRef.current) {
+        return; // no real change (e.g. cursor move firing onUpdate)
+      }
+      setSaveState("dirty");
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        setSaveState("saving");
+        saveDayNoteMutation.mutate(normalized || null, {
+          onSuccess: (saved) => {
+            lastSavedRef.current = saved.note_html ?? "";
+            setSaveState("saved");
+          },
+          onError: () => setSaveState("error"),
+        });
+      }, AUTOSAVE_DELAY_MS);
     },
     [saveDayNoteMutation],
   );
-
-  const isSaved = !isSaving && !saveDayNoteMutation.isPending;
-  const hasError = saveDayNoteMutation.isError;
 
   if (!date) {
     return (
@@ -167,31 +207,7 @@ export function JournalDayPage() {
           >
             Net P&amp;L {stats.net === 0 ? "$0" : money(stats.net)}
           </span>
-          <span className={cn(
-            "inline-flex items-center gap-1 text-xs",
-            hasError
-              ? "text-danger"
-              : isSaved
-                ? "text-text-tertiary"
-                : "text-text-secondary",
-          )}>
-            {hasError ? (
-              <>
-                <AlertCircle className="h-3.5 w-3.5" />
-                Save failed
-              </>
-            ) : isSaved ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Saved
-              </>
-            ) : (
-              <>
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Saving
-              </>
-            )}
-          </span>
+          <NoteSaveStatus state={saveState} />
         </div>
       </div>
 
@@ -248,7 +264,7 @@ export function JournalDayPage() {
               <div className="min-h-[320px] animate-pulse rounded-xl bg-bg-tertiary" />
             ) : (
               <DayNoteEditor 
-                content={noteContent} 
+                content={initialNote} 
                 onChange={handleNoteChange}
               />
             )}
@@ -321,6 +337,42 @@ export function JournalDayPage() {
         </>
       )}
     </div>
+  );
+}
+
+/** Autosave indicator next to the day header. */
+function NoteSaveStatus({ state }: { state: SaveState }) {
+  if (state === "idle") return null;
+
+  if (state === "error") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-danger">
+        <AlertCircle className="h-3.5 w-3.5" />
+        Save failed
+      </span>
+    );
+  }
+  if (state === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-text-secondary">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        Saving…
+      </span>
+    );
+  }
+  if (state === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        Saved
+      </span>
+    );
+  }
+  // dirty — unsaved edits pending the debounce
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
+      Unsaved changes
+    </span>
   );
 }
 
