@@ -122,21 +122,6 @@ export function JournalDayPage() {
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedRef = useRef<string | null>(null);
-  // Tracks which day the baseline was seeded for, so switching days re-seeds.
-  const seededDateRef = useRef<string | null>(null);
-
-  // Seed the "last saved" baseline during render (no effect / no setState) the
-  // first time the note resolves for a given day. The change handler compares
-  // against this to know what's already persisted.
-  if (
-    dayNoteQuery.isSuccess &&
-    seededDateRef.current !== date &&
-    !!activeAccountId
-  ) {
-    lastSavedRef.current = dayNoteQuery.data?.note_html ?? "";
-    seededDateRef.current = date;
-  }
 
   // Clear any pending autosave timer on unmount / day change.
   useEffect(() => {
@@ -145,22 +130,19 @@ export function JournalDayPage() {
     };
   }, [date]);
 
+  // TipTap only fires onUpdate on real user edits (not on initial content set),
+  // and the editor is gated on the note query below so it mounts with the
+  // loaded note — so every onChange here is a genuine edit to autosave.
   const handleNoteChange = useCallback(
     (html: string) => {
       // TipTap emits "<p></p>" for an empty doc — treat that as a blank note.
       const normalized = html === "<p></p>" ? "" : html;
-      if (normalized === lastSavedRef.current) {
-        return; // no real change (e.g. cursor move firing onUpdate)
-      }
       setSaveState("dirty");
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
         setSaveState("saving");
         saveDayNoteMutation.mutate(normalized || null, {
-          onSuccess: (saved) => {
-            lastSavedRef.current = saved.note_html ?? "";
-            setSaveState("saved");
-          },
+          onSuccess: () => setSaveState("saved"),
           onError: () => setSaveState("error"),
         });
       }, AUTOSAVE_DELAY_MS);
