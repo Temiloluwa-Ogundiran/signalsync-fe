@@ -21,6 +21,8 @@ interface JournalPageHeaderProps {
   showSyncMeta?: boolean;
   /** Optional left-side content shown in place of the sync metadata. */
   leftContent?: React.ReactNode;
+  /** Optional page title (h1) rendered above the left content / sync line. */
+  title?: string;
   isSyncPending?: boolean;
   lastSyncedAt?: string | null;
   nextSyncNotBefore?: string | null;
@@ -81,6 +83,7 @@ function getCountdownText(targetMs: number) {
 export function JournalPageHeader({
   showSyncMeta = true,
   leftContent,
+  title,
   isSyncPending = false,
   lastSyncedAt,
   nextSyncNotBefore,
@@ -147,6 +150,11 @@ export function JournalPageHeader({
     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       {/* Left: muted sync metadata (dashboard) or custom content (other pages) */}
       <div className="flex min-w-0 flex-col gap-1">
+        {title ? (
+          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+            {title}
+          </h1>
+        ) : null}
         {showSyncMeta ? (
           <>
             <div className="inline-flex flex-wrap items-center gap-1.5 text-[13px] text-text-tertiary">

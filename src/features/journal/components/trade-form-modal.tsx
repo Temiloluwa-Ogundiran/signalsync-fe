@@ -139,7 +139,6 @@ export function TradeFormModal(props: TradeFormModalProps) {
   const { mode, open, onOpenChange } = props;
   const router = useRouter();
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
-  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
 
   const createManualTrade = useCreateManualTrade(activeAccountId);
   const updateManualTrade = useUpdateManualTrade(activeAccountId);
@@ -330,9 +329,12 @@ export function TradeFormModal(props: TradeFormModalProps) {
         });
         onOpenChange(false);
 
-        // Post-creation: open the day-note modal for that trade's date.
+        // Post-creation: jump to the Day Journal feed and focus that day's note.
         const closedDate = createdTrade.closed_at.split("T")[0];
-        openNoteModal(closedDate);
+        const params = new URLSearchParams();
+        if (activeAccountId) params.set("accountId", activeAccountId);
+        params.set("focusDate", closedDate);
+        router.push(`/journal?${params.toString()}`);
       } else {
         if (!trade) return;
         await updateManualTrade.mutateAsync({

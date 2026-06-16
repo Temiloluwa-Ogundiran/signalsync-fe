@@ -5,7 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilLine, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -201,14 +201,16 @@ export function JournalDayModalTradesTable({
   });
 
   return (
-    <div className="mt-6 min-h-0 overflow-hidden rounded-2xl">
-      <div className="min-h-0 overflow-x-auto px-6 pb-6">
+    <div className="mt-6 rounded-2xl pb-6">
+      <div className="overflow-x-auto px-6">
         {rows.length ? (
-          <div className="min-h-0 min-w-[1080px]">
+          // One table; the header row sticks to the top of the modal's scroll
+          // region so the whole body (overview + these rows) scrolls together.
+          <div className="min-w-[1080px]">
             <Table className="border-separate border-spacing-0">
               <colgroup>
                 {columnWidths.map((width, index) => (
-                  <col key={`header-col-${index}`} style={{ width }} />
+                  <col key={`col-${index}`} style={{ width }} />
                 ))}
               </colgroup>
               <TableHeader>
@@ -220,7 +222,7 @@ export function JournalDayModalTradesTable({
                     {headerGroup.headers.map((header, headerIndex) => (
                       <TableHead
                         key={header.id}
-                        className={`bg-bg-tertiary px-6 py-6 text-base font-bold text-text-primary font-heading ${
+                        className={`sticky top-0 z-10 bg-bg-tertiary px-6 py-5 text-base font-bold text-text-primary font-heading ${
                           headerIndex === 0 ? "rounded-l-2xl pl-6" : ""
                         } ${
                           headerIndex === headerGroup.headers.length - 1
@@ -239,34 +241,24 @@ export function JournalDayModalTradesTable({
                   </TableRow>
                 ))}
               </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="border-border-primary/70 text-base"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-6 py-5">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
-
-            <div className="h-[36vh] min-h-0 overflow-y-auto overscroll-contain">
-              <Table className="border-separate border-spacing-0">
-                <colgroup>
-                  {columnWidths.map((width, index) => (
-                    <col key={`body-col-${index}`} style={{ width }} />
-                  ))}
-                </colgroup>
-                <TableBody>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className="border-border-primary/70 text-base"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="px-6 py-6">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
           </div>
         ) : (
           <p className="py-10 text-center text-sm text-text-tertiary">

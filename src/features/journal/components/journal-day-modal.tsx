@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useJournalUiStore } from "../store/journal-ui-store";
@@ -30,7 +31,16 @@ export function JournalDayModal({
   accountId,
   tradingDate,
 }: JournalDayModalProps) {
-  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
+  const router = useRouter();
+
+  const goToDayNote = () => {
+    if (!accountId || !tradingDate) return;
+    onOpenChange(false);
+    const params = new URLSearchParams();
+    params.set("accountId", accountId);
+    params.set("focusDate", tradingDate);
+    router.push(`/journal?${params.toString()}`);
+  };
 
   const deleteManualTrade = useDeleteManualTrade(accountId || "");
 
@@ -96,28 +106,22 @@ export function JournalDayModal({
     [trades, chipByTradeId],
   );
 
-  const openDayJournal = () => {
-    if (!accountId || !tradingDate) return;
-    onOpenChange(false);
-    openNoteModal(tradingDate);
-  };
+  const openDayJournal = goToDayNote;
 
   // Trade-level journaling will be rebuilt; for now any trade opens the day note.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const openTradeJournal = (tradeId: string) => {
-    if (!accountId || !tradingDate) return;
-    onOpenChange(false);
-    openNoteModal(tradingDate);
-  };
+  const openTradeJournal = (tradeId: string) => goToDayNote();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] w-[95vw] max-w-[95vw] sm:max-w-[95vw] lg:max-w-[1500px] overflow-hidden rounded-3xl border border-border-primary bg-card-bg p-0">
+      <DialogContent className="flex max-h-[85vh] w-[92vw] max-w-[92vw] flex-col overflow-hidden rounded-3xl border border-border-primary bg-card-bg p-0 sm:max-w-[92vw] lg:max-w-[1180px]">
         <JournalDayModalHeader dayTitle={dayTitle} summary={summary} />
 
-        <div className="flex h-[calc(90vh-188px)] min-h-0 flex-col overflow-hidden px-8">
+        {/* Single scroll region: the whole body (overview + trades) scrolls,
+            not just the trades table. */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-8">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 text-sm text-text-secondary">
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-text-secondary">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading day details...
             </div>

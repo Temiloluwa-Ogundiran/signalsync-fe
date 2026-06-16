@@ -1,0 +1,89 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+
+export interface PeriodSummary {
+  /** Heading, e.g. "JUNE SO FAR". */
+  title: string;
+  netPnl: number;
+  winRate: number; // 0–100
+  profitFactor: number | null;
+  avgDiscipline: number; // 0–10
+  daysJournaled: number;
+  tradingDays: number;
+}
+
+function money(value: number): string {
+  const abs = Math.round(Math.abs(value)).toLocaleString("en-US");
+  return value < 0 ? `-$${abs}` : `$${abs}`;
+}
+
+export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
+  return (
+    <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-white/[0.04]">
+      <h3 className="mb-4 text-sm font-semibold tracking-wide text-text-secondary">
+        {summary.title}
+      </h3>
+
+      <dl className="flex flex-col">
+        <Row label="Net P&L">
+          <span
+            className={cn(
+              "tabular-nums",
+              summary.netPnl >= 0
+                ? "text-kpi-metric-positive"
+                : "text-danger",
+            )}
+          >
+            {money(summary.netPnl)}
+          </span>
+        </Row>
+        <Row label="Win rate">
+          <span className="tabular-nums text-text-primary">
+            {summary.winRate.toFixed(0)}%
+          </span>
+        </Row>
+        <Row label="Profit factor">
+          <span className="tabular-nums text-text-primary">
+            {summary.profitFactor === null
+              ? "--"
+              : summary.profitFactor.toFixed(2)}
+          </span>
+        </Row>
+        <Row label="Avg discipline">
+          <span className="tabular-nums text-amber-500">
+            {summary.avgDiscipline.toFixed(1)}
+          </span>
+        </Row>
+        <Row label="Days journaled" last>
+          <span className="tabular-nums text-text-primary">
+            {summary.daysJournaled}{" "}
+            <span className="text-text-tertiary">/ {summary.tradingDays}</span>
+          </span>
+        </Row>
+      </dl>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  children,
+  last,
+}: {
+  label: string;
+  children: React.ReactNode;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between py-3 text-sm font-semibold",
+        !last && "border-b border-white/[0.05]",
+      )}
+    >
+      <dt className="font-medium text-text-secondary">{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  );
+}

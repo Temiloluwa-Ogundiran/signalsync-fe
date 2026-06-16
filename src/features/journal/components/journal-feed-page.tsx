@@ -1,20 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { DateRange } from "react-day-picker";
 import { AppLoader } from "@/components/app-loader";
-import { cn } from "@/lib/utils";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useJournalDashboardAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { useCurve } from "../hooks/use-curve";
 import type { CurveIntradayDay } from "../types";
 import { useJournalUiStore } from "../store/journal-ui-store";
+import { useAiDockStore } from "@/features/ai/store/ai-dock-store";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
-
-type FeedFilter = "all" | "journaled" | "not-journaled";
+import {
+  JournalMonthCalendar,
+  type MonthCalendarDay,
+} from "./journal-month-calendar";
+import {
+  JournalPeriodSummary,
+  type PeriodSummary,
+} from "./journal-period-summary";
+import { disciplineForDate } from "../lib/journal-discipline";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -46,7 +53,7 @@ export function JournalFeedPage() {
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
-  const openNoteModal = useJournalUiStore((s) => s.openNoteModal);
+  const openAi = useAiDockStore((s) => s.open);
 
   const queryFrom = parseDateParam(searchParams.get("fromDate"));
   const queryTo = parseDateParam(searchParams.get("toDate"));
@@ -84,8 +91,6 @@ export function JournalFeedPage() {
     router.replace(q ? `/journal?${q}` : "/journal");
   };
 
-  const [filter, setFilter] = useState<FeedFilter>("all");
-
   const dashboardQuery = useJournalDashboardAnalytics({
     accountId: activeAccountId || undefined,
     fromDate,
@@ -122,18 +127,108 @@ export function JournalFeedPage() {
       }));
   }, [dashboardQuery.data]);
 
-  const days = useMemo(() => {
-    if (filter === "journaled") return allDays.filter((d) => d.hasNote);
-    if (filter === "not-journaled") return allDays.filter((d) => !d.hasNote);
-    return allDays;
-  }, [allDays, filter]);
+  const days = allDays;
 
-  const journaledCount = allDays.filter((d) => d.hasNote).length;
+  // ----- Right rail: month calendar + period summary -----
+  // Calendar month state, defaulting to the latest day in range (or now).
+  const [monthAnchor, setMonthAnchor] = useState<Date>(() => {
+    const latest = parseDateParam(toDate);
+    return latest ?? new Date();
+  });
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  // Add/View note opens the day-note modal in place (no navigation).
-  const openDayNote = (date: string) => openNoteModal(date);
-  // AI review is a placeholder for now — no day-context AI yet.
-  const openDayReview = () => {};
+  const calMonth = monthAnchor.getMonth();
+  const calYear = monthAnchor.getFullYear();
+
+  // Days that fall in the displayed calendar month, keyed by day-of-month.
+  const calendarStats = useMemo(() => {
+    const map: Record<number, MonthCalendarDay> = {};
+    for (const d of allDays) {
+      const [y, m, day] = d.date.split("-").map(Number);
+      if (y === calYear && m - 1 === calMonth && d.tradeCount > 0) {
+        map[day] = { pnl: d.netPnl, trades: d.tradeCount };
+      }
+    }
+    return map;
+  }, [allDays, calYear, calMonth]);
+
+  // Period summary over the displayed month's trading days.
+  const periodSummary = useMemo<PeriodSummary>(() => {
+    const monthDays = allDays.filter((d) => {
+      const [y, m] = d.date.split("-").map(Number);
+      return y === calYear && m - 1 === calMonth && d.tradeCount > 0;
+    });
+    const netPnl = monthDays.reduce((s, d) => s + d.netPnl, 0);
+    const wins = monthDays.reduce((s, d) => s + d.winCount, 0);
+    const losses = monthDays.reduce((s, d) => s + d.lossCount, 0);
+    const decided = wins + losses;
+    const grossWin = monthDays
+      .filter((d) => d.netPnl > 0)
+      .reduce((s, d) => s + d.netPnl, 0);
+    const grossLoss = Math.abs(
+      monthDays.filter((d) => d.netPnl < 0).reduce((s, d) => s + d.netPnl, 0),
+    );
+    const avgDiscipline = monthDays.length
+      ? monthDays.reduce((s, d) => s + disciplineForDate(d.date), 0) /
+        monthDays.length
+      : 0;
+    return {
+      title: `${monthAnchor.toLocaleDateString("en-US", { month: "long" }).toUpperCase()} SO FAR`,
+      netPnl,
+      winRate: decided ? (wins / decided) * 100 : 0,
+      profitFactor: grossLoss ? grossWin / grossLoss : null,
+      avgDiscipline,
+      daysJournaled: monthDays.filter((d) => d.hasNote).length,
+      tradingDays: monthDays.length,
+    };
+  }, [allDays, calYear, calMonth, monthAnchor]);
+
+  const shiftMonth = (delta: number) => {
+    setSelectedDay(null);
+    setMonthAnchor((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
+  };
+
+  // Accordion: at most one day card is expanded at a time.
+  const [expandedDate, setExpandedDate] = useState<string | null>(null);
+  const setDayExpanded = useCallback((date: string, open: boolean) => {
+    setExpandedDate((cur) => (open ? date : cur === date ? null : cur));
+  }, []);
+
+  // The day whose card should auto-expand + focus its session note. `nonce`
+  // bumps on every request so re-focusing the same day re-triggers the ring.
+  const [focus, setFocus] = useState<{ date: string; nonce: number } | null>(
+    null,
+  );
+  const requestFocus = (date: string) => {
+    setExpandedDate(date);
+    setFocus((prev) => ({ date, nonce: (prev?.nonce ?? 0) + 1 }));
+  };
+
+  // Deep-link: ?focusDate=YYYY-MM-DD (from trade history / trade form / day modal)
+  // expands and focuses that day's note, then strips the param.
+  useEffect(() => {
+    const target = searchParams.get("focusDate");
+    if (!target) return;
+    const id = requestAnimationFrame(() => {
+      requestFocus(target);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("focusDate");
+      const q = params.toString();
+      router.replace(q ? `/journal?${q}` : "/journal");
+    });
+    return () => cancelAnimationFrame(id);
+  }, [searchParams, router]);
+
+  const onSelectCalendarDay = (day: number) => {
+    setSelectedDay(day);
+    requestFocus(formatDateParam(new Date(calYear, calMonth, day)));
+  };
+
+  // "Write" expands the day's card and focuses the inline session note.
+  const openDayNote = (date: string) => requestFocus(date);
+  // "Continue with coach" opens the Partna AI dock scoped to this day.
+  const openCoach = (date: string) =>
+    openAi({ source: `Day Journal · ${date}`, accountId: activeAccountId });
 
   if (!activeAccountId) {
     return (
@@ -164,87 +259,56 @@ export function JournalFeedPage() {
         onApplyDateRange={applyDateRange}
       />
 
-      {/* Journaled filter chips */}
-      <div className="flex items-center gap-2">
-        <FilterChip
-          active={filter === "all"}
-          onClick={() => setFilter("all")}
-          label="All"
-          count={allDays.length}
-        />
-        <FilterChip
-          active={filter === "journaled"}
-          onClick={() => setFilter("journaled")}
-          label="Journaled"
-          count={journaledCount}
-        />
-        <FilterChip
-          active={filter === "not-journaled"}
-          onClick={() => setFilter("not-journaled")}
-          label="Not journaled"
-          count={allDays.length - journaledCount}
-        />
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        {/* Left: day feed */}
+        <div className="min-w-0 flex-1 space-y-4">
+          {dashboardQuery.isLoading ? (
+            <AppLoader fullScreen={false} label="Loading journal" />
+          ) : dashboardQuery.isError ? (
+            <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
+              Failed to load journal. Please retry.
+            </div>
+          ) : days.length === 0 ? (
+            <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">
+              No trading days in this range.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {days.map((day) => (
+                <JournalDayCard
+                  key={day.date}
+                  date={day.date}
+                  accountId={activeAccountId}
+                  focusNoteNonce={focus?.date === day.date ? focus.nonce : null}
+                  expanded={expandedDate === day.date}
+                  onExpandedChange={(open) => setDayExpanded(day.date, open)}
+                  day={dayByDate.get(day.date)}
+                  netPnl={day.netPnl}
+                  tradeCount={day.tradeCount}
+                  winCount={day.winCount}
+                  lossCount={day.lossCount}
+                  hasNote={day.hasNote}
+                  onNote={openDayNote}
+                  onContinueCoach={openCoach}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right rail: calendar + period summary */}
+        <aside className="w-full shrink-0 space-y-5 lg:w-[340px]">
+          <JournalMonthCalendar
+            monthDate={monthAnchor}
+            dayStats={calendarStats}
+            selectedDay={selectedDay}
+            onSelectDay={onSelectCalendarDay}
+            onPrevMonth={() => shiftMonth(-1)}
+            onNextMonth={() => shiftMonth(1)}
+          />
+          <JournalPeriodSummary summary={periodSummary} />
+        </aside>
       </div>
-
-      {dashboardQuery.isLoading ? (
-        <AppLoader fullScreen={false} label="Loading journal" />
-      ) : dashboardQuery.isError ? (
-        <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
-          Failed to load journal. Please retry.
-        </div>
-      ) : days.length === 0 ? (
-        <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">
-          {allDays.length === 0
-            ? "No trading days in this range."
-            : "No days match this filter."}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3.5">
-          {days.map((day) => (
-            <JournalDayCard
-              key={day.date}
-              date={day.date}
-              day={dayByDate.get(day.date)}
-              netPnl={day.netPnl}
-              tradeCount={day.tradeCount}
-              winCount={day.winCount}
-              lossCount={day.lossCount}
-              hasNote={day.hasNote}
-              onReview={openDayReview}
-              onNote={openDayNote}
-            />
-          ))}
-        </div>
-      )}
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  label,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
-        active
-          ? "bg-white/[0.08] text-text-primary"
-          : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary",
-      )}
-    >
-      {label}
-      <span className="tabular-nums text-text-tertiary">{count}</span>
-    </button>
   );
 }

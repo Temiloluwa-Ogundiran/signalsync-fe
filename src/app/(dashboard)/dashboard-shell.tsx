@@ -6,7 +6,6 @@ import { AppNav } from "@/components/layout/app-nav";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
-import { DayNoteModal } from "@/features/journal/components/day-note-modal";
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
 
 export default function DashboardShell({
@@ -59,7 +58,6 @@ export default function DashboardShell({
         <ConnectAccountModal />
         <AddTradeModal />
         <EditTradeModal />
-        <DayNoteModal />
 
         <MobileNav />
       </div>
