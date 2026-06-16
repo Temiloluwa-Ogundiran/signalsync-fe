@@ -98,7 +98,7 @@ function CalendarSettings() {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-64 rounded-xl border border-white/[0.08] bg-[#0F1012] p-1.5"
+        className="w-64 rounded-xl border border-hairline bg-popover p-1.5"
       >
         <p className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
           Calendar settings

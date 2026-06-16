@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const emailSchema = z.string().email("Enter a valid email address.");
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export function ResendVerificationForm({
   initialEmail = "",
@@ -19,9 +20,21 @@ export function ResendVerificationForm({
   const [email, setEmail] = useState(initialEmail);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Tick the cooldown down to 0, then re-enable the button.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (cooldown > 0 || isPending) return;
+
     const parsedEmail = emailSchema.safeParse(email.trim());
 
     if (!parsedEmail.success) {
@@ -37,6 +50,7 @@ export function ResendVerificationForm({
       toast.success("Verification email sent", {
         description: result.message,
       });
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (err) {
       const message =
         err instanceof ApiException
@@ -51,6 +65,8 @@ export function ResendVerificationForm({
     }
   }
 
+  const disabled = isPending || cooldown > 0;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <Input
@@ -63,12 +79,14 @@ export function ResendVerificationForm({
       {error ? (
         <p className="text-sm font-medium text-destructive">{error}</p>
       ) : null}
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button type="submit" className="w-full" disabled={disabled}>
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Sending...
           </>
+        ) : cooldown > 0 ? (
+          `Resend in ${cooldown}s`
         ) : (
           "Resend verification email"
         )}

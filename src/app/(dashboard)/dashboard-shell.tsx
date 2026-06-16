@@ -43,7 +43,7 @@ export default function DashboardShell({
             <button
               type="button"
               aria-label="Close menu"
-              className="fixed inset-0 top-header z-overlay bg-black/50 lg:hidden"
+              className="fixed inset-0 top-header z-overlay bg-overlay lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
             <div className="fixed left-0 top-header z-drawer h-[calc(100vh-var(--spacing-header))] w-sidebar lg:hidden">

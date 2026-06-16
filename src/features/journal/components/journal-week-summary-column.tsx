@@ -42,7 +42,7 @@ export function JournalWeekSummaryColumn({
             key={`week-${index + 1}`}
             // Recessed: no border, pitch-black inset fill, so the rail reads
             // as a distinct summary sidebar — not another column of days.
-            className="flex flex-col justify-center rounded-lg bg-black px-2.5 py-2 lg:min-h-0 lg:flex-1"
+            className="flex flex-col justify-center rounded-lg bg-card-bg px-2.5 py-2 lg:min-h-0 lg:flex-1"
           >
             <p className="text-[0.6rem] font-medium uppercase tracking-wide text-text-secondary">
               Week {index + 1}

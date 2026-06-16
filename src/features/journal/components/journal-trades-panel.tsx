@@ -11,7 +11,7 @@ interface JournalTradesPanelProps {
   recentErrorMessage?: string | null;
 }
 
-const HAIRLINE = "border-[rgba(255,255,255,0.06)]";
+const HAIRLINE = "border-hairline";
 
 function money(value: number): string {
   const abs = Math.abs(value).toLocaleString("en-US", {
@@ -46,7 +46,7 @@ function JournalTradesPanelImpl({
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {isRecentLoading ? (
-            <div className={cn("divide-y", `divide-[rgba(255,255,255,0.06)]`)}>
+            <div className={cn("divide-y", `divide-hairline`)}>
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={`recent-trade-skeleton-${idx}`}
@@ -59,7 +59,7 @@ function JournalTradesPanelImpl({
               ))}
             </div>
           ) : (
-            <div className={cn("divide-y", "divide-[rgba(255,255,255,0.06)]")}>
+            <div className={cn("divide-y", "divide-hairline")}>
               {recentRows.map((row) => (
                 <div
                   key={row.id}

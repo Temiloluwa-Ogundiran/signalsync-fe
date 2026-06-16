@@ -74,7 +74,7 @@ export function JournalMonthCalendar({
   );
 
   return (
-    <div className="rounded-2xl bg-card-bg p-4 ring-1 ring-white/[0.04]">
+    <div className="rounded-2xl bg-card-bg p-4 ring-1 ring-hairline">
       <div className="mb-4 flex items-center justify-between">
         <span className="text-sm font-semibold tracking-wide text-text-secondary">
           {monthLabel}
@@ -84,7 +84,7 @@ export function JournalMonthCalendar({
             type="button"
             onClick={onPrevMonth}
             aria-label="Previous month"
-            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-white/[0.06] hover:text-text-primary cursor-pointer"
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
           </button>
@@ -92,7 +92,7 @@ export function JournalMonthCalendar({
             type="button"
             onClick={onNextMonth}
             aria-label="Next month"
-            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-white/[0.06] hover:text-text-primary cursor-pointer"
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
           >
             <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
           </button>

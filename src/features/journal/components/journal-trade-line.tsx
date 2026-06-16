@@ -18,6 +18,7 @@ import {
   useUpdateTradeTags,
 } from "../hooks/use-journal-tags";
 import { JournalTagSelector } from "./journal-tag-selector";
+import { Badge } from "@/components/ui/badge";
 
 export type TradeOutcome = "win" | "loss" | "be";
 
@@ -76,13 +77,13 @@ export function JournalTradeLine({
         {!isFirst ? (
           <span
             aria-hidden
-            className="absolute left-1/2 top-0 h-5 w-px -translate-x-1/2 bg-white/[0.06]"
+            className="absolute left-1/2 top-0 h-5 w-px -translate-x-1/2 bg-hairline"
           />
         ) : null}
         {!isLast ? (
           <span
             aria-hidden
-            className="absolute left-1/2 top-5 -bottom-2.5 w-px -translate-x-1/2 bg-white/[0.06]"
+            className="absolute left-1/2 top-5 -bottom-2.5 w-px -translate-x-1/2 bg-hairline"
           />
         ) : null}
         <span
@@ -107,7 +108,7 @@ export function JournalTradeLine({
             goToTrades();
           }
         }}
-        className="group min-w-0 flex-1 cursor-pointer rounded-xl bg-bg-primary px-4 py-3 text-left ring-1 ring-white/[0.05] transition-colors hover:bg-card-bg-hover"
+        className="group min-w-0 flex-1 cursor-pointer rounded-xl bg-bg-primary px-4 py-3 text-left ring-1 ring-hairline transition-colors hover:bg-card-bg-hover"
       >
         <div className="flex items-center gap-3">
           <span className="font-mono text-sm text-text-secondary tabular-nums">
@@ -116,29 +117,14 @@ export function JournalTradeLine({
           <span className="font-bold text-text-primary">{trade.symbol}</span>
 
           {/* Direction — neutral. */}
-          <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-text-secondary">
-            {trade.direction}
-          </span>
+          <Badge variant="neutral">{trade.direction}</Badge>
 
           {/* Outcome — WIN / LOSS / BE. */}
-          <span
-            className={cn(
-              "rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide",
-              trade.outcome === "win" && "bg-success-light text-kpi-metric-positive",
-              trade.outcome === "loss" && "bg-danger-light text-danger",
-              trade.outcome === "be" && "bg-white/[0.06] text-text-secondary",
-            )}
-          >
-            {OUTCOME_LABEL[trade.outcome]}
-          </span>
+          <Badge variant={trade.outcome}>{OUTCOME_LABEL[trade.outcome]}</Badge>
 
           {/* Strategy (mock) + tags (real) + add control — pushed right. */}
           <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
-            {strategy ? (
-              <span className="rounded bg-[rgba(139,92,246,0.14)] px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-[#A78BFA]">
-                {strategy}
-              </span>
-            ) : null}
+            {strategy ? <Badge variant="ai">{strategy}</Badge> : null}
 
             <div
               className="flex flex-wrap items-center justify-end gap-1.5"
@@ -151,7 +137,7 @@ export function JournalTradeLine({
                   className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-semibold"
                   style={{
                     backgroundColor: `${tag.color || "#64748b"}26`,
-                    color: tag.color || "#94a3b8",
+                    color: tag.color || "var(--text-tertiary)",
                   }}
                 >
                   {tag.value}
@@ -168,7 +154,7 @@ export function JournalTradeLine({
                     <button
                       type="button"
                       title="Add tag"
-                      className="inline-flex items-center gap-1 rounded border border-dashed border-white/[0.12] px-1.5 py-0.5 text-[0.65rem] font-semibold text-text-tertiary transition-colors hover:border-white/25 hover:text-text-secondary"
+                      className="inline-flex items-center gap-1 rounded border border-dashed border-hairline px-1.5 py-0.5 text-[0.65rem] font-semibold text-text-tertiary transition-colors hover:border-border-secondary hover:text-text-secondary"
                     >
                       <HugeiconsIcon icon={Add01Icon} size={11} strokeWidth={2.5} />
                       Tag

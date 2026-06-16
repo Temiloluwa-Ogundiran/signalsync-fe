@@ -208,7 +208,7 @@ export function JournalDayCard({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl bg-card-bg ring-1 ring-white/[0.04]"
+      className="overflow-hidden rounded-2xl bg-card-bg ring-1 ring-hairline"
       onMouseEnter={hasTrades ? prefetch : undefined}
     >
       {/* Collapsed row — click anywhere to toggle expand */}
@@ -292,7 +292,7 @@ export function JournalDayCard({
                 e.stopPropagation();
                 onNote(date);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-xs font-bold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer"
             >
               <HugeiconsIcon icon={PencilEdit01Icon} size={14} strokeWidth={2} />
               Write
@@ -303,7 +303,7 @@ export function JournalDayCard({
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="space-y-4 border-t border-white/[0.05] px-4 pb-5 pt-4 md:px-5">
+        <div className="space-y-4 border-t border-hairline px-4 pb-5 pt-4 md:px-5">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 py-10 text-sm text-text-secondary">
               <HugeiconsIcon
@@ -357,7 +357,7 @@ export function JournalDayCard({
                 className={cn(
                   "rounded-xl transition-shadow duration-500",
                   noteHighlight &&
-                    "ring-2 ring-[#A78BFA]/70 ring-offset-2 ring-offset-card-bg",
+                    "ring-2 ring-ai-accent ring-offset-2 ring-offset-card-bg",
                 )}
               >
                 <JournalSessionNote
@@ -388,7 +388,7 @@ function DisciplineBadge({
       className={cn(
         "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
         tone === "high" && "bg-success-light/70 text-kpi-metric-positive",
-        tone === "mid" && "bg-amber-400/15 text-amber-500",
+        tone === "mid" && "bg-badge-warn-bg text-badge-warn-fg",
         tone === "low" && "bg-danger-light/70 text-danger",
       )}
     >

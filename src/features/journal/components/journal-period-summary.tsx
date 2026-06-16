@@ -20,7 +20,7 @@ function money(value: number): string {
 
 export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
   return (
-    <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-white/[0.04]">
+    <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-hairline">
       <h3 className="mb-4 text-sm font-semibold tracking-wide text-text-secondary">
         {summary.title}
       </h3>
@@ -51,7 +51,7 @@ export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
           </span>
         </Row>
         <Row label="Avg discipline">
-          <span className="tabular-nums text-amber-500">
+          <span className="tabular-nums text-star">
             {summary.avgDiscipline.toFixed(1)}
           </span>
         </Row>
@@ -79,7 +79,7 @@ function Row({
     <div
       className={cn(
         "flex items-center justify-between py-3 text-sm font-semibold",
-        !last && "border-b border-white/[0.05]",
+        !last && "border-b border-hairline",
       )}
     >
       <dt className="font-medium text-text-secondary">{label}</dt>

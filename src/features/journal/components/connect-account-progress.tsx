@@ -82,7 +82,7 @@ export function ConnectAccountProgress() {
               }`}
             >
               {isCompleted ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 transition-transform duration-300 scale-110" />
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0 transition-transform duration-300 scale-110" />
               ) : isActive ? (
                 <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
               ) : (

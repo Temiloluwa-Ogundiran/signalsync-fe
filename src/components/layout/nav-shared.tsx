@@ -37,12 +37,12 @@ function NavItemRow({
           icon={item.icon}
           size={20}
           strokeWidth={1.5}
-          className={cn("text-current", active && "text-[#A78BFA]")}
+          className={cn("text-current", active && "text-ai-accent")}
         />
       </span>
       <span className="flex-1 truncate">{item.label}</span>
       {item.comingSoon ? (
-        <span className="shrink-0 rounded-full bg-white/[0.02] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#52525B]">
+        <span className="shrink-0 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-text-tertiary">
           Soon
         </span>
       ) : typeof item.count === "number" ? (
@@ -63,7 +63,7 @@ function NavItemRow({
         className={cn(
           baseClass,
           // Recessed: clearly not-yet-available, doesn't compete with live items.
-          "cursor-default text-[#52525B] [&_svg]:opacity-70",
+          "cursor-default text-text-tertiary [&_svg]:opacity-70",
         )}
         aria-disabled
         title="Coming soon"
@@ -81,10 +81,10 @@ function NavItemRow({
       className={cn(
         baseClass,
         active
-          ? "bg-[rgba(139,92,246,0.10)] text-[#F4F4F5]"
-          : // Hover (0.03) stays LIGHTER than the switcher's resting fill (0.05)
-            // so a hovered item never reads as the switcher.
-            "text-[#A1A1AA] hover:bg-white/[0.03] hover:text-[#F4F4F5]",
+          ? "bg-ai-soft-bg text-text-primary"
+          : // Hover stays lighter than the switcher's resting fill so a hovered
+            // item never reads as the switcher.
+            "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
       )}
     >
       {inner}
@@ -152,7 +152,7 @@ function NavGroupBlock({
               onClick={group.action.onClick}
               aria-label={group.action.label}
               title={group.action.label}
-              className="flex size-5 shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-white/[0.04] hover:text-text-primary cursor-pointer"
+              className="flex size-5 shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
             >
               <HugeiconsIcon icon={group.action.icon} size={14} strokeWidth={2} />
             </button>
@@ -249,7 +249,7 @@ function BackHeader({
           router.push("/dashboard");
           onNavigate?.();
         }}
-        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-text-secondary transition-colors hover:bg-white/[0.08] hover:text-text-primary cursor-pointer"
+        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-subtle text-text-secondary transition-colors hover:bg-surface-subtle-hover hover:text-text-primary cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -277,7 +277,7 @@ export function AppSwitcher({
         <button
           type="button"
           aria-label={`Current app: ${app.name}. Switch app`}
-          className="group/switch mb-2 flex items-center gap-3 rounded-lg bg-white/[0.05] px-3 py-3 text-left transition-colors hover:bg-white/[0.08]"
+          className="group/switch mb-2 flex items-center gap-3 rounded-lg bg-surface-subtle px-3 py-3 text-left transition-colors hover:bg-surface-subtle-hover"
         >
           <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-secondary">
             <HugeiconsIcon icon={app.icon} size={20} strokeWidth={1.5} />
@@ -310,8 +310,8 @@ export function AppSwitcher({
               className={cn(
                 "flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
                 isCurrent
-                  ? "text-[#F4F4F5]"
-                  : "text-[#A1A1AA] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
+                  ? "text-text-primary"
+                  : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
               )}
             >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center">

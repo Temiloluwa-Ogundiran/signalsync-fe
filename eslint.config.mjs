@@ -61,6 +61,24 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // Theme guard: discourage hardcoded colors that won't adapt to light/dark.
+  // Use design tokens (bg-surface-subtle, border-hairline, text-text-*,
+  // text-ai-accent, bg-overlay, etc.) instead. Report-only ("warn").
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/app/globals.css", "src/lib/use-chart-colors.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            "Literal[value=/(?:bg|ring|border|divide)-white\\/\\[|(?:bg|text|border|ring)-\\[#|bg-black\\/\\[|bg-black(?![\\w-])/]",
+          message:
+            "Avoid hardcoded colors (white/black opacity, arbitrary hex). Use a design token (bg-surface-subtle, border-hairline, text-text-*, bg-overlay, text-ai-accent) so it adapts to light/dark.",
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

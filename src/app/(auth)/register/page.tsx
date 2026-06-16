@@ -4,14 +4,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/features/auth/components/register-form";
 import { hasUsableSession } from "@/lib/auth/auth-session";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Create an Account | TradePartna",
@@ -26,32 +18,27 @@ export default async function RegisterPage() {
   }
 
   return (
-    <Card className="w-full max-w-md border-0 sm:border border-border/50 bg-background/60 sm:bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-xl shadow-border/5">
-      <CardHeader className="space-y-3 pb-6 text-center">
-        <div className="flex justify-center pb-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
-            <BarChart3 className="h-6 w-6" />
-          </div>
-        </div>
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Join TradePartna
-        </CardTitle>
-        <CardDescription className="text-sm">
-          Enter your information below to sign up
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5 pb-8">
-        <RegisterForm />
-        <div className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-primary hover:text-primary/90 underline-offset-4 hover:underline transition-all"
-          >
-            Sign in
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="w-full">
+      <div className="space-y-2 pb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
+          Create your account
+        </h1>
+        <p className="text-sm text-text-secondary">
+          Enter your information below to get started.
+        </p>
+      </div>
+
+      <RegisterForm />
+
+      <p className="mt-8 text-center text-sm text-text-secondary">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-semibold text-ai-accent underline-offset-4 transition-colors hover:underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 }

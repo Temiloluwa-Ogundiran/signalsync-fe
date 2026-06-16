@@ -59,7 +59,7 @@ export function JournalTradeHistoryTable({
           <span className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
             {row.original.symbol}
             {row.original.is_missed ? (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-orange-500/15 text-orange-500 uppercase tracking-wide border border-orange-500/20">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-badge-warn-bg text-badge-warn-fg uppercase tracking-wide border border-transparent">
                 Missed
               </span>
             ) : row.original.is_manual ? (

@@ -101,7 +101,7 @@ export function AiDock() {
           also disable pointer events as a guard so it can never intercept
           clicks meant for content behind it. */}
       <div
-        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] md:hidden md:pointer-events-none"
+        className="fixed inset-0 z-40 bg-overlay backdrop-blur-[1px] md:hidden md:pointer-events-none"
         onClick={close}
       />
 
@@ -127,7 +127,7 @@ export function AiDock() {
             <span className="font-heading text-sm font-bold text-ai-accent">
               Partna AI
             </span>
-            <span className="rounded-full bg-[rgba(139,92,246,0.12)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ai-accent">
+            <span className="rounded-full bg-ai-soft-bg px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ai-accent">
               Beta
             </span>
           </div>

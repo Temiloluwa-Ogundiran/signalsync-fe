@@ -241,7 +241,7 @@ function AccountSelector({
         router.push("/accounts");
         setOpen(false);
       }}
-      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-[#A1A1AA] transition-colors hover:bg-white/[0.04] hover:text-[#F4F4F5] cursor-pointer"
+      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
     >
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">
         <HugeiconsIcon icon={Settings02Icon} size={18} strokeWidth={1.5} />
@@ -269,11 +269,11 @@ function AccountSelector({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-64 rounded-xl border border-white/[0.08] bg-[#0F1012] p-1.5"
+        className="w-64 rounded-xl border border-hairline bg-popover p-1.5"
       >
         {accounts.length ? (
           <>
-            <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71717A]">
+            <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
               My accounts
             </p>
             <div className="max-h-64 overflow-y-auto">
@@ -288,12 +288,12 @@ function AccountSelector({
                       setOpen(false);
                     }}
                     aria-current={isActive ? "true" : undefined}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-white/[0.04]"
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-surface-subtle"
                   >
                     <span
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center",
-                        isActive ? "text-[#A78BFA]" : "text-[#71717A]",
+                        isActive ? "text-ai-accent" : "text-text-secondary",
                       )}
                     >
                       <HugeiconsIcon
@@ -305,14 +305,14 @@ function AccountSelector({
                     <span
                       className={cn(
                         "flex-1 truncate text-sm font-medium",
-                        isActive ? "text-[#F4F4F5]" : "text-[#A1A1AA]",
+                        isActive ? "text-text-primary" : "text-text-secondary",
                       )}
                     >
                       {account.display_name ||
                         `Account ${account.broker_login}`}
                     </span>
                     {isActive ? (
-                      <span className="shrink-0 rounded-full bg-[rgba(139,92,246,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#A78BFA]">
+                      <span className="shrink-0 rounded-full bg-ai-soft-bg px-2 py-0.5 text-[10px] font-semibold text-ai-accent">
                         Active
                       </span>
                     ) : null}
@@ -320,7 +320,7 @@ function AccountSelector({
                 );
               })}
             </div>
-            <div className="my-1.5 h-px bg-white/[0.06]" />
+            <div className="my-1.5 h-px bg-hairline" />
             {manageAccounts}
           </>
         ) : (

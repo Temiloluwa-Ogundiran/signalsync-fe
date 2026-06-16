@@ -26,6 +26,9 @@
 
   /* Journal KPI (light — aligned with mint/coral system) */
   --kpi-card-bg: var(--card-bg);
+  --kpi-label: #64748b; /* card label text (slate-500) */
+  --chip-grey: #f1f5f9; /* neutral chip fill (slate-100) */
+  --neutral-grey: #cbd5e1; /* inactive segment / gauge grey (slate-300) */
   --kpi-metric-positive: #16a86d;
   --kpi-metric-neutral: var(--text-primary);
   --kpi-badge-border: var(--border-primary);
@@ -71,16 +74,53 @@
     rgba(59, 130, 246, 0.03)
   );
 
-  /* Calendar surfaces */
-  --calendar-cell-neutral: #f0f3f6;
-  --calendar-cell-win-bg: #dff3ec;
-  --calendar-cell-loss-bg: #f6dddd;
-  --calendar-selected-ring: #4f46e5;
-  --calendar-selected-fill: #e7eafe;
-  --calendar-cell-date: #526273;
-  --calendar-cell-subtle: #6f7f91;
-  --calendar-pnl-win-text: #1f5c4f;
-  --calendar-pnl-loss-text: #8c2f37;
+  /* Calendar surfaces (light) — soft pastel fills, clean green/red text. */
+  --calendar-cell-neutral: #f8fafc; /* near-white no-trade cell */
+  --calendar-cell-win-bg: #e3f5ea; /* soft green */
+  --calendar-cell-loss-bg: #fbe4e4; /* soft red */
+  --calendar-selected-ring: #0f172a; /* slate-900 ring (matches selected day in ref) */
+  --calendar-selected-fill: #eef2f7;
+  --calendar-cell-date: #64748b; /* slate-500 date number */
+  --calendar-cell-subtle: #94a3b8; /* slate-400 "1 trade" meta */
+  --calendar-pnl-win-text: #15803d; /* green-700 */
+  --calendar-pnl-loss-text: #dc2626; /* red-600 */
+  --calendar-hatch-stripe: rgba(15, 23, 42, 0.05); /* out-of-month texture */
+
+  /* Dashboard chrome (light) — sidebar/topbar surfaces + nav states.
+     Rail < sidebar < content step in tone via subtle off-whites. */
+  --chrome-bar-bg: #ffffff;
+  --sidebar-chrome-bg: #ffffff;
+  --nav-rail-bg: #f1f5f9; /* tier 1 — icon rail (slate-100) */
+  --nav-sidebar-bg: #f8fafc; /* tier 2 — contextual sidebar (slate-50) */
+  --sidebar-nav-active-bg: #eef2f7;
+  --sidebar-nav-active-border: #e2e8f0;
+  --sidebar-nav-inactive-text: #475569;
+  --sidebar-nav-active-text: #0f172a;
+  --sidebar-divider: #e2e8f0;
+  --sidebar-bottom-border: #e2e8f0;
+  --nav-hairline: rgba(15, 23, 42, 0.06);
+  --nav-seam: rgba(15, 23, 42, 0.05);
+  --chrome-control-border: #e2e8f0;
+  --ask-sync-gradient: linear-gradient(262.75deg, #e2e8f0 1.94%, #f1f5f9 97.07%);
+
+  /* Theme-adaptive primitives (replace hardcoded white/black/hex in components) */
+  --surface-subtle: #f1f5f9; /* slate-100 — neutral chip / raised pill */
+  --surface-subtle-hover: #e8edf3;
+  --hairline: #e2e8f0; /* subtle border / divider / ring */
+  --overlay: rgba(15, 23, 42, 0.35); /* modal / drawer backdrop */
+  --star: #d97706; /* rating star (amber, darker for light bg) */
+
+  /* AI accent (violet) — tuned per theme; darker in light for contrast */
+  --ai-accent: #7c3aed; /* violet-600 — text/icon on light */
+  --ai-accent-bright: #6d28d9; /* violet-700 — hover */
+  --ai-soft-bg: rgba(124, 58, 237, 0.1);
+  --ai-soft-border: rgba(124, 58, 237, 0.28);
+
+  /* Status badge pairs (chips: pending / demo / live / info) */
+  --badge-warn-bg: rgba(217, 119, 6, 0.12);
+  --badge-warn-fg: #b45309;
+  --badge-info-bg: rgba(8, 145, 178, 0.12);
+  --badge-info-fg: #0e7490;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -191,6 +231,24 @@
   --calendar-cell-subtle: #52525b;
   --calendar-pnl-win-text: #22c55e;
   --calendar-pnl-loss-text: #ef4444;
+  --calendar-hatch-stripe: rgba(255, 255, 255, 0.03); /* out-of-month texture */
+
+  /* Theme-adaptive primitives (dark) */
+  --surface-subtle: rgba(255, 255, 255, 0.06);
+  --surface-subtle-hover: rgba(255, 255, 255, 0.1);
+  --hairline: rgba(255, 255, 255, 0.06);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --star: #f59e0b;
+
+  --ai-accent: #a78bfa; /* violet-400 — reads on dark */
+  --ai-accent-bright: #c4b5fd;
+  --ai-soft-bg: rgba(139, 92, 246, 0.14);
+  --ai-soft-border: rgba(139, 92, 246, 0.32);
+
+  --badge-warn-bg: rgba(245, 158, 11, 0.14);
+  --badge-warn-fg: #f59e0b;
+  --badge-info-bg: rgba(34, 211, 238, 0.14);
+  --badge-info-fg: #22d3ee;
 
   /* Elevation: minimal on a flat dark surface */
   --shadow-sm:
@@ -311,13 +369,27 @@
   --color-brand-hover: var(--accent-hover);
   --color-brand-foreground: var(--accent-foreground);
 
-  /* Partna AI — RESERVED violet accent. Scoped to the AI assistant panel only.
-     Never use outside the AI dock (no dashboard cards / charts / P&L). */
-  --color-ai-accent: #8b5cf6; /* violet-500 — identity / primary */
-  --color-ai-accent-bright: #a78bfa; /* violet-400 — hover / active */
-  --color-ai-accent-deep: #6d28d9; /* violet-700 — gradient end */
-  --color-ai-glow: rgba(139, 92, 246, 0.15); /* low-opacity wash */
-  --color-ai-border: rgba(139, 92, 246, 0.3); /* accent border */
+  /* Partna AI — RESERVED violet accent. Theme-adaptive (darker in light).
+     Use ai-accent / ai-soft-bg / ai-soft-border in components; the -deep / -glow
+     consts below stay fixed for the AI dock's gradient identity. */
+  --color-ai-accent: var(--ai-accent);
+  --color-ai-accent-bright: var(--ai-accent-bright);
+  --color-ai-accent-deep: #6d28d9; /* violet-700 — gradient end (fixed) */
+  --color-ai-glow: rgba(139, 92, 246, 0.15); /* low-opacity wash (fixed) */
+  --color-ai-border: rgba(139, 92, 246, 0.3); /* accent border (fixed) */
+  --color-ai-soft-bg: var(--ai-soft-bg);
+  --color-ai-soft-border: var(--ai-soft-border);
+
+  /* Theme-adaptive primitives */
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-subtle-hover: var(--surface-subtle-hover);
+  --color-hairline: var(--hairline);
+  --color-overlay: var(--overlay);
+  --color-star: var(--star);
+  --color-badge-warn-bg: var(--badge-warn-bg);
+  --color-badge-warn-fg: var(--badge-warn-fg);
+  --color-badge-info-bg: var(--badge-info-bg);
+  --color-badge-info-fg: var(--badge-info-fg);
 
   --color-success: var(--success);
   --color-success-light: var(--success-light);
@@ -475,12 +547,13 @@ body {
   font-variant-numeric: tabular-nums slashed-zero;
 }
 
-/* ===== Calendar out-of-month hatch (diagonal stripe texture) ===== */
+/* ===== Calendar out-of-month hatch (diagonal stripe texture) =====
+   Light: faint dark stripes on the pale cell. Dark: faint white stripes. */
 .calendar-hatch {
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.03) 0,
-    rgba(255, 255, 255, 0.03) 1.5px,
+    var(--calendar-hatch-stripe) 0,
+    var(--calendar-hatch-stripe) 1.5px,
     transparent 1.5px,
     transparent 16px
   );
@@ -578,6 +651,21 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     0 0 28px rgba(139, 92, 246, 0.5),
     0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Light-mode shadow: the dark drop-shadow disappears on white, so use a softer
+   violet-tinted elevation instead. (`html:not(.dark)` = light theme.) */
+html:not(.dark) .ai-trigger {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 18px rgba(139, 92, 246, 0.28),
+    0 2px 8px rgba(124, 58, 237, 0.25) !important;
+}
+html:not(.dark) .ai-trigger:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 26px rgba(139, 92, 246, 0.4),
+    0 2px 10px rgba(124, 58, 237, 0.3) !important;
 }
 
 /* Dimmed variant — a quieter AI accent for in-card CTAs (e.g. the day card's

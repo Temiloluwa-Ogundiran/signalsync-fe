@@ -204,11 +204,11 @@ export function CSVPreviewStep({
             <span className="text-[10px] text-text-tertiary uppercase tracking-wider">Account Type</span>
             <div>
               {account_meta.account_type === "live" ? (
-                <span className="inline-flex rounded bg-cyan-500/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-cyan-400">
+                <span className="inline-flex rounded bg-badge-info-bg px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-badge-info-fg">
                   Live
                 </span>
               ) : (
-                <span className="inline-flex rounded bg-amber-500/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-amber-400">
+                <span className="inline-flex rounded bg-badge-warn-bg px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-badge-warn-fg">
                   Demo
                 </span>
               )}

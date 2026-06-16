@@ -136,11 +136,6 @@ export function useManualSyncController({
     }
 
     if (!accounts.length) {
-      if (!silent) {
-        toast.info("No connected account found", {
-          description: "Add an account to get stats and analytics.",
-        });
-      }
       return;
     }
 

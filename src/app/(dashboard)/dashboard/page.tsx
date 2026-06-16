@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
 import {
@@ -70,7 +70,6 @@ function JournalPageContent() {
     new Date().getDate(),
   );
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const hasShownNoAccountToastRef = useRef(false);
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const [currentMonth, setCurrentMonth] = useState<Date>(
@@ -83,7 +82,6 @@ function JournalPageContent() {
     data: accounts = [],
     isLoading: isAccountsLoading,
     isError: isAccountsError,
-    isFetched: isAccountsFetched,
     refetch: refetchAccounts,
   } = useJournalAccounts();
   const syncAccountMutation = useSyncJournalAccount();
@@ -362,25 +360,6 @@ function JournalPageContent() {
     }
   }, [isAccountsError]);
 
-  useEffect(() => {
-    if (
-      isAccountsFetched &&
-      !isAccountsLoading &&
-      !isAccountsError &&
-      accounts.length === 0 &&
-      !hasShownNoAccountToastRef.current
-    ) {
-      toast.info("No connected account found", {
-        description: "Add an account to get stats and analytics.",
-      });
-      hasShownNoAccountToastRef.current = true;
-      return;
-    }
-
-    if (accounts.length > 0) {
-      hasShownNoAccountToastRef.current = false;
-    }
-  }, [accounts.length, isAccountsError, isAccountsFetched, isAccountsLoading]);
 
   // Memoize derived props so the React.memo'd chart widgets below don't re-render
   // on every 4s poll tick (Rule S7) — a new array/object identity each render

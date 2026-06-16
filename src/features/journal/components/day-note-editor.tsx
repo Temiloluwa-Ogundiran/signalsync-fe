@@ -61,7 +61,7 @@ export function DayNoteEditor({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02]">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-surface-subtle">
       <Toolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>
@@ -81,7 +81,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-white/[0.08] px-2 py-1.5">
+    <div className="flex flex-wrap items-center gap-0.5 border-b border-hairline px-2 py-1.5">
       <Btn
         icon={Bold}
         label="Bold"
@@ -196,8 +196,8 @@ function Btn({
       className={cn(
         "flex size-8 items-center justify-center rounded-md transition-colors cursor-pointer",
         active
-          ? "bg-white/[0.08] text-text-primary"
-          : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary",
+          ? "bg-surface-subtle text-text-primary"
+          : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
       )}
     >
       <Icon className="h-4 w-4" />
@@ -206,5 +206,5 @@ function Btn({
 }
 
 function Divider() {
-  return <span className="mx-1 h-5 w-px shrink-0 bg-white/[0.08]" />;
+  return <span className="mx-1 h-5 w-px shrink-0 bg-hairline" />;
 }

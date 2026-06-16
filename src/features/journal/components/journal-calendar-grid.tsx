@@ -156,7 +156,7 @@ export function JournalCalendarGrid({
                     <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </span>
                 </div>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-[0.58rem] sm:text-[0.65rem] font-semibold tabular-nums text-text-primary">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-overlay text-[0.58rem] sm:text-[0.65rem] font-semibold tabular-nums text-text-primary">
                   {day}
                 </span>
               </div>
@@ -173,7 +173,7 @@ export function JournalCalendarGrid({
                   >
                     {compactMoney(pnl)}
                   </p>
-                  <p className="text-[0.52rem] sm:text-[0.62rem] text-[rgba(255,255,255,0.55)] font-medium tabular-nums">
+                  <p className="text-[0.52rem] sm:text-[0.62rem] text-text-secondary font-medium tabular-nums">
                     <span>{trades}</span>
                     <span className="hidden sm:inline"> {trades === 1 ? "trade" : "trades"}</span>
                     <span className="inline sm:hidden">t</span>

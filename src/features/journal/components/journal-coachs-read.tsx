@@ -10,8 +10,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 
-const VIOLET = "#A78BFA";
-
 interface JournalCoachsReadProps {
   /** Narrative paragraph from the coach. */
   read: string;
@@ -34,14 +32,14 @@ export function JournalCoachsRead({
   const [open, setOpen] = useState(true);
 
   return (
-    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-white/[0.05]">
+    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-hairline">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HugeiconsIcon
             icon={AiMagicIcon}
             size={15}
             strokeWidth={2}
-            style={{ color: VIOLET }}
+            className="text-ai-accent"
           />
           <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
             Coach&apos;s Read
@@ -83,9 +81,9 @@ export function JournalCoachsRead({
             title={onContinue ? undefined : "Coming soon"}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors",
-              "bg-[rgba(139,92,246,0.12)] text-[#A78BFA]",
+              "bg-ai-soft-bg text-ai-accent",
               onContinue
-                ? "hover:bg-[rgba(139,92,246,0.2)] cursor-pointer"
+                ? "hover:bg-ai-soft-border cursor-pointer"
                 : "cursor-not-allowed opacity-60",
             )}
           >

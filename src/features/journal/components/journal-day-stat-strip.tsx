@@ -14,7 +14,7 @@ export interface DayStat {
  */
 export function JournalDayStatStrip({ stats }: { stats: DayStat[] }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-xl bg-bg-primary ring-1 ring-white/[0.05] sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 overflow-hidden rounded-xl bg-bg-primary ring-1 ring-hairline sm:grid-cols-3 lg:grid-cols-6">
       {stats.map((stat, i) => (
         <div
           key={stat.label}
@@ -22,7 +22,7 @@ export function JournalDayStatStrip({ stats }: { stats: DayStat[] }) {
             "px-4 py-3.5",
             // Right divider except last column in each breakpoint — approximate
             // with a left border on all but the first, kept subtle.
-            i > 0 && "border-l border-white/[0.05]",
+            i > 0 && "border-l border-hairline",
           )}
         >
           <p className="text-xs text-text-secondary">{stat.label}</p>

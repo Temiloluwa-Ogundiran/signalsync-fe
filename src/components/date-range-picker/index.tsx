@@ -159,8 +159,7 @@ export function DateRangePicker({
               onDayMouseLeave={() => setHovered(undefined)}
               modifiers={preview ? { preview } : undefined}
               modifiersClassNames={{
-                preview:
-                  "bg-[rgba(124,92,255,0.17)] text-sidebar-nav-active-text",
+                preview: "bg-ai-soft-bg text-sidebar-nav-active-text",
               }}
               classNames={{ button_previous: "hidden", button_next: "hidden" }}
             />

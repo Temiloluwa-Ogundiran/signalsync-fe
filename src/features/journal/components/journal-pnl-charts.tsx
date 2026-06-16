@@ -12,11 +12,9 @@ import {
   YAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useChartColors } from "@/lib/use-chart-colors";
 import type { CurveDailyPoint } from "../types";
 import { EquityCurve } from "./equity-curve";
-
-const GREEN = "#22C55E";
-const RED = "#EF4444";
 
 function formatCurrency(value: number) {
   const abs = Math.abs(value).toLocaleString("en-US", {
@@ -121,9 +119,6 @@ interface ChartProps {
   className?: string;
 }
 
-const AXIS_TICK = { fill: "#71717A", fontSize: 11 };
-const GRID_STROKE = "rgba(255,255,255,0.05)";
-
 /** Left chart: cumulative net P&L area, green above zero / red below.
     Rendered through the shared EquityCurve (date axis, green/red zero-split
     stroke + fill, monotone, auto y-axis) so both curves share one renderer. */
@@ -191,6 +186,8 @@ export function JournalDailyPnlChart({
   isLoading,
   className,
 }: ChartProps) {
+  const colors = useChartColors();
+  const axisTick = { fill: colors.axisTick, fontSize: 11 };
   // Drop the synthetic $0 baseline (it has no daily P&L) so no phantom bar shows.
   const data = points
     .filter((p) => !p.is_baseline)
@@ -205,25 +202,25 @@ export function JournalDailyPnlChart({
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
-          <CartesianGrid vertical={false} stroke={GRID_STROKE} strokeDasharray="3 3" />
+          <CartesianGrid vertical={false} stroke={colors.grid} strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
             tickFormatter={formatXDate}
-            tick={AXIS_TICK}
+            tick={axisTick}
             axisLine={false}
             tickLine={false}
             minTickGap={32}
           />
           <YAxis
             tickFormatter={formatYAxis}
-            tick={AXIS_TICK}
+            tick={axisTick}
             axisLine={false}
             tickLine={false}
             width={56}
           />
           <Tooltip
             content={<ChartTooltip />}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            cursor={{ fill: colors.grid }}
           />
           <Bar
             dataKey="v"
@@ -232,7 +229,7 @@ export function JournalDailyPnlChart({
             maxBarSize={56}
           >
             {data.map((d, i) => (
-              <Cell key={i} fill={d.v >= 0 ? GREEN : RED} />
+              <Cell key={i} fill={d.v >= 0 ? colors.win : colors.loss} />
             ))}
           </Bar>
         </BarChart>

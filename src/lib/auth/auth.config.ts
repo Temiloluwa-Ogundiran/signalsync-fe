@@ -67,6 +67,12 @@ export const authConfig = {
     signIn: "/login",
     newUser: "/register",
   },
+  // 30-day rolling session — matches the backend refresh-token window so an
+  // active user effectively stays logged in (a trade journal should be sticky).
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn =

@@ -109,13 +109,13 @@ export function LoginForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {justRegistered ? (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          <div className="rounded-xl border border-success/25 bg-success-light px-4 py-3 text-sm text-success">
             Your account was created. Verify your email, then sign in here.
-            <div className="mt-1 text-emerald-200/90">
+            <div className="mt-1 text-success/90">
               Didn&apos;t get an email?{" "}
               <Link
                 href={resendUrl}
-                className="font-medium underline underline-offset-4 hover:text-emerald-100"
+                className="font-medium underline underline-offset-4 hover:text-success"
               >
                 Resend verification email
               </Link>

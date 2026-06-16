@@ -128,7 +128,7 @@ export function JournalAccountsPage() {
             <Button
               type="button"
               onClick={openConnectModal}
-              className="flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer shrink-0"
+              className="flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer shrink-0"
             >
               <Plus className="h-4 w-4" />
               Connect Account
@@ -224,11 +224,11 @@ export function JournalAccountsPage() {
                           {/* Type */}
                           <td className="px-6 py-4">
                             {account.account_type === "live" ? (
-                              <span className="rounded bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-cyan-400">
+                              <span className="rounded bg-badge-info-bg px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-badge-info-fg">
                                 Live
                               </span>
                             ) : (
-                              <span className="rounded bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
+                              <span className="rounded bg-badge-warn-bg px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-badge-warn-fg">
                                 Demo
                               </span>
                             )}
@@ -251,7 +251,7 @@ export function JournalAccountsPage() {
                           {/* Connection */}
                           <td className="px-6 py-4">
                             {account.sync_provider === "csv_import" ? (
-                              <span className="rounded bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                              <span className="rounded bg-badge-warn-bg px-2 py-0.5 text-[10px] font-bold text-badge-warn-fg uppercase tracking-wider">
                                 CSV
                               </span>
                             ) : (
@@ -283,7 +283,7 @@ export function JournalAccountsPage() {
                               {account.sync_provider === "csv_import" ? (
                                 <button
                                   onClick={() => openCSVReimportModal(account.id)}
-                                  className="text-cyan-400 hover:text-cyan-300 transition-colors hover:scale-110 duration-150"
+                                  className="text-info hover:text-info/80 transition-colors hover:scale-110 duration-150"
                                   title="Import more trades"
                                 >
                                   <Upload className="h-4 w-4" />
@@ -292,7 +292,7 @@ export function JournalAccountsPage() {
                                 <button
                                   onClick={() => handleSyncAccount(account.id)}
                                   disabled={isSyncing}
-                                  className="text-cyan-400 hover:text-cyan-300 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
+                                  className="text-info hover:text-info/80 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
                                   title="Sync account trades"
                                 >
                                   <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin text-brand" : ""}`} />
@@ -315,7 +315,7 @@ export function JournalAccountsPage() {
                                   }
                                 }}
                                 disabled={updateAccount.isPending}
-                                className="text-cyan-400 hover:text-cyan-300 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
+                                className="text-info hover:text-info/80 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
                                 title="Edit display name"
                               >
                                 <Pencil className="h-4 w-4" />
@@ -323,7 +323,7 @@ export function JournalAccountsPage() {
                               
                               <button
                                 onClick={() => handleDeleteAccount(account.id, accountLabel)}
-                                className="text-red-500 hover:text-red-400 transition-colors hover:scale-110 duration-150"
+                                className="text-danger hover:text-danger/80 transition-colors hover:scale-110 duration-150"
                                 title="Disconnect account"
                               >
                                 <Trash2 className="h-4 w-4" />

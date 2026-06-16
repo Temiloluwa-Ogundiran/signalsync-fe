@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
+import { useChartColors } from "@/lib/use-chart-colors";
 import { formatNetPnlDisplay } from "../lib/journal-widget-mappers";
 import { JournalKpiCard } from "./journal-kpi-card";
 import { JournalKpiInfo } from "./journal-kpi-info";
@@ -30,6 +31,7 @@ export function JournalKpiNetPnl({
   series,
   className,
 }: JournalKpiNetPnlProps) {
+  const colors = useChartColors();
   const hasCurve = series.length >= 2;
   const off = hasCurve ? zeroOffset(series.map((d) => d.v)) : 1;
 
@@ -58,15 +60,15 @@ export function JournalKpiNetPnl({
               <defs>
                 {/* Stroke: green above the zero offset, red below */}
                 <linearGradient id="kpi-eq-stroke" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset={off} stopColor="#22C55E" />
-                  <stop offset={off} stopColor="#EF4444" />
+                  <stop offset={off} stopColor={colors.win} />
+                  <stop offset={off} stopColor={colors.loss} />
                 </linearGradient>
                 {/* Fill fades to transparent at the zero seam on both sides */}
                 <linearGradient id="kpi-eq-fill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22C55E" stopOpacity={0.6} />
-                  <stop offset={off} stopColor="#22C55E" stopOpacity={0.04} />
-                  <stop offset={off} stopColor="#EF4444" stopOpacity={0.04} />
-                  <stop offset="100%" stopColor="#EF4444" stopOpacity={0.6} />
+                  <stop offset="0%" stopColor={colors.win} stopOpacity={0.6} />
+                  <stop offset={off} stopColor={colors.win} stopOpacity={0.04} />
+                  <stop offset={off} stopColor={colors.loss} stopOpacity={0.04} />
+                  <stop offset="100%" stopColor={colors.loss} stopOpacity={0.6} />
                 </linearGradient>
               </defs>
               <Area

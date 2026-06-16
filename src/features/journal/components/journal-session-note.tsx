@@ -41,7 +41,7 @@ export function JournalSessionNote({
   const [mood, setMood] = useState<Mood | null>(initialMood);
 
   return (
-    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-white/[0.05]">
+    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-hairline">
       <div className="mb-3 flex items-center gap-2">
         <HugeiconsIcon
           icon={PencilEdit01Icon}
@@ -62,7 +62,7 @@ export function JournalSessionNote({
         className="w-full resize-none bg-transparent text-sm leading-relaxed text-text-primary placeholder:text-text-tertiary focus:outline-none"
       />
 
-      <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
+      <div className="mt-3 flex items-center justify-between border-t border-hairline pt-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-text-secondary">Felt:</span>
           {MOODS.map((m) => (
@@ -75,8 +75,8 @@ export function JournalSessionNote({
               className={cn(
                 "inline-flex size-8 items-center justify-center rounded-lg border transition-colors cursor-pointer",
                 mood === m.id
-                  ? "border-[#A78BFA]/40 bg-[rgba(139,92,246,0.14)] text-[#A78BFA]"
-                  : "border-white/[0.06] text-text-tertiary hover:border-white/[0.12] hover:text-text-secondary",
+                  ? "border-ai-soft-border bg-ai-soft-bg text-ai-accent"
+                  : "border-hairline text-text-tertiary hover:border-border-secondary hover:text-text-secondary",
               )}
             >
               <HugeiconsIcon icon={m.icon} size={16} strokeWidth={2} />
@@ -89,10 +89,10 @@ export function JournalSessionNote({
           disabled={saving || !note.trim()}
           onClick={() => onSave(note.trim(), mood)}
           className={cn(
-            "rounded-lg bg-white px-4 py-2 text-xs font-bold text-[#0a0a0b] transition-colors",
+            "rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors",
             saving || !note.trim()
               ? "cursor-not-allowed opacity-50"
-              : "hover:bg-white/90 cursor-pointer",
+              : "hover:bg-accent-hover cursor-pointer",
           )}
         >
           {saving ? "Saving..." : "Save note"}

@@ -11,7 +11,7 @@ export function IconChevronDown({ className, ...p }: SVGProps<SVGSVGElement>) {
       aria-hidden
       {...p}
     >
-      <path d="M6 9l6 6 6-6" stroke="#F5F5F5" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
     </svg>
   );
 }

@@ -39,8 +39,8 @@ function RailIcon({
           active
             ? // Neutral highlight — app selection, no violet (reserved for the
               // sidebar active page + Partna identity).
-              "bg-white/[0.06] text-[#F4F4F5]"
-            : "text-[#71717A] hover:bg-white/[0.04] hover:text-[#F4F4F5]",
+              "bg-surface-subtle text-text-primary"
+            : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
         )}
       >
         <HugeiconsIcon
@@ -104,13 +104,23 @@ export function AppNav() {
           No hard rule: the tonal step below + generous spacing do the work. */}
       <div className="flex h-header shrink-0 items-center px-4">
         <Link href="/dashboard" aria-label="TradePartna home" className="flex">
+          {/* Light vs dark logo — toggled by the `.dark` class on <html> so it
+              swaps with no JS/hydration flash. Light logo has dark text. */}
+          <Image
+            src="/brand/tradpartnalight.svg"
+            alt="TradePartna"
+            width={156}
+            height={20}
+            priority
+            className="h-5 w-auto dark:hidden"
+          />
           <Image
             src="/brand/tradepartna-logo-full.svg"
             alt="TradePartna"
             width={156}
             height={20}
             priority
-            className="h-5 w-auto"
+            className="hidden h-5 w-auto dark:block"
           />
         </Link>
       </div>
@@ -197,7 +207,7 @@ function JournalNavFooter() {
   return (
     <div className="flex flex-col gap-3 p-3">
       {hasBalance ? (
-        <div className="rounded-xl bg-white/[0.05] px-4 py-3">
+        <div className="rounded-xl bg-surface-subtle px-4 py-3">
           <p className="text-lg font-bold leading-tight text-text-primary tabular-nums">
             {balanceFormatter.format(balance as number)}
           </p>
@@ -208,7 +218,7 @@ function JournalNavFooter() {
       <button
         type="button"
         onClick={() => openAddTradeModal(null)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#0a0a0b] transition-colors hover:bg-white/90 cursor-pointer"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer"
       >
         <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
         Add New Trade
@@ -231,7 +241,7 @@ function RailPinned({
       <a
         href={href}
         aria-label={label}
-        className="flex size-11 items-center justify-center rounded-xl text-sidebar-nav-inactive-text transition-colors hover:bg-white/[0.04] hover:text-sidebar-nav-active-text"
+        className="flex size-11 items-center justify-center rounded-xl text-sidebar-nav-inactive-text transition-colors hover:bg-surface-subtle hover:text-sidebar-nav-active-text"
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </a>

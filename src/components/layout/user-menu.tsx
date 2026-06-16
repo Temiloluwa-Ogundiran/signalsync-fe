@@ -2,16 +2,19 @@
 
 import { LogOut, User } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { User03Icon } from "@hugeicons/core-free-icons";
+import { User03Icon, Sun03Icon, Moon02Icon } from "@hugeicons/core-free-icons";
 import { signOut, useSession } from "next-auth/react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useThemeStore } from "@/features/theme/store";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const user = session?.user;
   const displayName =
     user?.displayName || user?.name || user?.username || "Trader";
@@ -58,7 +61,9 @@ export function UserMenu() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-sm font-bold text-white">{initial}</span>
+              <span className="text-sm font-bold text-accent-foreground">
+                {initial}
+              </span>
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -82,6 +87,21 @@ export function UserMenu() {
         >
           <User className="size-4 shrink-0" />
           Profile
+        </button>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
+        >
+          <span className="flex items-center gap-2.5">
+            <HugeiconsIcon
+              icon={theme === "dark" ? Sun03Icon : Moon02Icon}
+              size={16}
+              strokeWidth={1.8}
+              className="shrink-0"
+            />
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </span>
         </button>
         <button
           type="button"

@@ -464,7 +464,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
                     }}
                     className={`flex items-center justify-center py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                       isMissed
-                        ? "bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/25 shadow-md shadow-amber-500/5"
+                        ? "bg-badge-warn-bg text-badge-warn-fg border border-transparent shadow-md"
                         : "text-text-secondary hover:text-text-primary"
                     }`}
                   >

@@ -11,10 +11,7 @@ import {
   YAxis,
 } from "recharts";
 
-const WIN = "#22C55E";
-const LOSS = "#EF4444";
-const VIOLET = "#8B5CF6";
-const VIOLET_LIGHT = "#A78BFA";
+import { useChartColors } from "@/lib/use-chart-colors";
 
 /** "Nice" step sizes for round y-axis ticks (1-2-5 sequence, scaled). */
 const NICE_STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
@@ -148,6 +145,7 @@ function CurveTooltip({
     };
   }>;
 }) {
+  const colors = useChartColors();
   if (!active || !payload?.length) return null;
   const p = payload[0]?.payload;
   if (!p) return null;
@@ -161,7 +159,7 @@ function CurveTooltip({
       <p className="flex items-center gap-2 tabular-nums text-text-secondary">
         <span
           className="inline-block h-2.5 w-2.5 rounded-[3px]"
-          style={{ backgroundColor: VIOLET }}
+          style={{ backgroundColor: colors.ai }}
           aria-hidden
         />
         {p.symbol ? `${p.symbol} ` : ""}
@@ -219,10 +217,15 @@ export function EquityCurve({
   size = "full",
   className,
 }: EquityCurveProps) {
+  const colors = useChartColors();
   if (!data || data.length === 0) {
     return <div className={className} />;
   }
 
+  const WIN = colors.win;
+  const LOSS = colors.loss;
+  const VIOLET = colors.ai;
+  const VIOLET_LIGHT = colors.aiBright;
   const values = data.map((d) => d.cumulative_pnl);
   const chartId = `eq-${colorMode}-${xKey}-${data.length}`;
 
@@ -326,7 +329,7 @@ export function EquityCurve({
           {showAxes && (
             <CartesianGrid
               vertical={false}
-              stroke="rgba(255,255,255,0.05)"
+              stroke={colors.grid}
               strokeDasharray="3 3"
             />
           )}
@@ -336,7 +339,7 @@ export function EquityCurve({
             <XAxis
               dataKey="date"
               tickFormatter={fmtMDY}
-              tick={{ fill: "#71717A", fontSize: 11 }}
+              tick={{ fill: colors.axisTick, fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               minTickGap={32}
@@ -376,14 +379,14 @@ export function EquityCurve({
             width={showAxes ? (yMode === "nice" ? 48 : 56) : 0}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#71717A", fontSize: yMode === "nice" ? 12 : 11 }}
+            tick={{ fill: colors.axisTick, fontSize: yMode === "nice" ? 12 : 11 }}
             tickFormatter={fmtAxis}
           />
 
           {showAxes && yMode === "nice" && (
             <ReferenceLine
               y={0}
-              stroke="rgba(255,255,255,0.12)"
+              stroke={colors.grid}
               strokeDasharray="4 4"
             />
           )}
@@ -391,8 +394,7 @@ export function EquityCurve({
           <Tooltip
             content={<CurveTooltip />}
             cursor={{
-              stroke:
-                strokeMode === "zeroSplit" ? "rgba(255,255,255,0.18)" : VIOLET,
+              stroke: strokeMode === "zeroSplit" ? colors.grid : VIOLET,
               strokeWidth: 1,
               strokeOpacity: 0.6,
             }}

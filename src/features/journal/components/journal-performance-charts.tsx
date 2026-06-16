@@ -13,15 +13,11 @@ import {
   YAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useChartColors } from "@/lib/use-chart-colors";
 import type {
   JournalAnalyticsInstrumentItem,
   JournalAnalyticsTimePerformancePoint,
 } from "../types";
-
-const GREEN = "#22C55E";
-const RED = "#EF4444";
-const GRID_STROKE = "rgba(255,255,255,0.05)";
-const AXIS_TICK = { fill: "#71717A", fontSize: 11, fontWeight: 500 } as const;
 
 function money(value: number) {
   const abs = Math.abs(value).toLocaleString("en-US", {
@@ -111,6 +107,8 @@ function PerfChartCard({
   isLoading,
   angledLabels = false,
 }: PerfChartCardProps) {
+  const colors = useChartColors();
+  const axisTick = { fill: colors.axisTick, fontSize: 11, fontWeight: 500 };
   const isEmpty = !isLoading && data.length === 0;
   return (
     <section className="flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg">
@@ -138,12 +136,12 @@ function PerfChartCard({
             >
               <CartesianGrid
                 vertical={false}
-                stroke={GRID_STROKE}
+                stroke={colors.grid}
                 strokeDasharray="3 3"
               />
               <XAxis
                 dataKey="label"
-                tick={AXIS_TICK}
+                tick={axisTick}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
@@ -154,14 +152,14 @@ function PerfChartCard({
               />
               <YAxis
                 tickFormatter={formatYAxis}
-                tick={AXIS_TICK}
+                tick={axisTick}
                 axisLine={false}
                 tickLine={false}
                 width={52}
               />
               <Tooltip
                 content={<PerfTooltip />}
-                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                cursor={{ fill: colors.grid }}
               />
               <Bar
                 dataKey="v"
@@ -170,7 +168,7 @@ function PerfChartCard({
                 maxBarSize={44}
               >
                 {data.map((d, i) => (
-                  <Cell key={i} fill={d.v >= 0 ? GREEN : RED} />
+                  <Cell key={i} fill={d.v >= 0 ? colors.win : colors.loss} />
                 ))}
               </Bar>
             </BarChart>

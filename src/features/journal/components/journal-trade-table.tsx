@@ -118,7 +118,7 @@ function StarRating({
               className={cn(
                 "h-3.5 w-3.5 transition-colors",
                 filled
-                  ? "fill-amber-400 text-amber-400"
+                  ? "fill-star text-star"
                   : "text-text-tertiary/40 hover:text-text-tertiary",
               )}
             />
@@ -132,7 +132,7 @@ function StarRating({
 function DirectionPill({ direction }: { direction: "buy" | "sell" }) {
   const isLong = direction === "buy";
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-white/[0.04] px-2 py-0.5 text-xs font-semibold text-text-secondary">
+    <span className="inline-flex items-center gap-1 rounded-md bg-surface-subtle px-2 py-0.5 text-xs font-semibold text-text-secondary">
       {isLong ? (
         <ArrowUp className="h-3 w-3" />
       ) : (
@@ -162,8 +162,8 @@ function TpSlBar({ row }: { row: TradeHistoryRow }) {
   const pos = (price: number) => 50 + ((price - entry) / span) * 45;
   return (
     <div className="relative h-4 w-20" title={`TP ${tp ?? "—"} · SL ${sl ?? "—"}`}>
-      <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-white/[0.08]" />
-      <span className="absolute left-1/2 top-1/2 h-2.5 w-px -translate-x-1/2 -translate-y-1/2 bg-white/30" />
+      <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-hairline" />
+      <span className="absolute left-1/2 top-1/2 h-2.5 w-px -translate-x-1/2 -translate-y-1/2 bg-text-tertiary" />
       {tp != null ? (
         <span
           className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-kpi-metric-positive"
@@ -321,9 +321,9 @@ export function JournalTradeTable({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/[0.06] bg-nav-sidebar-bg">
+    <section className="overflow-hidden rounded-2xl border border-hairline bg-nav-sidebar-bg">
       {/* Summary strip + columns control */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
           <SummaryStat label="Trades" value={String(summary.count)} />
           <SummaryStat
@@ -352,7 +352,7 @@ export function JournalTradeTable({
 
       {/* Bulk action bar */}
       {selectedCount > 0 ? (
-        <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[rgba(139,92,246,0.06)] px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-hairline bg-ai-soft-bg px-4 py-2">
           <span className="text-sm font-semibold text-text-primary">
             {selectedCount} selected
           </span>
@@ -379,7 +379,7 @@ export function JournalTradeTable({
               type="button"
               onClick={() => setRowSelection({})}
               aria-label="Clear selection"
-              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-white/[0.04] hover:text-text-primary cursor-pointer"
+              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -424,7 +424,7 @@ export function JournalTradeTable({
                         draggable ? () => setHeaderDragId(null) : undefined
                       }
                       className={cn(
-                        "sticky top-0 z-10 whitespace-nowrap border-b border-white/[0.06] bg-nav-sidebar-bg px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary",
+                        "sticky top-0 z-10 whitespace-nowrap border-b border-hairline bg-nav-sidebar-bg px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary",
                         header.column.columnDef.meta?.align === "right" &&
                           "text-right",
                         draggable && "cursor-grab active:cursor-grabbing",
@@ -432,7 +432,7 @@ export function JournalTradeTable({
                         headerDragId &&
                           headerDragId !== header.column.id &&
                           draggable &&
-                          "hover:bg-white/[0.03]",
+                          "hover:bg-surface-subtle",
                       )}
                     >
                       {header.isPlaceholder ? null : canSort ? (
@@ -477,15 +477,15 @@ export function JournalTradeTable({
                   <Fragment key={row.id}>
                     <tr
                       className={cn(
-                        "group/row transition-colors hover:bg-white/[0.02]",
-                        row.getIsSelected() && "bg-[rgba(139,92,246,0.05)]",
+                        "group/row transition-colors hover:bg-surface-subtle",
+                        row.getIsSelected() && "bg-ai-soft-bg",
                       )}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
                           className={cn(
-                            "whitespace-nowrap border-b border-white/[0.04] px-3 py-2 text-text-primary",
+                            "whitespace-nowrap border-b border-hairline px-3 py-2 text-text-primary",
                             cell.column.columnDef.meta?.align === "right" &&
                               "text-right tabular-nums",
                           )}
@@ -501,7 +501,7 @@ export function JournalTradeTable({
                       <tr>
                         <td
                           colSpan={row.getVisibleCells().length}
-                          className="border-b border-white/[0.04] bg-white/[0.015] px-6 py-4"
+                          className="border-b border-hairline bg-surface-subtle px-6 py-4"
                         >
                           <ExpandedDetail
                             row={row.original}
@@ -533,7 +533,7 @@ export function JournalTradeTable({
       </div>
 
       {/* Footer */}
-      <div className="flex min-h-[3.25rem] items-center justify-between gap-3 border-t border-white/[0.06] px-4 py-3">
+      <div className="flex min-h-[3.25rem] items-center justify-between gap-3 border-t border-hairline px-4 py-3">
         <p className="text-[13px] text-text-tertiary">
           Showing {rows.length} loaded trade{rows.length === 1 ? "" : "s"}
         </p>
@@ -542,7 +542,7 @@ export function JournalTradeTable({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] px-4 py-1.5 text-sm font-semibold text-text-primary transition-colors hover:bg-white/[0.04] disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-lg border border-hairline px-4 py-1.5 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-subtle disabled:opacity-50 cursor-pointer"
           >
             {isLoadingMore ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -602,7 +602,7 @@ function buildColumns({
             type="button"
             onClick={() => toggleFavorite(row.original.id)}
             aria-label={fav ? "Unfavorite" : "Favorite"}
-            className="flex size-6 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-white/[0.04] cursor-pointer"
+            className="flex size-6 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-subtle cursor-pointer"
           >
             <Star
               className={cn(
@@ -627,7 +627,7 @@ function buildColumns({
               setExpanded((prev) => ({ ...prev, [row.id]: !prev[row.id] }))
             }
             aria-label={isOpen ? "Collapse" : "Expand"}
-            className="flex size-6 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-white/[0.04] hover:text-text-primary cursor-pointer"
+            className="flex size-6 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
           >
             {isOpen ? (
               <ChevronDown className="h-3.5 w-3.5" />
@@ -645,7 +645,7 @@ function buildColumns({
         <span className="flex items-center gap-1.5 font-semibold text-text-primary">
           {row.original.symbol}
           {row.original.is_missed ? (
-            <span className="rounded bg-orange-500/15 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-orange-400">
+            <span className="rounded bg-badge-warn-bg px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-badge-warn-fg">
               Missed
             </span>
           ) : row.original.is_manual ? (
@@ -820,7 +820,7 @@ function CheckBox({
         "flex size-4 items-center justify-center rounded border transition-colors cursor-pointer",
         checked || indeterminate
           ? "border-ai-accent bg-ai-accent text-white"
-          : "border-white/20 hover:border-white/40",
+          : "border-hairline hover:border-hairline",
       )}
     >
       {checked ? (
@@ -859,7 +859,7 @@ function BulkButton({
         "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
         destructive
           ? "text-danger hover:bg-danger/10"
-          : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary",
+          : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
       )}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -932,7 +932,7 @@ function ColumnsMenu({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-hairline px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           Columns
@@ -940,10 +940,10 @@ function ColumnsMenu({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-60 rounded-xl border border-white/[0.08] bg-[#0F1012] p-0"
+        className="w-60 rounded-xl border border-hairline bg-popover p-0"
       >
         {/* Search + select-all header */}
-        <div className="flex items-center gap-2 border-b border-white/[0.06] p-2">
+        <div className="flex items-center gap-2 border-b border-hairline p-2">
           <CheckBox
             checked={allVisible}
             indeterminate={
@@ -961,7 +961,7 @@ function ColumnsMenu({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-md border border-white/[0.08] bg-transparent py-1 pl-7 pr-2 text-sm text-text-primary placeholder:text-text-tertiary outline-none focus:border-white/20"
+              className="w-full rounded-md border border-hairline bg-transparent py-1 pl-7 pr-2 text-sm text-text-primary placeholder:text-text-tertiary outline-none focus:border-hairline"
             />
           </div>
         </div>
@@ -983,7 +983,7 @@ function ColumnsMenu({
                 }}
                 onDragEnd={() => setDragId(null)}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/[0.04]",
+                  "flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-surface-subtle",
                   dragId === id && "opacity-40",
                 )}
               >
@@ -1056,7 +1056,7 @@ function ExpandedDetail({
         <button
           type="button"
           onClick={() => onOpenJournal(row)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-white/[0.08] cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-surface-subtle px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-subtle-hover cursor-pointer"
         >
           <NotebookPen className="h-3.5 w-3.5" />
           Open journal
@@ -1065,7 +1065,7 @@ function ExpandedDetail({
           <button
             type="button"
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-white/[0.08] hover:text-text-primary cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-subtle px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-subtle-hover hover:text-text-primary cursor-pointer"
           >
             <Pencil className="h-3.5 w-3.5" />
             Edit

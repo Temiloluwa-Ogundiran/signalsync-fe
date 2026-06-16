@@ -58,12 +58,50 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        // Pre-issued-session path: after email verification the backend returns
+        // tokens + user, which we pass here to seed a session without a password.
+        prelogin: { label: "Prelogin", type: "text" },
       },
       async authorize(credentials) {
+        // ── Pre-issued session (email-verification auto-login) ──────────────
+        if (credentials?.prelogin) {
+          try {
+            const p = JSON.parse(credentials.prelogin as string) as {
+              accessToken: string;
+              refreshToken: string;
+              accessTokenExpiryMinutes: number;
+              user: {
+                id: string;
+                email: string;
+                username: string;
+                display_name?: string | null;
+                avatar_url?: string | null;
+                is_email_verified: boolean;
+              };
+            };
+            if (!p?.accessToken || !p?.user?.id) return null;
+            return {
+              id: p.user.id,
+              email: p.user.email,
+              username: p.user.username,
+              displayName: p.user.display_name ?? null,
+              avatarUrl: p.user.avatar_url ?? null,
+              name: p.user.display_name || p.user.username,
+              isEmailVerified: p.user.is_email_verified,
+              accessToken: p.accessToken,
+              refreshToken: p.refreshToken ?? "",
+              expiresAt:
+                Date.now() + (p.accessTokenExpiryMinutes ?? 30) * 60 * 1000,
+            };
+          } catch {
+            return null;
+          }
+        }
+
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        
+
         try {
           // Send request as required by OAuth2PasswordRequestForm
           const formData = new URLSearchParams();

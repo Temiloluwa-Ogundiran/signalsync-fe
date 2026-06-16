@@ -14,7 +14,7 @@ export function StreamSettingsModal({
 }) {
   if (!isOpen || !stream) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-card-bg rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-border-primary flex justify-between items-start">

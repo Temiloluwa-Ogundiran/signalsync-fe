@@ -27,11 +27,11 @@ export default function RootLayout({
         {/*
          * Blocking script: reads the Zustand-persisted theme from localStorage
          * and applies the correct class before React hydrates, preventing any
-         * flash of wrong theme. Falls back to "dark" if nothing is stored.
+         * flash of wrong theme. Defaults to "light" when nothing is stored.
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'dark';if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){document.documentElement.classList.add('dark');}})();`,
+            __html: `(function(){try{var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'light';if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
           }}
         />
       </head>
