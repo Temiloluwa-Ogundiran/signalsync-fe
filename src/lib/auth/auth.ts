@@ -73,7 +73,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               user: {
                 id: string;
                 email: string;
-                username: string;
                 display_name?: string | null;
                 avatar_url?: string | null;
                 is_email_verified: boolean;
@@ -83,10 +82,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return {
               id: p.user.id,
               email: p.user.email,
-              username: p.user.username,
               displayName: p.user.display_name ?? null,
               avatarUrl: p.user.avatar_url ?? null,
-              name: p.user.display_name || p.user.username,
+              name: p.user.display_name || p.user.email,
               isEmailVerified: p.user.is_email_verified,
               accessToken: p.accessToken,
               refreshToken: p.refreshToken ?? "",
@@ -145,10 +143,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return {
             id: user.id,
             email: user.email,
-            username: user.username,
             displayName: user.display_name ?? null,
             avatarUrl: user.avatar_url ?? null,
-            name: user.display_name || user.username,
+            name: user.display_name || user.email,
             isEmailVerified: user.is_email_verified,
             accessToken: access_token,
             refreshToken: refreshToken,

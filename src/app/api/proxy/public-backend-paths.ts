@@ -1,11 +1,6 @@
 // Backend paths that must remain reachable without an authenticated session.
-const PUBLIC_BACKEND_PATHS = ["users/check-username"];
-
 const PUBLIC_BACKEND_PREFIXES = ["auth/"];
 
 export function isPublicBackendPath(path: string) {
-  return (
-    PUBLIC_BACKEND_PATHS.includes(path) ||
-    PUBLIC_BACKEND_PREFIXES.some((prefix) => path.startsWith(prefix))
-  );
+  return PUBLIC_BACKEND_PREFIXES.some((prefix) => path.startsWith(prefix));
 }

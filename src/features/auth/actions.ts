@@ -37,7 +37,6 @@ export async function loginAction(formData: FormData) {
 
 export async function registerAction(data: {
   display_name: string;
-  username: string;
   email: string;
   password: string;
 }) {

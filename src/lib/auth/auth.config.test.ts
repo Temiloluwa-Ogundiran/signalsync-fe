@@ -15,7 +15,6 @@ test("session callback does not expose the refresh token to the client session",
     token: {
       id: "user-1",
       email: "user@example.com",
-      username: "trader",
       displayName: "Trader",
       avatarUrl: null,
       isEmailVerified: true,

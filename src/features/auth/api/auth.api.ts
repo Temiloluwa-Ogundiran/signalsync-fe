@@ -10,7 +10,6 @@ import type { AxiosResponse } from "axios";
 
 export interface RegisterPayload {
   display_name: string;
-  username: string;
   email: string;
   password: string;
 }
@@ -20,7 +19,6 @@ export interface RegisterResponse {
   user: {
     id: string;
     email: string;
-    username: string;
     display_name: string | null;
     is_email_verified: boolean;
   };
@@ -37,7 +35,6 @@ export interface VerifyEmailResponse {
   user?: {
     id: string;
     email: string;
-    username: string;
     display_name: string | null;
     avatar_url?: string | null;
     is_email_verified: boolean;
@@ -46,10 +43,6 @@ export interface VerifyEmailResponse {
 
 export interface ResendVerificationResponse {
   message: string;
-}
-
-export interface UsernameCheckResponse {
-  available: boolean;
 }
 
 // ── API functions ──────────────────────────────────────────────────────────
@@ -77,17 +70,6 @@ export async function resendVerificationEmail(
   const res: AxiosResponse<ResendVerificationResponse> = await apiClient.post(
     "/auth/resend-verification",
     { email }
-  );
-  return res.data;
-}
-
-export async function checkUsernameAvailability(
-  username: string,
-  options?: { signal?: AbortSignal }
-): Promise<UsernameCheckResponse> {
-  const res: AxiosResponse<UsernameCheckResponse> = await apiClient.get(
-    `/users/check-username?username=${encodeURIComponent(username)}`,
-    { signal: options?.signal }
   );
   return res.data;
 }

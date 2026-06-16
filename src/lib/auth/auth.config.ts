@@ -110,7 +110,6 @@ export const authConfig = {
         token.refreshToken = user.refreshToken;
         token.expiresAt = user.expiresAt;
         token.id = user.id;
-        token.username = user.username;
         token.displayName = user.displayName;
         token.avatarUrl = user.avatarUrl;
         token.email = user.email;
@@ -182,7 +181,6 @@ export const authConfig = {
         session.user = {
           id: token.id as string,
           email: token.email as string,
-          username: token.username as string,
           displayName: (token.displayName as string) ?? null,
           avatarUrl: (token.avatarUrl as string) ?? null,
           isEmailVerified: token.isEmailVerified as boolean,

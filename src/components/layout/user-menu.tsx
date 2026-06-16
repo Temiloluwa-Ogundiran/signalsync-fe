@@ -16,8 +16,7 @@ export function UserMenu() {
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const user = session?.user;
-  const displayName =
-    user?.displayName || user?.name || user?.username || "Trader";
+  const displayName = user?.displayName || user?.name || "Trader";
   const email = user?.email ?? "";
   const avatarUrl = user?.avatarUrl;
   const initial = displayName.charAt(0).toUpperCase();

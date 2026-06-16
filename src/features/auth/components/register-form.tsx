@@ -4,12 +4,9 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import axios from "axios";
-import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
-import { checkUsernameAvailability } from "../api/auth.api";
+import { useState } from "react";
 import {
   PASSWORD_POLICY_MESSAGE,
   registerPasswordSchema,
@@ -31,11 +28,8 @@ import { useRouter } from "next/navigation";
 const registerSchema = z.object({
   display_name: z
     .string()
-    .min(1, { message: "Display name is required" })
+    .min(1, { message: "Name is required" })
     .max(100, { message: "Max 100 characters" }),
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
   password: registerPasswordSchema,
 });
@@ -49,45 +43,10 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       display_name: "",
-      username: "",
       email: "",
       password: "",
     },
   });
-
-  const watchUsername = form.watch("username");
-  const debouncedUsername = useDebounce(watchUsername, 500);
-  const [usernameStatus, setUsernameStatus] = useState<
-    "idle" | "checking" | "available" | "taken" | "error"
-  >("idle");
-
-  useEffect(() => {
-    if (!debouncedUsername || debouncedUsername.length < 3) {
-      setUsernameStatus("idle");
-      return;
-    }
-    const controller = new AbortController();
-    setUsernameStatus("checking");
-    checkUsernameAvailability(debouncedUsername, { signal: controller.signal })
-      .then((data) => {
-        if (data.available) {
-          setUsernameStatus("available");
-          form.clearErrors("username");
-        } else {
-          setUsernameStatus("taken");
-          form.setError("username", {
-            type: "manual",
-            message: "This username is already taken",
-          });
-        }
-      })
-      .catch((err) => {
-        if (!axios.isCancel(err)) {
-          setUsernameStatus("error");
-        }
-      });
-    return () => controller.abort();
-  }, [debouncedUsername, form]);
 
   function onSubmit(values: z.infer<typeof registerSchema>) {
     startTransition(async () => {
@@ -126,48 +85,13 @@ export function RegisterForm() {
             name="display_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Display Name</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="John Doe"
                     {...field}
                     disabled={isPending}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <div className="relative flex items-center">
-                    <Input
-                      placeholder="johndoe"
-                      {...field}
-                      disabled={isPending}
-                      className={
-                        usernameStatus === "taken"
-                          ? "border-danger focus-visible:ring-danger"
-                          : ""
-                      }
-                    />
-                    <div className="absolute right-3">
-                      {usernameStatus === "checking" && (
-                        <Loader2 className="h-4 w-4 animate-spin text-text-secondary" />
-                      )}
-                      {usernameStatus === "available" && (
-                        <Check className="h-4 w-4 text-success" />
-                      )}
-                      {usernameStatus === "taken" && (
-                        <X className="h-4 w-4 text-danger" />
-                      )}
-                    </div>
-                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
