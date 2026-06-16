@@ -12,6 +12,19 @@ import { ApiException } from "@/lib/api/types";
 const GSI_SRC = "https://accounts.google.com/gsi/client";
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
+// Diagnostic (runs on import, client-side): tells us whether the client ID was
+// inlined at build time. If `present` is false on the deployed site, the build
+// ran WITHOUT NEXT_PUBLIC_GOOGLE_CLIENT_ID (Railway build cache / build-time var
+// missing) — that, not the code, is why the button is hidden. Masked so the
+// full ID never lands in logs.
+if (typeof window !== "undefined") {
+  console.info("[GoogleSignIn] build-time client id:", {
+    present: Boolean(CLIENT_ID),
+    length: CLIENT_ID?.length ?? 0,
+    prefix: CLIENT_ID ? `${CLIENT_ID.slice(0, 8)}…` : null,
+  });
+}
+
 // Minimal shape of the Google Identity Services global we use.
 interface GoogleCredentialResponse {
   credential?: string;
