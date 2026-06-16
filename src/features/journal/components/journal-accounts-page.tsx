@@ -24,10 +24,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AppLoader } from "@/components/app-loader";
 import { formatCurrency } from "./journal-day-modal.utils";
 import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
+import { toast } from "sonner";
+
+const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export function JournalAccountsPage() {
   const queryClient = useQueryClient();
-  const { data: accounts = [], isLoading } = useJournalAccounts();
+  const { data: accounts = [], isLoading, refetch: refetchAccounts } = useJournalAccounts();
   const syncAccount = useSyncJournalAccount();
   const disconnectAccount = useDisconnectJournalAccount();
   const updateAccount = useUpdateJournalAccount();
@@ -39,8 +42,24 @@ export function JournalAccountsPage() {
   const handleSyncAccount = async (accountId: string) => {
     setActiveSyncingId(accountId);
     try {
-      await syncAccount.mutateAsync(accountId);
+      const result = await syncAccount.mutateAsync(accountId);
       await refreshJournalQueriesAfterManualSync(queryClient);
+      if ("status" in result && result.status === "queued") {
+        for (let attempt = 0; attempt < 15; attempt += 1) {
+          await sleep(3_000);
+          const refreshed = await refetchAccounts();
+          const account = (refreshed.data ?? []).find((item) => item.id === accountId);
+          if (!account) break;
+          if (account.connection_state === "verification_failed") {
+            toast.error("Account authorization failed", {
+              description:
+                account.sync_error_message ||
+                "Check the account number, broker server, and investor password.",
+            });
+            break;
+          }
+        }
+      }
     } catch (err) {
       console.error("Sync failed for account: " + accountId, err);
     } finally {
@@ -186,6 +205,11 @@ export function JournalAccountsPage() {
                     {accounts.map((account) => {
                       const isSyncing = activeSyncingId === account.id;
                       const accountLabel = account.display_name || "MT5 Trading Account";
+                      const isConnectionReady =
+                        account.sync_provider === "csv_import" ||
+                        account.connection_state === "ready";
+                      const needsCredentialAttention =
+                        account.connection_state === "verification_failed";
                       const balanceText =
                         account.latest_balance == null
                           ? "--"
@@ -200,7 +224,7 @@ export function JournalAccountsPage() {
                           {/* Name */}
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              {account.status === "synced" ? (
+                              {isConnectionReady ? (
                                 <CheckCircle2 className="h-4 w-4 text-kpi-metric-positive flex-shrink-0" />
                               ) : (
                                 <XCircle className="h-4 w-4 text-danger flex-shrink-0" />
@@ -253,6 +277,10 @@ export function JournalAccountsPage() {
                             {account.sync_provider === "csv_import" ? (
                               <span className="rounded bg-badge-warn-bg px-2 py-0.5 text-[10px] font-bold text-badge-warn-fg uppercase tracking-wider">
                                 CSV
+                              </span>
+                            ) : needsCredentialAttention ? (
+                              <span className="rounded bg-danger/15 px-2 py-0.5 text-[10px] font-bold text-danger uppercase tracking-wider">
+                                Invalid
                               </span>
                             ) : (
                               <span className="rounded bg-bg-tertiary px-2 py-0.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">
