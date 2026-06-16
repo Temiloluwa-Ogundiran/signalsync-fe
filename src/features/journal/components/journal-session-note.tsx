@@ -41,7 +41,7 @@ export function JournalSessionNote({
   const [mood, setMood] = useState<Mood | null>(initialMood);
 
   return (
-    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-hairline">
+    <section className="rounded-xl bg-card-bg p-4 ring-1 ring-hairline">
       <div className="mb-3 flex items-center gap-2">
         <HugeiconsIcon
           icon={PencilEdit01Icon}

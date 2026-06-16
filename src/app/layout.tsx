@@ -25,13 +25,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/*
-         * Blocking script: reads the Zustand-persisted theme from localStorage
-         * and applies the correct class before React hydrates, preventing any
-         * flash of wrong theme. Defaults to "light" when nothing is stored.
+         * Blocking script: applies the persisted theme before hydration (no
+         * flash). Public/auth routes (login, signup, landing, etc.) are ALWAYS
+         * light — dark mode only applies inside the dashboard. Defaults to light.
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'light';if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
+            __html: `(function(){try{var p=location.pathname;var PUB=['/','/login','/register','/verify-email','/forgot-password','/reset-password','/resend-verification'];var isPub=PUB.indexOf(p)>-1||/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'light';if(t==='dark'&&!isPub)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
           }}
         />
       </head>

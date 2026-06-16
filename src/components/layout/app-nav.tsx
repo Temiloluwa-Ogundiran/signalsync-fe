@@ -101,8 +101,9 @@ export function AppNav() {
   return (
     <div className="relative hidden h-screen w-[264px] shrink-0 flex-col bg-nav-rail-bg lg:flex">
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
-          No hard rule: the tonal step below + generous spacing do the work. */}
-      <div className="flex h-header shrink-0 items-center px-4">
+          Bottom hairline matches the header's border so the horizontal line runs
+          unbroken from the left edge across into the header. */}
+      <div className="flex h-header shrink-0 items-center border-b border-nav-hairline px-4">
         <Link href="/dashboard" aria-label="TradePartna home" className="flex">
           {/* Light vs dark logo — toggled by the `.dark` class on <html> so it
               swaps with no JS/hydration flash. Light logo has dark text. */}

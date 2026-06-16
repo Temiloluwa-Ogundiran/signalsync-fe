@@ -67,7 +67,7 @@ export function JournalKpiTradeWin({
               startAngle={180}
               endAngle={0}
               stroke="none"
-              cornerRadius={6}
+              cornerRadius={0}
               isAnimationActive={false}
             >
               {gaugeData.map((entry) => (
@@ -80,9 +80,11 @@ export function JournalKpiTradeWin({
             <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-success-light px-1.5 text-[11px] font-semibold tabular-nums text-success">
               {outcomeCounts.wins}
             </span>
-            <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-chip-grey px-1.5 text-[11px] font-semibold tabular-nums text-kpi-label">
-              {outcomeCounts.breakeven}
-            </span>
+            {outcomeCounts.breakeven > 0 ? (
+              <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-chip-grey px-1.5 text-[11px] font-semibold tabular-nums text-kpi-label">
+                {outcomeCounts.breakeven}
+              </span>
+            ) : null}
             <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-danger-light px-1.5 text-[11px] font-semibold tabular-nums text-danger">
               {outcomeCounts.losses}
             </span>

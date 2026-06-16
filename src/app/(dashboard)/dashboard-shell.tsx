@@ -21,7 +21,7 @@ export default function DashboardShell({
         {/* Desktop: two-tier icon rail + contextual sidebar (registry-driven). */}
         <AppNav />
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-bg-canvas dark:bg-bg-primary">
           <Suspense
             fallback={
               <div

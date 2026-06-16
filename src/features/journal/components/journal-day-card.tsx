@@ -4,23 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  AiMagicIcon,
   PencilEdit01Icon,
   Tick02Icon,
   Loading03Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import type { CurveIntradayDay, JournalMessage, JournalTrade } from "../types";
-import {
-  disciplineForDate,
-  disciplineTone,
-  DISCIPLINE_MAX,
-} from "../lib/journal-discipline";
 import { annotateTrade } from "../lib/journal-trade-tags";
 import { useExpandedDay } from "../hooks/use-expanded-day";
 import { JournalCoachsRead } from "./journal-coachs-read";
 import { JournalDayStatStrip, type DayStat } from "./journal-day-stat-strip";
-import { JournalTradeLine, type TradeLineData } from "./journal-trade-line";
+import { JournalTradesTable, type TradeLineData } from "./journal-trades-table";
 import { JournalSessionNote } from "./journal-session-note";
 
 interface JournalDayCardProps {
@@ -59,11 +53,11 @@ function money(value: number, withSign = true): string {
   return value < 0 ? `-$${abs}` : `$${abs}`;
 }
 
-/** Returns ["FRIDAY", "June 28"] — weekday eyebrow + month/day. */
+/** Returns ["FRI", "June 28"] — weekday eyebrow + month/day. */
 function formatDateParts(iso: string): [string, string] {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, (m ?? 1) - 1, d ?? 1);
-  const weekday = date.toLocaleDateString("en-US", { weekday: "long" });
+  const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
   const monthDay = date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -132,9 +126,6 @@ export function JournalDayCard({
 
   const [weekday, monthDay] = formatDateParts(date);
 
-  const score = disciplineForDate(date);
-  const tone = disciplineTone(score);
-
   const pnlColor =
     net < 0
       ? "text-danger"
@@ -162,11 +153,6 @@ export function JournalDayCard({
 
   const statStrip = useMemo<DayStat[]>(() => {
     return [
-      { label: "Net P&L", value: money(net), tone: net >= 0 ? "win" : "loss" },
-      {
-        label: "Win rate",
-        value: day ? `${day.win_rate.toFixed(0)}%` : "--",
-      },
       { label: "Winners / losers", value: `${wins} / ${losses}` },
       {
         label: "Profit factor",
@@ -178,7 +164,7 @@ export function JournalDayCard({
         value: day ? day.volume.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "--",
       },
     ];
-  }, [net, wins, losses, day]);
+  }, [wins, losses, day]);
 
   // A focus request (Write / calendar / deep-link) expands this card. Deferred
   // to a microtask so it reads as an external-event sync, not a synchronous
@@ -245,28 +231,29 @@ export function JournalDayCard({
           </span>
         </div>
 
-        {/* Net P&L — fixed width */}
-        <span
-          className={cn(
-            "w-28 shrink-0 text-base font-bold tabular-nums",
-            hasTrades ? pnlColor : "text-text-tertiary",
-          )}
-        >
-          {hasTrades ? money(net) : "—"}
+        {/* Net P&L — label + value, fixed width */}
+        <span className="flex w-44 shrink-0 items-baseline gap-1.5">
+          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+            Net P&amp;L
+          </span>
+          <span
+            className={cn(
+              "text-base font-bold tabular-nums",
+              hasTrades ? pnlColor : "text-text-tertiary",
+            )}
+          >
+            {hasTrades ? money(net) : "—"}
+          </span>
         </span>
 
-        {/* Discipline + W/L/trades — hidden on no-trade days */}
+        {/* W/L pills + trades — hidden on no-trade days */}
         {hasTrades ? (
-          <>
-            <div className="w-[4.5rem] shrink-0">
-              <DisciplineBadge score={score} tone={tone} />
-            </div>
-            <span className="hidden text-sm text-text-secondary sm:inline">
-              {wins}W · {losses}L
-              <span className="mx-1.5 text-text-tertiary/60">·</span>
-              {trades} {trades === 1 ? "trade" : "trades"}
-            </span>
-          </>
+          <span className="hidden items-center gap-1.5 text-sm text-text-secondary sm:inline-flex">
+            <CountPill tone="win" value={wins} suffix="W" />
+            <CountPill tone="loss" value={losses} suffix="L" />
+            <span className="mx-0.5 text-text-tertiary/60">·</span>
+            {trades} {trades === 1 ? "trade" : "trades"}
+          </span>
         ) : (
           <span className="text-sm text-text-secondary">No trades</span>
         )}
@@ -332,19 +319,7 @@ export function JournalDayCard({
                     {tradeLines.length}{" "}
                     {tradeLines.length === 1 ? "trade" : "trades"}
                   </p>
-                  {/* Timeline: each row draws its own dot + connector segments,
-                      so the line is always centered on the dot. */}
-                  <div className="space-y-2.5">
-                    {tradeLines.map((t, i) => (
-                      <JournalTradeLine
-                        key={t.id}
-                        trade={t}
-                        accountId={accountId}
-                        isFirst={i === 0}
-                        isLast={i === tradeLines.length - 1}
-                      />
-                    ))}
-                  </div>
+                  <JournalTradesTable trades={tradeLines} accountId={accountId} />
                 </div>
               ) : (
                 <p className="py-2 text-sm text-text-secondary">
@@ -375,25 +350,27 @@ export function JournalDayCard({
   );
 }
 
-function DisciplineBadge({
-  score,
+/** Coloured count pill — green for wins, red for losses. */
+function CountPill({
   tone,
+  value,
+  suffix,
 }: {
-  score: number;
-  tone: "high" | "mid" | "low";
+  tone: "win" | "loss";
+  value: number;
+  suffix: string;
 }) {
   return (
     <span
-      title="Discipline score"
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
-        tone === "high" && "bg-success-light/70 text-kpi-metric-positive",
-        tone === "mid" && "bg-badge-warn-bg text-badge-warn-fg",
-        tone === "low" && "bg-danger-light/70 text-danger",
+        "inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
+        tone === "win"
+          ? "bg-success-light/70 text-kpi-metric-positive"
+          : "bg-danger-light/70 text-danger",
       )}
     >
-      <HugeiconsIcon icon={AiMagicIcon} size={12} strokeWidth={2} />
-      {score}/{DISCIPLINE_MAX}
+      {value}
+      {suffix}
     </span>
   );
 }

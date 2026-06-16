@@ -32,7 +32,7 @@ export function JournalCoachsRead({
   const [open, setOpen] = useState(true);
 
   return (
-    <section className="rounded-xl bg-bg-primary p-4 ring-1 ring-hairline">
+    <section className="rounded-xl bg-card-bg p-4 ring-1 ring-hairline">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HugeiconsIcon

@@ -13,13 +13,13 @@ export interface ChartColors {
 }
 
 const FALLBACK: ChartColors = {
-  win: "#22c55e",
-  loss: "#ef4444",
-  ai: "#8b5cf6",
-  aiBright: "#a78bfa",
+  win: "#14b97c", // --green (chart stroke shade)
+  loss: "#e5484a", // --red
+  ai: "#6b5bf2",
+  aiBright: "#5847e8",
   grid: "rgba(127,127,127,0.12)",
-  axisTick: "#71717a",
-  text: "#0f172a",
+  axisTick: "#8b95a2",
+  text: "#14181d",
 };
 
 function read(): ChartColors {
@@ -28,8 +28,9 @@ function read(): ChartColors {
   const v = (name: string, fb: string) =>
     s.getPropertyValue(name).trim() || fb;
   return {
-    win: v("--success", FALLBACK.win),
-    loss: v("--danger", FALLBACK.loss),
+    // Charts use the brighter ramp shade (--green/--red), not the text shade.
+    win: v("--green", FALLBACK.win),
+    loss: v("--red", FALLBACK.loss),
     ai: v("--ai-accent", FALLBACK.ai),
     aiBright: v("--ai-accent-bright", FALLBACK.aiBright),
     grid: v("--hairline", FALLBACK.grid),

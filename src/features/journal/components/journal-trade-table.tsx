@@ -66,7 +66,7 @@ const numFmt = (v: number, digits = 2) =>
   });
 
 const signedCurrency = (v: number) =>
-  `${v < 0 ? "-" : "+"}$${numFmt(Math.abs(v))}`;
+  `${v < 0 ? "-" : ""}$${numFmt(Math.abs(v))}`;
 
 const signedPercent = (v: number) => `${v < 0 ? "" : "+"}${numFmt(v)}%`;
 

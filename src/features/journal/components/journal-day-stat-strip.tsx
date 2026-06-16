@@ -10,11 +10,15 @@ export interface DayStat {
 
 /**
  * Horizontal strip of day stats, divided into cells. Wraps to 2/3 columns on
- * narrow widths and lays out as a single 6-up row on large screens.
+ * narrow widths and lays out as a single row on large screens, spreading the
+ * cells evenly across the full width regardless of how many there are.
  */
 export function JournalDayStatStrip({ stats }: { stats: DayStat[] }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-xl bg-bg-primary ring-1 ring-hairline sm:grid-cols-3 lg:grid-cols-6">
+    <div
+      className="grid grid-cols-2 overflow-hidden rounded-xl bg-card-bg ring-1 ring-hairline sm:grid-cols-3 lg:grid-cols-[repeat(var(--stat-cols),minmax(0,1fr))]"
+      style={{ ["--stat-cols" as string]: stats.length }}
+    >
       {stats.map((stat, i) => (
         <div
           key={stat.label}

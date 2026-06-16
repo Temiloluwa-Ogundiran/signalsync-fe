@@ -6,42 +6,53 @@
 
 /* ===== Light Theme (default) ===== */
 :root {
-  /* Backgrounds */
-  --bg-primary: #f8fafc; /* slate-50 */
-  --bg-secondary: #ffffff; /* white */
-  --bg-tertiary: #f1f5f9; /* slate-100 */
-  --bg-hover: #e2e8f0; /* slate-200 */
+  /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
+  --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
+  --bg-canvas: #f7f8fa; /* tier 1 — content canvas (neutral grey) */
+  --bg-secondary: #ffffff; /* tier 2 — surface (cards, sidebar) */
+  --bg-tertiary: #f1f3f7; /* surface-2 — raised chip/inset (reads on white sidebar) */
+  --bg-hover: #e4e8ee; /* border-weight hover (one step deeper, same hue) */
   --bg-input: #ffffff;
 
   /* Borders */
-  --border-primary: #e2e8f0; /* slate-200 */
-  --border-secondary: #cbd5e1; /* slate-300 */
+  --border-primary: #e4e8ee; /* hairline */
+  --border-secondary: #d3d9e1;
 
   /* Text */
-  --text-primary: #0f172a; /* slate-900 */
-  --text-secondary: #475569; /* slate-600 */
-  --text-tertiary: #94a3b8; /* slate-400 */
-  --text-muted: #cbd5e1; /* slate-300 */
-  --footnote-online: #64748b;
+  --text-primary: #14181d; /* text-1 — primary */
+  --text-secondary: #586271; /* text-2 — secondary (>=4.5:1 on white) */
+  --text-tertiary: #8b95a2; /* text-3 — decorative only */
+  --text-muted: #b4bcc7;
+  --footnote-online: #586271;
 
-  /* Journal KPI (light — aligned with mint/coral system) */
+  /* Profit (ONE emerald family) / Loss (matched weight) — used everywhere */
+  --green-strong: #0ba66a; /* numbers + text */
+  --green: #14b97c; /* chart strokes, bars, gauge arc */
+  --green-soft: #e2f5ec; /* calendar win tint, soft fills */
+  --green-deep: #0a8a58; /* biggest wins / text on green-soft */
+  --red-strong: #dc3b3b; /* numbers + text */
+  --red: #e5484a; /* chart, gauge arc */
+  --red-soft: #fce7e7; /* calendar loss tint */
+  --red-deep: #be3030; /* biggest losses / text on red-soft */
+
+  /* Journal KPI (light) */
   --kpi-card-bg: var(--card-bg);
-  --kpi-label: #64748b; /* card label text (slate-500) */
-  --chip-grey: #f1f5f9; /* neutral chip fill (slate-100) */
-  --neutral-grey: #cbd5e1; /* inactive segment / gauge grey (slate-300) */
-  --kpi-metric-positive: #16a86d;
+  --kpi-label: #586271; /* card label text (text-2) */
+  --chip-grey: #f1f3f7; /* neutral chip fill (surface-2) */
+  --neutral-grey: #d3d9e1; /* inactive segment / gauge grey */
+  --kpi-metric-positive: #0ba66a;
   --kpi-metric-neutral: var(--text-primary);
   --kpi-badge-border: var(--border-primary);
-  --kpi-trend-bg: #d1fae5;
-  --kpi-trend-fg: #065f46;
-  --kpi-trend-loss-bg: #fee2e2;
-  --kpi-trend-loss-fg: #991b1b;
-  --kpi-legend-win-bg: #d1fae5;
-  --kpi-legend-win-fg: #065f46;
-  --kpi-legend-be-bg: #e0e7ff;
-  --kpi-legend-be-fg: #3730a3;
-  --kpi-legend-loss-bg: #fee2e2;
-  --kpi-legend-loss-fg: #b91c1c;
+  --kpi-trend-bg: #e2f5ec;
+  --kpi-trend-fg: #0a8a58;
+  --kpi-trend-loss-bg: #fce7e7;
+  --kpi-trend-loss-fg: #be3030;
+  --kpi-legend-win-bg: #e2f5ec;
+  --kpi-legend-win-fg: #0a8a58;
+  --kpi-legend-be-bg: #f1f3f7;
+  --kpi-legend-be-fg: #586271;
+  --kpi-legend-loss-bg: #fce7e7;
+  --kpi-legend-loss-fg: #be3030;
 
   /* Brand / Accent — monochrome (dark primary on light surfaces) */
   --accent: #0f172a; /* near-black primary fill */
@@ -49,11 +60,11 @@
   --accent-foreground: #f8fafc; /* light text on dark fill */
   --accent-light: rgba(15, 23, 42, 0.06);
 
-  /* Semantic — exact green/red (aligned with dark spec) */
-  --success: #22c55e;
-  --success-light: rgba(34, 197, 94, 0.1);
-  --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.1);
+  /* Semantic — single emerald/red family (see ramps above) */
+  --success: #0ba66a;
+  --success-light: #e2f5ec;
+  --danger: #dc3b3b;
+  --danger-light: #fce7e7;
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --info: #3b82f6;
@@ -62,7 +73,7 @@
   /* Specific surfaces */
   --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
-  --card-bg-hover: #f8fafc;
+  --card-bg-hover: #f6f7f9;
   --modal-bg: #ffffff;
   --modal-overlay: rgba(0, 0, 0, 0.3);
 
@@ -74,47 +85,47 @@
     rgba(59, 130, 246, 0.03)
   );
 
-  /* Calendar surfaces (light) — soft pastel fills, clean green/red text. */
-  --calendar-cell-neutral: #f8fafc; /* near-white no-trade cell */
-  --calendar-cell-win-bg: #e3f5ea; /* soft green */
-  --calendar-cell-loss-bg: #fbe4e4; /* soft red */
-  --calendar-selected-ring: #0f172a; /* slate-900 ring (matches selected day in ref) */
-  --calendar-selected-fill: #eef2f7;
-  --calendar-cell-date: #64748b; /* slate-500 date number */
-  --calendar-cell-subtle: #94a3b8; /* slate-400 "1 trade" meta */
-  --calendar-pnl-win-text: #15803d; /* green-700 */
-  --calendar-pnl-loss-text: #dc2626; /* red-600 */
+  /* Calendar surfaces (light) — neutral empty days; tints only for P&L. */
+  --calendar-cell-neutral: #edeff3; /* empty cell — a step darker than canvas so the grid reads */
+  --calendar-cell-win-bg: #e2f5ec; /* green-soft */
+  --calendar-cell-loss-bg: #fce7e7; /* red-soft */
+  --calendar-selected-ring: #14181d; /* text-1 ring for today */
+  --calendar-selected-fill: #edeff3;
+  --calendar-cell-date: #586271; /* text-2 date number */
+  --calendar-cell-subtle: #586271; /* text-2 "1 trade" meta */
+  --calendar-pnl-win-text: #0a8a58; /* green-deep on green-soft */
+  --calendar-pnl-loss-text: #be3030; /* red-deep on red-soft */
   --calendar-hatch-stripe: rgba(15, 23, 42, 0.05); /* out-of-month texture */
 
   /* Dashboard chrome (light) — sidebar/topbar surfaces + nav states.
      Rail < sidebar < content step in tone via subtle off-whites. */
-  --chrome-bar-bg: #ffffff;
+  --chrome-bar-bg: #ffffff; /* header bar — white edge-to-edge */
   --sidebar-chrome-bg: #ffffff;
-  --nav-rail-bg: #f1f5f9; /* tier 1 — icon rail (slate-100) */
-  --nav-sidebar-bg: #f8fafc; /* tier 2 — contextual sidebar (slate-50) */
-  --sidebar-nav-active-bg: #eef2f7;
-  --sidebar-nav-active-border: #e2e8f0;
-  --sidebar-nav-inactive-text: #475569;
-  --sidebar-nav-active-text: #0f172a;
-  --sidebar-divider: #e2e8f0;
-  --sidebar-bottom-border: #e2e8f0;
-  --nav-hairline: rgba(15, 23, 42, 0.06);
-  --nav-seam: rgba(15, 23, 42, 0.05);
-  --chrome-control-border: #e2e8f0;
-  --ask-sync-gradient: linear-gradient(262.75deg, #e2e8f0 1.94%, #f1f5f9 97.07%);
+  --nav-rail-bg: #ffffff; /* icon rail — white */
+  --nav-sidebar-bg: #ffffff; /* contextual sidebar — white */
+  --sidebar-nav-active-bg: #f1f3f7; /* grey pill (reads on white sidebar) */
+  --sidebar-nav-active-border: #e4e8ee;
+  --sidebar-nav-inactive-text: #586271;
+  --sidebar-nav-active-text: #14181d;
+  --sidebar-divider: #e4e8ee;
+  --sidebar-bottom-border: #e4e8ee;
+  --nav-hairline: rgba(20, 24, 29, 0.06);
+  --nav-seam: rgba(20, 24, 29, 0.05);
+  --chrome-control-border: #e4e8ee;
+  --ask-sync-gradient: linear-gradient(262.75deg, #e4e8ee 1.94%, #f7f8fa 97.07%);
 
   /* Theme-adaptive primitives (replace hardcoded white/black/hex in components) */
-  --surface-subtle: #f1f5f9; /* slate-100 — neutral chip / raised pill */
-  --surface-subtle-hover: #e8edf3;
+  --surface-subtle: #f1f3f7; /* surface-2 — raised chip/inset (reads on white) */
+  --surface-subtle-hover: #e6e9ef;
   --hairline: #e2e8f0; /* subtle border / divider / ring */
   --overlay: rgba(15, 23, 42, 0.35); /* modal / drawer backdrop */
   --star: #d97706; /* rating star (amber, darker for light bg) */
 
   /* AI accent (violet) — tuned per theme; darker in light for contrast */
-  --ai-accent: #7c3aed; /* violet-600 — text/icon on light */
-  --ai-accent-bright: #6d28d9; /* violet-700 — hover */
-  --ai-soft-bg: rgba(124, 58, 237, 0.1);
-  --ai-soft-border: rgba(124, 58, 237, 0.28);
+  --ai-accent: #6b5bf2; /* the only purple in the app */
+  --ai-accent-bright: #5847e8; /* hover */
+  --ai-soft-bg: #ece9fe;
+  --ai-soft-border: rgba(107, 91, 242, 0.28);
 
   /* Status badge pairs (chips: pending / demo / live / info) */
   --badge-warn-bg: rgba(217, 119, 6, 0.12);
@@ -177,6 +188,7 @@
   /* Premium-restrained spec (RECESSED model): canvas is a lighter charcoal,
      cards are DARKER and inset (wells, not tiles). Borders almost invisible. */
   --bg-primary: #141518; /* canvas — lighter charcoal */
+  --bg-canvas: #141518; /* dark keeps a single canvas tone (unchanged visuals) */
   --bg-secondary: #0a0a0a; /* card surface — DARKER than canvas (recessed) */
   --bg-tertiary: #26272b; /* hover / pill / raised controls (above canvas) */
   --bg-hover: #2d2e33;
@@ -204,6 +216,16 @@
   --success-light: rgba(34, 197, 94, 0.1);
   --danger: #ef4444;
   --danger-light: rgba(239, 68, 68, 0.1);
+  /* Profit/Loss ramps (dark) — keep dark's existing green/red so the registered
+     ramp tokens resolve here without changing dark's visual output. */
+  --green-strong: #22c55e;
+  --green: #22c55e;
+  --green-soft: rgba(34, 197, 94, 0.12);
+  --green-deep: #16a34a;
+  --red-strong: #ef4444;
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.12);
+  --red-deep: #dc2626;
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --info: #71717a;
@@ -348,6 +370,7 @@
 /* ===== Register tokens for Tailwind v4 ===== */
 @theme inline {
   --color-bg-primary: var(--bg-primary);
+  --color-bg-canvas: var(--bg-canvas);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
   --color-bg-hover: var(--bg-hover);
@@ -395,6 +418,15 @@
   --color-success-light: var(--success-light);
   --color-danger: var(--danger);
   --color-danger-light: var(--danger-light);
+  /* Profit/Loss ramps */
+  --color-green-strong: var(--green-strong);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-green-deep: var(--green-deep);
+  --color-red-strong: var(--red-strong);
+  --color-red: var(--red);
+  --color-red-soft: var(--red-soft);
+  --color-red-deep: var(--red-deep);
   --color-warning: var(--warning);
   --color-warning-light: var(--warning-light);
   --color-info: var(--info);
@@ -651,21 +683,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     0 0 28px rgba(139, 92, 246, 0.5),
     0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Light-mode shadow: the dark drop-shadow disappears on white, so use a softer
-   violet-tinted elevation instead. (`html:not(.dark)` = light theme.) */
-html:not(.dark) .ai-trigger {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 18px rgba(139, 92, 246, 0.28),
-    0 2px 8px rgba(124, 58, 237, 0.25) !important;
-}
-html:not(.dark) .ai-trigger:hover {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 26px rgba(139, 92, 246, 0.4),
-    0 2px 10px rgba(124, 58, 237, 0.3) !important;
 }
 
 /* Dimmed variant — a quieter AI accent for in-card CTAs (e.g. the day card's

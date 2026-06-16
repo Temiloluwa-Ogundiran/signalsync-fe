@@ -21,7 +21,6 @@ import {
   JournalPeriodSummary,
   type PeriodSummary,
 } from "./journal-period-summary";
-import { disciplineForDate } from "../lib/journal-discipline";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -168,16 +167,11 @@ export function JournalFeedPage() {
     const grossLoss = Math.abs(
       monthDays.filter((d) => d.netPnl < 0).reduce((s, d) => s + d.netPnl, 0),
     );
-    const avgDiscipline = monthDays.length
-      ? monthDays.reduce((s, d) => s + disciplineForDate(d.date), 0) /
-        monthDays.length
-      : 0;
     return {
       title: `${monthAnchor.toLocaleDateString("en-US", { month: "long" }).toUpperCase()} SO FAR`,
       netPnl,
       winRate: decided ? (wins / decided) * 100 : 0,
       profitFactor: grossLoss ? grossWin / grossLoss : null,
-      avgDiscipline,
       daysJournaled: monthDays.filter((d) => d.hasNote).length,
       tradingDays: monthDays.length,
     };

@@ -8,7 +8,6 @@ export interface PeriodSummary {
   netPnl: number;
   winRate: number; // 0–100
   profitFactor: number | null;
-  avgDiscipline: number; // 0–10
   daysJournaled: number;
   tradingDays: number;
 }
@@ -48,11 +47,6 @@ export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
             {summary.profitFactor === null
               ? "--"
               : summary.profitFactor.toFixed(2)}
-          </span>
-        </Row>
-        <Row label="Avg discipline">
-          <span className="tabular-nums text-star">
-            {summary.avgDiscipline.toFixed(1)}
           </span>
         </Row>
         <Row label="Days journaled" last>

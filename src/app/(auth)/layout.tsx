@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { TrendingUp, NotebookPen, Sparkles } from "lucide-react";
+import { ForceLight } from "@/features/theme/force-light";
 
 const FEATURES = [
   {
@@ -26,6 +27,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-bg-primary">
+      <ForceLight />
       {/* Left: form column */}
       <div className="flex w-full flex-col items-center justify-center px-4 py-10 sm:px-6 lg:w-1/2 lg:px-8">
         {/* Mobile-only logo above the form */}

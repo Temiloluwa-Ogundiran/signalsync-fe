@@ -42,11 +42,11 @@ export function JournalKpiAvgWinLoss({
           </span>
           <div className="flex h-2.5 w-full items-stretch gap-0.5">
             <span
-              className="rounded-[3px] bg-success"
+              className="rounded-l-[4px] bg-success"
               style={{ width: `${greenPct}%` }}
             />
             <span
-              className="rounded-[3px] bg-danger"
+              className="rounded-r-[4px] bg-danger"
               style={{ width: `${redPct}%` }}
             />
           </div>

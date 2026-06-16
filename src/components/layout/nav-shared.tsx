@@ -81,7 +81,8 @@ function NavItemRow({
       className={cn(
         baseClass,
         active
-          ? "bg-ai-soft-bg text-text-primary"
+          ? // Neutral grey pill (no purple — purple is reserved for AI).
+            "bg-surface-subtle text-text-primary"
           : // Hover stays lighter than the switcher's resting fill so a hovered
             // item never reads as the switcher.
             "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
