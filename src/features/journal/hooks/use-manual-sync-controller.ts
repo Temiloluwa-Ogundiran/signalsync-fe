@@ -23,6 +23,9 @@ function formatSyncTimestamp(dateString: string | null | undefined) {
 
 const MANUAL_SYNC_BURST_WINDOW_MS = 60_000;
 const MANUAL_SYNC_BURST_MAX_ATTEMPTS = 5;
+const ACTIVE_USER_AUTO_SYNC_INTERVAL_MS = 5 * 60_000;
+const ACTIVE_USER_AUTO_SYNC_CHECK_MS = 30_000;
+const ACTIVE_USER_WINDOW_MS = 5 * 60_000;
 
 function pruneRecentSyncAttempts(attempts: number[], nowMs: number) {
   return attempts.filter(
@@ -86,6 +89,8 @@ export function useManualSyncController({
   >(null);
   const wasConnectionPendingRef = useRef(false);
   const pollingWindowStartedAtRef = useRef<number | null>(null);
+  const lastUserActivityAtRef = useRef(0);
+  const lastAutoSyncAtRef = useRef(0);
 
   // The full-width progress banner is reserved for the initial account
   // bootstrap/verification. Manual resync surfaces only the spinner next to the
@@ -346,6 +351,81 @@ export function useManualSyncController({
       }
     }
   };
+  const handleRefreshAccountsRef = useRef(handleRefreshAccounts);
+
+  useEffect(() => {
+    handleRefreshAccountsRef.current = handleRefreshAccounts;
+  });
+
+  useEffect(() => {
+    const nowMs = Date.now();
+    lastUserActivityAtRef.current = nowMs;
+    lastAutoSyncAtRef.current = nowMs;
+  }, [activeAccountId]);
+
+  useEffect(() => {
+    const markActive = () => {
+      lastUserActivityAtRef.current = Date.now();
+    };
+    const activityEvents = [
+      "pointerdown",
+      "keydown",
+      "mousemove",
+      "touchstart",
+      "focus",
+    ] as const;
+
+    for (const eventName of activityEvents) {
+      window.addEventListener(eventName, markActive, { passive: true });
+    }
+    document.addEventListener("visibilitychange", markActive);
+
+    return () => {
+      for (const eventName of activityEvents) {
+        window.removeEventListener(eventName, markActive);
+      }
+      document.removeEventListener("visibilitychange", markActive);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!activeAccountId || activeAccount?.connection_state !== "ready") {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      const nowMs = Date.now();
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      if (nowMs - lastUserActivityAtRef.current > ACTIVE_USER_WINDOW_MS) {
+        return;
+      }
+      if (
+        nowMs - lastAutoSyncAtRef.current <
+        ACTIVE_USER_AUTO_SYNC_INTERVAL_MS
+      ) {
+        return;
+      }
+      if (syncAccountMutation.isPending || syncUiState || activeAccountConnectionBusy) {
+        return;
+      }
+
+      lastAutoSyncAtRef.current = nowMs;
+      void handleRefreshAccountsRef.current({
+        silent: true,
+        accountId: activeAccountId,
+      });
+    }, ACTIVE_USER_AUTO_SYNC_CHECK_MS);
+
+    return () => window.clearInterval(timer);
+  }, [
+    activeAccount?.connection_state,
+    activeAccountConnectionBusy,
+    activeAccountId,
+    syncAccountMutation.isPending,
+    syncUiState,
+  ]);
 
   useEffect(() => {
     if (isConnectionPending) {
