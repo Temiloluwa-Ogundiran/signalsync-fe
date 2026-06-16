@@ -50,14 +50,14 @@ function ConnectAccountModalBody() {
       return;
     }
 
-    if (account.connection_state === "pending_verification") {
+    if (account.connection_state === "bootstrapping") {
+      toast.info("Account verified", {
+        description: "Trade history is importing in the background.",
+      });
+    } else if (account.connection_state === "pending_verification") {
       toast.info("Account added", {
         description:
           "Verification has started. We will update the account status in the background.",
-      });
-    } else if (account.connection_state === "bootstrapping") {
-      toast.info("Account verified", {
-        description: "Trade history is importing in the background.",
       });
     } else if (account.connection_state === "verification_failed") {
       toast.error("Account authorization failed", {

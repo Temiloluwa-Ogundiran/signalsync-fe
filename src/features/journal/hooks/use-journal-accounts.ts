@@ -3,6 +3,11 @@ import { useSession } from "next-auth/react";
 import { journalAccountApi } from "../api/journal-account.api";
 import type { JournalAccount, JournalAccountConnectPayload } from "../types";
 
+const IMPORTING_CONNECTION_STATES = new Set([
+  "pending_verification",
+  "bootstrapping",
+]);
+
 export const JOURNAL_ACCOUNT_KEYS = {
   all: ["journal-accounts"] as const,
   list: () => ["journal-accounts", "list"] as const,
@@ -19,6 +24,13 @@ export function useJournalAccounts() {
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchInterval: (query) => {
+      const accounts = query.state.data as JournalAccount[] | undefined;
+      const hasImportingAccount = accounts?.some((account) =>
+        IMPORTING_CONNECTION_STATES.has(account.connection_state ?? ""),
+      );
+      return hasImportingAccount ? 3000 : false;
+    },
     select: (accounts: JournalAccount[]) =>
       accounts.filter((account) => !account.is_deleted && account.status !== "disconnected"),
   });
