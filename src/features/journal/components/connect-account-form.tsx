@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader2, PlugZap } from "lucide-react";
 import * as z from "zod";
-import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -73,10 +71,6 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
 
     try {
       const account = await connectAccount.mutateAsync(payload);
-      toast.success("Account added", {
-        description:
-          "Credentials verified and history sync completed successfully.",
-      });
       onSuccess?.(account);
     } catch (error) {
       form.setValue("investor_password", "");

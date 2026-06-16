@@ -50,7 +50,22 @@ function ConnectAccountModalBody() {
       return;
     }
 
-    if (account.connection_state === "bootstrap_failed") {
+    if (account.connection_state === "pending_verification") {
+      toast.info("Account added", {
+        description:
+          "Verification has started. We will update the account status in the background.",
+      });
+    } else if (account.connection_state === "bootstrapping") {
+      toast.info("Account verified", {
+        description: "Trade history is importing in the background.",
+      });
+    } else if (account.connection_state === "verification_failed") {
+      toast.error("Account authorization failed", {
+        description:
+          account.sync_error_message ||
+          "Check the account number, broker server, and investor password.",
+      });
+    } else if (account.connection_state === "bootstrap_failed") {
       toast.warning("Account connected with warning", {
         description:
           "Account was verified, but history sync failed. You can retry syncing manually.",
