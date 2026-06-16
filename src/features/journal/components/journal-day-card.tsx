@@ -53,6 +53,15 @@ function money(value: number, withSign = true): string {
   return value < 0 ? `-$${abs}` : `$${abs}`;
 }
 
+// Profit factor is unbounded; a single day with few/small losses produces huge
+// values (140, etc.). Cap the shown number at 4.0 ("4.0+"); null = no losses (∞).
+const PF_SCALE_MAX = 4;
+function formatProfitFactor(pf: number | null, hasDay: boolean): string {
+  if (!hasDay) return "--";
+  if (pf === null) return "∞";
+  return pf > PF_SCALE_MAX ? `${PF_SCALE_MAX.toFixed(1)}+` : pf.toFixed(2);
+}
+
 /** Returns ["FRI", "June 28"] — weekday eyebrow + month/day. */
 function formatDateParts(iso: string): [string, string] {
   const [y, m, d] = iso.split("-").map(Number);
@@ -154,7 +163,7 @@ export function JournalDayCard({
       { label: "Winners / losers", value: `${wins} / ${losses}` },
       {
         label: "Profit factor",
-        value: day ? (day.profit_factor === null ? "--" : day.profit_factor.toFixed(2)) : "--",
+        value: formatProfitFactor(day?.profit_factor ?? null, day != null),
       },
       { label: "Commissions", value: day ? money(day.commissions, false) : "--" },
       {

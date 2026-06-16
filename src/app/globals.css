@@ -127,6 +127,14 @@
   --ai-soft-bg: #ece9fe;
   --ai-soft-border: rgba(107, 91, 242, 0.28);
 
+  /* Auth screen — neutral page field behind the form column (light only). */
+  --auth-bg: #f5f7fa;
+  /* Brand/AI field for the auth panel: a refined deep-indigo in the --ai
+     family (not a muddy blue-purple). Used as a single flat gradient. */
+  --auth-brand-from: #5a4bd4;
+  --auth-brand-via: #5345c8;
+  --auth-brand-to: #463aa6;
+
   /* Status badge pairs (chips: pending / demo / live / info) */
   --badge-warn-bg: rgba(217, 119, 6, 0.12);
   --badge-warn-fg: #b45309;
@@ -402,6 +410,10 @@
   --color-ai-border: rgba(139, 92, 246, 0.3); /* accent border (fixed) */
   --color-ai-soft-bg: var(--ai-soft-bg);
   --color-ai-soft-border: var(--ai-soft-border);
+  --color-auth-bg: var(--auth-bg);
+  --color-auth-brand-from: var(--auth-brand-from);
+  --color-auth-brand-via: var(--auth-brand-via);
+  --color-auth-brand-to: var(--auth-brand-to);
 
   /* Theme-adaptive primitives */
   --color-surface-subtle: var(--surface-subtle);

@@ -57,6 +57,29 @@ export async function registerUser(
   return res.data;
 }
 
+export interface GoogleAuthResponse {
+  access_token: string;
+  access_token_expiry_minutes: number;
+  user: {
+    id: string;
+    email: string;
+    display_name: string | null;
+    avatar_url?: string | null;
+    is_email_verified: boolean;
+  };
+}
+
+/** Exchange a Google ID token for a backend session (sign in or sign up). */
+export async function googleAuth(
+  idToken: string
+): Promise<GoogleAuthResponse> {
+  const res: AxiosResponse<GoogleAuthResponse> = await apiClient.post(
+    "/auth/google",
+    { id_token: idToken }
+  );
+  return res.data;
+}
+
 export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
   const res: AxiosResponse<VerifyEmailResponse> = await apiClient.get(
     `/auth/verify-email?token=${token}`

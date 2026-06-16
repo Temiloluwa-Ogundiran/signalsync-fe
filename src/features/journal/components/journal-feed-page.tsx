@@ -11,8 +11,10 @@ import { useCurve } from "../hooks/use-curve";
 import type { CurveIntradayDay } from "../types";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import { useAiDockStore } from "@/features/ai/store/ai-dock-store";
+import { BookOpen01Icon } from "@hugeicons/core-free-icons";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
+import { JournalEmptyState } from "./journal-empty-state";
 import {
   JournalMonthCalendar,
   type MonthCalendarDay,
@@ -52,6 +54,7 @@ export function JournalFeedPage() {
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openAi = useAiDockStore((s) => s.open);
 
   const queryFrom = parseDateParam(searchParams.get("fromDate"));
@@ -226,9 +229,13 @@ export function JournalFeedPage() {
 
   if (!activeAccountId) {
     return (
-      <div className="p-6 text-sm text-text-secondary">
-        Connect an account to view your journal.
-      </div>
+      <JournalEmptyState
+        icon={BookOpen01Icon}
+        title="No account connected yet"
+        description="Connect a trading account to start journaling your days. Your trades sync automatically so Partna AI can read your behavior and coach you."
+        actionLabel="Connect an account"
+        onAction={openConnectModal}
+      />
     );
   }
 

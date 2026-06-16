@@ -13,7 +13,9 @@ import { useUpdateTradeRating } from "@/features/journal/hooks/use-journal-tags"
 import type { JournalTrade } from "@/features/journal/types";
 import { formatTradeTimestamp } from "./journal-day-modal.utils";
 import { JournalTradeTable } from "./journal-trade-table";
+import { ChartLineData01Icon } from "@hugeicons/core-free-icons";
 import { JournalPageHeader } from "./journal-page-header";
+import { JournalEmptyState } from "./journal-empty-state";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 
@@ -106,6 +108,7 @@ export function JournalTradeHistoryPage() {
   // Shared page-header filter family (account + date range), reused from the
   // dashboard. Sync metadata is hidden here (Trade View has no sync line).
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
+  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
@@ -163,9 +166,13 @@ export function JournalTradeHistoryPage() {
 
   if (!activeAccountId) {
     return (
-      <div className="p-6 text-sm text-text-secondary">
-        Connect an account to view trade history.
-      </div>
+      <JournalEmptyState
+        icon={ChartLineData01Icon}
+        title="No account connected yet"
+        description="Connect a trading account to see your trade history here. Every entry, exit, and lot syncs automatically once an account is linked."
+        actionLabel="Connect an account"
+        onAction={openConnectModal}
+      />
     );
   }
 

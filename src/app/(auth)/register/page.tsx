@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/features/auth/components/register-form";
+import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button";
 import { hasUsableSession } from "@/lib/auth/auth-session";
 
 export const metadata: Metadata = {
@@ -29,6 +30,14 @@ export default async function RegisterPage() {
       </div>
 
       <RegisterForm />
+
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border-primary" />
+        <span className="text-xs font-medium text-text-tertiary">OR</span>
+        <span className="h-px flex-1 bg-border-primary" />
+      </div>
+
+      <GoogleSignInButton />
 
       <p className="mt-8 text-center text-sm text-text-secondary">
         Already have an account?{" "}

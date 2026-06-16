@@ -91,7 +91,7 @@ export interface JournalAnalyticsCalendarResponse {
 export interface JournalAnalyticsSummaryResponse {
   total_trades: number;
   win_rate: number;
-  profit_factor: number;
+  profit_factor: number | null;
   avg_win: number;
   avg_loss: number;
   avg_trade_duration_seconds: number;

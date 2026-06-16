@@ -135,6 +135,7 @@ export function LoginForm({
                     type="email"
                     {...field}
                     disabled={isPending}
+                    className="focus-visible:ring-ai-accent"
                   />
                 </FormControl>
                 <FormMessage />
@@ -154,6 +155,7 @@ export function LoginForm({
                       type={showPassword ? "text" : "password"}
                       {...field}
                       disabled={isPending}
+                      className="focus-visible:ring-ai-accent"
                     />
                     <Button
                       type="button"
@@ -182,7 +184,7 @@ export function LoginForm({
                 <div className="flex justify-end">
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                    className="text-xs font-medium text-ai-accent underline-offset-4 transition-colors hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -208,7 +210,7 @@ export function LoginForm({
           </div>
         ) : null}
         <Button
-          className="w-full cursor-pointer"
+          className="w-full cursor-pointer bg-ai-accent text-white hover:bg-ai-accent-bright focus-visible:ring-ai-accent/40"
           type="submit"
           disabled={isPending}
         >

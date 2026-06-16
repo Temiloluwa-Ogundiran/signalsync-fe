@@ -54,7 +54,10 @@ function JournalKpiStripImpl({
         avgWin={summary?.avg_win ?? 0}
         avgLoss={summary?.avg_loss ?? 0}
       />
-      <JournalKpiProfitFactor profitFactor={summary?.profit_factor ?? 0} />
+      <JournalKpiProfitFactor
+        profitFactor={summary ? summary.profit_factor : 0}
+        tradeCount={summary?.total_trades ?? 0}
+      />
     </section>
   );
 }

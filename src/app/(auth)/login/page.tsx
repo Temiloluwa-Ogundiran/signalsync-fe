@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button";
 import { hasUsableSession } from "@/lib/auth/auth-session";
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default async function LoginPage({
           Welcome back
         </h1>
         <p className="text-sm text-text-secondary">
-          Enter your email and password to access your account.
+          Sign in to pick up where you left off.
         </p>
       </div>
 
@@ -37,6 +38,14 @@ export default async function LoginPage({
         initialEmail={params.email ?? ""}
         justRegistered={params.registered === "1"}
       />
+
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border-primary" />
+        <span className="text-xs font-medium text-text-tertiary">OR</span>
+        <span className="h-px flex-1 bg-border-primary" />
+      </div>
+
+      <GoogleSignInButton />
 
       <p className="mt-8 text-center text-sm text-text-secondary">
         Don&apos;t have an account?{" "}
