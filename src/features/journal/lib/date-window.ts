@@ -18,10 +18,14 @@ export function parseDateParam(value: string | null) {
   return parsed;
 }
 
-/** Inclusive rolling window: `days` calendar days ending today (local). */
-export function getLastDaysInclusiveRange(days: number) {
-  const to = new Date();
-  const from = new Date();
+/**
+ * Inclusive rolling window: `days` calendar days ending at `anchor` (default
+ * today, local). Pass an anchor to end the window at a specific date — e.g. an
+ * account's most recent activity instead of "now".
+ */
+export function getLastDaysInclusiveRange(days: number, anchor?: Date) {
+  const to = anchor ? new Date(anchor) : new Date();
+  const from = new Date(to);
   from.setDate(from.getDate() - (days - 1));
   return {
     fromDate: formatDateParam(from),

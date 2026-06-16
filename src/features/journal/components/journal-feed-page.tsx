@@ -39,9 +39,11 @@ function parseDateParam(value: string | null) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function getLastDaysInclusiveRange(days: number) {
-  const to = new Date();
-  const from = new Date();
+function getLastDaysInclusiveRange(days: number, anchor?: Date) {
+  // Window of `days` ending at `anchor` (default today). Anchoring lets the
+  // default view follow an account's most recent activity, not just "now".
+  const to = anchor ? new Date(anchor) : new Date();
+  const from = new Date(to);
   from.setDate(from.getDate() - (days - 1));
   return { fromDate: formatDateParam(from), toDate: formatDateParam(to) };
 }
@@ -60,7 +62,13 @@ export function JournalFeedPage() {
   const queryFrom = parseDateParam(searchParams.get("fromDate"));
   const queryTo = parseDateParam(searchParams.get("toDate"));
   const hasCustomRange = !!queryFrom && !!queryTo;
-  const rolling = getLastDaysInclusiveRange(30);
+  // Default view: last 30 days. Anchored to the account's most recent activity
+  // (last_synced_at) rather than "today", so accounts whose latest trades aren't
+  // in the current month (e.g. seeded demo data) still open on a populated range.
+  const anchorTo = activeAccount?.last_synced_at
+    ? new Date(activeAccount.last_synced_at)
+    : undefined;
+  const rolling = getLastDaysInclusiveRange(30, anchorTo);
   const fromDate = hasCustomRange ? formatDateParam(queryFrom) : rolling.fromDate;
   const toDate = hasCustomRange ? formatDateParam(queryTo) : rolling.toDate;
 
@@ -132,7 +140,8 @@ export function JournalFeedPage() {
   const days = allDays;
 
   // ----- Right rail: month calendar + period summary -----
-  // Calendar month state, defaulting to the latest day in range (or now).
+  // Calendar month state, defaulting to the latest day in the fetched window
+  // (the window is anchored to the account's most recent activity).
   const [monthAnchor, setMonthAnchor] = useState<Date>(() => {
     const latest = parseDateParam(toDate);
     return latest ?? new Date();
