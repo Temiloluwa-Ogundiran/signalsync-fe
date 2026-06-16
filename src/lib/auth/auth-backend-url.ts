@@ -14,11 +14,13 @@ export function resolveAuthBackendUrl(): string {
     return "http://localhost:8000";
   }
 
+  const normalizedBackendUrl = backendUrl.replace(/\/+$/, "");
+
   if (
     process.env.NODE_ENV === "production" &&
     process.env.ALLOW_LOCAL_BACKEND_URL !== "true"
   ) {
-    const { hostname } = new URL(backendUrl);
+    const { hostname } = new URL(normalizedBackendUrl);
     if (["localhost", "127.0.0.1", "0.0.0.0"].includes(hostname)) {
       throw new Error(
         "Server-side backend URL must not point at localhost in production. Set AUTH_BACKEND_URL or BACKEND_URL to the deployed backend origin.",
@@ -26,5 +28,5 @@ export function resolveAuthBackendUrl(): string {
     }
   }
 
-  return backendUrl;
+  return normalizedBackendUrl;
 }

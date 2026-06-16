@@ -62,3 +62,15 @@ test("production auth backend resolution rejects localhost backend URLs by defau
     },
   );
 });
+
+test("auth backend resolution strips trailing slashes", () => {
+  withEnv(
+    {
+      NODE_ENV: "production",
+      AUTH_BACKEND_URL: "https://api.example.com///",
+    },
+    () => {
+      assert.equal(resolveAuthBackendUrl(), "https://api.example.com");
+    },
+  );
+});
