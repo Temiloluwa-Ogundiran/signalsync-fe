@@ -18,11 +18,12 @@ const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 // missing) — that, not the code, is why the button is hidden. Masked so the
 // full ID never lands in logs.
 if (typeof window !== "undefined") {
-  console.info("[GoogleSignIn] build-time client id:", {
-    present: Boolean(CLIENT_ID),
-    length: CLIENT_ID?.length ?? 0,
-    prefix: CLIENT_ID ? `${CLIENT_ID.slice(0, 8)}…` : null,
-  });
+  // Flat string so the value is unmissable in the console (no object to expand).
+  console.info(
+    `[GoogleSignIn] build-time client id -> present=${Boolean(CLIENT_ID)} length=${
+      CLIENT_ID?.length ?? 0
+    } prefix=${CLIENT_ID ? CLIENT_ID.slice(0, 8) : "NONE"}`,
+  );
 }
 
 // Minimal shape of the Google Identity Services global we use.
@@ -107,8 +108,16 @@ export function GoogleSignInButton() {
     });
   }, [scriptReady, handleCredential]);
 
-  // Without a client ID configured there's nothing to render.
-  if (!CLIENT_ID) return null;
+  // Without a client ID configured there's normally nothing to render. While we
+  // debug the deployed build, surface a visible marker instead of silent null so
+  // it's obvious on the page whether the build inlined the env var.
+  if (!CLIENT_ID) {
+    return (
+      <p className="text-center text-xs text-text-tertiary">
+        Google sign-in unavailable (client ID missing at build time)
+      </p>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-2">
