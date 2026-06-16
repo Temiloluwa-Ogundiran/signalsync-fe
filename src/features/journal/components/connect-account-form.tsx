@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader2, PlugZap } from "lucide-react";
 import * as z from "zod";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -78,6 +79,10 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
         error instanceof Error
           ? error.message
           : "Unable to connect account. Please verify your details.";
+
+      toast.error("Account authorization failed", {
+        description: message,
+      });
 
       form.setError("root", {
         message,
