@@ -7,6 +7,7 @@ import { ConnectAccountModal } from "@/features/journal/components/connect-accou
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
+import { useActiveJournalAutoSync } from "@/features/journal/hooks/use-active-journal-auto-sync";
 
 export default function DashboardShell({
   children,
@@ -14,6 +15,7 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useActiveJournalAutoSync();
 
   return (
     <AiDockProvider>

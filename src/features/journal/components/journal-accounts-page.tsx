@@ -131,7 +131,7 @@ export function JournalAccountsPage() {
       return account.bootstrap_error_message || "Background sync failed";
     }
     if (account.next_sync_not_before) {
-      return formatNextRetry(account.next_sync_not_before) || "Sync cooling down";
+      return formatNextRetry(account.next_sync_not_before) || "Next sync soon";
     }
     return null;
   };

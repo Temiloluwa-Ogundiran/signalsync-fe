@@ -69,7 +69,18 @@ export function Providers({ children }: { children: ReactNode }) {
         <NuqsAdapter>
           <SessionQuerySync />
           {children}
-          <Toaster richColors position="bottom-right" />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              classNames: {
+                toast:
+                  "border border-border-primary bg-card-bg text-text-primary shadow-xl",
+                title: "text-sm font-semibold text-text-primary",
+                description: "text-sm text-text-secondary",
+                icon: "text-ai-accent",
+              },
+            }}
+          />
         </NuqsAdapter>
       </QueryClientProvider>
     </SessionProvider>

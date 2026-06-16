@@ -23,9 +23,6 @@ function formatSyncTimestamp(dateString: string | null | undefined) {
 
 const MANUAL_SYNC_BURST_WINDOW_MS = 60_000;
 const MANUAL_SYNC_BURST_MAX_ATTEMPTS = 5;
-const ACTIVE_USER_AUTO_SYNC_INTERVAL_MS = 5 * 60_000;
-const ACTIVE_USER_AUTO_SYNC_CHECK_MS = 30_000;
-const ACTIVE_USER_WINDOW_MS = 5 * 60_000;
 
 function pruneRecentSyncAttempts(attempts: number[], nowMs: number) {
   return attempts.filter(
@@ -89,8 +86,6 @@ export function useManualSyncController({
   >(null);
   const wasConnectionPendingRef = useRef(false);
   const pollingWindowStartedAtRef = useRef<number | null>(null);
-  const lastUserActivityAtRef = useRef(0);
-  const lastAutoSyncAtRef = useRef(0);
 
   // The full-width progress banner is reserved for the initial account
   // bootstrap/verification. Manual resync surfaces only the spinner next to the
@@ -128,8 +123,8 @@ export function useManualSyncController({
 
     if (syncAccountMutation.isPending || syncUiState) {
       if (!silent) {
-        toast.info("Sync already in progress", {
-          description: "Please wait for the current sync to finish.",
+        toast.info("Processing", {
+          description: "Sync is already running. We'll refresh your stats shortly.",
         });
       }
       return;
@@ -191,7 +186,7 @@ export function useManualSyncController({
       targetAccountCooldownUntilMs > nowMs
     ) {
       if (!silent) {
-        toast.info("Manual sync cooldown active", {
+        toast.info("Sync is already up to date", {
           description: `Retry in ${formatRetryCountdown(
             (targetAccountCooldownUntilMs - nowMs) / 1000,
           )}.`,
@@ -256,7 +251,7 @@ export function useManualSyncController({
           toast.info("Sync already in progress", {
             description:
               result.message ||
-              "This account is already syncing. We’ll refresh the dashboard when it finishes.",
+              "This account is already syncing. We'll refresh the dashboard when it finishes.",
           });
         }
         return;
@@ -264,8 +259,8 @@ export function useManualSyncController({
 
       if (result.status === "queued") {
         if (!silent) {
-          toast.info("Sync queued", {
-            description: "Sync task accepted and queued. Please wait...",
+          toast.info("Processing", {
+            description: "Sync started. We'll refresh your stats when it's ready.",
           });
         }
         return;
@@ -291,7 +286,7 @@ export function useManualSyncController({
         if (!silent) {
           const title =
             result.status === "cooldown"
-              ? "Manual sync cooldown active"
+              ? "Sync is already up to date"
               : result.status === "rate_limited"
                 ? "Manual sync limit reached"
                 : "Sync deferred";
@@ -346,81 +341,6 @@ export function useManualSyncController({
       }
     }
   };
-  const handleRefreshAccountsRef = useRef(handleRefreshAccounts);
-
-  useEffect(() => {
-    handleRefreshAccountsRef.current = handleRefreshAccounts;
-  });
-
-  useEffect(() => {
-    const nowMs = Date.now();
-    lastUserActivityAtRef.current = nowMs;
-    lastAutoSyncAtRef.current = nowMs;
-  }, [activeAccountId]);
-
-  useEffect(() => {
-    const markActive = () => {
-      lastUserActivityAtRef.current = Date.now();
-    };
-    const activityEvents = [
-      "pointerdown",
-      "keydown",
-      "mousemove",
-      "touchstart",
-      "focus",
-    ] as const;
-
-    for (const eventName of activityEvents) {
-      window.addEventListener(eventName, markActive, { passive: true });
-    }
-    document.addEventListener("visibilitychange", markActive);
-
-    return () => {
-      for (const eventName of activityEvents) {
-        window.removeEventListener(eventName, markActive);
-      }
-      document.removeEventListener("visibilitychange", markActive);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!activeAccountId || activeAccount?.connection_state !== "ready") {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      const nowMs = Date.now();
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-      if (nowMs - lastUserActivityAtRef.current > ACTIVE_USER_WINDOW_MS) {
-        return;
-      }
-      if (
-        nowMs - lastAutoSyncAtRef.current <
-        ACTIVE_USER_AUTO_SYNC_INTERVAL_MS
-      ) {
-        return;
-      }
-      if (syncAccountMutation.isPending || syncUiState || activeAccountConnectionBusy) {
-        return;
-      }
-
-      lastAutoSyncAtRef.current = nowMs;
-      void handleRefreshAccountsRef.current({
-        silent: true,
-        accountId: activeAccountId,
-      });
-    }, ACTIVE_USER_AUTO_SYNC_CHECK_MS);
-
-    return () => window.clearInterval(timer);
-  }, [
-    activeAccount?.connection_state,
-    activeAccountConnectionBusy,
-    activeAccountId,
-    syncAccountMutation.isPending,
-    syncUiState,
-  ]);
 
   useEffect(() => {
     if (isConnectionPending) {

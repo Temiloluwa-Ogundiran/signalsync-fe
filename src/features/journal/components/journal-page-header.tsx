@@ -119,7 +119,7 @@ export function JournalPageHeader({
   const syncCooldownLabel = isUserRateLimited
     ? `Manual sync limit reached. Retry in ${getCountdownText(cooldownUntilMs as number)}.`
     : isCooldownActive
-      ? `Manual sync cooldown active. Retry in ${getCountdownText(cooldownUntilMs as number)}.`
+      ? `Next sync available in ${getCountdownText(cooldownUntilMs as number)}.`
       : null;
 
   useEffect(() => {
