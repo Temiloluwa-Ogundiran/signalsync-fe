@@ -14,6 +14,10 @@ FROM base AS builder
 
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# NEXT_PUBLIC_* are inlined at build time, so they must be present here (not just
+# at runtime). Railway passes service variables as build args.
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
