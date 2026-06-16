@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAccountApi } from "../api/journal-account.api";
+import { ApiException } from "@/lib/api/types";
 import type { JournalAccount, JournalAccountConnectPayload } from "../types";
 
 const IMPORTING_CONNECTION_STATES = new Set([
@@ -47,6 +48,13 @@ export function useConnectJournalAccount() {
       queryClient.invalidateQueries({
         queryKey: JOURNAL_ACCOUNT_KEYS.all,
       });
+    },
+    onError: (error) => {
+      if (error instanceof ApiException && error.code === "REQUEST_TIMEOUT") {
+        queryClient.invalidateQueries({
+          queryKey: JOURNAL_ACCOUNT_KEYS.all,
+        });
+      }
     },
   });
 }

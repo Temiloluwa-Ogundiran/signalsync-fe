@@ -123,6 +123,11 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       const msg = error.message || "Network error";
+      const isTimeout =
+        error.code === "ECONNABORTED" ||
+        error.code === "ETIMEDOUT" ||
+        /timeout/i.test(msg);
+
       if (DEV) {
         console.error("[API] Network Error:", {
           message: msg,
@@ -133,11 +138,12 @@ apiClient.interceptors.response.use(
 
       throw new ApiException({
         status: 0,
-        code: "NETWORK_ERROR",
-        message:
-          msg.includes("ECONNREFUSED") || msg.includes("Failed to fetch")
-            ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
-            : "Network error. Please check your internet connection.",
+        code: isTimeout ? "REQUEST_TIMEOUT" : "NETWORK_ERROR",
+        message: isTimeout
+          ? "The request is still taking longer than expected. Please check your accounts list in a moment."
+          : msg.includes("ECONNREFUSED") || msg.includes("Failed to fetch")
+          ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
+          : "Network error. Please check your internet connection.",
       });
     }
 
