@@ -38,10 +38,9 @@ function JournalTradesPanelImpl({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-5 pt-2 pb-4">
-        <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 pb-2 text-[11px] font-medium tracking-wide text-text-secondary uppercase">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-3 pb-2 text-[11px] font-medium tracking-wide text-text-secondary uppercase">
           <span>Close Date</span>
           <span>Symbol</span>
-          <span className="text-right">Hold</span>
           <span className="text-right">Net P&amp;L</span>
         </div>
 
@@ -51,11 +50,10 @@ function JournalTradesPanelImpl({
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={`recent-trade-skeleton-${idx}`}
-                  className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 py-2.5"
+                  className="grid grid-cols-[1fr_1fr_auto] gap-3 py-2.5"
                 >
                   <div className="h-4 w-20 animate-pulse rounded bg-bg-tertiary" />
                   <div className="h-4 w-16 animate-pulse rounded bg-bg-tertiary" />
-                  <div className="ml-auto h-4 w-12 animate-pulse rounded bg-bg-tertiary" />
                   <div className="ml-auto h-4 w-16 animate-pulse rounded bg-bg-tertiary" />
                 </div>
               ))}
@@ -65,7 +63,7 @@ function JournalTradesPanelImpl({
               {recentRows.map((row) => (
                 <div
                   key={row.id}
-                  className="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-3 py-2.5 text-sm"
+                  className="grid grid-cols-[1fr_1fr_auto] items-center gap-3 py-2.5 text-sm"
                 >
                   <span className="tabular-nums text-text-primary">
                     {row.closeDate}
@@ -79,9 +77,6 @@ function JournalTradesPanelImpl({
                       aria-hidden
                     />
                     {row.symbol}
-                  </span>
-                  <span className="text-right tabular-nums text-text-secondary">
-                    {row.holdTime}
                   </span>
                   <span
                     className={cn(

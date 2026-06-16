@@ -90,7 +90,7 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           ...(params.fromDate ? { from_date: params.fromDate } : {}),
           ...(params.toDate ? { to_date: params.toDate } : {}),
-          recent_limit: 8,
+          recent_limit: 5,
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
           include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
