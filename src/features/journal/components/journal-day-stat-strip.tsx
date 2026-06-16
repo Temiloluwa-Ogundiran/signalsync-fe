@@ -9,26 +9,18 @@ export interface DayStat {
 }
 
 /**
- * Horizontal strip of day stats, divided into cells. Wraps to 2/3 columns on
- * narrow widths and lays out as a single row on large screens, spreading the
- * cells evenly across the full width regardless of how many there are.
+ * Inline row of day stats — no card chrome, so it flows within the expanded day
+ * rather than reading as a nested box. Wraps to 2/3 columns on narrow widths and
+ * spreads evenly across the full width on large screens.
  */
 export function JournalDayStatStrip({ stats }: { stats: DayStat[] }) {
   return (
     <div
-      className="grid grid-cols-2 overflow-hidden rounded-xl bg-card-bg ring-1 ring-hairline sm:grid-cols-3 lg:grid-cols-[repeat(var(--stat-cols),minmax(0,1fr))]"
+      className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl bg-surface-subtle px-4 py-3.5 sm:grid-cols-3 lg:grid-cols-[repeat(var(--stat-cols),minmax(0,1fr))]"
       style={{ ["--stat-cols" as string]: stats.length }}
     >
-      {stats.map((stat, i) => (
-        <div
-          key={stat.label}
-          className={cn(
-            "px-4 py-3.5",
-            // Right divider except last column in each breakpoint — approximate
-            // with a left border on all but the first, kept subtle.
-            i > 0 && "border-l border-hairline",
-          )}
-        >
+      {stats.map((stat) => (
+        <div key={stat.label}>
           <p className="text-xs text-text-secondary">{stat.label}</p>
           <p
             className={cn(

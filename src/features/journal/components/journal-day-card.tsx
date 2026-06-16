@@ -140,9 +140,7 @@ export function JournalDayCard({
     tradeList,
     messagesByTradeId,
     initialNote,
-    initialMood,
     saveNote,
-    isSaving,
     prefetch,
   } = useExpandedDay(accountId, date, expanded);
 
@@ -288,9 +286,10 @@ export function JournalDayCard({
         </div>
       </div>
 
-      {/* Expanded detail */}
+      {/* Expanded detail — Coach's Read and Day Note stay as cards; the stats +
+          trades flow inline between them as one continuous page section. */}
       {expanded && (
-        <div className="space-y-4 border-t border-hairline px-4 pb-5 pt-4 md:px-5">
+        <div className="space-y-6 border-t border-hairline px-4 pb-6 pt-5 md:px-5">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 py-10 text-sm text-text-secondary">
               <HugeiconsIcon
@@ -311,21 +310,19 @@ export function JournalDayCard({
                 onContinue={() => onContinueCoach(date)}
               />
 
-              <JournalDayStatStrip stats={statStrip} />
+              {/* Stats + trades flow together — no card chrome, no dividers, so
+                  they read as one continuous page, not nested boxes. */}
+              <div className="space-y-5">
+                <JournalDayStatStrip stats={statStrip} />
 
-              {tradeLines.length > 0 ? (
-                <div className="space-y-2.5">
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
-                    {tradeLines.length}{" "}
-                    {tradeLines.length === 1 ? "trade" : "trades"}
-                  </p>
+                {tradeLines.length > 0 ? (
                   <JournalTradesTable trades={tradeLines} accountId={accountId} />
-                </div>
-              ) : (
-                <p className="py-2 text-sm text-text-secondary">
-                  No trades for this day.
-                </p>
-              )}
+                ) : (
+                  <p className="text-sm text-text-secondary">
+                    No trades for this day.
+                  </p>
+                )}
+              </div>
 
               <div
                 ref={noteRef}
@@ -337,8 +334,6 @@ export function JournalDayCard({
               >
                 <JournalSessionNote
                   initialNote={initialNote}
-                  initialMood={initialMood}
-                  saving={isSaving}
                   onSave={saveNote}
                 />
               </div>

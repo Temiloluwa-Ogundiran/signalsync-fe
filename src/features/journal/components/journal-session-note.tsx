@@ -1,103 +1,121 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   PencilEdit01Icon,
-  SmileIcon,
-  NeutralIcon,
-  EnergyIcon,
+  Tick02Icon,
+  Loading03Icon,
 } from "@hugeicons/core-free-icons";
-import { cn } from "@/lib/utils";
 
-type Mood = "good" | "neutral" | "charged";
-
-const MOODS: { id: Mood; icon: typeof SmileIcon; label: string }[] = [
-  { id: "good", icon: SmileIcon, label: "Felt good" },
-  { id: "neutral", icon: NeutralIcon, label: "Felt neutral" },
-  { id: "charged", icon: EnergyIcon, label: "Felt charged" },
-];
+type SaveStatus = "idle" | "saving" | "saved";
 
 interface JournalSessionNoteProps {
   /** Existing note text, if any. */
   initialNote?: string;
-  /** Previously selected mood, if any. */
-  initialMood?: Mood | null;
-  saving?: boolean;
   /**
-   * Persist the note + mood. Mood is best-effort metadata;
-   * TODO(backend): no first-class mood field yet.
+   * Persist the note. Resolves when the save settles so the status can flip to
+   * "Saved". Called debounced as the user types.
    */
-  onSave: (note: string, mood: Mood | null) => void;
+  onSave: (note: string) => Promise<unknown>;
 }
+
+/** ms to wait after the last keystroke before auto-saving. */
+const AUTOSAVE_DELAY = 1000;
 
 export function JournalSessionNote({
   initialNote = "",
-  initialMood = null,
-  saving = false,
   onSave,
 }: JournalSessionNoteProps) {
   const [note, setNote] = useState(initialNote);
-  const [mood, setMood] = useState<Mood | null>(initialMood);
+  const [status, setStatus] = useState<SaveStatus>("idle");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSaved = useRef(initialNote);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Grow the textarea to fit its content so the writing area never scrolls.
+  const autoGrow = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useEffect(autoGrow, [note]);
+
+  useEffect(() => {
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleChange = (value: string) => {
+    setNote(value);
+    if (value === lastSaved.current) return;
+
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      lastSaved.current = value;
+      setStatus("saving");
+      try {
+        await onSave(value);
+        setStatus("saved");
+      } catch {
+        setStatus("idle");
+      }
+    }, AUTOSAVE_DELAY);
+  };
 
   return (
-    <section className="rounded-xl bg-card-bg p-4 ring-1 ring-hairline">
-      <div className="mb-3 flex items-center gap-2">
-        <HugeiconsIcon
-          icon={PencilEdit01Icon}
-          size={14}
-          strokeWidth={2}
-          className="text-text-secondary"
-        />
-        <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
-          Day note
-        </span>
+    <section className="group rounded-xl bg-card-bg p-5 ring-1 ring-hairline transition-shadow focus-within:ring-2 focus-within:ring-accent/40">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HugeiconsIcon
+            icon={PencilEdit01Icon}
+            size={14}
+            strokeWidth={2}
+            className="text-text-secondary"
+          />
+          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
+            Day note
+          </span>
+        </div>
+
+        <SaveStatusBadge status={status} />
       </div>
 
       <textarea
+        ref={textareaRef}
         value={note}
-        onChange={(e) => setNote(e.target.value)}
-        rows={2}
-        placeholder="A line about today's session — how it felt, what you'd repeat or change..."
-        className="w-full resize-none bg-transparent text-sm leading-relaxed text-text-primary placeholder:text-text-tertiary focus:outline-none"
+        onChange={(e) => handleChange(e.target.value)}
+        rows={3}
+        placeholder="How did today feel? What would you repeat, and what would you change next time?"
+        className="w-full resize-none bg-transparent text-[0.95rem] leading-relaxed text-text-primary placeholder:text-text-tertiary focus:outline-none"
       />
-
-      <div className="mt-3 flex items-center justify-between border-t border-hairline pt-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-secondary">Felt:</span>
-          {MOODS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setMood((cur) => (cur === m.id ? null : m.id))}
-              aria-label={m.label}
-              aria-pressed={mood === m.id}
-              className={cn(
-                "inline-flex size-8 items-center justify-center rounded-lg border transition-colors cursor-pointer",
-                mood === m.id
-                  ? "border-ai-soft-border bg-ai-soft-bg text-ai-accent"
-                  : "border-hairline text-text-tertiary hover:border-border-secondary hover:text-text-secondary",
-              )}
-            >
-              <HugeiconsIcon icon={m.icon} size={16} strokeWidth={2} />
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          disabled={saving || !note.trim()}
-          onClick={() => onSave(note.trim(), mood)}
-          className={cn(
-            "rounded-lg bg-accent px-4 py-2 text-xs font-bold text-accent-foreground transition-colors",
-            saving || !note.trim()
-              ? "cursor-not-allowed opacity-50"
-              : "hover:bg-accent-hover cursor-pointer",
-          )}
-        >
-          {saving ? "Saving..." : "Save note"}
-        </button>
-      </div>
     </section>
   );
+}
+
+function SaveStatusBadge({ status }: { status: SaveStatus }) {
+  if (status === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-text-tertiary">
+        <HugeiconsIcon
+          icon={Loading03Icon}
+          size={13}
+          strokeWidth={2}
+          className="animate-spin"
+        />
+        Saving…
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-kpi-metric-positive">
+        <HugeiconsIcon icon={Tick02Icon} size={13} strokeWidth={2} />
+        Saved
+      </span>
+    );
+  }
+  return null;
 }

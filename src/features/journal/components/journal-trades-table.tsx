@@ -54,24 +54,26 @@ export function JournalTradesTable({
   accountId: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl ring-1 ring-hairline">
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
-            <th className="px-4 py-2.5 text-left font-semibold">Time</th>
-            <th className="px-4 py-2.5 text-left font-semibold">Symbol</th>
-            <th className="px-4 py-2.5 text-left font-semibold">Dir</th>
-            <th className="px-4 py-2.5 text-right font-semibold">Net P&amp;L</th>
-            <th className="px-4 py-2.5 text-right font-semibold">Tags</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trades.map((trade) => (
-            <TradeRow key={trade.id} trade={trade} accountId={accountId} />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <table className="w-full table-fixed border-collapse text-sm">
+      <thead>
+        <tr className="border-b border-hairline text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary [&>th]:whitespace-nowrap">
+          <th className="w-[18%] py-2 pl-3 pr-4 text-left font-semibold">
+            Time
+          </th>
+          <th className="w-[22%] py-2 pr-4 text-left font-semibold">Symbol</th>
+          <th className="w-[18%] py-2 pr-4 text-left font-semibold">Dir</th>
+          <th className="w-[20%] py-2 pr-4 text-left font-semibold">
+            Net P&amp;L
+          </th>
+          <th className="w-[22%] py-2 pr-3 text-left font-semibold">Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {trades.map((trade) => (
+          <TradeRow key={trade.id} trade={trade} accountId={accountId} />
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -108,18 +110,18 @@ function TradeRow({
           goToTrades();
         }
       }}
-      className="cursor-pointer border-t border-hairline transition-colors hover:bg-surface-subtle-hover"
+      className="group cursor-pointer border-b border-hairline transition-colors last:border-b-0 hover:bg-surface-subtle-hover [&>td:first-child]:rounded-l-lg [&>td:first-child]:pl-3 [&>td:last-child]:rounded-r-lg [&>td:last-child]:pr-3"
     >
-      <td className="px-4 py-2.5 font-mono text-text-secondary tabular-nums">
+      <td className="py-2.5 pr-4 font-mono text-text-secondary tabular-nums">
         {trade.time}
       </td>
-      <td className="px-4 py-2.5 font-bold text-text-primary">{trade.symbol}</td>
-      <td className="px-4 py-2.5">
+      <td className="py-2.5 pr-4 font-bold text-text-primary">{trade.symbol}</td>
+      <td className="py-2.5 pr-4">
         <Badge variant="neutral">{trade.direction}</Badge>
       </td>
       <td
         className={cn(
-          "px-4 py-2.5 text-right font-semibold tabular-nums",
+          "py-2.5 pr-4 text-left font-semibold tabular-nums",
           trade.outcome === "win" && "text-kpi-metric-positive",
           trade.outcome === "loss" && "text-danger",
           trade.outcome === "be" && "text-text-tertiary",
@@ -127,12 +129,12 @@ function TradeRow({
       >
         {money(trade.netProfit)}
       </td>
-      <td className="px-4 py-2.5">
-        <div className="flex flex-wrap items-center justify-end gap-1.5">
+      <td className="py-2.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {strategy ? <Badge variant="ai">{strategy}</Badge> : null}
 
           <div
-            className="flex flex-wrap items-center justify-end gap-1.5"
+            className="flex flex-wrap items-center gap-1.5"
             onClick={stop}
             role="presentation"
           >

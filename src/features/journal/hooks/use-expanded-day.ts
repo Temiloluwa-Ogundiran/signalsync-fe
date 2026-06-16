@@ -9,34 +9,6 @@ import { useJournalDay, JOURNAL_DAY_MODAL_KEYS } from "./use-journal-day-modal";
 import { useDayNote, useSaveDayNote } from "./use-day-note";
 import { useJournalUiStore } from "../store/journal-ui-store";
 
-export type SessionMood = "good" | "neutral" | "charged";
-
-/**
- * Mood has no first-class backend field, so we persist it as a leading HTML
- * comment in the day note (`<!--mood:good-->note text`). These helpers encode
- * and decode it without disturbing the user's text.
- * TODO(backend): replace with a real mood field on the day note.
- */
-const MOOD_RE = /^<!--mood:(good|neutral|charged)-->/;
-
-function decodeNote(html: string | null | undefined): {
-  note: string;
-  mood: SessionMood | null;
-} {
-  if (!html) return { note: "", mood: null };
-  const match = MOOD_RE.exec(html);
-  if (match) {
-    return { note: html.slice(match[0].length), mood: match[1] as SessionMood };
-  }
-  return { note: html, mood: null };
-}
-
-function encodeNote(note: string, mood: SessionMood | null): string | null {
-  const trimmed = note.trim();
-  if (!trimmed && !mood) return null;
-  return mood ? `<!--mood:${mood}-->${trimmed}` : trimmed;
-}
-
 /**
  * Powers the expanded day card: lazily loads the day's trades + per-trade
  * journal messages (only for trades that have notes), plus the session note,
@@ -88,16 +60,12 @@ export function useExpandedDay(
   }, [notedTradeIds, messageQueries]);
 
   const noteQuery = useDayNote(accountId, date, enabled);
-  const { note: initialNote, mood: initialMood } = useMemo(
-    () => decodeNote(noteQuery.data?.note_html),
-    [noteQuery.data?.note_html],
-  );
+  const initialNote = noteQuery.data?.note_html ?? "";
 
   const saveMutation = useSaveDayNote(accountId, date);
   const saveNote = useCallback(
-    (note: string, mood: SessionMood | null) => {
-      saveMutation.mutate(encodeNote(note, mood));
-    },
+    (noteHtml: string) =>
+      saveMutation.mutateAsync(noteHtml.trim() ? noteHtml : null),
     [saveMutation],
   );
 
@@ -124,7 +92,6 @@ export function useExpandedDay(
     tradeList: trades,
     messagesByTradeId,
     initialNote,
-    initialMood,
     saveNote,
     isSaving: saveMutation.isPending,
     prefetch,
