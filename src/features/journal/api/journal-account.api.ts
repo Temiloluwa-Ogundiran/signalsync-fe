@@ -13,7 +13,10 @@ export const journalAccountApi = {
     const { data } = await apiClient.post<JournalAccount>(
       "/accounts",
       payload,
-      withAuth(token),
+      {
+        ...withAuth(token),
+        timeout: 130_000,
+      },
     );
 
     return data;
