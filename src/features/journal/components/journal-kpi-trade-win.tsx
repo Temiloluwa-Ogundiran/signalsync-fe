@@ -2,6 +2,7 @@
 
 import { Cell, Pie, PieChart } from "recharts";
 
+import { cn } from "@/lib/utils";
 import { useChartColors } from "@/lib/use-chart-colors";
 import { formatPercent } from "../lib/journal-widget-mappers";
 import type { TradeOutcomeCounts } from "../lib/journal-kpi-aggregates";
@@ -15,23 +16,20 @@ interface JournalKpiTradeWinProps {
 }
 
 /**
- * 180° gauge: green arc up to the winrate, a thin grey marker segment, then red
- * for the remainder. Reads like a speedometer of the win percentage.
+ * 180° gauge: green for wins, grey for breakeven, red for losses — each segment
+ * sized to its share of total trades. The grey segment is omitted entirely when
+ * there are no breakeven trades.
  */
 function buildGaugeData(
-  winRatePercent: number,
+  counts: TradeOutcomeCounts,
   winColor: string,
   lossColor: string,
 ) {
-  const rate = Math.max(0, Math.min(100, winRatePercent));
-  const marker = 3; // thin grey divider segment at the needle position
-  const green = Math.max(0, rate - marker / 2);
-  const red = Math.max(0, 100 - green - marker);
   return [
-    { name: "green", value: green, color: winColor },
-    { name: "marker", value: marker, color: "var(--neutral-grey)" },
-    { name: "red", value: red, color: lossColor },
-  ];
+    { name: "green", value: counts.wins, color: winColor },
+    { name: "marker", value: counts.breakeven, color: "var(--neutral-grey)" },
+    { name: "red", value: counts.losses, color: lossColor },
+  ].filter((seg) => seg.value > 0);
 }
 
 export function JournalKpiTradeWin({
@@ -40,7 +38,7 @@ export function JournalKpiTradeWin({
   className,
 }: JournalKpiTradeWinProps) {
   const colors = useChartColors();
-  const gaugeData = buildGaugeData(winRatePercent, colors.win, colors.loss);
+  const gaugeData = buildGaugeData(outcomeCounts, colors.win, colors.loss);
 
   return (
     <JournalKpiCard
@@ -54,16 +52,16 @@ export function JournalKpiTradeWin({
       }
       value={formatPercent(winRatePercent)}
       chart={
-        <div className="flex flex-col items-center gap-1.5">
-          <PieChart width={88} height={48}>
+        <div className="flex flex-col items-center">
+          <PieChart width={120} height={62}>
             <Pie
               data={gaugeData}
               dataKey="value"
               nameKey="name"
               cx="50%"
               cy="100%"
-              innerRadius={28}
-              outerRadius={40}
+              innerRadius={44}
+              outerRadius={52}
               startAngle={180}
               endAngle={0}
               stroke="none"
@@ -76,21 +74,46 @@ export function JournalKpiTradeWin({
             </Pie>
           </PieChart>
 
-          <div className="flex items-center gap-1.5">
-            <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-success-light px-1.5 text-[11px] font-semibold tabular-nums text-success">
-              {outcomeCounts.wins}
-            </span>
+          {/* Pills aligned under each end of the arc: wins left, losses right,
+              breakeven centered. */}
+          <div className="relative flex w-[120px] items-center justify-between">
+            <Pill tone="win">{outcomeCounts.wins}</Pill>
             {outcomeCounts.breakeven > 0 ? (
-              <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-chip-grey px-1.5 text-[11px] font-semibold tabular-nums text-kpi-label">
+              <Pill
+                tone="neutral"
+                className="absolute left-1/2 -translate-x-1/2"
+              >
                 {outcomeCounts.breakeven}
-              </span>
+              </Pill>
             ) : null}
-            <span className="inline-flex h-5 min-w-7 items-center justify-center rounded-full bg-danger-light px-1.5 text-[11px] font-semibold tabular-nums text-danger">
-              {outcomeCounts.losses}
-            </span>
+            <Pill tone="loss">{outcomeCounts.losses}</Pill>
           </div>
         </div>
       }
     />
+  );
+}
+
+function Pill({
+  tone,
+  children,
+  className,
+}: {
+  tone: "win" | "neutral" | "loss";
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-5 min-w-7 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums",
+        tone === "win" && "bg-success-light text-success",
+        tone === "neutral" && "bg-chip-grey text-kpi-label",
+        tone === "loss" && "bg-danger-light text-danger",
+        className,
+      )}
+    >
+      {children}
+    </span>
   );
 }

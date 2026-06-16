@@ -19,10 +19,11 @@ interface JournalCoachsReadProps {
 }
 
 /**
- * TODO(ai): day-level AI ("Coach's Read") has no backend yet — `/ai/sessions`
- * 404s and the day-review trigger is a stub. This renders a styled shell with
- * caller-provided copy; wire `read`/`insight`/`onContinue` to the AI endpoint
- * once it lands. "Continue with coach" is intentionally disabled for now.
+ * "Continue with coach" opens the AI dock (backed by the main API's `/ai/*`
+ * endpoints) scoped to the day. The day-level narrative itself ("read"/"insight")
+ * is still caller-provided copy.
+ * TODO(ai): populate `read`/`insight` from the backend `/ai/insights` endpoint
+ * (daily-recap kind) once those insights are generated for the day.
  */
 export function JournalCoachsRead({
   read,

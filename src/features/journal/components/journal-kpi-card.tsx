@@ -45,7 +45,7 @@ export function JournalKpiCard({
           {info}
           {labelTrailing}
         </div>
-        <p className="font-heading text-[1.875rem] font-semibold leading-none tracking-tight tabular-nums text-text-primary">
+        <p className="font-heading text-2xl font-semibold leading-none tracking-tight tabular-nums text-text-primary">
           {value}
         </p>
       </div>

@@ -41,14 +41,8 @@ export function JournalKpiAvgWinLoss({
             {ratioLabel}:1
           </span>
           <div className="flex h-2.5 w-full items-stretch gap-0.5">
-            <span
-              className="rounded-l-[4px] bg-success"
-              style={{ width: `${greenPct}%` }}
-            />
-            <span
-              className="rounded-r-[4px] bg-danger"
-              style={{ width: `${redPct}%` }}
-            />
+            <span className="bg-success" style={{ width: `${greenPct}%` }} />
+            <span className="bg-danger" style={{ width: `${redPct}%` }} />
           </div>
           <div className="flex items-center justify-between text-[11px] font-medium tabular-nums">
             <span className="text-success">{formatCompactMoney(avgWin)}</span>

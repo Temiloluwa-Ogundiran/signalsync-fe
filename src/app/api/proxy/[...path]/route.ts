@@ -36,18 +36,6 @@ function resolveBackendUrl() {
   return resolveAuthBackendUrl().replace(/\/$/, "");
 }
 
-const AI_PREFIX = "ai/";
-
-function resolveTargetBase(joinedPath: string): string {
-  if (
-    joinedPath.startsWith(AI_PREFIX) &&
-    process.env.AI_SERVICE_URL
-  ) {
-    return process.env.AI_SERVICE_URL.replace(/\/$/, "");
-  }
-  return resolveBackendUrl();
-}
-
 function copyRequestHeaders(request: NextRequest) {
   const headers = new Headers(request.headers);
 
@@ -75,7 +63,7 @@ async function proxyRequest(request: NextRequest, context: RouteContext) {
   let backendUrl: string;
 
   try {
-    backendUrl = resolveTargetBase(joinedPath);
+    backendUrl = resolveBackendUrl();
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Backend URL is not configured.";
