@@ -293,7 +293,7 @@ export function JournalFeedPage() {
         {/* Left: day feed */}
         <div className="min-w-0 flex-1 space-y-4">
           {dashboardQuery.isLoading ? (
-            <AppLoader fullScreen={false} label="Loading journal" />
+            <AppLoader label="Loading journal" />
           ) : dashboardQuery.isError ? (
             <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
               Failed to load journal. Please retry.

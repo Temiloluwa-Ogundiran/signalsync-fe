@@ -184,7 +184,7 @@ export function JournalTradeHistoryPage() {
       />
 
       {tradeHistoryQuery.isLoading ? (
-        <AppLoader fullScreen={false} label="Loading trades" />
+        <AppLoader label="Loading trades" />
       ) : tradeHistoryQuery.isError ? (
         <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
           Failed to load trade history. Please retry.

@@ -8,7 +8,6 @@ import {
   Home01Icon,
   Analytics01Icon,
   Wallet01Icon,
-  ArrowDataTransferHorizontalIcon,
 } from "@hugeicons/core-free-icons";
 
 type MobileNavItem = {
@@ -21,7 +20,6 @@ const navItems: MobileNavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home01Icon },
   { label: "History", href: "/trade-history", icon: Analytics01Icon },
   { label: "Accounts", href: "/accounts", icon: Wallet01Icon },
-  { label: "Copy", href: "/copy-trading", icon: ArrowDataTransferHorizontalIcon },
 ];
 
 export function MobileNav() {

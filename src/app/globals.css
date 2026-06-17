@@ -8,7 +8,7 @@
 :root {
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
   --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
-  --bg-canvas: #f7f8fa; /* tier 1 — content canvas (neutral grey) */
+  --bg-canvas: #F4F6F8; /* tier 1 — content canvas (neutral grey) */
   --bg-secondary: #ffffff; /* tier 2 — surface (cards, sidebar) */
   --bg-tertiary: #f1f3f7; /* surface-2 — raised chip/inset (reads on white sidebar) */
   --bg-hover: #e4e8ee; /* border-weight hover (one step deeper, same hue) */

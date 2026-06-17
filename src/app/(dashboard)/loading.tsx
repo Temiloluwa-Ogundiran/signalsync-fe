@@ -4,5 +4,5 @@ import { AppLoader } from "@/components/app-loader";
 // navigation). Any dashboard route without its own loading.tsx paints the
 // branded loader instead of a blank screen.
 export default function Loading() {
-  return <AppLoader fullScreen={false} />;
+  return <AppLoader />;
 }

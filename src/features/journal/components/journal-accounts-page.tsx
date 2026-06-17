@@ -137,7 +137,7 @@ export function JournalAccountsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-bg-primary px-4 pb-6 pt-4 lg:px-6 font-sans text-text-primary">
+    <div className="min-w-0 p-4 pb-20 font-sans text-text-primary md:p-8 md:pb-8">
       <div className="mx-auto max-w-[1680px] space-y-6">
         {/* Page header — title + add-account action (when accounts exist;
             the empty state has its own primary CTA). */}
@@ -157,7 +157,7 @@ export function JournalAccountsPage() {
 
         {/* Main content area */}
         {isLoading ? (
-          <AppLoader fullScreen={false} label="Loading accounts" />
+          <AppLoader label="Loading accounts" />
         ) : accounts.length === 0 ? (
           /* Empty State */
           <Card className="border-border-secondary bg-card-bg py-16 text-center shadow-sm">

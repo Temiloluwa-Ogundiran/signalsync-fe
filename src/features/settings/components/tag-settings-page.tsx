@@ -448,7 +448,7 @@ export function TagSettingsPage() {
     return (
       <SettingsPageShell title="Tag Management">
         <div className="flex justify-center py-16">
-          <AppLoader fullScreen={false} />
+          <AppLoader />
         </div>
       </SettingsPageShell>
     );

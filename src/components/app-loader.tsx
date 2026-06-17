@@ -4,10 +4,14 @@
  */
 export function AppLoader({
   label = "Loading",
-  fullScreen = true,
+  fullScreen = false,
 }: {
   label?: string;
-  /** When false, fills its parent container instead of covering the viewport. */
+  /**
+   * When true, covers the whole viewport (fixed overlay) — use only for the
+   * pre-auth app-boot loader. Defaults to false: fills its parent container so
+   * the loader stays inside the content canvas, not over the app chrome.
+   */
   fullScreen?: boolean;
 }) {
   return (

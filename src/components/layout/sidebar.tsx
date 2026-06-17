@@ -10,7 +10,6 @@ import {
   Home01Icon,
   Analytics01Icon,
   Wallet01Icon,
-  ArrowDataTransferHorizontalIcon,
   AiMagicIcon,
   PlusSignIcon,
   Upload04Icon,
@@ -42,11 +41,6 @@ const navItems: NavEntry[] = [
     label: "Accounts",
     href: "/accounts",
     icon: Wallet01Icon,
-  },
-  {
-    label: "Copy Trading",
-    href: "/copy-trading",
-    icon: ArrowDataTransferHorizontalIcon,
   },
   {
     label: "Partna AI",
