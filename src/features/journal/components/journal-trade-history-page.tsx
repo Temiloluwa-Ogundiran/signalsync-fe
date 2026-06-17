@@ -38,17 +38,6 @@ function parseDateParam(value: string | null) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-/** Inclusive rolling window: `days` calendar days ending at `anchor` (today). */
-function getLastDaysInclusiveRange(days: number, anchor?: Date) {
-  const to = anchor ? new Date(anchor) : new Date();
-  const from = new Date(to);
-  from.setDate(from.getDate() - (days - 1));
-  return {
-    fromDate: formatDateParam(from),
-    toDate: formatDateParam(to),
-  };
-}
-
 function mapTradeRows(items: JournalTrade[]): TradeHistoryRow[] {
   return items.map((item) => ({
     ...item,
@@ -103,19 +92,10 @@ export function JournalTradeHistoryPage() {
   const queryFromDate = parseDateParam(searchParams.get("fromDate"));
   const queryToDate = parseDateParam(searchParams.get("toDate"));
   const hasCustomRange = !!queryFromDate && !!queryToDate;
-  // Default to last 30 days ending at the account's most recent activity, so
-  // accounts whose latest trades aren't in the current month (e.g. demo data)
-  // still show trades on load.
-  const anchorTo = activeAccount?.last_synced_at
-    ? new Date(activeAccount.last_synced_at)
-    : undefined;
-  const rollingDefaultRange = getLastDaysInclusiveRange(30, anchorTo);
-  const fromDate = hasCustomRange
-    ? formatDateParam(queryFromDate)
-    : rollingDefaultRange.fromDate;
-  const toDate = hasCustomRange
-    ? formatDateParam(queryToDate)
-    : rollingDefaultRange.toDate;
+  // No default range: fetch ALL trades (paginated). Date is an optional filter
+  // the user can apply via the date picker.
+  const fromDate = hasCustomRange ? formatDateParam(queryFromDate) : undefined;
+  const toDate = hasCustomRange ? formatDateParam(queryToDate) : undefined;
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
     const from = parseDateParam(searchParams.get("fromDate"));

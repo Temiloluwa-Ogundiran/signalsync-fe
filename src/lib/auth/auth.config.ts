@@ -156,7 +156,15 @@ export const authConfig = {
         }
         
         // Extract the rotated refresh token if provided
-        const newRefreshToken = extractRefreshToken(res) ?? (token.refreshToken as string);
+        const rotated = extractRefreshToken(res);
+        const newRefreshToken = rotated ?? (token.refreshToken as string);
+
+        // TEMP debug: did we adopt a rotated token, or keep the (possibly stale)
+        // old one? Keeping the old one across cycles is the suspected logout bug.
+        const prev = (token.refreshToken as string) ?? "";
+        console.info(
+          `[auth.refresh] captured=${Boolean(rotated)} changed=${rotated !== undefined && rotated !== prev} prevPfx=${prev.slice(0, 8)} newPfx=${newRefreshToken.slice(0, 8)}`,
+        );
 
         return {
           ...token,

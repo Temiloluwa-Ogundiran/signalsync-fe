@@ -27,8 +27,8 @@ export const queryKeys = {
       ["journal-trade-history", accountId] as const,
     tradeHistoryRange: (
       accountId: string | undefined,
-      fromDate: string,
-      toDate: string,
+      fromDate: string | undefined,
+      toDate: string | undefined,
       includeManual: boolean,
     ) =>
       ["journal-trade-history", accountId, fromDate, toDate, includeManual] as const,

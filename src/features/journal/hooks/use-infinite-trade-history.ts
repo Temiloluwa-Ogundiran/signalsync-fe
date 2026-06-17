@@ -6,8 +6,9 @@ import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface UseInfiniteTradeHistoryInput {
   accountId?: string;
-  fromDate: string;
-  toDate: string;
+  /** Optional date filter. When omitted, all trades are fetched (paginated). */
+  fromDate?: string;
+  toDate?: string;
 }
 
 export function useInfiniteTradeHistory({
@@ -36,10 +37,8 @@ export function useInfiniteTradeHistory({
       ),
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 60_000,
-    enabled:
-      status === "authenticated" &&
-      !!accountId &&
-      !!fromDate &&
-      !!toDate,
+    // No date gate: with no range, fetch all trades (paginated). Date is an
+    // optional user filter, not a precondition.
+    enabled: status === "authenticated" && !!accountId,
   });
 }

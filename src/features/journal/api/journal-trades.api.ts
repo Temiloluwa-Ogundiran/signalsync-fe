@@ -33,8 +33,8 @@ export const journalTradesApi = {
 
   listRecent: async (
     accountId: string,
-    fromDate: string,
-    toDate: string,
+    fromDate: string | undefined,
+    toDate: string | undefined,
     cursorOrLimit?: string | number,
     includeManual?: boolean,
     token?: string,
@@ -43,12 +43,13 @@ export const journalTradesApi = {
       typeof cursorOrLimit === "string" ? cursorOrLimit : undefined;
     const limit =
       typeof cursorOrLimit === "number" ? cursorOrLimit : 100;
+    // from/to_date are optional — omitting them returns all trades (paginated).
     const { data } = await apiClient.get<JournalTradeListResponse>("/journal/trades", {
       ...withAuth(token),
       params: {
         account_id: accountId,
-        from_date: fromDate,
-        to_date: toDate,
+        from_date: fromDate || undefined,
+        to_date: toDate || undefined,
         limit,
         cursor,
         include_manual: includeManual !== undefined ? includeManual : undefined,
