@@ -48,6 +48,7 @@ export interface JournalAccount {
   bootstrap_error_message: string | null;
   last_sync_attempted_at: string | null;
   last_sync_outcome?: string | null;
+  closed_trade_count?: number;
   next_sync_not_before: string | null;
   sync_status?: JournalAccountSyncStatus;
   // Backend serializes the Decimal as a string ("583.61"); may also be a number.
