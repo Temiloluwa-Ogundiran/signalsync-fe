@@ -130,15 +130,15 @@ function StarRating({
 }
 
 function DirectionPill({ direction }: { direction: "buy" | "sell" }) {
-  const isLong = direction === "buy";
+  const isBuy = direction === "buy";
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-surface-subtle px-2 py-0.5 text-xs font-semibold text-text-secondary">
-      {isLong ? (
+      {isBuy ? (
         <ArrowUp className="h-3 w-3" />
       ) : (
         <ArrowDown className="h-3 w-3" />
       )}
-      {isLong ? "Long" : "Short"}
+      {isBuy ? "Buy" : "Sell"}
     </span>
   );
 }
