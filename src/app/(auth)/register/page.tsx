@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { auth } from "@/lib/auth/auth";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/features/auth/components/register-form";
@@ -19,31 +20,43 @@ export default async function RegisterPage() {
   }
 
   return (
-    <div className="w-full">
-      <div className="space-y-2 pb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
-          Create your account
-        </h1>
-        <p className="text-sm text-text-secondary">
-          Enter your information below to get started.
-        </p>
+    <div className="rounded-2xl border border-border-secondary/70 bg-white p-8 shadow-sm sm:p-10">
+      {/* Logo mark + heading */}
+      <div className="mb-8 flex flex-col items-center gap-4 text-center">
+        <Image
+          src="/brand/tradepartna-mark.svg"
+          alt="TradePartna"
+          width={56}
+          height={47}
+          priority
+          className="h-12 w-auto"
+        />
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+            Create your account
+          </h1>
+          <p className="text-sm text-text-secondary">
+            Enter your information below to get started.
+          </p>
+        </div>
       </div>
 
       <RegisterForm />
 
+      {/* Divider */}
       <div className="my-6 flex items-center gap-3">
-        <span className="h-px flex-1 bg-border-primary" />
-        <span className="text-xs font-medium text-text-tertiary">OR</span>
-        <span className="h-px flex-1 bg-border-primary" />
+        <span className="h-px flex-1 bg-border-secondary" />
+        <span className="text-xs text-text-tertiary">Or continue with</span>
+        <span className="h-px flex-1 bg-border-secondary" />
       </div>
 
       <GoogleSignInButton />
 
-      <p className="mt-8 text-center text-sm text-text-secondary">
+      <p className="mt-6 text-center text-sm text-text-secondary">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="font-semibold text-ai-accent underline-offset-4 transition-colors hover:underline"
+          className="font-semibold text-auth-accent transition-colors hover:underline"
         >
           Sign in
         </Link>

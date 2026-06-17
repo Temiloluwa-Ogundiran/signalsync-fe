@@ -72,7 +72,11 @@ export function ForgotPasswordForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="h-11 w-full bg-auth-accent text-white hover:bg-auth-accent-hover focus-visible:ring-auth-accent/40"
+          disabled={isLoading}
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Send reset link
         </Button>

@@ -167,7 +167,7 @@ export function RegisterForm() {
           </p>
         )}
         <Button
-          className="w-full cursor-pointer"
+          className="h-11 w-full cursor-pointer bg-auth-accent text-white hover:bg-auth-accent-hover focus-visible:ring-auth-accent/40"
           type="submit"
           disabled={isPending}
         >
