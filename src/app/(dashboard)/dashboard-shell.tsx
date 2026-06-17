@@ -7,6 +7,7 @@ import { ConnectAccountModal } from "@/features/journal/components/connect-accou
 import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
 import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
+import { DemoDataBanner } from "@/features/journal/components/demo-data-banner";
 import { useActiveJournalAutoSync } from "@/features/journal/hooks/use-active-journal-auto-sync";
 
 export default function DashboardShell({
@@ -36,6 +37,7 @@ export default function DashboardShell({
           </Suspense>
 
           <main className="scrollbar-thin min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0">
+            <DemoDataBanner />
             {children}
           </main>
         </div>

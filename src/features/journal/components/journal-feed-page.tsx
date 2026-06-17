@@ -15,7 +15,6 @@ import { BookOpen01Icon } from "@hugeicons/core-free-icons";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
 import { JournalEmptyState } from "./journal-empty-state";
-import { DemoDataBanner } from "./demo-data-banner";
 import {
   JournalMonthCalendar,
   type MonthCalendarDay,
@@ -289,8 +288,6 @@ export function JournalFeedPage() {
         dateRange={parsedDateRange}
         onApplyDateRange={applyDateRange}
       />
-
-      <DemoDataBanner isDemo={Boolean(activeAccount?.is_demo)} />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Left: day feed */}
