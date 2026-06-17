@@ -8,7 +8,7 @@
 :root {
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
   --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
-  --bg-canvas: #F4F6F8; /* tier 1 — content canvas (neutral grey) */
+  --bg-canvas: #f7f8fa; /* tier 1 — content canvas (neutral grey) */
   --bg-secondary: #ffffff; /* tier 2 — surface (cards, sidebar) */
   --bg-tertiary: #f1f3f7; /* surface-2 — raised chip/inset (reads on white sidebar) */
   --bg-hover: #e4e8ee; /* border-weight hover (one step deeper, same hue) */
@@ -101,7 +101,10 @@
      Rail < sidebar < content step in tone via subtle off-whites. */
   --chrome-bar-bg: #ffffff; /* header bar — white edge-to-edge */
   --sidebar-chrome-bg: #ffffff;
-  --nav-rail-bg: #ffffff; /* icon rail — white */
+  --nav-rail-bg: #1e1b4b; /* icon rail — deep indigo, anchors the left edge */
+  --nav-rail-icon: #a5a3c7; /* rail icons — muted lavender (inactive) */
+  --nav-rail-icon-active: #ffffff; /* rail active icon — bright white */
+  --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.08); /* rail hover wash */
   --nav-sidebar-bg: #ffffff; /* contextual sidebar — white */
   --sidebar-nav-active-bg: #f1f3f7; /* grey pill (reads on white sidebar) */
   --sidebar-nav-active-border: #e4e8ee;
@@ -292,6 +295,9 @@
   --chrome-bar-bg: #0a0a0a;
   --sidebar-chrome-bg: #0a0a0a;
   --nav-rail-bg: #0a0a0b; /* tier 1 — icon rail (darkest, deepest layer) */
+  --nav-rail-icon: #71717a; /* rail icons — muted (inactive) */
+  --nav-rail-icon-active: #f4f4f5; /* rail active icon — bright */
+  --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.06); /* rail hover wash */
   --nav-sidebar-bg: #0f1012; /* tier 2 — contextual sidebar (clear step lighter) */
   --sidebar-nav-active-bg: #2a2b2f;
   --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
@@ -455,6 +461,9 @@
   --color-chrome-bar-bg: var(--chrome-bar-bg);
   --color-sidebar-chrome-bg: var(--sidebar-chrome-bg);
   --color-nav-rail-bg: var(--nav-rail-bg);
+  --color-nav-rail-icon: var(--nav-rail-icon);
+  --color-nav-rail-icon-active: var(--nav-rail-icon-active);
+  --color-nav-rail-icon-hover-bg: var(--nav-rail-icon-hover-bg);
   --color-nav-sidebar-bg: var(--nav-sidebar-bg);
   --color-nav-hairline: var(--nav-hairline);
   --color-nav-seam: var(--nav-seam);
@@ -714,6 +723,14 @@ body {
     0 0 10px rgba(139, 92, 246, 0.2),
     0 1px 4px rgba(0, 0, 0, 0.3) !important;
 }
+/* Light mode: drop all glow/shadow from the Ask Partna AI trigger — the violet
+   gradient carries it; the glow reads as noise on the light canvas. Dark mode
+   keeps its glow (defined above). */
+:root:not(.dark) .ai-trigger,
+:root:not(.dark) .ai-trigger:hover {
+  box-shadow: none !important;
+}
+
 .ai-trigger__spark {
   color: #c4b5fd; /* bright violet — catches the eye */
   animation: ai-trigger-breathe 3s ease-in-out infinite;

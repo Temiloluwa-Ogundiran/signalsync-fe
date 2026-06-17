@@ -49,6 +49,8 @@ declare module "@tanstack/react-table" {
 interface JournalTradeTableProps {
   rows: TradeHistoryRow[];
   onOpenJournal: (row: TradeHistoryRow) => void;
+  /** Open the trade-detail side panel (fired by clicking a data cell). */
+  onRowClick?: (row: TradeHistoryRow) => void;
   onDeleteManualTrade?: (tradeId: string) => void;
   /** Persist a trade's 1–5 star rating (0 clears it). */
   onRateTrade?: (tradeId: string, rating: number) => void;
@@ -143,48 +145,15 @@ function DirectionPill({ direction }: { direction: "buy" | "sell" }) {
   );
 }
 
-/**
- * TP/SL visual: a thin track with entry at center, TP and SL markers placed by
- * their distance from entry. Purely positional — no green/red on the chrome.
- */
-function TpSlBar({ row }: { row: TradeHistoryRow }) {
-  const entry = asNumber(row.open_price);
-  const tp = row.tp != null ? asNumber(row.tp) : null;
-  const sl = row.sl != null ? asNumber(row.sl) : null;
-  if (!entry || (tp == null && sl == null)) {
-    return <span className="text-xs text-text-tertiary">—</span>;
-  }
-  const span = Math.max(
-    Math.abs((tp ?? entry) - entry),
-    Math.abs((sl ?? entry) - entry),
-    1e-9,
-  );
-  const pos = (price: number) => 50 + ((price - entry) / span) * 45;
-  return (
-    <div className="relative h-4 w-20" title={`TP ${tp ?? "—"} · SL ${sl ?? "—"}`}>
-      <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-hairline" />
-      <span className="absolute left-1/2 top-1/2 h-2.5 w-px -translate-x-1/2 -translate-y-1/2 bg-text-tertiary" />
-      {tp != null ? (
-        <span
-          className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-kpi-metric-positive"
-          style={{ left: `${pos(tp)}%` }}
-        />
-      ) : null}
-      {sl != null ? (
-        <span
-          className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-danger"
-          style={{ left: `${pos(sl)}%` }}
-        />
-      ) : null}
-    </div>
-  );
-}
-
 /* ---------- main table ---------- */
+
+// Pinned utility columns whose clicks must NOT open the detail panel.
+const NON_PANEL_COLUMNS = new Set(["select", "favorite", "expand"]);
 
 export function JournalTradeTable({
   rows,
   onOpenJournal,
+  onRowClick,
   onDeleteManualTrade,
   onRateTrade,
   canLoadMore = false,
@@ -288,6 +257,8 @@ export function JournalTradeTable({
       "Direction",
       "Open",
       "Close",
+      "SL",
+      "TP",
       "Volume",
       "Fees",
       "Net P&L",
@@ -301,6 +272,8 @@ export function JournalTradeTable({
         r.direction,
         asNumber(r.open_price),
         asNumber(r.close_price),
+        r.sl == null ? "" : asNumber(r.sl),
+        r.tp == null ? "" : asNumber(r.tp),
         r.volume,
         asNumber(r.commission),
         asNumber(r.net_profit),
@@ -481,21 +454,31 @@ export function JournalTradeTable({
                         row.getIsSelected() && "bg-ai-soft-bg",
                       )}
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          className={cn(
-                            "whitespace-nowrap border-b border-hairline px-3 py-2 text-text-primary",
-                            cell.column.columnDef.meta?.align === "right" &&
-                              "text-right tabular-nums",
-                          )}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </td>
-                      ))}
+                      {row.getVisibleCells().map((cell) => {
+                        const clickable =
+                          onRowClick && !NON_PANEL_COLUMNS.has(cell.column.id);
+                        return (
+                          <td
+                            key={cell.id}
+                            onClick={
+                              clickable
+                                ? () => onRowClick(row.original)
+                                : undefined
+                            }
+                            className={cn(
+                              "whitespace-nowrap border-b border-hairline px-3 py-2 text-text-primary",
+                              cell.column.columnDef.meta?.align === "right" &&
+                                "text-right tabular-nums",
+                              clickable && "cursor-pointer",
+                            )}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                     {isOpen ? (
                       <tr>
@@ -670,14 +653,20 @@ function buildColumns({
       sortingFn: (a, b) =>
         (a.original.rating ?? 0) - (b.original.rating ?? 0),
       cell: ({ row }) => (
-        <StarRating
-          value={row.original.rating ?? 0}
-          onRate={
-            onRateTrade
-              ? (rating) => onRateTrade(row.original.id, rating)
-              : undefined
-          }
-        />
+        <span
+          onClick={(e) => e.stopPropagation()}
+          role="presentation"
+          className="inline-flex"
+        >
+          <StarRating
+            value={row.original.rating ?? 0}
+            onRate={
+              onRateTrade
+                ? (rating) => onRateTrade(row.original.id, rating)
+                : undefined
+            }
+          />
+        </span>
       ),
     },
     {
@@ -727,10 +716,22 @@ function buildColumns({
           : numFmt(asNumber(row.original.close_price), 3),
     },
     {
-      id: "tpsl",
-      header: "TP / SL",
-      enableSorting: false,
-      cell: ({ row }) => <TpSlBar row={row.original} />,
+      accessorKey: "sl",
+      header: "SL",
+      meta: { align: "right" },
+      cell: ({ row }) =>
+        row.original.sl == null
+          ? "—"
+          : numFmt(asNumber(row.original.sl), 3),
+    },
+    {
+      accessorKey: "tp",
+      header: "TP",
+      meta: { align: "right" },
+      cell: ({ row }) =>
+        row.original.tp == null
+          ? "—"
+          : numFmt(asNumber(row.original.tp), 3),
     },
     {
       accessorKey: "commission",
@@ -880,7 +881,8 @@ const COLUMN_LABELS: Record<string, string> = {
   volume: "Qty",
   open_price: "Entry",
   close_price: "Exit",
-  tpsl: "TP / SL",
+  sl: "SL",
+  tp: "TP",
   commission: "Fees",
   net_profit: "Net P&L",
   net_roi_percent: "Net ROI",

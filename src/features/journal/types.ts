@@ -315,6 +315,24 @@ export interface JournalTrade {
   sl?: number;
   tp?: number;
   swap?: number;
+  setup?: string | null;
+  duration_seconds?: number;
+  session?: string;
+  mfe?: number | string | null;
+  mae?: number | string | null;
+  r_multiple?: number | null;
+}
+
+export interface TradeNote {
+  trade_id: string;
+  note_html: string | null;
+  note_updated_at: string | null;
+}
+
+export interface Setup {
+  id: string;
+  name: string;
+  position: number;
 }
 
 export interface JournalAdjacentTradedDatesResponse {

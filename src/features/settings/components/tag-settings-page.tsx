@@ -446,7 +446,7 @@ export function TagSettingsPage() {
 
   if (isLoading) {
     return (
-      <SettingsPageShell title="Tag Management">
+      <SettingsPageShell title="Custom Tags">
         <div className="flex justify-center py-16">
           <AppLoader />
         </div>
@@ -456,7 +456,7 @@ export function TagSettingsPage() {
 
   return (
     <SettingsPageShell
-      title="Tag Management"
+      title="Custom Tags"
       description="Organise your tags into groups, then apply them to trades from the trade row. Each group has a color its tags share."
     >
       {/* New group */}

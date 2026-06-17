@@ -8,6 +8,7 @@ import type { JournalMessage, JournalTrade } from "../types";
 import { useJournalDay, JOURNAL_DAY_MODAL_KEYS } from "./use-journal-day-modal";
 import { useDayNote, useSaveDayNote } from "./use-day-note";
 import { useJournalUiStore } from "../store/journal-ui-store";
+import { htmlToText } from "@/lib/format/html-to-text";
 
 /**
  * Powers the expanded day card: lazily loads the day's trades + per-trade
@@ -60,7 +61,9 @@ export function useExpandedDay(
   }, [notedTradeIds, messageQueries]);
 
   const noteQuery = useDayNote(accountId, date, enabled);
-  const initialNote = noteQuery.data?.note_html ?? "";
+  // The note is stored as HTML (legacy) but edited as plain text — strip tags so
+  // empty scaffolding (e.g. "<blockquote><p></p></blockquote>") shows as blank.
+  const initialNote = htmlToText(noteQuery.data?.note_html);
 
   const saveMutation = useSaveDayNote(accountId, date);
   const saveNote = useCallback(

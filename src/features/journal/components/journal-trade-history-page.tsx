@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppLoader } from "@/components/app-loader";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { useUpdateTradeRating } from "@/features/journal/hooks/use-journal-tags"
 import type { JournalTrade } from "@/features/journal/types";
 import { formatTradeTimestamp } from "./journal-day-modal.utils";
 import { JournalTradeTable } from "./journal-trade-table";
+import { TradeDetailPanel } from "./trade-detail-panel";
 import { ChartLineData01Icon } from "@hugeicons/core-free-icons";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalEmptyState } from "./journal-empty-state";
@@ -140,6 +141,14 @@ export function JournalTradeHistoryPage() {
     [tradeHistoryQuery.data],
   );
 
+  // Trade-detail side panel: track the open trade by id and resolve its (fresh)
+  // row from `rows` so the panel reflects post-mutation data.
+  const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
+  const selectedTrade = useMemo(
+    () => rows.find((r) => r.id === selectedTradeId) ?? null,
+    [rows, selectedTradeId],
+  );
+
   // Journaling lives on the Day Journal feed now — jump there and focus the
   // day's session note via ?focusDate.
   const onOpenJournal = (row: TradeHistoryRow) => {
@@ -193,6 +202,7 @@ export function JournalTradeHistoryPage() {
         <JournalTradeTable
           rows={rows}
           onOpenJournal={onOpenJournal}
+          onRowClick={(row) => setSelectedTradeId(row.id)}
           onDeleteManualTrade={handleDeleteManualTrade}
           onRateTrade={handleRateTrade}
           canLoadMore={tradeHistoryQuery.hasNextPage}
@@ -200,6 +210,13 @@ export function JournalTradeHistoryPage() {
           onLoadMore={() => void tradeHistoryQuery.fetchNextPage()}
         />
       )}
+
+      <TradeDetailPanel
+        trade={selectedTrade}
+        accountId={activeAccountId || ""}
+        open={!!selectedTrade}
+        onClose={() => setSelectedTradeId(null)}
+      />
     </div>
   );
 }

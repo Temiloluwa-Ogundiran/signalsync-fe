@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Form,
@@ -191,9 +191,6 @@ export function ProfileSettingsPage() {
   }
 
   const shownAvatar = avatarPreview ?? user.avatar_url;
-  const initial = (user.display_name || user.email || "?")
-    .charAt(0)
-    .toUpperCase();
 
   return (
     <SettingsPageShell
@@ -212,9 +209,11 @@ export function ProfileSettingsPage() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-2xl font-bold text-accent-foreground">
-                {initial}
-              </span>
+              <User
+                className="size-9 text-text-tertiary"
+                strokeWidth={1.75}
+                aria-label="No profile photo"
+              />
             )}
           </div>
           <div className="flex flex-col items-center gap-1 sm:items-start">

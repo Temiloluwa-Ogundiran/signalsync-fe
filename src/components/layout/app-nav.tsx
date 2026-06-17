@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { formatMoney } from "@/lib/format/money";
 import {
   buildNavRegistry,
   findActiveApp,
@@ -37,10 +38,9 @@ function RailIcon({
         className={cn(
           "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors",
           active
-            ? // Neutral highlight — app selection, no violet (reserved for the
-              // sidebar active page + Partna identity).
-              "bg-surface-subtle text-text-primary"
-            : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
+            ? // Bright active icon on the deep-indigo rail.
+              "bg-nav-rail-icon-hover-bg text-nav-rail-icon-active"
+            : "text-nav-rail-icon hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active",
         )}
       >
         <HugeiconsIcon
@@ -98,8 +98,19 @@ export function AppNav() {
   const topApps = apps.filter((app) => app.id !== "settings");
   const settingsApp = apps.find((app) => app.id === "settings");
 
+  // Settings has longer labels (e.g. "Custom Tags") — give its context a
+  // slightly wider sidebar than the standard apps so labels don't truncate.
+  const isSettings = activeApp.id === "settings";
+  const sidebarWidth = isSettings ? "w-[248px]" : "w-[200px]";
+  const railPlusSidebarWidth = isSettings ? "w-[312px]" : "w-[264px]";
+
   return (
-    <div className="relative hidden h-screen w-[264px] shrink-0 flex-col bg-nav-rail-bg lg:flex">
+    <div
+      className={cn(
+        "relative hidden h-screen shrink-0 flex-col bg-nav-sidebar-bg lg:flex",
+        railPlusSidebarWidth,
+      )}
+    >
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
           Bottom hairline matches the header's border so the horizontal line runs
           unbroken from the left edge across into the header. */}
@@ -158,7 +169,12 @@ export function AppNav() {
         {/* TIER 2 — contextual sidebar (clear tonal step lighter than the rail).
             A near-subliminal seam sharpens the boundary without reading as a line.
             Partna AI hosts its session/history nav here instead of generic groups. */}
-        <aside className="relative flex h-full w-[200px] shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans">
+        <aside
+          className={cn(
+            "relative flex h-full shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans",
+            sidebarWidth,
+          )}
+        >
           {activeApp.isAI ? (
             <AiNavSidebar app={activeApp} apps={topApps} />
           ) : (
@@ -181,13 +197,6 @@ function renderAppFooter(app: NavApp) {
   return null;
 }
 
-const balanceFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 /**
  * Journal sidebar footer: the active account's balance, then an "Add New Trade"
  * button with a split "import trades" action — mirrors the legacy sidebar.
@@ -200,17 +209,17 @@ function JournalNavFooter() {
   const activeAccount =
     accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
   // Backend serializes the Decimal as a string ("583.61"); coerce to number.
+  // Missing/zero balance still shows the card — defaults to 0.00.
   const rawBalance = activeAccount?.latest_balance;
-  const balance =
-    rawBalance == null ? null : Number(rawBalance);
-  const hasBalance = balance != null && Number.isFinite(balance);
+  const numericBalance = rawBalance == null ? 0 : Number(rawBalance);
+  const balance = Number.isFinite(numericBalance) ? numericBalance : 0;
 
   return (
     <div className="flex flex-col gap-3 p-3">
-      {hasBalance ? (
+      {activeAccount ? (
         <div className="rounded-xl bg-surface-subtle px-4 py-3">
           <p className="text-lg font-bold leading-tight text-text-primary tabular-nums">
-            {balanceFormatter.format(balance as number)}
+            {formatMoney(balance, { currency: activeAccount.currency })}
           </p>
           <p className="mt-0.5 text-sm text-text-secondary">Account Balance</p>
         </div>
@@ -242,7 +251,7 @@ function RailPinned({
       <a
         href={href}
         aria-label={label}
-        className="flex size-11 items-center justify-center rounded-xl text-sidebar-nav-inactive-text transition-colors hover:bg-surface-subtle hover:text-sidebar-nav-active-text"
+        className="flex size-11 items-center justify-center rounded-xl text-nav-rail-icon transition-colors hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active"
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </a>

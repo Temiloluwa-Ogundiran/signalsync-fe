@@ -4,7 +4,6 @@ import {
   Notebook01Icon,
   Book02Icon,
   AnalyticsUpIcon,
-  StrategyIcon,
   Analytics01Icon,
   Wallet01Icon,
   AiMagicIcon,
@@ -102,7 +101,7 @@ export function buildNavRegistry(actionFns: {
     },
     {
       id: "performance",
-      name: "Performance",
+      name: "Journal",
       icon: PencilEdit02Icon,
       route: "/dashboard",
       groups: [
@@ -133,11 +132,6 @@ export function buildNavRegistry(actionFns: {
               label: "Reports",
               route: "/reports",
               comingSoon: true,
-            },
-            {
-              icon: StrategyIcon,
-              label: "Strategies",
-              route: "/strategies",
             },
           ],
         },
@@ -217,7 +211,7 @@ export function buildNavRegistry(actionFns: {
             { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
             {
               icon: Tag01Icon,
-              label: "Tag Management",
+              label: "Custom Tags",
               route: "/settings/tags",
             },
             {
