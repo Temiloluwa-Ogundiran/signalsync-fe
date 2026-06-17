@@ -210,11 +210,15 @@ export const authConfig = {
       try {
         const backendUrl = resolveAuthBackendUrl();
 
+        // Best-effort token revocation. Sign-out blocks on this event, so cap it
+        // with a short timeout — a slow/cold backend must not stall logout. The
+        // session is cleared locally regardless; a stale refresh token expires.
         await fetch(`${backendUrl}/auth/logout`, {
           method: "POST",
           headers: {
             Cookie: `refresh_token=${message.token.refreshToken}`,
           },
+          signal: AbortSignal.timeout(2500),
         });
       } catch {
         console.error("Failed to revoke backend refresh token during sign-out");
