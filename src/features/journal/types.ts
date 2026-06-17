@@ -269,6 +269,8 @@ export interface JournalDailyResponse {
   id: string;
   trading_date: string;
   account_timezone: string;
+  /** Broker account currency (ISO-4217, e.g. "USD", "NGN") for money formatting. */
+  account_currency: string;
   reviewed_at?: string | null;
   day_start_balance: number | null;
   day_end_balance: number | null;

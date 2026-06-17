@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { formatMoney, formatMoneyCompactSigned } from "@/lib/format/money";
 import type { JournalCalendarDayStat, JournalMonthHeaderStats } from "../types";
 
 interface JournalCalendarProps {
@@ -15,15 +16,8 @@ interface JournalCalendarProps {
   onNextMonth: () => void;
   headerStats: JournalMonthHeaderStats;
   isHeaderStatsLoading?: boolean;
-}
-
-function formatPnlCompact(value: number) {
-  const compact = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 2,
-  }).format(Math.abs(value));
-
-  return `${value >= 0 ? "+" : "-"}$${compact}`;
+  /** Broker account currency for money formatting (ISO-4217). */
+  currency: string;
 }
 
 function getPnlTone(value: number) {
@@ -66,6 +60,7 @@ export function JournalCalendar({
   onNextMonth,
   headerStats,
   isHeaderStatsLoading = false,
+  currency,
 }: JournalCalendarProps) {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -168,9 +163,10 @@ export function JournalCalendar({
                           : "text-(--calendar-pnl-loss-text)",
                       )}
                     >
-                      {headerStats.profits >= 0 ? "+" : "-"}$
-                      {Math.abs(headerStats.profits).toLocaleString(undefined, {
-                        maximumFractionDigits: 2,
+                      {headerStats.profits >= 0 ? "+" : "-"}
+                      {formatMoney(Math.abs(headerStats.profits), {
+                        currency,
+                        fractionDigits: 2,
                       })}
                     </p>
                   </div>
@@ -266,7 +262,7 @@ export function JournalCalendar({
                               tone === "neutral" && "text-text-secondary",
                             )}
                           >
-                            {formatPnlCompact(stats.pnl)}
+                            {formatMoneyCompactSigned(stats.pnl, currency)}
                           </div>
                           <div className="text-right text-xs text-(--calendar-cell-subtle)">
                             {stats.trades}{" "}
@@ -296,7 +292,9 @@ export function JournalCalendar({
                         weeklyTone === "neutral" && "text-text-secondary",
                       )}
                     >
-                      {weeklyPnl ? formatPnlCompact(weeklyPnl) : "$0"}
+                      {weeklyPnl
+                        ? formatMoneyCompactSigned(weeklyPnl, currency)
+                        : formatMoney(0, { currency, compact: true })}
                     </span>
                   </div>
                 </div>
@@ -363,7 +361,7 @@ export function JournalCalendar({
                       : "text-(--calendar-pnl-loss-text)",
                   )}
                 >
-                  {formatPnlCompact(selectedStats.pnl)}
+                  {formatMoneyCompactSigned(selectedStats.pnl, currency)}
                 </p>
               ) : null}
             </div>

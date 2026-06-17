@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/money";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import type { JournalAnalyticsEvaluationResponse } from "../types";
 
 interface JournalEvaluationPanelProps {
@@ -9,16 +11,11 @@ interface JournalEvaluationPanelProps {
   className?: string;
 }
 
-const usd = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-function money(value: number): string {
+function money(value: number, currency: string): string {
   // Keep the sign explicit for losers (e.g. -$231.21); positives plain.
-  return value < 0 ? `-${usd.format(Math.abs(value))}` : usd.format(value);
+  return value < 0
+    ? `-${formatMoney(Math.abs(value), { currency, fractionDigits: 2 })}`
+    : formatMoney(value, { currency, fractionDigits: 2 });
 }
 
 function percent(value: number): string {
@@ -67,16 +64,17 @@ export function JournalEvaluationPanel({
   isLoading = false,
   className,
 }: JournalEvaluationPanelProps) {
+  const currency = useActiveAccountCurrency();
   const rows: Row[] = data
     ? [
         { label: "Total Number of Trades", value: data.total_trades },
         {
           label: "Avg. Profit per Trading Day",
-          value: money(data.avg_profit_per_trading_day),
+          value: money(data.avg_profit_per_trading_day, currency),
         },
-        { label: "Biggest Winner", value: money(data.biggest_winner) },
-        { label: "Biggest Loser", value: money(data.biggest_loser) },
-        { label: "Total Fees", value: money(data.total_fees) },
+        { label: "Biggest Winner", value: money(data.biggest_winner, currency) },
+        { label: "Biggest Loser", value: money(data.biggest_loser, currency) },
+        { label: "Total Fees", value: money(data.total_fees, currency) },
         { label: "Avg. Hold Time", value: holdTime(data.avg_hold_seconds) },
         { label: "Winrate w/o BE", value: percent(data.winrate_wo_be) },
         { label: "ROI", value: percent(data.roi) },

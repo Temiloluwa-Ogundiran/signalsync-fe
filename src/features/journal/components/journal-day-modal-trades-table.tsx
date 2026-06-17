@@ -28,12 +28,14 @@ interface JournalDayModalTradesTableProps {
   rows: JournalDayTradeRow[];
   onOpenTradeJournal: (tradeId: string) => void;
   onDeleteManualTrade?: (tradeId: string) => void;
+  currency: string;
 }
 
 export function JournalDayModalTradesTable({
   rows,
   onOpenTradeJournal,
   onDeleteManualTrade,
+  currency,
 }: JournalDayModalTradesTableProps) {
   const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
   const columnWidths = [
@@ -117,7 +119,7 @@ export function JournalDayModalTradesTable({
                 net >= 0 ? "text-kpi-metric-positive" : "text-danger"
               }`}
             >
-              {formatCurrency(net)}
+              {formatCurrency(net, currency)}
             </span>
           );
         },
@@ -191,7 +193,7 @@ export function JournalDayModalTradesTable({
         ),
       },
     ],
-    [onOpenTradeJournal, onDeleteManualTrade, openEditTradeModal],
+    [onOpenTradeJournal, onDeleteManualTrade, openEditTradeModal, currency],
   );
 
   const table = useReactTable({

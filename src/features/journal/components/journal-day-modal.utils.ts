@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format/money";
 import type { JournalTrade } from "../types";
 import type { JournalDaySummary } from "./journal-day-modal.types";
 
@@ -10,8 +11,13 @@ export function asNumber(value: number | string | null | undefined) {
   return 0;
 }
 
-export function formatCurrency(value: number) {
-  return `${value < 0 ? "-" : ""}$${Math.abs(value).toFixed(2)}`;
+/**
+ * Format a monetary amount in the given broker-account currency (ISO-4217, e.g.
+ * "USD", "NGN"); omit to default to USD ($). Display-only — no conversion is
+ * performed on `value`.
+ */
+export function formatCurrency(value: number, currency?: string | null) {
+  return formatMoney(value, { currency });
 }
 
 export function formatClock(iso: string) {

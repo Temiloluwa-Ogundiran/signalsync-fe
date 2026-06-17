@@ -65,6 +65,9 @@ export function JournalDayModal({
     () => dayQuery.data?.trades ?? [],
     [dayQuery.data?.trades],
   );
+  // Broker account currency for this day — money is shown in the account's own
+  // currency. Defaults to USD until the day data loads.
+  const currency = dayQuery.data?.account_currency ?? "USD";
   const chipByTradeId = useMemo(
     () =>
       new Map(
@@ -115,7 +118,11 @@ export function JournalDayModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] w-[92vw] max-w-[92vw] flex-col overflow-hidden rounded-3xl border border-border-primary bg-card-bg p-0 sm:max-w-[92vw] lg:max-w-[1180px]">
-        <JournalDayModalHeader dayTitle={dayTitle} summary={summary} />
+        <JournalDayModalHeader
+          dayTitle={dayTitle}
+          summary={summary}
+          currency={currency}
+        />
 
         {/* Single scroll region: the whole body (overview + trades) scrolls,
             not just the trades table. */}
@@ -127,11 +134,16 @@ export function JournalDayModal({
             </div>
           ) : (
             <>
-              <JournalDayModalOverview summary={summary} trades={trades} />
+              <JournalDayModalOverview
+                summary={summary}
+                trades={trades}
+                currency={currency}
+              />
               <JournalDayModalTradesTable
                 rows={tradeRows}
                 onOpenTradeJournal={openTradeJournal}
                 onDeleteManualTrade={handleDeleteManualTrade}
+                currency={currency}
               />
             </>
           )}

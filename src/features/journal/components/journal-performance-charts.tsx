@@ -14,26 +14,21 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/lib/use-chart-colors";
+import { formatMoney } from "@/lib/format/money";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import type {
   JournalAnalyticsInstrumentItem,
   JournalAnalyticsTimePerformancePoint,
 } from "../types";
 
-function money(value: number) {
-  const abs = Math.abs(value).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return value < 0 ? `-$${abs}` : `$${abs}`;
+function money(value: number, currency: string) {
+  return formatMoney(value, { currency, fractionDigits: 2 });
 }
 
-function formatYAxis(value: number) {
-  if (value === 0) return "$0";
-  const compact = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(Math.abs(value));
-  return `${value < 0 ? "-" : ""}$${compact}`;
+function formatYAxis(value: number, currency: string) {
+  if (value === 0) return formatMoney(0, { currency, fractionDigits: 0 });
+  const sign = value < 0 ? "-" : "";
+  return `${sign}${formatMoney(Math.abs(value), { currency, compact: true })}`;
 }
 
 interface PerfDatum {
@@ -45,10 +40,12 @@ function PerfTooltip({
   active,
   payload,
   label,
+  currency,
 }: {
   active?: boolean;
   payload?: Array<{ value?: number | string }>;
   label?: string;
+  currency: string;
 }) {
   if (!active || !payload?.length) return null;
   const value = payload[0]?.value;
@@ -62,7 +59,7 @@ function PerfTooltip({
           value >= 0 ? "text-success" : "text-danger",
         )}
       >
-        {money(value)}
+        {money(value, currency)}
       </p>
     </div>
   );
@@ -108,6 +105,7 @@ function PerfChartCard({
   angledLabels = false,
 }: PerfChartCardProps) {
   const colors = useChartColors();
+  const currency = useActiveAccountCurrency();
   const axisTick = { fill: colors.axisTick, fontSize: 11, fontWeight: 500 };
   const isEmpty = !isLoading && data.length === 0;
   return (
@@ -151,14 +149,14 @@ function PerfChartCard({
                 tickMargin={8}
               />
               <YAxis
-                tickFormatter={formatYAxis}
+                tickFormatter={(value) => formatYAxis(value, currency)}
                 tick={axisTick}
                 axisLine={false}
                 tickLine={false}
                 width={52}
               />
               <Tooltip
-                content={<PerfTooltip />}
+                content={<PerfTooltip currency={currency} />}
                 cursor={{ fill: colors.grid }}
               />
               <Bar

@@ -12,12 +12,14 @@ import {
   getCurrentUser,
   listSessions,
   revokeSession,
+  updatePreferences,
   updateProfile,
   uploadAvatar,
   type ChangeEmailPayload,
   type ChangePasswordPayload,
   type CurrentUser,
   type DeleteAccountPayload,
+  type UpdatePreferencesPayload,
   type UpdateProfilePayload,
 } from "../api/user.api";
 
@@ -41,6 +43,19 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) =>
       updateProfile(payload, session?.accessToken),
+    onSuccess: (user) => {
+      queryClient.setQueryData(queryKeys.settings.me(), user);
+    },
+  });
+}
+
+export function useUpdatePreferences() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdatePreferencesPayload) =>
+      updatePreferences(payload, session?.accessToken),
     onSuccess: (user) => {
       queryClient.setQueryData(queryKeys.settings.me(), user);
     },

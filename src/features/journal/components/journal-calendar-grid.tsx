@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { JournalCalendarDayStat } from "../types";
 import { useJournalUiStore } from "../store/journal-ui-store";
+import { formatCalendarMoney } from "./calendar-money";
 
 const JOURNAL_CELL_ICON_SRC = "/icons/journal/modal/journal.svg";
 
@@ -13,6 +14,7 @@ interface JournalCalendarGridProps {
   monthStartOffset: number;
   onSelectDay: (day: number) => void;
   currentMonth: Date;
+  currency: string;
 }
 
 const DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THUR", "FRI", "SAT"];
@@ -29,29 +31,13 @@ function heatStyle(value: number) {
   };
 }
 
-function compactMoney(value: number) {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (abs < 1000) {
-    return `${sign}$${abs.toLocaleString("en-US", {
-      minimumFractionDigits: abs < 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    })}`;
-  }
-
-  const compact = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(abs);
-  return `${sign}$${compact}`;
-}
-
 export function JournalCalendarGrid({
   dayStats,
   daysInMonth,
   monthStartOffset,
   onSelectDay,
   currentMonth,
+  currency,
 }: JournalCalendarGridProps) {
   const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
 
@@ -171,7 +157,7 @@ export function JournalCalendarGrid({
                       pnl === 0 && "text-text-secondary",
                     )}
                   >
-                    {compactMoney(pnl)}
+                    {formatCalendarMoney(pnl, currency)}
                   </p>
                   <p className="text-[0.52rem] sm:text-[0.62rem] text-text-secondary font-medium tabular-nums">
                     <span>{trades}</span>

@@ -5,11 +5,13 @@ import { formatCurrency } from "./journal-day-modal.utils";
 interface JournalDayModalHeaderProps {
   dayTitle: string;
   summary: JournalDaySummary;
+  currency: string;
 }
 
 export function JournalDayModalHeader({
   dayTitle,
   summary,
+  currency,
 }: JournalDayModalHeaderProps) {
   return (
     <DialogHeader className="border-b border-border-primary px-8 py-4 flex items-start justify-center">
@@ -21,7 +23,7 @@ export function JournalDayModalHeader({
             summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
           }
         >
-          Net P&L {formatCurrency(summary.grossPnl)}
+          Net P&L {formatCurrency(summary.grossPnl, currency)}
         </span>
       </DialogTitle>
     </DialogHeader>

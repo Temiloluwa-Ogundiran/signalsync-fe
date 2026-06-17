@@ -1,30 +1,15 @@
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/money";
+import { formatCalendarMoney } from "./calendar-money";
 
 interface JournalWeekSummaryColumnProps {
   weeklyTotals: number[];
-}
-
-function formatCompact(value: number) {
-  if (!value) return "$0";
-
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (abs < 1000) {
-    return `${sign}$${abs.toLocaleString("en-US", {
-      minimumFractionDigits: abs < 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    })}`;
-  }
-
-  const compact = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(abs);
-  return `${sign}$${compact}`;
+  currency: string;
 }
 
 export function JournalWeekSummaryColumn({
   weeklyTotals,
+  currency,
 }: JournalWeekSummaryColumnProps) {
   return (
     <div className="grid grid-cols-2 gap-2 min-[480px]:grid-cols-3 sm:grid-cols-5 lg:flex lg:h-full lg:flex-col lg:gap-2">
@@ -56,7 +41,9 @@ export function JournalWeekSummaryColumn({
                 weekPnl === 0 && "text-text-secondary",
               )}
             >
-              {formatCompact(weekPnl)}
+              {weekPnl
+                ? formatCalendarMoney(weekPnl, currency)
+                : formatMoney(0, { currency, fractionDigits: 0 })}
             </p>
           </div>
         );

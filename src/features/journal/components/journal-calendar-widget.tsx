@@ -4,6 +4,7 @@ import { JournalCalendarHeader } from "./journal-calendar-header";
 import { JournalCalendarGrid } from "./journal-calendar-grid";
 import { JournalWeekSummaryColumn } from "./journal-week-summary-column";
 import { useCalendarSettingsStore } from "../store/calendar-settings-store";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import { cn } from "@/lib/utils";
 import type { JournalCalendarDayStat } from "../types";
 
@@ -31,6 +32,7 @@ export function JournalCalendarWidget({
   currentMonth,
 }: JournalCalendarWidgetProps) {
   const showWeekSummary = useCalendarSettingsStore((s) => s.showWeekSummary);
+  const currency = useActiveAccountCurrency();
   const totalCells = Math.ceil((monthStartOffset + daysInMonth) / 7) * 7;
   const weekRows = Array.from({ length: totalCells / 7 }, (_, rowIndex) =>
     Array.from({ length: 7 }, (_, colIndex) => {
@@ -56,6 +58,7 @@ export function JournalCalendarWidget({
         activeDays={activeDays}
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
+        currency={currency}
       />
       <div
         className={cn(
@@ -69,9 +72,13 @@ export function JournalCalendarWidget({
           monthStartOffset={monthStartOffset}
           onSelectDay={onSelectDay}
           currentMonth={currentMonth}
+          currency={currency}
         />
         {showWeekSummary ? (
-          <JournalWeekSummaryColumn weeklyTotals={weeklyTotals} />
+          <JournalWeekSummaryColumn
+            weeklyTotals={weeklyTotals}
+            currency={currency}
+          />
         ) : null}
       </div>
     </section>

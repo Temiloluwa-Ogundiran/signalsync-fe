@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/money";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 
 export interface PeriodSummary {
   /** Heading, e.g. "JUNE SO FAR". */
@@ -12,12 +14,13 @@ export interface PeriodSummary {
   tradingDays: number;
 }
 
-function money(value: number): string {
-  const abs = Math.round(Math.abs(value)).toLocaleString("en-US");
-  return value < 0 ? `-$${abs}` : `$${abs}`;
+function money(value: number, currency: string): string {
+  // Whole-number amounts, in the account currency.
+  return formatMoney(Math.round(value), { currency, fractionDigits: 0 });
 }
 
 export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
+  const currency = useActiveAccountCurrency();
   return (
     <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-hairline">
       <h3 className="mb-4 text-sm font-semibold tracking-wide text-text-secondary">
@@ -34,7 +37,7 @@ export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
                 : "text-danger",
             )}
           >
-            {money(summary.netPnl)}
+            {money(summary.netPnl, currency)}
           </span>
         </Row>
         <Row label="Win rate">

@@ -24,6 +24,8 @@ import {
 import { asNumber } from "./journal-day-modal.utils";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/money";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import Image from "next/image";
 import { useJournalUiStore } from "../store/journal-ui-store";
 
@@ -49,6 +51,7 @@ export function JournalTradeHistoryTable({
   onLoadMore,
 }: JournalTradeHistoryTableProps) {
   const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
+  const currency = useActiveAccountCurrency();
 
   const columns = useMemo<ColumnDef<TradeHistoryRow>[]>(
     () => [
@@ -139,7 +142,9 @@ export function JournalTradeHistoryTable({
                 net >= 0 ? "text-kpi-metric-positive" : "text-danger",
               )}
             >
-              {net >= 0 ? `+${formatPrice(net)}` : formatPrice(net)}
+              {net >= 0
+                ? `+${formatMoney(net, { currency, fractionDigits: 2 })}`
+                : formatMoney(net, { currency, fractionDigits: 2 })}
             </span>
           );
         },
@@ -191,7 +196,7 @@ export function JournalTradeHistoryTable({
         ),
       },
     ],
-    [onOpenJournal, onDeleteManualTrade, openEditTradeModal],
+    [onOpenJournal, onDeleteManualTrade, openEditTradeModal, currency],
   );
 
   const table = useReactTable({

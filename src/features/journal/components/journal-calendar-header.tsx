@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useCalendarSettingsStore } from "../store/calendar-settings-store";
+import { formatCalendarMoney } from "./calendar-money";
 
 interface JournalCalendarHeaderProps {
   monthLabel: string;
@@ -14,23 +15,7 @@ interface JournalCalendarHeaderProps {
   activeDays: number;
   onPrevMonth: () => void;
   onNextMonth: () => void;
-}
-
-function compactMoney(value: number) {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (abs < 1000) {
-    return `${sign}$${abs.toLocaleString("en-US", {
-      minimumFractionDigits: abs < 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    })}`;
-  }
-
-  const compact = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(abs);
-  return `${sign}$${compact}`;
+  currency: string;
 }
 
 export function JournalCalendarHeader({
@@ -39,6 +24,7 @@ export function JournalCalendarHeader({
   activeDays,
   onPrevMonth,
   onNextMonth,
+  currency,
 }: JournalCalendarHeaderProps) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
@@ -70,7 +56,7 @@ export function JournalCalendarHeader({
             monthlyPnl >= 0 ? "text-success" : "text-danger",
           )}
         >
-          {compactMoney(monthlyPnl)}
+          {formatCalendarMoney(monthlyPnl, currency)}
         </span>
         <span className="text-text-secondary tabular-nums">{activeDays} days</span>
         <CalendarSettings />

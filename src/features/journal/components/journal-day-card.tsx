@@ -9,8 +9,10 @@ import {
   Loading03Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format/money";
 import type { CurveIntradayDay, JournalMessage, JournalTrade } from "../types";
 import { annotateTrade } from "../lib/journal-trade-tags";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import { useExpandedDay } from "../hooks/use-expanded-day";
 import { JournalCoachsRead } from "./journal-coachs-read";
 import { JournalDayStatStrip, type DayStat } from "./journal-day-stat-strip";
@@ -44,13 +46,13 @@ interface JournalDayCardProps {
   onContinueCoach: (date: string) => void;
 }
 
-function money(value: number, withSign = true): string {
-  const abs = Math.abs(value).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+function money(value: number, currency: string, withSign = true): string {
+  const formatted = formatMoney(Math.abs(value), {
+    currency,
+    fractionDigits: 2,
   });
-  if (!withSign) return `$${abs}`;
-  return value < 0 ? `-$${abs}` : `$${abs}`;
+  if (!withSign) return formatted;
+  return value < 0 ? `-${formatted}` : formatted;
 }
 
 // Profit factor is unbounded; a single day with few/small losses produces huge
@@ -117,6 +119,7 @@ export function JournalDayCard({
   onNote,
   onContinueCoach,
 }: JournalDayCardProps) {
+  const currency = useActiveAccountCurrency();
   const [noteHighlight, setNoteHighlight] = useState(false);
   const noteRef = useRef<HTMLDivElement>(null);
 
@@ -165,13 +168,16 @@ export function JournalDayCard({
         label: "Profit factor",
         value: formatProfitFactor(day?.profit_factor ?? null, day != null),
       },
-      { label: "Commissions", value: day ? money(day.commissions, false) : "--" },
+      {
+        label: "Commissions",
+        value: day ? money(day.commissions, currency, false) : "--",
+      },
       {
         label: "Volume",
         value: day ? day.volume.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "--",
       },
     ];
-  }, [wins, losses, day]);
+  }, [wins, losses, day, currency]);
 
   // A focus request (Write / calendar / deep-link) expands this card. Deferred
   // to a microtask so it reads as an external-event sync, not a synchronous
@@ -249,7 +255,7 @@ export function JournalDayCard({
               hasTrades ? pnlColor : "text-text-tertiary",
             )}
           >
-            {hasTrades ? money(net) : "—"}
+            {hasTrades ? money(net, currency) : "—"}
           </span>
         </span>
 

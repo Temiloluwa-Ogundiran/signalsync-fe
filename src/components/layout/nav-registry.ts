@@ -288,7 +288,6 @@ export function buildNavRegistry(actionFns: {
               icon: GlobeIcon,
               label: "Global settings",
               route: "/settings/global",
-              comingSoon: true,
             },
           ],
         },

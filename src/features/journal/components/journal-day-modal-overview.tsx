@@ -20,11 +20,13 @@ import {
 interface JournalDayModalOverviewProps {
   summary: JournalDaySummary;
   trades: JournalTrade[];
+  currency: string;
 }
 
 export function JournalDayModalOverview({
   summary,
   trades,
+  currency,
 }: JournalDayModalOverviewProps) {
   const sortedTrades = useMemo(
     () =>
@@ -133,6 +135,7 @@ export function JournalDayModalOverview({
                 formatter={(value) =>
                   formatCurrency(
                     typeof value === "number" ? value : Number(value ?? 0),
+                    currency,
                   )
                 }
                 labelFormatter={(label) => {
@@ -167,7 +170,7 @@ export function JournalDayModalOverview({
           <Row label="Win Rate" value={`${summary.winRate.toFixed(2)}%`} />
           <Row
             label="Gross P&L"
-            value={formatCurrency(summary.grossPnl)}
+            value={formatCurrency(summary.grossPnl, currency)}
             className={
               summary.grossPnl >= 0 ? "text-kpi-metric-positive" : "text-danger"
             }
@@ -177,7 +180,7 @@ export function JournalDayModalOverview({
             value={
               summary.dayStartBalance == null
                 ? "--"
-                : formatCurrency(summary.dayStartBalance)
+                : formatCurrency(summary.dayStartBalance, currency)
             }
           />
           <Row
@@ -185,7 +188,7 @@ export function JournalDayModalOverview({
             value={
               summary.dayEndBalance == null
                 ? "--"
-                : formatCurrency(summary.dayEndBalance)
+                : formatCurrency(summary.dayEndBalance, currency)
             }
           />
         </div>
@@ -197,7 +200,7 @@ export function JournalDayModalOverview({
           <Row label="Losers" value={summary.losers} />
           <Row
             label="Commissions"
-            value={`$${summary.commissions.toFixed(2)}`}
+            value={formatCurrency(summary.commissions, currency)}
           />
           <Row
             label="Profit Factor"

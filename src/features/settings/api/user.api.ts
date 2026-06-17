@@ -12,6 +12,8 @@ import type { AxiosResponse } from "axios";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+export type AuthProvider = "email" | "google";
+
 export interface CurrentUser {
   id: string;
   email: string;
@@ -19,12 +21,20 @@ export interface CurrentUser {
   bio: string | null;
   avatar_url: string | null;
   is_email_verified: boolean;
+  auth_provider: AuthProvider;
+  has_usable_password: boolean;
+  display_timezone: string | null;
   created_at: string;
 }
 
 export interface UpdateProfilePayload {
   display_name?: string;
   bio?: string;
+}
+
+export interface UpdatePreferencesPayload {
+  // null clears the timezone preference; omit to leave it unchanged.
+  display_timezone?: string | null;
 }
 
 export interface ChangePasswordPayload {
@@ -61,6 +71,18 @@ export interface AvatarUploadResponse {
 export async function getCurrentUser(token?: string): Promise<CurrentUser> {
   const res: AxiosResponse<CurrentUser> = await apiClient.get(
     "/users/me",
+    withAuth(token)
+  );
+  return res.data;
+}
+
+export async function updatePreferences(
+  payload: UpdatePreferencesPayload,
+  token?: string
+): Promise<CurrentUser> {
+  const res: AxiosResponse<CurrentUser> = await apiClient.patch(
+    "/users/me/preferences",
+    payload,
     withAuth(token)
   );
   return res.data;

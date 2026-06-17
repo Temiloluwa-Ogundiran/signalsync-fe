@@ -34,6 +34,8 @@ import {
   useUpdateManualTrade,
 } from "../hooks/use-manual-trade";
 import { useJournalSummaryAnalytics } from "../hooks/use-journal-analytics";
+import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
+import { formatMoney } from "@/lib/format/money";
 import {
   validateManualTrade,
   computeHypotheticalPreview,
@@ -139,6 +141,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
   const { mode, open, onOpenChange } = props;
   const router = useRouter();
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
+  const currency = useActiveAccountCurrency();
 
   const createManualTrade = useCreateManualTrade(activeAccountId);
   const updateManualTrade = useUpdateManualTrade(activeAccountId);
@@ -883,7 +886,7 @@ export function TradeFormModal(props: TradeFormModalProps) {
                     <div className="grid grid-cols-2 gap-4 border-t border-border-secondary/40 pt-3">
                       <div>
                         <p className="text-[10px] text-text-secondary font-semibold">
-                          Net P&L ($)
+                          Net P&L ({currency})
                         </p>
                         <p
                           className={`text-base font-bold mt-0.5 ${
@@ -893,8 +896,14 @@ export function TradeFormModal(props: TradeFormModalProps) {
                           }`}
                         >
                           {Number(netProfit || 0) >= 0
-                            ? `+$${Number(netProfit || 0).toFixed(2)}`
-                            : `-$${Math.abs(Number(netProfit || 0)).toFixed(2)}`}
+                            ? `+${formatMoney(Number(netProfit || 0), {
+                                currency,
+                                fractionDigits: 2,
+                              })}`
+                            : `-${formatMoney(
+                                Math.abs(Number(netProfit || 0)),
+                                { currency, fractionDigits: 2 },
+                              )}`}
                         </p>
                       </div>
                       <div>
