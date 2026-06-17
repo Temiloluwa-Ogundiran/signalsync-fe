@@ -12,10 +12,14 @@ export const journalTagsApi = {
   },
 
   // --- Groups ---
-  createGroup: async (name: string, token?: string): Promise<TagGroup> => {
+  createGroup: async (
+    name: string,
+    color?: string,
+    token?: string
+  ): Promise<TagGroup> => {
     const { data } = await apiClient.post<TagGroup>(
       "/journal/tags/groups",
-      { name },
+      { name, color: color || undefined },
       withAuth(token)
     );
     return data;
@@ -23,12 +27,12 @@ export const journalTagsApi = {
 
   updateGroup: async (
     groupId: string,
-    name: string,
+    payload: { name?: string; color?: string },
     token?: string
   ): Promise<TagGroup> => {
     const { data } = await apiClient.put<TagGroup>(
       `/journal/tags/groups/${groupId}`,
-      { name },
+      payload,
       withAuth(token)
     );
     return data;
@@ -50,12 +54,11 @@ export const journalTagsApi = {
   createTag: async (
     groupId: string,
     name: string,
-    color?: string,
     token?: string
   ): Promise<Tag> => {
     const { data } = await apiClient.post<Tag>(
       `/journal/tags/groups/${groupId}/tags`,
-      { name, color: color || undefined },
+      { name },
       withAuth(token)
     );
     return data;
@@ -63,12 +66,12 @@ export const journalTagsApi = {
 
   updateTag: async (
     tagId: string,
-    payload: { name?: string; color?: string },
+    name: string,
     token?: string
   ): Promise<Tag> => {
     const { data } = await apiClient.put<Tag>(
       `/journal/tags/${tagId}`,
-      payload,
+      { name },
       withAuth(token)
     );
     return data;

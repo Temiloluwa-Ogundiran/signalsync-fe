@@ -5,7 +5,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import type { TradeAnnotation } from "../lib/journal-trade-tags";
-import { strategyForTrade } from "../lib/journal-strategy";
 import type { Tag } from "../types";
 import {
   useJournalTagsConfig,
@@ -85,7 +84,6 @@ function TradeRow({
   accountId: string;
 }) {
   const router = useRouter();
-  const strategy = strategyForTrade(trade.id);
 
   const goToTrades = () => router.push("/trade-history");
 
@@ -93,6 +91,9 @@ function TradeRow({
   const { data: config = [] } = useJournalTagsConfig();
   const { data: tradeTags = [] } = useTradeTags(trade.id, true);
   const updateTags = useUpdateTradeTags(accountId);
+
+  // Tags inherit their group's color; map group_id → color from config.
+  const groupColor = new Map(config.map((g) => [g.id, g.color || "#64748b"]));
 
   const setTags = (tagIds: string[]) => {
     updateTags.mutate({ tradeId: trade.id, tagIds });
@@ -130,25 +131,23 @@ function TradeRow({
       </td>
       <td className="py-2.5">
         <div className="flex flex-wrap items-center gap-1.5">
-          {strategy ? <Badge variant="ai">{strategy}</Badge> : null}
-
           <div
             className="flex flex-wrap items-center gap-1.5"
             onClick={stop}
             role="presentation"
           >
-            {tradeTags.map((tag: Tag) => (
-              <span
-                key={tag.id}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-semibold"
-                style={{
-                  backgroundColor: `${tag.color || "#64748b"}26`,
-                  color: tag.color || "var(--text-tertiary)",
-                }}
-              >
-                {tag.name}
-              </span>
-            ))}
+            {tradeTags.map((tag: Tag) => {
+              const c = groupColor.get(tag.group_id) || "#64748b";
+              return (
+                <span
+                  key={tag.id}
+                  className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-semibold"
+                  style={{ backgroundColor: `${c}26`, color: c }}
+                >
+                  {tag.name}
+                </span>
+              );
+            })}
 
             {config.length > 0 ? (
               <JournalTagSelector

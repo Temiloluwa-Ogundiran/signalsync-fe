@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -17,17 +17,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { AppLoader } from "@/components/app-loader";
 import {
   useCurrentUser,
   useUpdateProfile,
+  useUpdatePreferences,
   useUploadAvatar,
 } from "../hooks/use-settings";
 import { errorDetail } from "../lib/error-detail";
 import { SettingsPageShell } from "./settings-page-shell";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
+
+const SELECT_CLASS =
+  "flex h-10 w-full rounded-md border border-border-primary bg-bg-input px-3 py-2 text-sm ring-offset-bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+
+// Sentinel for "use my local/account timezone" (no explicit preference).
+const TZ_AUTO = "__auto__";
+
+function listTimezones(): string[] {
+  const intl = Intl as typeof Intl & {
+    supportedValuesOf?: (key: string) => string[];
+  };
+  if (typeof intl.supportedValuesOf === "function") {
+    try {
+      return intl.supportedValuesOf("timeZone");
+    } catch {
+      /* fall through */
+    }
+  }
+  return [
+    "UTC",
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "Europe/London",
+    "Europe/Berlin",
+    "Asia/Tokyo",
+    "Asia/Shanghai",
+    "Asia/Kolkata",
+    "Australia/Sydney",
+  ];
+}
 
 const schema = z.object({
   display_name: z
@@ -46,9 +86,20 @@ type FormValues = z.infer<typeof schema>;
 export function ProfileSettingsPage() {
   const { data: user, isLoading } = useCurrentUser();
   const updateProfile = useUpdateProfile();
+  const updatePrefs = useUpdatePreferences();
   const uploadAvatar = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  const timezones = useMemo(() => listTimezones(), []);
+  const [timezone, setTimezone] = useState<string>(TZ_AUTO);
+  const browserTz = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch {
+      return "UTC";
+    }
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -63,8 +114,27 @@ export function ProfileSettingsPage() {
         display_name: user.display_name ?? "",
         bio: user.bio ?? "",
       });
+      setTimezone(user.display_timezone ?? TZ_AUTO);
     }
   }, [user, reset]);
+
+  const tzDirty = (user?.display_timezone ?? TZ_AUTO) !== timezone;
+
+  async function onSaveTimezone() {
+    try {
+      await updatePrefs.mutateAsync({
+        display_timezone: timezone === TZ_AUTO ? null : timezone,
+      });
+      toast.success("Timezone saved", {
+        description:
+          "Depending on your data, changes may take a few moments to appear everywhere.",
+      });
+    } catch (err) {
+      toast.error("Could not save timezone", {
+        description: errorDetail(err, "Please try again."),
+      });
+    }
+  }
 
   async function onSubmit(values: FormValues) {
     try {
@@ -261,6 +331,55 @@ export function ProfileSettingsPage() {
               </div>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      {/* Timezone */}
+      <Card className="border-border-secondary bg-card-bg shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Timezone</CardTitle>
+          <CardDescription>
+            All timestamps — charts, running PnL, and trading stats — are shown in
+            this timezone. Popular with traders who prefer their session&apos;s
+            time over their local time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="timezone-select">Display timezone</Label>
+            <select
+              id="timezone-select"
+              className={SELECT_CLASS}
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              disabled={updatePrefs.isPending}
+            >
+              <option value={TZ_AUTO}>
+                Automatic — your device ({browserTz})
+              </option>
+              {timezones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-text-secondary">
+              Amounts are shown in each account&apos;s own currency, set by your
+              broker.
+            </p>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button
+              type="button"
+              onClick={onSaveTimezone}
+              disabled={updatePrefs.isPending || !tzDirty}
+            >
+              {updatePrefs.isPending && (
+                <Loader2 className="size-4 animate-spin" />
+              )}
+              Save timezone
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </SettingsPageShell>

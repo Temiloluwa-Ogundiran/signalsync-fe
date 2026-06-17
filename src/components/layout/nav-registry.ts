@@ -19,15 +19,9 @@ import {
   Search01Icon,
   Home04Icon,
   PlusSignIcon,
-  UserCircleIcon,
   UserIcon,
   SecurityCheckIcon,
   CreditCardIcon,
-  Settings02Icon,
-  Target01Icon,
-  Coins01Icon,
-  ArrowUpDownIcon,
-  GlobeIcon,
   Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
@@ -241,8 +235,6 @@ export function buildNavRegistry(actionFns: {
       standalone: true,
       groups: [
         {
-          header: "USER",
-          headerIcon: UserCircleIcon,
           items: [
             {
               icon: UserIcon,
@@ -254,18 +246,6 @@ export function buildNavRegistry(actionFns: {
               label: "Security",
               route: "/settings/security",
             },
-            {
-              icon: CreditCardIcon,
-              label: "Subscription",
-              route: "/settings/subscription",
-              comingSoon: true,
-            },
-          ],
-        },
-        {
-          header: "GENERAL",
-          headerIcon: Settings02Icon,
-          items: [
             { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
             {
               icon: Tag01Icon,
@@ -273,27 +253,10 @@ export function buildNavRegistry(actionFns: {
               route: "/settings/tags",
             },
             {
-              icon: Target01Icon,
-              label: "PT / SL settings",
-              route: "/settings/pt-sl",
+              icon: CreditCardIcon,
+              label: "Subscription",
+              route: "/settings/subscription",
               comingSoon: true,
-            },
-            {
-              icon: Coins01Icon,
-              label: "Commissions & fees",
-              route: "/settings/commissions",
-              comingSoon: true,
-            },
-            {
-              icon: ArrowUpDownIcon,
-              label: "Trade settings",
-              route: "/settings/trade",
-              comingSoon: true,
-            },
-            {
-              icon: GlobeIcon,
-              label: "Global settings",
-              route: "/settings/global",
             },
           ],
         },

@@ -343,7 +343,6 @@ export interface Tag {
   id: string;
   group_id: string;
   name: string;
-  color?: string | null;
   position: number;
   is_system: boolean;
 }
@@ -351,6 +350,7 @@ export interface Tag {
 export interface TagGroup {
   id: string;
   name: string;
+  color?: string | null;
   position: number;
   is_system: boolean;
   tags: Tag[];

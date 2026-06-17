@@ -26,8 +26,8 @@ export function useCreateTagGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (name: string) =>
-      journalTagsApi.createGroup(name, session?.accessToken),
+    mutationFn: ({ name, color }: { name: string; color?: string }) =>
+      journalTagsApi.createGroup(name, color, session?.accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
@@ -39,8 +39,15 @@ export function useUpdateTagGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
-      journalTagsApi.updateGroup(groupId, name, session?.accessToken),
+    mutationFn: ({
+      groupId,
+      name,
+      color,
+    }: {
+      groupId: string;
+      name?: string;
+      color?: string;
+    }) => journalTagsApi.updateGroup(groupId, { name, color }, session?.accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
@@ -80,15 +87,8 @@ export function useCreateTag() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      groupId,
-      name,
-      color,
-    }: {
-      groupId: string;
-      name: string;
-      color?: string;
-    }) => journalTagsApi.createTag(groupId, name, color, session?.accessToken),
+    mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
+      journalTagsApi.createTag(groupId, name, session?.accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
@@ -100,16 +100,8 @@ export function useUpdateTag() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      tagId,
-      name,
-      color,
-    }: {
-      tagId: string;
-      name?: string;
-      color?: string;
-    }) =>
-      journalTagsApi.updateTag(tagId, { name, color }, session?.accessToken),
+    mutationFn: ({ tagId, name }: { tagId: string; name: string }) =>
+      journalTagsApi.updateTag(tagId, name, session?.accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },

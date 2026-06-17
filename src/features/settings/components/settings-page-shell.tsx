@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
 /**
- * Shared chrome for the Settings sub-pages: consistent page padding, a centered
- * narrow column, and a title/description header.
+ * Shared chrome for the Settings sub-pages: matches the dashboard/journal canvas
+ * (no own background — the page paints onto the shell's bg-bg-canvas/bg-bg-primary
+ * main), consistent journal-style padding, a centered column, and a header.
  */
 export function SettingsPageShell({
   title,
@@ -14,7 +15,7 @@ export function SettingsPageShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-bg-primary px-4 pb-10 pt-6 lg:px-6 font-sans text-text-primary">
+    <div className="p-4 pb-20 font-sans text-text-primary md:p-8 md:pb-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <header className="space-y-1">
           <h1 className="text-xl font-bold tracking-tight">{title}</h1>

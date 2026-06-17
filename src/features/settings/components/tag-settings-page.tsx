@@ -25,17 +25,17 @@ import { AppLoader } from "@/components/app-loader";
 import {
   useJournalTagsConfig,
   useCreateTagGroup,
+  useUpdateTagGroup,
   useDeleteTagGroup,
   useReorderTagGroups,
   useCreateTag,
   useDeleteTag,
-  useUpdateTag,
   useReorderTags,
 } from "@/features/journal/hooks/use-journal-tags";
 import type { Tag, TagGroup } from "@/features/journal/types";
 import { SettingsPageShell } from "./settings-page-shell";
 
-const TAG_COLORS = [
+const GROUP_COLORS = [
   "#ef4444", // red
   "#f59e0b", // amber
   "#eab308", // yellow
@@ -43,8 +43,11 @@ const TAG_COLORS = [
   "#3b82f6", // blue
   "#8b5cf6", // purple
   "#ec4899", // pink
+  "#0ea5e9", // sky
   "#64748b", // slate
 ];
+
+const DEFAULT_COLOR = "#64748b";
 
 function errMsg(err: unknown, fallback: string): string {
   const detail = (err as { response?: { data?: { detail?: string } } })
@@ -64,8 +67,8 @@ function ColorSwatches({
   onChange: (color: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
-      {TAG_COLORS.map((c) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {GROUP_COLORS.map((c) => (
         <button
           key={c}
           type="button"
@@ -82,21 +85,20 @@ function ColorSwatches({
 }
 
 // ---------------------------------------------------------------------------
-// A single tag row (sortable within its group)
+// A single tag row (sortable within its group) — inherits the group's color
 // ---------------------------------------------------------------------------
 
 function SortableTag({
   tag,
+  color,
   onDelete,
-  onRecolor,
 }: {
   tag: Tag;
+  color: string;
   onDelete: () => void;
-  onRecolor: (color: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: tag.id });
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -119,12 +121,9 @@ function SortableTag({
         <GripVertical className="h-3.5 w-3.5" />
       </button>
 
-      <button
-        type="button"
-        onClick={() => setPickerOpen((o) => !o)}
-        className="h-3 w-3 shrink-0 rounded-full"
-        style={{ backgroundColor: tag.color || "#64748b" }}
-        title="Change color"
+      <span
+        className="h-2.5 w-2.5 shrink-0 rounded-full"
+        style={{ backgroundColor: color }}
       />
 
       <span className="flex-1 truncate text-sm text-text-primary">
@@ -139,18 +138,6 @@ function SortableTag({
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
-
-      {pickerOpen && (
-        <div className="absolute z-10 mt-8 rounded-lg border border-border-secondary bg-bg-secondary p-2 shadow-xl">
-          <ColorSwatches
-            value={tag.color || ""}
-            onChange={(c) => {
-              onRecolor(c);
-              setPickerOpen(false);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -163,22 +150,24 @@ function GroupCard({
   group,
   onAddTag,
   onDeleteTag,
-  onRecolorTag,
+  onRecolorGroup,
   onDeleteGroup,
   onReorderTags,
 }: {
   group: TagGroup;
-  onAddTag: (groupId: string, name: string, color: string) => Promise<void>;
+  onAddTag: (groupId: string, name: string) => Promise<void>;
   onDeleteTag: (tagId: string) => void;
-  onRecolorTag: (tagId: string, color: string) => void;
+  onRecolorGroup: (groupId: string, color: string) => void;
   onDeleteGroup: (groupId: string) => void;
   onReorderTags: (groupId: string, orderedIds: string[]) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: `group:${group.id}` });
   const [newName, setNewName] = useState("");
-  const [newColor, setNewColor] = useState(TAG_COLORS[4]);
   const [adding, setAdding] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
+
+  const color = group.color || DEFAULT_COLOR;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
@@ -195,7 +184,7 @@ function GroupCard({
     if (!trimmed) return;
     setAdding(true);
     try {
-      await onAddTag(group.id, trimmed, newColor);
+      await onAddTag(group.id, trimmed);
       setNewName("");
     } finally {
       setAdding(false);
@@ -229,6 +218,30 @@ function GroupCard({
           >
             <GripVertical className="h-4 w-4" />
           </button>
+
+          {/* Group color swatch */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setColorOpen((o) => !o)}
+              className="h-3.5 w-3.5 rounded-full ring-1 ring-border-secondary"
+              style={{ backgroundColor: color }}
+              title="Change group color"
+              disabled={group.is_system}
+            />
+            {colorOpen && !group.is_system && (
+              <div className="absolute left-0 top-6 z-20 rounded-lg border border-border-secondary bg-bg-secondary p-2 shadow-xl">
+                <ColorSwatches
+                  value={color}
+                  onChange={(c) => {
+                    onRecolorGroup(group.id, c);
+                    setColorOpen(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
           <h3 className="text-sm font-bold text-text-primary">{group.name}</h3>
           {group.is_system && (
             <span className="rounded bg-bg-primary px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase text-text-tertiary">
@@ -263,8 +276,8 @@ function GroupCard({
               <SortableTag
                 key={tag.id}
                 tag={tag}
+                color={color}
                 onDelete={() => onDeleteTag(tag.id)}
-                onRecolor={(c) => onRecolorTag(tag.id, c)}
               />
             ))}
           </div>
@@ -272,36 +285,33 @@ function GroupCard({
       </DndContext>
 
       {/* Add tag */}
-      <div className="mt-3 space-y-2 border-t border-hairline pt-3">
-        <div className="flex items-center gap-2">
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void submitNewTag();
-              }
-            }}
-            placeholder="Add a tag…"
-            className="h-8 text-xs"
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={submitNewTag}
-            disabled={adding || !newName.trim()}
-            className="h-8 shrink-0"
-          >
-            {adding ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Plus className="h-3.5 w-3.5" />
-            )}
-          </Button>
-        </div>
-        <ColorSwatches value={newColor} onChange={setNewColor} />
+      <div className="mt-3 flex items-center gap-2 border-t border-hairline pt-3">
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void submitNewTag();
+            }
+          }}
+          placeholder="Add a tag…"
+          className="h-8 text-xs"
+        />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={submitNewTag}
+          disabled={adding || !newName.trim()}
+          className="h-8 shrink-0"
+        >
+          {adding ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Plus className="h-3.5 w-3.5" />
+          )}
+        </Button>
       </div>
     </div>
   );
@@ -315,11 +325,11 @@ export function TagSettingsPage() {
   const { data: config = [], isLoading } = useJournalTagsConfig();
 
   const createGroup = useCreateTagGroup();
+  const updateGroup = useUpdateTagGroup();
   const deleteGroup = useDeleteTagGroup();
   const reorderGroups = useReorderTagGroups();
   const createTag = useCreateTag();
   const deleteTag = useDeleteTag();
-  const updateTag = useUpdateTag();
   const reorderTags = useReorderTags();
 
   // Local ordering mirror so drag feels instant; reconciled when config changes.
@@ -327,6 +337,7 @@ export function TagSettingsPage() {
   useEffect(() => setGroups(config), [config]);
 
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupColor, setNewGroupColor] = useState(GROUP_COLORS[4]);
   const [creatingGroup, setCreatingGroup] = useState(false);
 
   const sensors = useSensors(
@@ -376,9 +387,9 @@ export function TagSettingsPage() {
     });
   };
 
-  const handleAddTag = async (groupId: string, name: string, color: string) => {
+  const handleAddTag = async (groupId: string, name: string) => {
     try {
-      await createTag.mutateAsync({ groupId, name, color });
+      await createTag.mutateAsync({ groupId, name });
     } catch (err) {
       toast.error("Could not add tag", {
         description: errMsg(err, "Please try again."),
@@ -395,13 +406,13 @@ export function TagSettingsPage() {
     });
   };
 
-  const handleRecolorTag = (tagId: string, color: string) => {
-    updateTag.mutate(
-      { tagId, color },
+  const handleRecolorGroup = (groupId: string, color: string) => {
+    updateGroup.mutate(
+      { groupId, color },
       {
         onError: (err) =>
-          toast.error("Could not update tag", {
-            description: errMsg(err, "Default tags can't be edited."),
+          toast.error("Could not update group", {
+            description: errMsg(err, "Default groups can't be edited."),
           }),
       }
     );
@@ -421,7 +432,7 @@ export function TagSettingsPage() {
     if (!trimmed) return;
     setCreatingGroup(true);
     try {
-      await createGroup.mutateAsync(trimmed);
+      await createGroup.mutateAsync({ name: trimmed, color: newGroupColor });
       setNewGroupName("");
       toast.success("Group created");
     } catch (err) {
@@ -437,7 +448,7 @@ export function TagSettingsPage() {
     return (
       <SettingsPageShell title="Tag Management">
         <div className="flex justify-center py-16">
-          <AppLoader />
+          <AppLoader fullScreen={false} />
         </div>
       </SettingsPageShell>
     );
@@ -446,35 +457,43 @@ export function TagSettingsPage() {
   return (
     <SettingsPageShell
       title="Tag Management"
-      description="Organise your tags into groups, then apply them to trades from the trade row."
+      description="Organise your tags into groups, then apply them to trades from the trade row. Each group has a color its tags share."
     >
       {/* New group */}
-      <div className="flex items-center gap-2 rounded-xl border border-border-secondary bg-card-bg p-4 shadow-sm">
-        <Input
-          value={newGroupName}
-          onChange={(e) => setNewGroupName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              void handleCreateGroup();
-            }
-          }}
-          placeholder="New group name (e.g. Setup, Session, Emotion)…"
-          className="h-9"
-        />
-        <Button
-          type="button"
-          onClick={handleCreateGroup}
-          disabled={creatingGroup || !newGroupName.trim()}
-          className="shrink-0"
-        >
-          {creatingGroup ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Plus className="size-4" />
-          )}
-          New group
-        </Button>
+      <div className="space-y-3 rounded-xl border border-border-secondary bg-card-bg p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Input
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleCreateGroup();
+              }
+            }}
+            placeholder="New group name (e.g. Setup, Session, Emotion)…"
+            className="h-9"
+          />
+          <Button
+            type="button"
+            onClick={handleCreateGroup}
+            disabled={creatingGroup || !newGroupName.trim()}
+            className="shrink-0"
+          >
+            {creatingGroup ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
+            New group
+          </Button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-text-secondary">
+            Group color
+          </span>
+          <ColorSwatches value={newGroupColor} onChange={setNewGroupColor} />
+        </div>
       </div>
 
       {/* Group grid */}
@@ -496,7 +515,7 @@ export function TagSettingsPage() {
                   group={group}
                   onAddTag={handleAddTag}
                   onDeleteTag={handleDeleteTag}
-                  onRecolorTag={handleRecolorTag}
+                  onRecolorGroup={handleRecolorGroup}
                   onDeleteGroup={handleDeleteGroup}
                   onReorderTags={handleReorderTags}
                 />
