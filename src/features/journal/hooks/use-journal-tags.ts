@@ -5,8 +5,7 @@ import { invalidateJournalAnalyticsForAccount } from "./use-journal-analytics";
 
 export const JOURNAL_TAGS_KEYS = {
   config: () => ["journal-tags", "config"] as const,
-  tradeTags: (tradeId: string) =>
-    ["journal-tags", "trade", tradeId] as const,
+  tradeTags: (tradeId: string) => ["journal-tags", "trade", tradeId] as const,
 };
 
 export function useJournalTagsConfig() {
@@ -20,80 +19,138 @@ export function useJournalTagsConfig() {
   });
 }
 
-export function useCreateTagCategory() {
+// --- Groups ---
+
+export function useCreateTagGroup() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (title: string) =>
-      journalTagsApi.createCategory(title, session?.accessToken),
+    mutationFn: (name: string) =>
+      journalTagsApi.createGroup(name, session?.accessToken),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: JOURNAL_TAGS_KEYS.config(),
-      });
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
   });
 }
 
-export function useDeleteTagCategory() {
+export function useUpdateTagGroup() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (categoryId: string) =>
-      journalTagsApi.deleteCategory(categoryId, session?.accessToken),
+    mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
+      journalTagsApi.updateGroup(groupId, name, session?.accessToken),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: JOURNAL_TAGS_KEYS.config(),
-      });
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
   });
 }
 
-export function useCreateTagOption() {
+export function useDeleteTagGroup() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (groupId: string) =>
+      journalTagsApi.deleteGroup(groupId, session?.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
+    },
+  });
+}
+
+export function useReorderTagGroups() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      journalTagsApi.reorderGroups(ids, session?.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
+    },
+  });
+}
+
+// --- Tags ---
+
+export function useCreateTag() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({
-      categoryId,
-      value,
+      groupId,
+      name,
       color,
     }: {
-      categoryId: string;
-      value: string;
+      groupId: string;
+      name: string;
       color?: string;
-    }) =>
-      journalTagsApi.createOption(categoryId, value, color, session?.accessToken),
+    }) => journalTagsApi.createTag(groupId, name, color, session?.accessToken),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: JOURNAL_TAGS_KEYS.config(),
-      });
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
   });
 }
 
-export function useDeleteTagOption() {
+export function useUpdateTag() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (optionId: string) =>
-      journalTagsApi.deleteOption(optionId, session?.accessToken),
+    mutationFn: ({
+      tagId,
+      name,
+      color,
+    }: {
+      tagId: string;
+      name?: string;
+      color?: string;
+    }) =>
+      journalTagsApi.updateTag(tagId, { name, color }, session?.accessToken),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: JOURNAL_TAGS_KEYS.config(),
-      });
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
   });
 }
+
+export function useDeleteTag() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (tagId: string) =>
+      journalTagsApi.deleteTag(tagId, session?.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
+    },
+  });
+}
+
+export function useReorderTags() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      journalTagsApi.reorderTags(ids, session?.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
+    },
+  });
+}
+
+// --- Trade tags ---
 
 export function useTradeTags(tradeId: string | undefined, enabled = true) {
   const { data: session, status } = useSession();
 
   return useQuery({
     queryKey: JOURNAL_TAGS_KEYS.tradeTags(tradeId as string),
-    queryFn: () => journalTagsApi.getTradeTags(tradeId as string, session?.accessToken),
+    queryFn: () =>
+      journalTagsApi.getTradeTags(tradeId as string, session?.accessToken),
     enabled:
       enabled &&
       status === "authenticated" &&
@@ -108,14 +165,8 @@ export function useUpdateTradeTags(accountId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      tradeId,
-      optionIds,
-    }: {
-      tradeId: string;
-      optionIds: string[];
-    }) =>
-      journalTagsApi.updateTradeTags(tradeId, optionIds, session?.accessToken),
+    mutationFn: ({ tradeId, tagIds }: { tradeId: string; tagIds: string[] }) =>
+      journalTagsApi.updateTradeTags(tradeId, tagIds, session?.accessToken),
     onSuccess: (_data, variables) => {
       // Invalidate trade specific tags
       queryClient.invalidateQueries({
@@ -126,10 +177,7 @@ export function useUpdateTradeTags(accountId?: string) {
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return (
-            Array.isArray(k) &&
-            k[0] === "journal-day"
-          );
+          return Array.isArray(k) && k[0] === "journal-day";
         },
       });
 
@@ -141,22 +189,16 @@ export function useUpdateTradeTags(accountId?: string) {
   });
 }
 
+// --- Rating & assessment (separate feature, kept intact) ---
+
 export function useUpdateTradeRating(accountId?: string) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      tradeId,
-      rating,
-    }: {
-      tradeId: string;
-      rating: number;
-    }) =>
+    mutationFn: ({ tradeId, rating }: { tradeId: string; rating: number }) =>
       journalTagsApi.updateTradeRating(tradeId, rating, session?.accessToken),
     onSuccess: () => {
-      // Invalidate journal day/trades + trade-history caches so the star rating
-      // reflects immediately in the day view and the Trade View table.
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
@@ -167,7 +209,6 @@ export function useUpdateTradeRating(accountId?: string) {
         },
       });
 
-      // Invalidate setups & analytics if accountId is provided
       if (accountId) {
         invalidateJournalAnalyticsForAccount(queryClient, accountId);
       }
@@ -197,18 +238,13 @@ export function useUpdateTradeAssessment(accountId?: string) {
         session?.accessToken
       ),
     onSuccess: () => {
-      // Invalidate journal day/trades caches to update trade details instantly
       queryClient.invalidateQueries({
         predicate: (q) => {
           const k = q.queryKey;
-          return (
-            Array.isArray(k) &&
-            k[0] === "journal-day"
-          );
+          return Array.isArray(k) && k[0] === "journal-day";
         },
       });
 
-      // Invalidate setups & analytics if accountId is provided
       if (accountId) {
         invalidateJournalAnalyticsForAccount(queryClient, accountId);
       }

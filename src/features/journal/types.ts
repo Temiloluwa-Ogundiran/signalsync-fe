@@ -339,18 +339,21 @@ export interface JournalAnalyticsDashboardResponse {
   recent_trades: JournalTradeListResponse;
 }
 
-export interface TagOption {
+export interface Tag {
   id: string;
-  category_id: string;
-  value: string;
+  group_id: string;
+  name: string;
   color?: string | null;
+  position: number;
+  is_system: boolean;
 }
 
-export interface TagCategory {
+export interface TagGroup {
   id: string;
-  title: string;
+  name: string;
+  position: number;
   is_system: boolean;
-  options: TagOption[];
+  tags: Tag[];
 }
 
 export interface ManualTradeCreatePayload {

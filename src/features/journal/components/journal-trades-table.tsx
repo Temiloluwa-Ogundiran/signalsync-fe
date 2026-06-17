@@ -6,7 +6,7 @@ import { Add01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import type { TradeAnnotation } from "../lib/journal-trade-tags";
 import { strategyForTrade } from "../lib/journal-strategy";
-import type { TagCategory, TagOption } from "../types";
+import type { Tag } from "../types";
 import {
   useJournalTagsConfig,
   useTradeTags,
@@ -89,14 +89,13 @@ function TradeRow({
 
   const goToTrades = () => router.push("/trade-history");
 
-  // Real tags for this trade + the category to add into (first config category).
+  // Real tags for this trade + the full config of groups/tags to pick from.
   const { data: config = [] } = useJournalTagsConfig();
   const { data: tradeTags = [] } = useTradeTags(trade.id, true);
   const updateTags = useUpdateTradeTags(accountId);
-  const addCategory: TagCategory | undefined = config[0];
 
-  const setTags = (optionIds: string[]) => {
-    updateTags.mutate({ tradeId: trade.id, optionIds });
+  const setTags = (tagIds: string[]) => {
+    updateTags.mutate({ tradeId: trade.id, tagIds });
   };
 
   return (
@@ -138,7 +137,7 @@ function TradeRow({
             onClick={stop}
             role="presentation"
           >
-            {tradeTags.map((tag: TagOption) => (
+            {tradeTags.map((tag: Tag) => (
               <span
                 key={tag.id}
                 className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-semibold"
@@ -147,16 +146,15 @@ function TradeRow({
                   color: tag.color || "var(--text-tertiary)",
                 }}
               >
-                {tag.value}
+                {tag.name}
               </span>
             ))}
 
-            {addCategory ? (
+            {config.length > 0 ? (
               <JournalTagSelector
-                category={addCategory}
-                selectedOptions={tradeTags}
+                groups={config}
+                selectedTags={tradeTags}
                 onSelectChange={setTags}
-                onOpenTagManager={() => {}}
                 trigger={
                   <button
                     type="button"

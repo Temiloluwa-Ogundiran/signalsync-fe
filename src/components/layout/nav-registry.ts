@@ -28,6 +28,7 @@ import {
   Coins01Icon,
   ArrowUpDownIcon,
   GlobeIcon,
+  Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -266,6 +267,11 @@ export function buildNavRegistry(actionFns: {
           headerIcon: Settings02Icon,
           items: [
             { icon: Wallet01Icon, label: "Accounts", route: "/accounts" },
+            {
+              icon: Tag01Icon,
+              label: "Tag Management",
+              route: "/settings/tags",
+            },
             {
               icon: Target01Icon,
               label: "PT / SL settings",

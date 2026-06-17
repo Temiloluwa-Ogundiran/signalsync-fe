@@ -1,54 +1,90 @@
 import apiClient, { withAuth } from "@/lib/api/client";
-import type { TagCategory, TagOption } from "../types";
+import type { Tag, TagGroup } from "../types";
 
 export const journalTagsApi = {
-  getConfig: async (token?: string): Promise<TagCategory[]> => {
-    const { data } = await apiClient.get<TagCategory[]>(
+  // --- Config ---
+  getConfig: async (token?: string): Promise<TagGroup[]> => {
+    const { data } = await apiClient.get<TagGroup[]>(
       "/journal/tags/config",
       withAuth(token)
     );
     return data;
   },
 
-  createCategory: async (title: string, token?: string): Promise<TagCategory> => {
-    const { data } = await apiClient.post<TagCategory>(
-      "/journal/tags/categories",
-      { title },
+  // --- Groups ---
+  createGroup: async (name: string, token?: string): Promise<TagGroup> => {
+    const { data } = await apiClient.post<TagGroup>(
+      "/journal/tags/groups",
+      { name },
       withAuth(token)
     );
     return data;
   },
 
-  deleteCategory: async (categoryId: string, token?: string): Promise<void> => {
-    await apiClient.delete(
-      `/journal/tags/categories/${categoryId}`,
+  updateGroup: async (
+    groupId: string,
+    name: string,
+    token?: string
+  ): Promise<TagGroup> => {
+    const { data } = await apiClient.put<TagGroup>(
+      `/journal/tags/groups/${groupId}`,
+      { name },
+      withAuth(token)
+    );
+    return data;
+  },
+
+  deleteGroup: async (groupId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/journal/tags/groups/${groupId}`, withAuth(token));
+  },
+
+  reorderGroups: async (ids: string[], token?: string): Promise<void> => {
+    await apiClient.put(
+      "/journal/tags/groups/reorder",
+      { ids },
       withAuth(token)
     );
   },
 
-  createOption: async (
-    categoryId: string,
-    value: string,
+  // --- Tags ---
+  createTag: async (
+    groupId: string,
+    name: string,
     color?: string,
     token?: string
-  ): Promise<TagOption> => {
-    const { data } = await apiClient.post<TagOption>(
-      `/journal/tags/categories/${categoryId}/options`,
-      { value, color: color || undefined },
+  ): Promise<Tag> => {
+    const { data } = await apiClient.post<Tag>(
+      `/journal/tags/groups/${groupId}/tags`,
+      { name, color: color || undefined },
       withAuth(token)
     );
     return data;
   },
 
-  deleteOption: async (optionId: string, token?: string): Promise<void> => {
-    await apiClient.delete(
-      `/journal/tags/options/${optionId}`,
+  updateTag: async (
+    tagId: string,
+    payload: { name?: string; color?: string },
+    token?: string
+  ): Promise<Tag> => {
+    const { data } = await apiClient.put<Tag>(
+      `/journal/tags/${tagId}`,
+      payload,
       withAuth(token)
     );
+    return data;
   },
 
-  getTradeTags: async (tradeId: string, token?: string): Promise<TagOption[]> => {
-    const { data } = await apiClient.get<TagOption[]>(
+  deleteTag: async (tagId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/journal/tags/${tagId}`, withAuth(token));
+  },
+
+  reorderTags: async (ids: string[], token?: string): Promise<void> => {
+    await apiClient.put("/journal/tags/reorder", { ids }, withAuth(token));
+  },
+
+  // --- Trade tags ---
+  getTradeTags: async (tradeId: string, token?: string): Promise<Tag[]> => {
+    const { data } = await apiClient.get<Tag[]>(
       `/journal/trades/${tradeId}/tags`,
       withAuth(token)
     );
@@ -57,17 +93,18 @@ export const journalTagsApi = {
 
   updateTradeTags: async (
     tradeId: string,
-    optionIds: string[],
+    tagIds: string[],
     token?: string
-  ): Promise<TagOption[]> => {
-    const { data } = await apiClient.put<TagOption[]>(
+  ): Promise<Tag[]> => {
+    const { data } = await apiClient.put<Tag[]>(
       `/journal/trades/${tradeId}/tags`,
-      { option_ids: optionIds },
+      { tag_ids: tagIds },
       withAuth(token)
     );
     return data;
   },
 
+  // --- Rating & assessment (separate feature, co-located on the same router) ---
   updateTradeRating: async (
     tradeId: string,
     rating: number,
@@ -98,11 +135,7 @@ export const journalTagsApi = {
       execution_quality?: number;
       setup_quality?: number;
       discipline_score?: number;
-    }>(
-      `/journal/trades/${tradeId}/assessment`,
-      payload,
-      withAuth(token)
-    );
+    }>(`/journal/trades/${tradeId}/assessment`, payload, withAuth(token));
     return data;
   },
 };
