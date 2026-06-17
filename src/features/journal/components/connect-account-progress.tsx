@@ -1,6 +1,6 @@
 "use client";
 
-import { Circle, Loader2, ShieldCheck, Terminal } from "lucide-react";
+import { Circle, Loader2, Terminal } from "lucide-react";
 
 interface Phase {
   id: "verifying" | "saving" | "queueing";
@@ -12,20 +12,20 @@ interface Phase {
 const PHASES: Phase[] = [
   {
     id: "verifying",
-    label: "Verifying MT5 credentials",
-    detail: "Checking the account number, server, and investor password with MT5.",
+    label: "Verifying account",
+    detail: "Checking MT5 access.",
     state: "active",
   },
   {
     id: "saving",
-    label: "Saving the account",
-    detail: "Starts only after MT5 accepts the credentials.",
+    label: "Saving account",
+    detail: "Next",
     state: "pending",
   },
   {
     id: "queueing",
-    label: "Starting history import",
-    detail: "Runs in the background after this modal closes.",
+    label: "Starting sync",
+    detail: "Next",
     state: "pending",
   },
 ];
@@ -43,7 +43,7 @@ export function ConnectAccountProgress() {
           Verifying Your MT5 Account
         </h3>
         <p className="text-sm text-text-secondary max-w-xs mx-auto">
-          Keep this modal open while MT5 checks the credentials. History import starts in the background after verification succeeds.
+          Keep this open while we check your account.
         </p>
       </div>
 
@@ -89,13 +89,6 @@ export function ConnectAccountProgress() {
             </div>
           );
         })}
-      </div>
-
-      <div className="flex max-w-sm items-start gap-2 rounded-lg border border-border-primary bg-bg-secondary/60 px-3 py-2 text-left text-xs text-text-secondary">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-        <span>
-          If this succeeds, your account will appear as connected while the first trade-history sync continues separately.
-        </span>
       </div>
 
       <style jsx global>{`
