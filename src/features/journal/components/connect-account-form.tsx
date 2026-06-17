@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useConnectJournalAccount } from "../hooks/use-journal-accounts";
+import { sanitizeJournalConnectionError } from "../lib/sanitize-connection-error";
 import type { JournalAccount, JournalAccountConnectFormValues } from "../types";
 
 const connectAccountSchema = z.object({
@@ -76,11 +77,17 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
     } catch (error) {
       form.setValue("investor_password", "");
       const message =
-        error instanceof Error
+        sanitizeJournalConnectionError(
+          error instanceof Error ? error.message : null,
+        ) ??
+        (error instanceof Error
           ? error.message
-          : "Unable to connect account. Please verify your details.";
+          : "Unable to connect account. Please verify your details.");
+      const title = /timed?\s*out|timeout/i.test(message)
+        ? "MT5 verification timed out"
+        : "Account authorization failed";
 
-      toast.error("Account authorization failed", {
+      toast.error(title, {
         description: message,
       });
 
