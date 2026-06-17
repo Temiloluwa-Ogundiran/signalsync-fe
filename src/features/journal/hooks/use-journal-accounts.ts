@@ -89,6 +89,21 @@ export function useDisconnectJournalAccount() {
   });
 }
 
+export function useClearDemoData() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      journalAccountApi.clearDemo(session?.accessToken as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: JOURNAL_ACCOUNT_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["journal-analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["journal-day"] });
+    },
+  });
+}
+
 export function useUpdateJournalAccount() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();

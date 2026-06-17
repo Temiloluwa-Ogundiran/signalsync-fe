@@ -43,6 +43,7 @@ interface AccountOption {
   id: string;
   display_name?: string | null;
   broker_login?: string | null;
+  is_demo?: boolean;
 }
 
 function getLastSyncDate(lastSyncedAt?: string | null) {
@@ -311,6 +312,11 @@ function AccountSelector({
                       {account.display_name ||
                         `Account ${account.broker_login}`}
                     </span>
+                    {account.is_demo ? (
+                      <span className="shrink-0 rounded-full bg-surface-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                        Demo
+                      </span>
+                    ) : null}
                     {isActive ? (
                       <span className="shrink-0 rounded-full bg-ai-soft-bg px-2 py-0.5 text-[10px] font-semibold text-ai-accent">
                         Active

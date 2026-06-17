@@ -15,6 +15,7 @@ import { BookOpen01Icon } from "@hugeicons/core-free-icons";
 import { JournalPageHeader } from "./journal-page-header";
 import { JournalDayCard } from "./journal-day-card";
 import { JournalEmptyState } from "./journal-empty-state";
+import { DemoDataBanner } from "./demo-data-banner";
 import {
   JournalMonthCalendar,
   type MonthCalendarDay,
@@ -142,10 +143,12 @@ export function JournalFeedPage() {
   // ----- Right rail: month calendar + period summary -----
   // Calendar month state, defaulting to the latest day in the fetched window
   // (the window is anchored to the account's most recent activity).
-  const [monthAnchor, setMonthAnchor] = useState<Date>(() => {
-    const latest = parseDateParam(toDate);
-    return latest ?? new Date();
-  });
+  // Once the user navigates months, this holds their chosen month. Until then
+  // the calendar follows `toDate` (anchored to the account's latest activity),
+  // so the calendar/summary always match the feed — even when the account loads
+  // after first render.
+  const [pickedMonth, setPickedMonth] = useState<Date | null>(null);
+  const monthAnchor = pickedMonth ?? parseDateParam(toDate) ?? new Date();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   const calMonth = monthAnchor.getMonth();
@@ -191,7 +194,9 @@ export function JournalFeedPage() {
 
   const shiftMonth = (delta: number) => {
     setSelectedDay(null);
-    setMonthAnchor((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
+    setPickedMonth(
+      new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() + delta, 1),
+    );
   };
 
   // Accordion: at most one day card is expanded at a time.
@@ -268,6 +273,8 @@ export function JournalFeedPage() {
         dateRange={parsedDateRange}
         onApplyDateRange={applyDateRange}
       />
+
+      <DemoDataBanner isDemo={Boolean(activeAccount?.is_demo)} />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Left: day feed */}

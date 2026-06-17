@@ -54,6 +54,8 @@ export interface JournalAccount {
   is_deleted: boolean;
   sync_provider?: string;
   created_at: string;
+  /** True for the seeded demo account (drives the demo banner + badge). */
+  is_demo?: boolean;
 }
 
 export interface JournalAccountSyncImmediateResult {
