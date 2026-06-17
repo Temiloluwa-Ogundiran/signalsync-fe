@@ -2,7 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
+import {
+  refreshJournalQueriesAfterManualSync,
+  waitForQueuedJournalSyncCompletion,
+} from "@/features/journal/lib/manual-sync-refresh";
 import {
   useJournalAccounts,
   useSyncJournalAccount,
@@ -90,9 +93,26 @@ export function useActiveJournalAutoSync() {
       lastAttemptByAccountRef.current[candidate.id] = nowMs;
 
       try {
-        await syncAccount.mutateAsync(candidate.id);
+        const result = await syncAccount.mutateAsync(candidate.id);
+        if ("inserted_trades" in result) {
+          await refreshJournalQueriesAfterManualSync(queryClient);
+          return;
+        }
+
+        if (result.status === "queued") {
+          const waitResult = await waitForQueuedJournalSyncCompletion({
+            accountId: candidate.id,
+            baselineLastSyncedAt: candidate.last_synced_at,
+            refetchAccounts,
+          });
+
+          if (waitResult.status === "completed" || waitResult.status === "failed") {
+            await refreshJournalQueriesAfterManualSync(queryClient);
+          }
+          return;
+        }
+
         await refetchAccounts();
-        await refreshJournalQueriesAfterManualSync(queryClient);
       } catch {
         await refetchAccounts();
       }

@@ -23,10 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppLoader } from "@/components/app-loader";
 import { formatCurrency } from "./journal-day-modal.utils";
-import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
+import {
+  refreshJournalQueriesAfterManualSync,
+  waitForQueuedJournalSyncCompletion,
+} from "@/features/journal/lib/manual-sync-refresh";
 import { toast } from "sonner";
-
-const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export function JournalAccountsPage() {
   const queryClient = useQueryClient();
@@ -42,22 +43,31 @@ export function JournalAccountsPage() {
   const handleSyncAccount = async (accountId: string) => {
     setActiveSyncingId(accountId);
     try {
+      const baselineAccount = accounts.find((account) => account.id === accountId);
       const result = await syncAccount.mutateAsync(accountId);
-      await refreshJournalQueriesAfterManualSync(queryClient);
+      if ("inserted_trades" in result) {
+        await refreshJournalQueriesAfterManualSync(queryClient);
+        return;
+      }
+
       if ("status" in result && result.status === "queued") {
-        for (let attempt = 0; attempt < 15; attempt += 1) {
-          await sleep(3_000);
-          const refreshed = await refetchAccounts();
-          const account = (refreshed.data ?? []).find((item) => item.id === accountId);
-          if (!account) break;
-          if (account.connection_state === "verification_failed") {
-            toast.error("Account authorization failed", {
-              description:
-                account.sync_error_message ||
-                "Check the account number, broker server, and investor password.",
-            });
-            break;
-          }
+        const waitResult = await waitForQueuedJournalSyncCompletion({
+          accountId,
+          baselineLastSyncedAt: baselineAccount?.last_synced_at,
+          refetchAccounts,
+        });
+
+        if (waitResult.status === "completed") {
+          await refreshJournalQueriesAfterManualSync(queryClient);
+        } else if (
+          waitResult.status === "failed" &&
+          waitResult.account.connection_state === "verification_failed"
+        ) {
+          toast.error("Account authorization failed", {
+            description:
+              waitResult.account.sync_error_message ||
+              "Check the account number, broker server, and investor password.",
+          });
         }
       }
     } catch (err) {

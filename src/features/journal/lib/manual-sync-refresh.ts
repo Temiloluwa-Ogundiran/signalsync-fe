@@ -1,4 +1,5 @@
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
+import type { JournalAccount } from "@/features/journal/types";
 
 function isMatchingQuery(
   queryKey: QueryKey,
@@ -30,4 +31,56 @@ export async function refreshJournalQueriesAfterManualSync(
     predicate: (query) => isMatchingQuery(query.queryKey, prefixes),
     type: "active",
   });
+}
+
+type RefetchAccounts = () => Promise<{ data?: JournalAccount[] }>;
+
+export type QueuedSyncWaitResult =
+  | { status: "completed"; account: JournalAccount }
+  | { status: "failed"; account: JournalAccount }
+  | { status: "missing" }
+  | { status: "timeout" };
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => window.setTimeout(resolve, ms));
+
+function getTimeMs(value: string | null | undefined) {
+  if (!value) return null;
+  const timeMs = new Date(value).getTime();
+  return Number.isNaN(timeMs) ? null : timeMs;
+}
+
+export async function waitForQueuedJournalSyncCompletion({
+  accountId,
+  baselineLastSyncedAt,
+  refetchAccounts,
+  intervalMs = 4_000,
+  maxAttempts = 45,
+}: {
+  accountId: string;
+  baselineLastSyncedAt?: string | null;
+  refetchAccounts: RefetchAccounts;
+  intervalMs?: number;
+  maxAttempts?: number;
+}): Promise<QueuedSyncWaitResult> {
+  const baselineMs = getTimeMs(baselineLastSyncedAt);
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    await sleep(intervalMs);
+    const refreshed = await refetchAccounts();
+    const account = (refreshed.data ?? []).find((item) => item.id === accountId);
+    if (!account) return { status: "missing" };
+
+    const syncedAtMs = getTimeMs(account.last_synced_at);
+    const didSyncAdvance =
+      !!syncedAtMs && (!baselineMs || syncedAtMs > baselineMs);
+    const didFail =
+      account.connection_state === "bootstrap_failed" ||
+      account.connection_state === "verification_failed";
+
+    if (didSyncAdvance) return { status: "completed", account };
+    if (didFail) return { status: "failed", account };
+  }
+
+  return { status: "timeout" };
 }
