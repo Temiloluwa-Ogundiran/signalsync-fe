@@ -1,5 +1,6 @@
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import type { JournalAccount } from "@/features/journal/types";
+import { isAccountSyncFailed, getAccountSyncStatus } from "./account-sync-status";
 
 function isMatchingQuery(
   queryKey: QueryKey,
@@ -74,9 +75,7 @@ export async function waitForQueuedJournalSyncCompletion({
     const syncedAtMs = getTimeMs(account.last_synced_at);
     const didSyncAdvance =
       !!syncedAtMs && (!baselineMs || syncedAtMs > baselineMs);
-    const didFail =
-      account.connection_state === "bootstrap_failed" ||
-      account.connection_state === "verification_failed";
+    const didFail = isAccountSyncFailed(getAccountSyncStatus(account));
 
     if (didSyncAdvance) return { status: "completed", account };
     if (didFail) return { status: "failed", account };

@@ -14,6 +14,7 @@ import { useJournalUiStore } from "../store/journal-ui-store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { JournalAccount } from "../types";
+import { getAccountSyncStatus } from "../lib/account-sync-status";
 
 export function ConnectAccountModal() {
   const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
@@ -50,25 +51,28 @@ function ConnectAccountModalBody() {
       return;
     }
 
-    if (account.connection_state === "bootstrapping") {
+    const syncStatus = getAccountSyncStatus(account);
+
+    if (syncStatus.code === "bootstrapping") {
       toast.info("Account verified", {
         description: "Trade history is importing in the background.",
       });
-    } else if (account.connection_state === "pending_verification") {
+    } else if (syncStatus.code === "pending_verification") {
       toast.info("Account added", {
         description:
           "Verification has started. We will update the account status in the background.",
       });
-    } else if (account.connection_state === "verification_failed") {
-      toast.error("Account authorization failed", {
-        description:
-          account.sync_error_message ||
-          "Check the account number, broker server, and investor password.",
+    } else if (syncStatus.severity === "error") {
+      toast.error(syncStatus.headline, {
+        description: syncStatus.detail,
       });
-    } else if (account.connection_state === "bootstrap_failed") {
-      toast.warning("Account connected with warning", {
-        description:
-          "Account was verified, but history sync failed. You can retry syncing manually.",
+    } else if (syncStatus.severity === "warning") {
+      toast.warning(syncStatus.headline, {
+        description: syncStatus.detail,
+      });
+    } else if (syncStatus.code === "ready_empty") {
+      toast.info(syncStatus.headline, {
+        description: syncStatus.detail,
       });
     } else {
       toast.success("Account connected", {

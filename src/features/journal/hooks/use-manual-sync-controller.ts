@@ -8,6 +8,10 @@ import type {
   useSyncJournalAccount,
 } from "@/features/journal/hooks/use-journal-accounts";
 import type { JournalAccount } from "@/features/journal/types";
+import {
+  getAccountSyncStatus,
+  isAccountSyncFailed,
+} from "@/features/journal/lib/account-sync-status";
 
 function formatSyncTimestamp(dateString: string | null | undefined) {
   if (!dateString) return null;
@@ -95,17 +99,15 @@ export function useManualSyncController({
   const journalSyncProgressMessage = useMemo(() => {
     if (syncAccountMutation.isPending) return "Contacting server...";
     if (syncUiState) return "Waiting for background sync...";
-    if (activeAccount?.connection_state === "bootstrapping") {
-      return "Syncing account history for stats...";
-    }
-    if (activeAccount?.connection_state === "pending_verification") {
-      return "Verifying credentials...";
+    if (activeAccount) {
+      const syncStatus = getAccountSyncStatus(activeAccount);
+      if (syncStatus.severity === "pending") return syncStatus.detail;
     }
     return "Sync in progress...";
   }, [
     syncAccountMutation.isPending,
     syncUiState,
-    activeAccount?.connection_state,
+    activeAccount,
   ]);
 
   const handleRefreshAccounts = async (options?: {
@@ -409,9 +411,9 @@ export function useManualSyncController({
         !Number.isNaN(trackedLastSyncedAtMs) &&
         (!syncUiState.baselineLastSyncedAtMs ||
           trackedLastSyncedAtMs > syncUiState.baselineLastSyncedAtMs);
-      const isFailureState =
-        trackedAccount.connection_state === "bootstrap_failed" ||
-        trackedAccount.connection_state === "verification_failed";
+      const isFailureState = isAccountSyncFailed(
+        getAccountSyncStatus(trackedAccount),
+      );
 
       if (didSyncTimestampAdvance || isFailureState) {
         setSyncUiState(null);

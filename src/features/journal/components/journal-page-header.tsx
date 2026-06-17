@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import type { JournalAccountSyncStatus } from "../types";
 
 interface JournalPageHeaderProps {
   /** Sync metadata line ("Last sync · Resync"). Dashboard shows it; other pages
@@ -28,6 +29,7 @@ interface JournalPageHeaderProps {
   nextSyncNotBefore?: string | null;
   userSyncRateLimitedUntilMs?: number | null;
   connectionState?: string;
+  syncStatus?: JournalAccountSyncStatus;
   onSyncAccount?: () => void;
   /** Account selector (moved out of the global chrome into page-view controls). */
   accounts: AccountOption[];
@@ -90,6 +92,7 @@ export function JournalPageHeader({
   nextSyncNotBefore,
   userSyncRateLimitedUntilMs,
   connectionState,
+  syncStatus,
   onSyncAccount,
   accounts,
   activeAccountId,
@@ -132,19 +135,13 @@ export function JournalPageHeader({
     return () => window.clearInterval(timer);
   }, [isCooldownActive, isSyncPending, lastSyncedAt]);
 
-  const stateLabelMap: Record<string, string> = {
-    pending_verification: "Verifying credentials...",
-    bootstrapping: "Syncing account history for stats...",
-    ready: "Ready",
-    verification_failed: "Needs attention",
-    bootstrap_failed: "Connected with sync warning",
-  };
   const connectionLabel = (() => {
+    if (syncStatus && syncStatus.code !== "ready") return syncStatus.detail;
     if (!connectionState || connectionState === "ready") return null;
     // If an account already synced before, don't regress UX to "verifying credentials".
     if (connectionState === "pending_verification" && !!lastSyncedAt)
       return null;
-    return stateLabelMap[connectionState] ?? "Needs attention";
+    return "Needs attention";
   })();
 
   return (

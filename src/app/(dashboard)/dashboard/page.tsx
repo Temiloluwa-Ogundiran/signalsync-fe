@@ -40,6 +40,10 @@ import { getDefaultJournalWidgetRegistry } from "@/features/journal/lib/widget-r
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { JournalSyncProgressBanner } from "@/features/journal/components/journal-sync-progress-banner";
+import {
+  getAccountSyncStatus,
+  isAccountSyncBusy,
+} from "@/features/journal/lib/account-sync-status";
 
 const journalWidgetRegistry = getDefaultJournalWidgetRegistry().filter(
   (widget) => widget.visible,
@@ -101,8 +105,7 @@ function JournalPageContent() {
   );
 
   const activeAccountConnectionBusy =
-    activeAccount?.connection_state === "bootstrapping" ||
-    activeAccount?.connection_state === "pending_verification";
+    !!activeAccount && isAccountSyncBusy(getAccountSyncStatus(activeAccount));
 
   const monthLabel = useMemo(
     () =>
@@ -387,6 +390,7 @@ function JournalPageContent() {
         nextSyncNotBefore={activeAccount?.next_sync_not_before}
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
         connectionState={activeAccount?.connection_state}
+        syncStatus={activeAccount?.sync_status}
         onSyncAccount={() => void handleRefreshAccounts()}
         accounts={accounts}
         activeAccountId={activeAccountId}

@@ -28,6 +28,10 @@ import {
   waitForQueuedJournalSyncCompletion,
 } from "@/features/journal/lib/manual-sync-refresh";
 import { toast } from "sonner";
+import {
+  getAccountSyncStatus,
+  isAccountSyncHealthy,
+} from "@/features/journal/lib/account-sync-status";
 
 export function JournalAccountsPage() {
   const queryClient = useQueryClient();
@@ -59,14 +63,10 @@ export function JournalAccountsPage() {
 
         if (waitResult.status === "completed") {
           await refreshJournalQueriesAfterManualSync(queryClient);
-        } else if (
-          waitResult.status === "failed" &&
-          waitResult.account.connection_state === "verification_failed"
-        ) {
-          toast.error("Account authorization failed", {
-            description:
-              waitResult.account.sync_error_message ||
-              "Check the account number, broker server, and investor password.",
+        } else if (waitResult.status === "failed") {
+          const syncStatus = getAccountSyncStatus(waitResult.account);
+          toast.error(syncStatus.headline, {
+            description: syncStatus.detail,
           });
         }
       }
@@ -128,18 +128,8 @@ export function JournalAccountsPage() {
 
   const getSyncStatusDetail = (account: (typeof accounts)[number]) => {
     if (account.sync_provider === "csv_import") return null;
-    if (account.connection_state === "pending_verification") {
-      return "Verifying credentials";
-    }
-    if (account.connection_state === "bootstrapping") {
-      return "Syncing history";
-    }
-    if (account.connection_state === "verification_failed") {
-      return account.sync_error_message || "Credentials need attention";
-    }
-    if (account.connection_state === "bootstrap_failed") {
-      return account.bootstrap_error_message || "Background sync failed";
-    }
+    const syncStatus = getAccountSyncStatus(account);
+    if (syncStatus.code !== "ready") return syncStatus.detail;
     if (account.next_sync_not_before) {
       return formatNextRetry(account.next_sync_not_before) || "Next sync soon";
     }
@@ -215,11 +205,11 @@ export function JournalAccountsPage() {
                     {accounts.map((account) => {
                       const isSyncing = activeSyncingId === account.id;
                       const accountLabel = account.display_name || "MT5 Trading Account";
-                      const isConnectionReady =
-                        account.sync_provider === "csv_import" ||
-                        account.connection_state === "ready";
-                      const needsCredentialAttention =
-                        account.connection_state === "verification_failed";
+                      const syncStatus = getAccountSyncStatus(account);
+                      const isConnectionReady = isAccountSyncHealthy(syncStatus);
+                      const needsAttention =
+                        syncStatus.severity === "warning" ||
+                        syncStatus.severity === "error";
                       const balanceText =
                         account.latest_balance == null
                           ? "--"
@@ -239,6 +229,8 @@ export function JournalAccountsPage() {
                             <div className="flex items-center gap-2">
                               {isConnectionReady ? (
                                 <CheckCircle2 className="h-4 w-4 text-kpi-metric-positive flex-shrink-0" />
+                              ) : syncStatus.severity === "pending" ? (
+                                <RefreshCw className="h-4 w-4 animate-spin text-info flex-shrink-0" />
                               ) : (
                                 <XCircle className="h-4 w-4 text-danger flex-shrink-0" />
                               )}
@@ -291,9 +283,9 @@ export function JournalAccountsPage() {
                               <span className="rounded bg-badge-warn-bg px-2 py-0.5 text-[10px] font-bold text-badge-warn-fg uppercase tracking-wider">
                                 CSV
                               </span>
-                            ) : needsCredentialAttention ? (
+                            ) : needsAttention ? (
                               <span className="rounded bg-danger/15 px-2 py-0.5 text-[10px] font-bold text-danger uppercase tracking-wider">
-                                Invalid
+                                Attention
                               </span>
                             ) : (
                               <span className="rounded bg-bg-tertiary px-2 py-0.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">

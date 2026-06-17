@@ -47,7 +47,9 @@ export interface JournalAccount {
   sync_error_message: string | null;
   bootstrap_error_message: string | null;
   last_sync_attempted_at: string | null;
+  last_sync_outcome?: string | null;
   next_sync_not_before: string | null;
+  sync_status?: JournalAccountSyncStatus;
   // Backend serializes the Decimal as a string ("583.61"); may also be a number.
   latest_balance: string | number | null;
   latest_equity: number | null;
@@ -56,6 +58,14 @@ export interface JournalAccount {
   created_at: string;
   /** True for the seeded demo account (drives the demo banner + badge). */
   is_demo?: boolean;
+}
+
+export interface JournalAccountSyncStatus {
+  code: string;
+  severity: "success" | "info" | "pending" | "warning" | "error";
+  headline: string;
+  detail: string;
+  action: string | null;
 }
 
 export interface JournalAccountSyncImmediateResult {
