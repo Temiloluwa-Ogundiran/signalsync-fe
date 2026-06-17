@@ -49,6 +49,13 @@ function getLastDaysInclusiveRange(days: number, anchor?: Date) {
   return { fromDate: formatDateParam(from), toDate: formatDateParam(to) };
 }
 
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function endOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+}
+
 export function JournalFeedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,6 +67,11 @@ export function JournalFeedPage() {
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openAi = useAiDockStore((s) => s.open);
 
+  // Once the user pages the calendar, this holds their chosen month; the fetch
+  // window and calendar then follow it. Until then both follow the default
+  // (last 30 days anchored to the account's latest activity).
+  const [pickedMonth, setPickedMonth] = useState<Date | null>(null);
+
   const queryFrom = parseDateParam(searchParams.get("fromDate"));
   const queryTo = parseDateParam(searchParams.get("toDate"));
   const hasCustomRange = !!queryFrom && !!queryTo;
@@ -70,8 +82,16 @@ export function JournalFeedPage() {
     ? new Date(activeAccount.last_synced_at)
     : undefined;
   const rolling = getLastDaysInclusiveRange(30, anchorTo);
-  const fromDate = hasCustomRange ? formatDateParam(queryFrom) : rolling.fromDate;
-  const toDate = hasCustomRange ? formatDateParam(queryTo) : rolling.toDate;
+  const fromDate = hasCustomRange
+    ? formatDateParam(queryFrom)
+    : pickedMonth
+      ? formatDateParam(startOfMonth(pickedMonth))
+      : rolling.fromDate;
+  const toDate = hasCustomRange
+    ? formatDateParam(queryTo)
+    : pickedMonth
+      ? formatDateParam(endOfMonth(pickedMonth))
+      : rolling.toDate;
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
     const from = parseDateParam(searchParams.get("fromDate"));
@@ -141,13 +161,9 @@ export function JournalFeedPage() {
   const days = allDays;
 
   // ----- Right rail: month calendar + period summary -----
-  // Calendar month state, defaulting to the latest day in the fetched window
-  // (the window is anchored to the account's most recent activity).
-  // Once the user navigates months, this holds their chosen month. Until then
-  // the calendar follows `toDate` (anchored to the account's latest activity),
-  // so the calendar/summary always match the feed — even when the account loads
-  // after first render.
-  const [pickedMonth, setPickedMonth] = useState<Date | null>(null);
+  // The calendar follows the picked month; before any navigation it follows the
+  // fetch window's end (anchored to the account's latest activity), so the
+  // calendar/summary match the feed even when the account loads after render.
   const monthAnchor = pickedMonth ?? parseDateParam(toDate) ?? new Date();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
