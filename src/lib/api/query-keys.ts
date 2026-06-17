@@ -98,4 +98,11 @@ export const queryKeys = {
   users: {
     profile: (userId: string) => ["user-profile", userId] as const,
   },
+
+  settings: {
+    // The authenticated user's own account (GET /users/me).
+    me: () => ["settings-me"] as const,
+    // Active refresh-token sessions (GET /users/me/sessions).
+    sessions: () => ["settings-sessions"] as const,
+  },
 } as const;

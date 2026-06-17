@@ -247,13 +247,11 @@ export function buildNavRegistry(actionFns: {
               icon: UserIcon,
               label: "Profile",
               route: "/settings/profile",
-              comingSoon: true,
             },
             {
               icon: SecurityCheckIcon,
               label: "Security",
               route: "/settings/security",
-              comingSoon: true,
             },
             {
               icon: CreditCardIcon,

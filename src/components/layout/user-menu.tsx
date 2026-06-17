@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { LogOut, User } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { User03Icon, Sun03Icon, Moon02Icon } from "@hugeicons/core-free-icons";
@@ -79,14 +80,13 @@ export function UserMenu() {
 
         <div className="my-1 h-px bg-border-secondary/50" aria-hidden />
 
-        <button
-          type="button"
-          disabled
-          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-secondary opacity-60"
+        <Link
+          href="/settings/profile"
+          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
         >
           <User className="size-4 shrink-0" />
           Profile
-        </button>
+        </Link>
         <button
           type="button"
           onClick={toggleTheme}
