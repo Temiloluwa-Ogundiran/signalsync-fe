@@ -135,7 +135,7 @@ export function LoginForm({
                     type="email"
                     {...field}
                     disabled={isPending}
-                    className="focus-visible:ring-ai-accent"
+                    className="focus-visible:ring-auth-accent"
                   />
                 </FormControl>
                 <FormMessage />
@@ -147,7 +147,15 @@ export function LoginForm({
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Password</FormLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-semibold text-auth-accent transition-colors hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -155,7 +163,7 @@ export function LoginForm({
                       type={showPassword ? "text" : "password"}
                       {...field}
                       disabled={isPending}
-                      className="focus-visible:ring-ai-accent"
+                      className="focus-visible:ring-auth-accent"
                     />
                     <Button
                       type="button"
@@ -181,14 +189,6 @@ export function LoginForm({
                     </Button>
                   </div>
                 </FormControl>
-                <div className="flex justify-end">
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs font-medium text-ai-accent underline-offset-4 transition-colors hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -210,7 +210,7 @@ export function LoginForm({
           </div>
         ) : null}
         <Button
-          className="w-full cursor-pointer bg-ai-accent text-white hover:bg-ai-accent-bright focus-visible:ring-ai-accent/40"
+          className="h-11 w-full cursor-pointer bg-auth-accent text-white hover:bg-auth-accent-hover focus-visible:ring-auth-accent/40"
           type="submit"
           disabled={isPending}
         >
@@ -220,7 +220,7 @@ export function LoginForm({
               Signing in...
             </>
           ) : (
-            "Sign In"
+            "Login"
           )}
         </Button>
       </form>

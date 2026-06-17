@@ -5,6 +5,7 @@ import {
   Book02Icon,
   AnalyticsUpIcon,
   Analytics01Icon,
+  StrategyIcon,
   Wallet01Icon,
   AiMagicIcon,
   FlaskConicalIcon,
@@ -121,6 +122,11 @@ export function buildNavRegistry(actionFns: {
               icon: Analytics01Icon,
               label: "Trades",
               route: "/trade-history",
+            },
+            {
+              icon: StrategyIcon,
+              label: "Strategies",
+              route: "/strategies",
             },
             {
               icon: Notebook01Icon,

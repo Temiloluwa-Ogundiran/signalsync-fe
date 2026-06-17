@@ -61,6 +61,9 @@ export function ResetPasswordForm() {
     }
   }
 
+  const password = form.watch("password");
+  const strength = passwordStrength(password);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -72,11 +75,41 @@ export function ResetPasswordForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel className="sr-only">New Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} disabled={isLoading} />
+                <Input
+                  type="password"
+                  placeholder="New password"
+                  {...field}
+                  disabled={isLoading}
+                  className="focus-visible:ring-auth-accent"
+                />
               </FormControl>
-              <p className="text-xs text-muted-foreground">{PASSWORD_POLICY_MESSAGE}</p>
+              {password ? (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2, 3].map((i) => (
+                      <span
+                        key={i}
+                        className={
+                          "h-1.5 flex-1 rounded-full transition-colors " +
+                          (i < strength.score
+                            ? strength.barClass
+                            : "bg-border-secondary")
+                        }
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-text-secondary">Password strength:</span>
+                    <span className={strength.textClass}>{strength.label}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {PASSWORD_POLICY_MESSAGE}
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -86,19 +119,53 @@ export function ResetPasswordForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel className="sr-only">Confirm Password</FormLabel>
               <FormControl>
-                <Input type="password" {...field} disabled={isLoading} />
+                <Input
+                  type="password"
+                  placeholder="Confirm password"
+                  {...field}
+                  disabled={isLoading}
+                  className="focus-visible:ring-auth-accent"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="h-11 w-full bg-auth-accent text-white hover:bg-auth-accent-hover focus-visible:ring-auth-accent/40"
+          disabled={isLoading}
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Reset password
+          Reset Password
         </Button>
       </form>
     </Form>
   );
+}
+
+/** Lightweight 0–4 strength estimate from length + character variety. */
+function passwordStrength(pw: string): {
+  score: number;
+  label: string;
+  barClass: string;
+  textClass: string;
+} {
+  if (!pw) return { score: 0, label: "", barClass: "", textClass: "" };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+  score = Math.min(4, score);
+  const meta = [
+    { label: "Too short", barClass: "bg-danger", textClass: "text-danger" },
+    { label: "Weak", barClass: "bg-danger", textClass: "text-danger" },
+    { label: "Fair", barClass: "bg-warning", textClass: "text-warning" },
+    { label: "Good", barClass: "bg-kpi-metric-positive", textClass: "text-kpi-metric-positive" },
+    { label: "Strong", barClass: "bg-kpi-metric-positive", textClass: "text-kpi-metric-positive" },
+  ][score];
+  return { score, ...meta };
 }

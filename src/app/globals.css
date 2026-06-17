@@ -132,6 +132,9 @@
 
   /* Auth screen — neutral page field behind the form column (light only). */
   --auth-bg: #f5f7fa;
+  /* Auth accent — the indigo on the login button + links. */
+  --auth-accent: #5b6cf0;
+  --auth-accent-hover: #4c5de8;
   /* Brand/AI field for the auth panel: a refined deep-indigo in the --ai
      family (not a muddy blue-purple). Used as a single flat gradient. */
   --auth-brand-from: #5a4bd4;
@@ -417,6 +420,8 @@
   --color-ai-soft-bg: var(--ai-soft-bg);
   --color-ai-soft-border: var(--ai-soft-border);
   --color-auth-bg: var(--auth-bg);
+  --color-auth-accent: var(--auth-accent);
+  --color-auth-accent-hover: var(--auth-accent-hover);
   --color-auth-brand-from: var(--auth-brand-from);
   --color-auth-brand-via: var(--auth-brand-via);
   --color-auth-brand-to: var(--auth-brand-to);

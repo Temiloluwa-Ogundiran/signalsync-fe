@@ -85,6 +85,19 @@ export function useDeleteSetup() {
   });
 }
 
+export function useReorderSetups() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      journalTradeDetailApi.reorderSetups(ids, session?.accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRADE_DETAIL_KEYS.setups() });
+    },
+  });
+}
+
 // --- Assign setup to a trade ---
 
 export function useUpdateTradeSetup(accountId?: string) {

@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import { KeyRound, Loader2 } from "lucide-react";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
 
 export const metadata: Metadata = {
@@ -11,14 +10,18 @@ export const metadata: Metadata = {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="w-full">
-      <div className="space-y-2 pb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
-          Set a new password
+    <div className="rounded-2xl border border-border-secondary/70 bg-white p-8 shadow-sm sm:p-10">
+      <h2 className="text-center text-lg font-bold text-text-primary">
+        Reset Password
+      </h2>
+
+      <div className="my-6 flex flex-col items-center gap-4 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-auth-accent/10 text-auth-accent">
+          <KeyRound className="h-7 w-7" />
+        </span>
+        <h1 className="text-xl font-bold tracking-tight text-text-primary">
+          Reset Your Password
         </h1>
-        <p className="text-sm text-text-secondary">
-          Choose a strong password for your account.
-        </p>
       </div>
 
       <Suspense
@@ -30,16 +33,6 @@ export default function ResetPasswordPage() {
       >
         <ResetPasswordForm />
       </Suspense>
-
-      <p className="mt-8 text-center text-sm text-text-secondary">
-        Back to{" "}
-        <Link
-          href="/login"
-          className="font-semibold text-ai-accent underline-offset-4 transition-colors hover:underline"
-        >
-          Sign in
-        </Link>
-      </p>
     </div>
   );
 }

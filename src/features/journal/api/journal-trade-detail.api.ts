@@ -59,4 +59,8 @@ export const journalTradeDetailApi = {
   deleteSetup: async (setupId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/journal/setups/${setupId}`, withAuth(token));
   },
+
+  reorderSetups: async (ids: string[], token?: string): Promise<void> => {
+    await apiClient.put("/journal/setups/reorder", { ids }, withAuth(token));
+  },
 };
