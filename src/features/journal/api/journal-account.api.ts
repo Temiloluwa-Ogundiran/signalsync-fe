@@ -48,10 +48,6 @@ export const journalAccountApi = {
     await apiClient.delete(`/accounts/${accountId}`, withAuth(token));
   },
 
-  clearDemo: async (token?: string): Promise<void> => {
-    await apiClient.delete(`/accounts/demo`, withAuth(token));
-  },
-
   updateAccount: async (
     accountId: string,
     displayName: string,
