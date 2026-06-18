@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ForgotPasswordForm } from "@/features/auth/components/forgot-password-form";
+import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
   title: "Forgot Password | TradePartna",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
+    <AuthCardShell>
     <div className="rounded-2xl border border-border-secondary/70 bg-white p-8 shadow-sm sm:p-10">
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <Image
@@ -42,5 +44,6 @@ export default function ForgotPasswordPage() {
         </Link>
       </p>
     </div>
+    </AuthCardShell>
   );
 }

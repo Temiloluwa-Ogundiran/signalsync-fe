@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { ResendVerificationForm } from "@/features/auth/components/resend-verification-form";
+import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
   title: "Resend Verification Email | TradePartna",
@@ -15,6 +16,7 @@ export default async function ResendVerificationPage({
   const params = (await searchParams) ?? {};
 
   return (
+    <AuthCardShell>
     <div className="w-full">
       <div className="space-y-2 pb-8">
         <h1 className="text-3xl font-bold tracking-tight text-text-primary">
@@ -37,5 +39,6 @@ export default async function ResendVerificationPage({
         </Link>
       </p>
     </div>
+    </AuthCardShell>
   );
 }

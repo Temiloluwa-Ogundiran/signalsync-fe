@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
 import {
@@ -94,6 +94,22 @@ function JournalPageContent() {
     () => accounts.find((account) => account.id === activeAccountId),
     [accounts, activeAccountId],
   );
+
+  // Demo-only: the seeded demo trades sit in a fixed past range, so opening the
+  // calendar on today's (empty) month is a bad first impression. When a demo
+  // account becomes active, jump the calendar to its latest traded month
+  // (`last_synced_at`, which the backend pins to the last demo trade day) — once
+  // per account, so the user can still navigate freely afterward. Real accounts
+  // are untouched: they stay on the current month.
+  const demoPositionedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeAccount?.is_demo || !activeAccount.last_synced_at) return;
+    if (demoPositionedFor.current === activeAccount.id) return;
+    const d = new Date(activeAccount.last_synced_at);
+    if (Number.isNaN(d.getTime())) return;
+    demoPositionedFor.current = activeAccount.id;
+    setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+  }, [activeAccount?.id, activeAccount?.is_demo, activeAccount?.last_synced_at]);
   const isConnectionPending = useMemo(
     () =>
       accounts.some(

@@ -7,6 +7,7 @@ import { Loader2, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { verifyEmail } from "@/features/auth/api/auth.api";
+import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 import { ApiException } from "@/lib/api/types";
 
 function VerifyEmailContent() {
@@ -130,19 +131,21 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="w-full text-center">
-          <div className="mb-5 flex justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-ai-accent" />
+    <AuthCardShell>
+      <Suspense
+        fallback={
+          <div className="w-full text-center">
+            <div className="mb-5 flex justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-ai-accent" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+              Loading…
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-            Loading…
-          </h1>
-        </div>
-      }
-    >
-      <VerifyEmailContent />
-    </Suspense>
+        }
+      >
+        <VerifyEmailContent />
+      </Suspense>
+    </AuthCardShell>
   );
 }

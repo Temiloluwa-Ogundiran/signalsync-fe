@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { KeyRound, Loader2 } from "lucide-react";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
+import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
   title: "Reset Password | TradePartna",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 
 export default function ResetPasswordPage() {
   return (
+    <AuthCardShell>
     <div className="rounded-2xl border border-border-secondary/70 bg-white p-8 shadow-sm sm:p-10">
       <h2 className="text-center text-lg font-bold text-text-primary">
         Reset Password
@@ -34,5 +36,6 @@ export default function ResetPasswordPage() {
         <ResetPasswordForm />
       </Suspense>
     </div>
+    </AuthCardShell>
   );
 }

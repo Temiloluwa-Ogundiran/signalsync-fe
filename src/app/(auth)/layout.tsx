@@ -3,9 +3,10 @@ import Link from "next/link";
 import { ForceLight } from "@/features/theme/force-light";
 
 /**
- * Auth chrome: a light canvas with the wordmark top-left, the page content
- * (a centered card) in the middle, and a Terms/Privacy line pinned to the
- * bottom. Single-column for every auth route.
+ * Auth chrome: wordmark top-left, the page's content centered, and a
+ * Terms/Privacy line at the bottom. Single column by default; a page (e.g.
+ * register) may render its own fixed brand panel on the right — its content
+ * wrapper then constrains to the left half via `lg:w-1/2`.
  */
 export default function AuthLayout({
   children,
@@ -17,7 +18,7 @@ export default function AuthLayout({
       <ForceLight />
 
       {/* Wordmark — top-left */}
-      <div className="px-6 py-6 sm:px-10">
+      <div className="relative z-10 px-6 py-6 sm:px-10">
         <Link href="/login" aria-label="TradePartna home" className="inline-flex">
           <Image
             src="/brand/tradpartnalight.svg"
@@ -30,23 +31,9 @@ export default function AuthLayout({
         </Link>
       </div>
 
-      {/* Centered content */}
-      <div className="flex flex-1 items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[440px]">{children}</div>
-      </div>
-
-      {/* Legal footer */}
-      <div className="px-5 pb-8 text-center text-sm text-text-tertiary">
-        By continuing, you agree to our{" "}
-        <Link href="/terms" className="underline underline-offset-2 hover:text-text-secondary">
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link href="/privacy" className="underline underline-offset-2 hover:text-text-secondary">
-          Privacy Policy
-        </Link>
-        .
-      </div>
+      {/* Page content — centers itself and carries its own legal footer
+          (constrained to the card column on the sign-up page). */}
+      <div className="relative z-10 flex flex-1 flex-col">{children}</div>
     </div>
   );
 }

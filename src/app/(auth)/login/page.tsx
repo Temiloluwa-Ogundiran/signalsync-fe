@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button";
+import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 import { hasUsableSession } from "@/lib/auth/auth-session";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default async function LoginPage({
   }
 
   return (
+    <AuthCardShell>
     <div className="rounded-2xl border border-border-secondary/70 bg-white p-8 shadow-sm sm:p-10">
       {/* Logo mark + heading */}
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
@@ -65,5 +67,6 @@ export default async function LoginPage({
         </Link>
       </p>
     </div>
+    </AuthCardShell>
   );
 }
