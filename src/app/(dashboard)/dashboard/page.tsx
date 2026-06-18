@@ -108,7 +108,11 @@ function JournalPageContent() {
     const d = new Date(activeAccount.last_synced_at);
     if (Number.isNaN(d.getTime())) return;
     demoPositionedFor.current = activeAccount.id;
-    setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+    const timeout = window.setTimeout(() => {
+      setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, [activeAccount?.id, activeAccount?.is_demo, activeAccount?.last_synced_at]);
   const isConnectionPending = useMemo(
     () =>

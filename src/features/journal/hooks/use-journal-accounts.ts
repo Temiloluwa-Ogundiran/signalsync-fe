@@ -12,6 +12,7 @@ const IMPORTING_CONNECTION_STATES = new Set([
 export const JOURNAL_ACCOUNT_KEYS = {
   all: ["journal-accounts"] as const,
   list: () => ["journal-accounts", "list"] as const,
+  mt5Servers: (query: string) => ["journal-accounts", "mt5-servers", query] as const,
 };
 
 export function useJournalAccounts() {
@@ -56,6 +57,18 @@ export function useConnectJournalAccount() {
         });
       }
     },
+  });
+}
+
+export function useMt5ServerSearch(query: string, enabled = true) {
+  const { data: session, status } = useSession();
+
+  return useQuery({
+    queryKey: JOURNAL_ACCOUNT_KEYS.mt5Servers(query),
+    queryFn: () =>
+      journalAccountApi.searchMt5Servers(query, session?.accessToken as string),
+    enabled: enabled && status === "authenticated" && !!session?.accessToken,
+    staleTime: 10 * 60 * 1000,
   });
 }
 

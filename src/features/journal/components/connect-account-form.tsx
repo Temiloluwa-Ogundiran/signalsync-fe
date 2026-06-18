@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Loader2, PlugZap } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, PlugZap, Search } from "lucide-react";
 import * as z from "zod";
 import { toast } from "sonner";
 import {
@@ -16,8 +16,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useConnectJournalAccount } from "../hooks/use-journal-accounts";
+import {
+  useConnectJournalAccount,
+  useMt5ServerSearch,
+} from "../hooks/use-journal-accounts";
 import { sanitizeJournalConnectionError } from "../lib/sanitize-connection-error";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import type { JournalAccount, JournalAccountConnectFormValues } from "../types";
 
 const connectAccountSchema = z.object({
@@ -131,10 +136,12 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
               <FormItem>
                 <FormLabel>Broker Server</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="For example: ICMarketsSC-Demo"
-                    autoComplete="off"
-                    {...field}
+                  <Mt5ServerCombobox
+                    value={field.value}
+                    onChange={(serverName) => {
+                      field.onChange(serverName);
+                      form.clearErrors("broker_server");
+                    }}
                     disabled={isPending}
                   />
                 </FormControl>
@@ -230,5 +237,110 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
         </Button>
       </form>
     </Form>
+  );
+}
+
+function Mt5ServerCombobox({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState(value);
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState(value);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearchValue(searchValue);
+    }, 200);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchValue]);
+
+  const { data: servers = [], isFetching } = useMt5ServerSearch(
+    debouncedSearchValue,
+    open,
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            "h-10 w-full justify-between border-border-primary bg-bg-input px-3 text-left font-normal text-text-primary hover:bg-bg-input",
+            !value && "text-text-tertiary",
+          )}
+          disabled={disabled}
+        >
+          <span className="truncate">
+            {value || "Search and select your MT5 server"}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 text-text-tertiary" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[var(--radix-popover-trigger-width)] border-border-primary bg-card-bg p-0 text-text-primary shadow-xl"
+      >
+        <div className="flex items-center gap-2 border-b border-border-primary px-3 py-2">
+          <Search className="h-4 w-4 text-text-tertiary" />
+          <Input
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+            placeholder="Type server name..."
+            className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+            autoFocus
+          />
+        </div>
+        <div className="max-h-64 overflow-y-auto p-1">
+          {isFetching && (
+            <div className="flex items-center gap-2 px-3 py-3 text-sm text-text-secondary">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Searching servers...
+            </div>
+          )}
+
+          {!isFetching && servers.length === 0 && (
+            <div className="px-3 py-3 text-sm text-text-secondary">
+              No MT5 server found.
+            </div>
+          )}
+
+          {!isFetching &&
+            servers.map((server) => {
+              const isSelected = server.server_name === value;
+              return (
+                <button
+                  key={server.server_name}
+                  type="button"
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-bg-secondary",
+                    isSelected && "bg-bg-secondary text-text-primary",
+                  )}
+                  onClick={() => {
+                    onChange(server.server_name);
+                    setSearchValue(server.server_name);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "h-4 w-4 text-ai-accent",
+                      !isSelected && "opacity-0",
+                    )}
+                  />
+                  <span className="truncate">{server.server_name}</span>
+                </button>
+              );
+            })}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

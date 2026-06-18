@@ -3,6 +3,7 @@ import type {
   JournalAccount,
   JournalAccountConnectPayload,
   JournalAccountSyncResult,
+  Mt5ServerSearchItem,
 } from "../types";
 
 export const journalAccountApi = {
@@ -26,6 +27,21 @@ export const journalAccountApi = {
     const { data } = await apiClient.get<JournalAccount[]>(
       "/accounts",
       withAuth(token),
+    );
+
+    return data;
+  },
+
+  searchMt5Servers: async (
+    query: string,
+    token?: string,
+  ): Promise<Mt5ServerSearchItem[]> => {
+    const { data } = await apiClient.get<Mt5ServerSearchItem[]>(
+      "/accounts/mt5-servers",
+      {
+        ...withAuth(token),
+        params: { q: query, limit: 25 },
+      },
     );
 
     return data;

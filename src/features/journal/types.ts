@@ -21,6 +21,10 @@ export interface JournalAccountConnectPayload extends JournalAccountConnectFormV
   timezone?: string;
 }
 
+export interface Mt5ServerSearchItem {
+  server_name: string;
+}
+
 export interface JournalAccount {
   id: string;
   user_id: string;
