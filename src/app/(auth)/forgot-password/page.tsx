@@ -5,7 +5,7 @@ import { ForgotPasswordForm } from "@/features/auth/components/forgot-password-f
 import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
-  title: "Forgot Password | TradePartna",
+  title: "Forgot Password",
   description: "Reset your password",
 };
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InformationCircleIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
-import { useJournalUiStore } from "../store/journal-ui-store";
 
 const DISMISS_KEY = "tp-demo-banner-dismissed";
 
@@ -22,7 +22,7 @@ export function DemoDataBanner() {
   const activeAccount =
     accounts.find((a) => a.id === resolvedId) ?? accounts[0];
   const isDemo = Boolean(activeAccount?.is_demo);
-  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
+  const router = useRouter();
 
   // Lazy init from localStorage (client-only) so we don't setState in an effect.
   const [dismissed, setDismissed] = useState(
@@ -53,7 +53,7 @@ export function DemoDataBanner() {
         </p>
         <button
           type="button"
-          onClick={openConnectModal}
+          onClick={() => router.push("/accounts")}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-badge-info-fg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer"
         >
           Add Trades

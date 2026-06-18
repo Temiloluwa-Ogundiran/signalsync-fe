@@ -11,9 +11,12 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Syncgram Trades",
+  title: {
+    default: "TradePartna",
+    template: "%s | TradePartna",
+  },
   description:
-    "Social trading platform — copy, journal, and discover trading streams",
+    "An AI coach that reviews every trade — journal, tag, and improve with systematic confidence.",
 };
 
 export default function RootLayout({

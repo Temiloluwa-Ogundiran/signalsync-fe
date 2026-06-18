@@ -5,7 +5,7 @@ import { ResetPasswordForm } from "@/features/auth/components/reset-password-for
 import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
-  title: "Reset Password | TradePartna",
+  title: "Reset Password",
   description: "Set a new password for your account",
 };
 

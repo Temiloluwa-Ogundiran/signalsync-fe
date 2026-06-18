@@ -4,7 +4,7 @@ import { ResendVerificationForm } from "@/features/auth/components/resend-verifi
 import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 
 export const metadata: Metadata = {
-  title: "Resend Verification Email | TradePartna",
+  title: "Resend Verification Email",
   description: "Resend your email verification link",
 };
 

@@ -21,6 +21,9 @@ function VerifyEmailContent() {
   // True once we've started auto-logging the user in (so we show "Signing you
   // in…" and don't flash the manual "Continue to Login" button).
   const [autoLogin, setAutoLogin] = useState(false);
+  // True once verified + session seeded — show a brief "Email verified!" beat
+  // before navigating into the app.
+  const [verified, setVerified] = useState(false);
   const verifiedRef = useRef(false);
 
   useEffect(() => {
@@ -44,8 +47,14 @@ function VerifyEmailContent() {
             redirect: false,
           });
           if (result?.ok) {
-            router.replace("/dashboard");
-            router.refresh();
+            // Show a brief "Email verified!" confirmation, then go to the app.
+            setIsLoading(false);
+            setAutoLogin(false);
+            setVerified(true);
+            setTimeout(() => {
+              router.replace("/dashboard");
+              router.refresh();
+            }, 1500);
             return;
           }
           // Seeding the session failed — fall back to the manual login button.
@@ -106,12 +115,12 @@ function VerifyEmailContent() {
           ? "Please wait while we verify your email address securely."
           : error
             ? error
-            : autoLogin
-              ? "Your email is verified. Taking you to your dashboard…"
+            : verified || autoLogin
+              ? "Your email is verified. Taking you into the app…"
               : message}
       </p>
 
-      {!isLoading && !autoLogin && (
+      {!isLoading && !autoLogin && !verified && (
         <div className="mt-6 w-full space-y-3">
           {error ? (
             <Button asChild variant="outline" className="w-full">

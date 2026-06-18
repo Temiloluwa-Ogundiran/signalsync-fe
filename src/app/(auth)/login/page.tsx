@@ -9,7 +9,7 @@ import { AuthCardShell } from "@/features/auth/components/auth-card-shell";
 import { hasUsableSession } from "@/lib/auth/auth-session";
 
 export const metadata: Metadata = {
-  title: "Login | TradePartna",
+  title: "Login",
   description: "Login to your account",
 };
 

@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
 import { useState } from "react";
 import {
   PASSWORD_POLICY_MESSAGE,
@@ -23,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { registerAction } from "../actions";
-import { useRouter } from "next/navigation";
 
 const registerSchema = z.object({
   display_name: z
@@ -34,10 +32,14 @@ const registerSchema = z.object({
   password: registerPasswordSchema,
 });
 
-export function RegisterForm() {
+export function RegisterForm({
+  onSuccess,
+}: {
+  /** Called with the email once the account is created. */
+  onSuccess?: (email: string) => void;
+}) {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -65,13 +67,8 @@ export function RegisterForm() {
       if (res?.error && !res?.fieldErrors) {
         form.setError("root", { message: res.error });
       } else if (res?.success) {
-        toast.success("Account created successfully", {
-          description: "You'll receive a confirmation email shortly.",
-        });
         form.reset();
-        router.push(
-          `/login?registered=1&email=${encodeURIComponent(values.email)}`,
-        );
+        onSuccess?.(values.email);
       }
     });
   }
