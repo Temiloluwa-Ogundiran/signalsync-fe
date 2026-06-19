@@ -366,10 +366,10 @@ export function JournalAccountsPage() {
                       <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight text-text-primary tabular-nums">
                         {balanceText}
                       </p>
-                      {!isArchived && (
+                      {!isArchived && isCsv && (
                         <button
                           type="button"
-                          onClick={openConnectModal}
+                          onClick={() => openCSVReimportModal(account.id)}
                           className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                         >
                           <Plus className="h-3.5 w-3.5" />
