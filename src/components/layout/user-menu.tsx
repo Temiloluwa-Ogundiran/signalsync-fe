@@ -87,7 +87,17 @@ export function UserMenu() {
         </Link>
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
+          onClick={() => {
+            // Clear persisted journal UI state (e.g. selected account) so the
+            // next user on this browser doesn't inherit it. Cleared by storage
+            // key to avoid a shared→feature import boundary violation.
+            try {
+              localStorage.removeItem("journal-ui");
+            } catch {
+              // ignore (SSR / storage disabled)
+            }
+            signOut({ callbackUrl: "/login", redirect: true });
+          }}
           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
         >
           <LogOut className="size-4 shrink-0" />

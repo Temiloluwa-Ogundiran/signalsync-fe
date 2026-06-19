@@ -11,6 +11,10 @@ type JournalUiState = {
   csvReimportAccountId: string | null;
   openCSVReimportModal: (accountId: string) => void;
   setCSVReimportAccountId: (id: string | null) => void;
+
+  /** Clear all journal UI state. Call on logout so a new user on the same
+   *  browser never inherits the previous user's selected account. */
+  reset: () => void;
 };
 
 export const useJournalUiStore = create<JournalUiState>()(
@@ -30,6 +34,13 @@ export const useJournalUiStore = create<JournalUiState>()(
       openCSVReimportModal: (accountId: string) =>
         set({ csvReimportAccountId: accountId, connectModalOpen: true }),
       setCSVReimportAccountId: (id: string | null) => set({ csvReimportAccountId: id }),
+
+      reset: () =>
+        set({
+          activeAccountId: "",
+          connectModalOpen: false,
+          csvReimportAccountId: null,
+        }),
     }),
     {
       name: "journal-ui",
