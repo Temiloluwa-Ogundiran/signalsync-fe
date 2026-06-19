@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+/* eslint-disable no-restricted-syntax -- intentional brand violet accents
+   (#6C4DF2 / #8E72FF) to match the Add-trades step-1 design. */
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
   Check,
-  ChevronsUpDown,
   Loader2,
   PlugZap,
-  Search,
   Calendar,
   XCircle,
   CheckCircle2,
@@ -31,7 +32,7 @@ import {
   useMt5ServerSearch,
 } from "../hooks/use-journal-accounts";
 import { sanitizeJournalConnectionError } from "../lib/sanitize-connection-error";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { JournalAccount, JournalAccountConnectFormValues } from "../types";
 
@@ -151,28 +152,6 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
 
             <FormField
               control={form.control}
-              name="broker_login"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-text-primary">
-                    Account number <span className="text-danger">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="For example: 12345678"
-                      autoComplete="off"
-                      className="h-12 bg-bg-input"
-                      {...field}
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="broker_server"
               render={({ field }) => (
                 <FormItem>
@@ -186,6 +165,27 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
                         field.onChange(serverName);
                         form.clearErrors("broker_server");
                       }}
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="broker_login"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-text-primary">
+                    Login <span className="text-danger">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete="off"
+                      className="h-12 bg-bg-input"
+                      {...field}
                       disabled={isPending}
                     />
                   </FormControl>
@@ -232,7 +232,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           )}
 
           <Button
-            className="h-12 w-full text-sm font-semibold"
+            className="h-12 w-full cursor-pointer bg-[#6C4DF2] text-sm font-semibold text-white hover:bg-[#5A3CE0] dark:bg-[#8E72FF] dark:text-white dark:hover:bg-[#7E61F5]"
             type="submit"
             disabled={isPending}
           >
@@ -264,9 +264,6 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           <h3 className="text-2xl font-bold tracking-tight text-text-primary">
             MetaTrader 5
           </h3>
-          <span className="rounded-md bg-info px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-            New
-          </span>
         </div>
 
         <div className="space-y-3">
@@ -302,7 +299,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           <ol className="space-y-3">
             {LINKING_STEPS.map((step, i) => (
               <li key={i} className="flex gap-3 text-sm text-text-secondary">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6C4DF2] dark:bg-[#8E72FF]" />
                 <span className="leading-relaxed">
                   {i + 1}. {step}
                 </span>
@@ -327,58 +324,61 @@ function Mt5ServerCombobox({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(value);
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setDebouncedSearchValue(searchValue);
-    }, 200);
+    }, 120);
 
     return () => window.clearTimeout(timeout);
   }, [searchValue]);
 
+  const tooShort = debouncedSearchValue.trim().length < 4;
+
+  // Only hit the API once there's enough to search — skips the throwaway
+  // round-trips for 1–3 character queries.
   const { data: servers = [], isFetching } = useMt5ServerSearch(
     debouncedSearchValue,
-    open,
+    open && !tooShort,
   );
-
-  const tooShort = debouncedSearchValue.trim().length < 4;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className={cn(
-            "h-12 w-full justify-between border-border-primary bg-bg-input px-3 text-left font-normal text-text-primary hover:bg-bg-input",
-            !value && "text-text-tertiary",
-          )}
+      <PopoverAnchor asChild>
+        <Input
+          ref={inputRef}
+          value={searchValue}
           disabled={disabled}
-        >
-          <span className="truncate">
-            {value || "Search and select your MT5 server"}
-          </span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 text-text-tertiary" />
-        </Button>
-      </PopoverTrigger>
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            setSearchValue(event.target.value);
+            // Typing clears any previously committed selection.
+            if (value) onChange("");
+            if (!open) setOpen(true);
+          }}
+          className="h-12 bg-bg-input"
+        />
+      </PopoverAnchor>
       <PopoverContent
         align="start"
-        className="w-[var(--radix-popover-trigger-width)] border-border-primary bg-card-bg p-0 text-text-primary shadow-xl"
+        // Positioning only — keep focus in the input so it types like a
+        // normal field; don't yank focus when the list opens or closes.
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        // The input is the anchor (not the content), so a click on it counts
+        // as "outside" and would instantly dismiss the just-opened dropdown.
+        // Ignore dismissals whose target is the input itself.
+        onInteractOutside={(e) => {
+          if (inputRef.current?.contains(e.target as Node)) e.preventDefault();
+        }}
+        onWheel={(e) => e.stopPropagation()}
+        className="w-[var(--radix-popover-trigger-width)] overflow-hidden border-border-primary bg-card-bg p-0 text-text-primary shadow-xl"
       >
-        <div className="flex items-center gap-2 border-b border-border-primary px-3 py-2">
-          <Search className="h-4 w-4 text-text-tertiary" />
-          <Input
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Type server name..."
-            className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-            autoFocus
-          />
-        </div>
-        <div className="max-h-64 overflow-y-auto p-1">
+        <div className="scrollbar-thin max-h-64 overflow-y-auto overscroll-contain p-1">
           {tooShort && !isFetching && (
             <div className="px-3 py-3 text-sm text-text-secondary">
-              Start typing (at least 4 symbols) to see available servers
+              Start typing at least 4 letters to see available servers
             </div>
           )}
 
@@ -404,8 +404,8 @@ function Mt5ServerCombobox({
                   key={server.server_name}
                   type="button"
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-bg-secondary",
-                    isSelected && "bg-bg-secondary text-text-primary",
+                    "flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-bg-tertiary",
+                    isSelected && "bg-bg-tertiary text-text-primary",
                   )}
                   onClick={() => {
                     onChange(server.server_name);

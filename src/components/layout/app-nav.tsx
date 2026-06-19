@@ -227,7 +227,7 @@ function JournalNavFooter() {
       <button
         type="button"
         onClick={openConnectModal}
-        className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-accent px-3.5 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-nav-rail-bg px-3.5 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 dark:hover:opacity-100"
       >
         <Plus className="h-4 w-4" />
         Add New Trade
