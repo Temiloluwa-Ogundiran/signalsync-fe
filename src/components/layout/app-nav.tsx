@@ -202,7 +202,6 @@ function renderAppFooter(app: NavApp) {
  */
 function JournalNavFooter() {
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
-  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const { data: accounts = [] } = useJournalAccounts();
 
   const activeAccount =
@@ -224,14 +223,13 @@ function JournalNavFooter() {
         </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={openConnectModal}
+      <Link
+        href="/accounts"
         className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-nav-rail-bg px-3.5 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 dark:hover:opacity-100"
       >
         <Plus className="h-4 w-4" />
         Add New Trade
-      </button>
+      </Link>
     </div>
   );
 }
