@@ -1,7 +1,6 @@
 import { type QueryClient, useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
-import { useJournalUiStore } from "../store/journal-ui-store";
 
 interface AnalyticsQueryInput {
   accountId?: string;
@@ -27,14 +26,14 @@ export function invalidateJournalAnalyticsForAccount(
 }
 
 export const JOURNAL_ANALYTICS_KEYS = {
-  summary: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
-    ["journal-analytics", "summary", accountId, fromDate, toDate, includeManual] as const,
-  timePerformance: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
-    ["journal-analytics", "time-performance", accountId, fromDate, toDate, includeManual] as const,
-  evaluation: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
-    ["journal-analytics", "evaluation", accountId, fromDate, toDate, includeManual] as const,
-  dashboard: (accountId?: string, fromDate?: string, toDate?: string, includeManual?: boolean) =>
-    ["journal-analytics", "dashboard", accountId, fromDate, toDate, includeManual] as const,
+  summary: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "summary", accountId, fromDate, toDate] as const,
+  timePerformance: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "time-performance", accountId, fromDate, toDate] as const,
+  evaluation: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "evaluation", accountId, fromDate, toDate] as const,
+  dashboard: (accountId?: string, fromDate?: string, toDate?: string) =>
+    ["journal-analytics", "dashboard", accountId, fromDate, toDate] as const,
 };
 
 /**
@@ -44,13 +43,12 @@ export const JOURNAL_ANALYTICS_KEYS = {
  * `usePlaceholder`, `enabled`).
  */
 function useAnalyticsQuery<T>(opts: {
-  buildKey: (includeManual: boolean) => readonly unknown[];
+  buildKey: () => readonly unknown[];
   fetcher: (
     input: {
       accountId?: string;
       fromDate: string;
       toDate: string;
-      includeManual: boolean;
       timeBasis?: "open" | "close";
     },
     token: string,
@@ -65,18 +63,16 @@ function useAnalyticsQuery<T>(opts: {
   usePlaceholder?: boolean;
 }) {
   const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
   const requireAccountId = opts.requireAccountId ?? true;
 
   return useQuery({
-    queryKey: opts.buildKey(includeManual),
+    queryKey: opts.buildKey(),
     queryFn: () =>
       opts.fetcher(
         {
           accountId: opts.accountId,
           fromDate: opts.fromDate,
           toDate: opts.toDate,
-          includeManual,
           timeBasis: opts.timeBasis,
         },
         session?.accessToken as string,
@@ -97,10 +93,10 @@ export function useJournalSummaryAnalytics({ accountId, fromDate, toDate }: Anal
     accountId,
     fromDate,
     toDate,
-    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate, im),
+    buildKey: () => JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate),
     fetcher: (i, t) =>
       journalAnalyticsApi.getSummary(
-        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate },
         t,
       ),
   });
@@ -119,7 +115,7 @@ export function useJournalTimePerformanceAnalytics({
     toDate,
     timeBasis,
     enabled,
-    buildKey: (im) => [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate, im), timeBasis],
+    buildKey: () => [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate), timeBasis],
     fetcher: (i, t) =>
       journalAnalyticsApi.getTimePerformance(
         {
@@ -127,7 +123,6 @@ export function useJournalTimePerformanceAnalytics({
           fromDate: i.fromDate,
           toDate: i.toDate,
           timeBasis: i.timeBasis as "open" | "close",
-          includeManual: i.includeManual,
         },
         t,
       ),
@@ -144,10 +139,10 @@ export function useJournalEvaluationAnalytics({
     fromDate,
     toDate,
     usePlaceholder: true,
-    buildKey: (im) => JOURNAL_ANALYTICS_KEYS.evaluation(accountId, fromDate, toDate, im),
+    buildKey: () => JOURNAL_ANALYTICS_KEYS.evaluation(accountId, fromDate, toDate),
     fetcher: (i, t) =>
       journalAnalyticsApi.getEvaluation(
-        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate, includeManual: i.includeManual },
+        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate },
         t,
       ),
   });
@@ -166,7 +161,7 @@ export function useJournalDashboardAnalytics({
     timeBasis,
     // Dashboard intentionally enables for multi-account (no accountId required).
     requireAccountId: false,
-    buildKey: (im) => [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate, im), timeBasis],
+    buildKey: () => [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate), timeBasis],
     fetcher: (i, t) =>
       journalAnalyticsApi.getDashboard(
         {
@@ -174,7 +169,6 @@ export function useJournalDashboardAnalytics({
           fromDate: i.fromDate,
           toDate: i.toDate,
           timeBasis: i.timeBasis as "open" | "close",
-          includeManual: i.includeManual,
         },
         t,
       ),

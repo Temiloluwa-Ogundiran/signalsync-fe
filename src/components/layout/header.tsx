@@ -11,7 +11,6 @@ import { useJournalAccounts } from "@/features/journal/hooks/use-journal-account
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "./user-menu";
-import { ThemeToggle } from "./theme-toggle";
 import { NotificationBell } from "./notification-bell";
 import {
   HeaderDateRangePicker,
@@ -151,7 +150,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             )}
 
-            <ThemeToggle />
             <NotificationBell />
             <UserMenu />
           </div>

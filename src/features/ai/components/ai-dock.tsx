@@ -30,6 +30,24 @@ export function AiDock() {
   const [showHistory, setShowHistory] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
+  // Close the dock when the user clicks/taps anywhere outside the panel.
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+    };
+  }, [isOpen, close]);
+
   const { data: sessions = [] } = useAiSessions();
   const { data: activeSessionData } = useAiSession(activeSessionId);
   const { mutateAsync: createSession, isPending: isCreating } = useCreateAiSession();
@@ -107,6 +125,7 @@ export function AiDock() {
 
       {/* Dock panel */}
       <div
+        ref={panelRef}
         className={cn(
           "fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
           "sm:w-[420px]",

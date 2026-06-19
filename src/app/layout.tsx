@@ -34,7 +34,7 @@ export default function RootLayout({
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname;var PUB=['/','/login','/register','/verify-email','/forgot-password','/reset-password','/resend-verification'];var isPub=PUB.indexOf(p)>-1||/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'light';if(t==='dark'&&!isPub)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
+            __html: `(function(){try{var p=location.pathname;var PUB=['/','/login','/register','/verify-email','/forgot-password','/reset-password','/resend-verification'];var isPub=PUB.indexOf(p)>-1||/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark&&!isPub)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
           }}
         />
       </head>

@@ -580,6 +580,7 @@
   --z-header: 30;
   --z-overlay: 40;
   --z-drawer: 50;
+  --z-tooltip: 60; /* hover tooltips must sit above header/drawer/sidebar */
 }
 
 /* ===== Global resets ===== */

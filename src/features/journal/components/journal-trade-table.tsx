@@ -19,7 +19,6 @@ import {
   Star,
   SlidersHorizontal,
   Loader2,
-  Pencil,
   Trash2,
   Download,
   Copy,
@@ -37,7 +36,6 @@ import { cn } from "@/lib/utils";
 import { asNumber } from "./journal-day-modal.utils";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { useTradeTableStore } from "../store/trade-table-store";
-import { useJournalUiStore } from "../store/journal-ui-store";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -51,7 +49,6 @@ interface JournalTradeTableProps {
   onOpenJournal: (row: TradeHistoryRow) => void;
   /** Open the trade-detail side panel (fired by clicking a data cell). */
   onRowClick?: (row: TradeHistoryRow) => void;
-  onDeleteManualTrade?: (tradeId: string) => void;
   /** Persist a trade's 1–5 star rating (0 clears it). */
   onRateTrade?: (tradeId: string, rating: number) => void;
   canLoadMore?: boolean;
@@ -154,13 +151,11 @@ export function JournalTradeTable({
   rows,
   onOpenJournal,
   onRowClick,
-  onDeleteManualTrade,
   onRateTrade,
   canLoadMore = false,
   isLoadingMore = false,
   onLoadMore,
 }: JournalTradeTableProps) {
-  const openEditTradeModal = useJournalUiStore((s) => s.openEditTradeModal);
   const favorites = useTradeTableStore((s) => s.favorites);
   const toggleFavorite = useTradeTableStore((s) => s.toggleFavorite);
   const columnVisibility = useTradeTableStore((s) => s.columnVisibility);
@@ -240,7 +235,7 @@ export function JournalTradeTable({
 
   /* summary across loaded rows */
   const summary = useMemo(() => {
-    const real = rows.filter((r) => !r.is_missed);
+    const real = rows;
     const net = real.reduce((a, r) => a + asNumber(r.net_profit), 0);
     const wins = real.filter((r) => asNumber(r.net_profit) > 0).length;
     const winRate = real.length ? (wins / real.length) * 100 : 0;
@@ -336,18 +331,6 @@ export function JournalTradeTable({
               onClick={() => exportCsv(selectedRows.map((r) => r.original))}
             />
             <BulkButton icon={Copy} label="Duplicate" onClick={() => {}} />
-            <BulkButton
-              icon={Trash2}
-              label="Delete"
-              destructive
-              onClick={() => {
-                selectedRows.forEach((r) => {
-                  if (r.original.is_manual)
-                    onDeleteManualTrade?.(r.original.id);
-                });
-                setRowSelection({});
-              }}
-            />
             <button
               type="button"
               onClick={() => setRowSelection({})}
@@ -489,11 +472,6 @@ export function JournalTradeTable({
                           <ExpandedDetail
                             row={row.original}
                             onOpenJournal={onOpenJournal}
-                            onEdit={
-                              row.original.is_manual
-                                ? () => openEditTradeModal(row.original.id)
-                                : undefined
-                            }
                           />
                         </td>
                       </tr>
@@ -627,18 +605,6 @@ function buildColumns({
       cell: ({ row }) => (
         <span className="flex items-center gap-1.5 font-semibold text-text-primary">
           {row.original.symbol}
-          {row.original.is_missed ? (
-            <span className="rounded bg-badge-warn-bg px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-badge-warn-fg">
-              Missed
-            </span>
-          ) : row.original.is_manual ? (
-            <span
-              title="Manual trade"
-              className="rounded bg-ai-accent/15 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ai-accent-bright"
-            >
-              M
-            </span>
-          ) : null}
         </span>
       ),
     },
@@ -687,9 +653,7 @@ function buildColumns({
         new Date(b.original.closed_at).getTime(),
       cell: ({ row }) => (
         <span className="text-text-secondary">
-          {row.original.is_missed && !row.original.closed_at
-            ? "—"
-            : row.original.closedDateLabel}
+          {row.original.closedDateLabel}
         </span>
       ),
     },
@@ -697,8 +661,7 @@ function buildColumns({
       accessorKey: "volume",
       header: "Qty",
       meta: { align: "right" },
-      cell: ({ row }) =>
-        row.original.is_missed ? "—" : numFmt(asNumber(row.original.volume)),
+      cell: ({ row }) => numFmt(asNumber(row.original.volume)),
     },
     {
       accessorKey: "open_price",
@@ -710,10 +673,7 @@ function buildColumns({
       accessorKey: "close_price",
       header: "Exit",
       meta: { align: "right" },
-      cell: ({ row }) =>
-        row.original.is_missed && !row.original.close_price
-          ? "—"
-          : numFmt(asNumber(row.original.close_price), 3),
+      cell: ({ row }) => numFmt(asNumber(row.original.close_price), 3),
     },
     {
       accessorKey: "sl",
@@ -748,8 +708,6 @@ function buildColumns({
       header: "Net P&L",
       meta: { align: "right" },
       cell: ({ row }) => {
-        if (row.original.is_missed)
-          return <span className="text-text-tertiary">—</span>;
         const v = asNumber(row.original.net_profit);
         return (
           <span className={cn("font-semibold", pnlClass(v))}>
@@ -763,8 +721,6 @@ function buildColumns({
       header: "Net ROI",
       meta: { align: "right" },
       cell: ({ row }) => {
-        if (row.original.is_missed)
-          return <span className="text-text-tertiary">—</span>;
         const v = asNumber(row.original.net_roi_percent ?? 0);
         return (
           <span className={cn("font-semibold", pnlClass(v))}>
@@ -1021,11 +977,9 @@ function ColumnsMenu({
 function ExpandedDetail({
   row,
   onOpenJournal,
-  onEdit,
 }: {
   row: TradeHistoryRow;
   onOpenJournal: (row: TradeHistoryRow) => void;
-  onEdit?: () => void;
 }) {
   const facts: { label: string; value: string }[] = [
     { label: "Entry price", value: numFmt(asNumber(row.open_price), 3) },
@@ -1063,16 +1017,6 @@ function ExpandedDetail({
           <NotebookPen className="h-3.5 w-3.5" />
           Open journal
         </button>
-        {onEdit ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-subtle px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-subtle-hover hover:text-text-primary cursor-pointer"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Edit
-          </button>
-        ) : null}
       </div>
     </div>
   );

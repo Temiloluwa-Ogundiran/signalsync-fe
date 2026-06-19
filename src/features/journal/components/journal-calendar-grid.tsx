@@ -1,9 +1,7 @@
 import Image from "next/image";
-import { Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { JournalCalendarDayStat } from "../types";
-import { useJournalUiStore } from "../store/journal-ui-store";
 import { formatCalendarMoney } from "./calendar-money";
 
 const JOURNAL_CELL_ICON_SRC = "/icons/journal/modal/journal.svg";
@@ -39,7 +37,6 @@ export function JournalCalendarGrid({
   currentMonth,
   currency,
 }: JournalCalendarGridProps) {
-  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
 
   // "Today" — only highlight when the displayed month is the current month.
   const now = new Date();
@@ -112,7 +109,7 @@ export function JournalCalendarGrid({
               )}
             >
               <div className="flex items-center justify-between w-full">
-                {/* Left side: journal activity icon or hover add-trade button */}
+                {/* Left side: journal activity icon */}
                 <div className="flex items-center gap-0.5 sm:gap-1">
                   {stats?.hasJournalActivity ? (
                     <span className="pointer-events-none flex h-3.5 w-3.5 items-center justify-center opacity-95" title="Has journal activity">
@@ -127,20 +124,6 @@ export function JournalCalendarGrid({
                       />
                     </span>
                   ) : null}
-
-                  <span
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const y = currentMonth.getFullYear();
-                      const m = String(currentMonth.getMonth() + 1).padStart(2, "0");
-                      const dStr = String(day).padStart(2, "0");
-                      openAddTradeModal(`${y}-${m}-${dStr}`);
-                    }}
-                    className="opacity-0 md:group-hover:opacity-100 p-0.5 rounded-md bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all duration-150 cursor-pointer flex items-center justify-center"
-                    title="Add trade manually for this day"
-                  >
-                    <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  </span>
                 </div>
                 <span className="text-[0.62rem] sm:text-[0.72rem] font-semibold tabular-nums text-text-secondary">
                   {day}

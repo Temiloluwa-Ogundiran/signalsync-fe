@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Settings, HelpCircle } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { PlusSignIcon } from "@hugeicons/core-free-icons";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
@@ -203,7 +202,6 @@ function renderAppFooter(app: NavApp) {
  */
 function JournalNavFooter() {
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
-  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
   const { data: accounts = [] } = useJournalAccounts();
 
   const activeAccount =
@@ -224,15 +222,6 @@ function JournalNavFooter() {
           <p className="mt-0.5 text-sm text-text-secondary">Account Balance</p>
         </div>
       ) : null}
-
-      <button
-        type="button"
-        onClick={() => openAddTradeModal(null)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer"
-      >
-        <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
-        Add New Trade
-      </button>
     </div>
   );
 }

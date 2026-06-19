@@ -5,7 +5,6 @@ export * from "./hooks/use-journal-analytics";
 export * from "./hooks/use-journal-day-modal";
 export * from "./hooks/use-journal-open-positions";
 export * from "./hooks/use-journal-tags";
-export * from "./hooks/use-manual-trade";
 export * from "./hooks/use-trade-history";
 export * from "./hooks/use-infinite-trade-history";
 export * from "./hooks/use-csv-import";

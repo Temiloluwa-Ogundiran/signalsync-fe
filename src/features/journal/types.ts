@@ -59,7 +59,7 @@ export interface JournalAccount {
   latest_balance: string | number | null;
   latest_equity: number | null;
   is_deleted: boolean;
-  sync_provider?: string;
+  import_method?: string;
   created_at: string;
   /** True for the seeded demo account (drives the demo banner + badge). */
   is_demo?: boolean;
@@ -276,8 +276,6 @@ export interface JournalDailyTradeChip {
   net_profit: number;
   outcome: "win" | "loss" | "breakeven";
   journal_message_count: number;
-  is_manual?: boolean;
-  is_missed?: boolean;
 }
 
 export interface JournalDailyResponse {
@@ -314,8 +312,6 @@ export interface JournalTrade {
   execution_quality?: number;
   setup_quality?: number;
   discipline_score?: number;
-  is_manual?: boolean;
-  is_missed?: boolean;
   sl?: number;
   tp?: number;
   swap?: number;
@@ -377,24 +373,6 @@ export interface TagGroup {
   is_system: boolean;
   tags: Tag[];
 }
-
-export interface ManualTradeCreatePayload {
-  is_missed: boolean;
-  symbol: string;
-  direction: "buy" | "sell";
-  opened_at: string; // ISO string
-  open_price: number;
-  volume?: number;
-  closed_at?: string; // ISO string
-  close_price?: number;
-  net_profit?: number;
-  commission?: number;
-  swap?: number;
-  sl?: number;
-  tp?: number;
-}
-
-export type ManualTradeUpdatePayload = Partial<ManualTradeCreatePayload>;
 
 export interface CSVPreviewAccountMeta {
   account_number: string | null;

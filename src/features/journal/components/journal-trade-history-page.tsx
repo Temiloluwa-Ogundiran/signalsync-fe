@@ -8,7 +8,6 @@ import type { DateRange } from "react-day-picker";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useInfiniteTradeHistory } from "@/features/journal/hooks/use-infinite-trade-history";
-import { useDeleteManualTrade } from "@/features/journal/hooks/use-manual-trade";
 import { useUpdateTradeRating } from "@/features/journal/hooks/use-journal-tags";
 import type { JournalTrade } from "@/features/journal/types";
 import { formatTradeTimestamp } from "./journal-day-modal.utils";
@@ -56,7 +55,6 @@ export function JournalTradeHistoryPage() {
   const resolvedAccountId = useResolvedJournalAccountId();
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
 
-  const deleteManualTrade = useDeleteManualTrade(activeAccountId);
   const updateTradeRating = useUpdateTradeRating(activeAccountId);
 
   const handleRateTrade = (tradeId: string, rating: number) => {
@@ -66,22 +64,6 @@ export function JournalTradeHistoryPage() {
         onError: () => toast.error("Couldn't save rating. Please try again."),
       },
     );
-  };
-
-  const handleDeleteManualTrade = async (tradeId: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this manual trade?",
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await deleteManualTrade.mutateAsync(tradeId);
-      toast.success("Manual trade deleted successfully");
-    } catch (err: unknown) {
-      const description =
-        err instanceof Error ? err.message : "An error occurred.";
-      toast.error("Failed to delete manual trade", { description });
-    }
   };
 
   // Shared page-header filter family (account + date range), reused from the
@@ -203,7 +185,6 @@ export function JournalTradeHistoryPage() {
           rows={rows}
           onOpenJournal={onOpenJournal}
           onRowClick={(row) => setSelectedTradeId(row.id)}
-          onDeleteManualTrade={handleDeleteManualTrade}
           onRateTrade={handleRateTrade}
           canLoadMore={tradeHistoryQuery.hasNextPage}
           isLoadingMore={tradeHistoryQuery.isFetchingNextPage}

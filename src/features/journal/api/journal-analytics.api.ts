@@ -12,7 +12,6 @@ interface AnalyticsQueryParams {
   fromDate: string;
   toDate: string;
   timeBasis?: "open" | "close";
-  includeManual?: boolean;
 }
 
 export const journalAnalyticsApi = {
@@ -28,7 +27,6 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           ...(params.fromDate ? { from_date: params.fromDate } : {}),
           ...(params.toDate ? { to_date: params.toDate } : {}),
-          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -49,7 +47,6 @@ export const journalAnalyticsApi = {
           ...(params.fromDate ? { from_date: params.fromDate } : {}),
           ...(params.toDate ? { to_date: params.toDate } : {}),
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
-          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -70,7 +67,6 @@ export const journalAnalyticsApi = {
           ...(params.accountId ? { account_id: params.accountId } : {}),
           ...(params.fromDate ? { from_date: params.fromDate } : {}),
           ...(params.toDate ? { to_date: params.toDate } : {}),
-          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -92,7 +88,6 @@ export const journalAnalyticsApi = {
           ...(params.toDate ? { to_date: params.toDate } : {}),
           recent_limit: 5,
           ...(params.timeBasis ? { time_basis: params.timeBasis } : {}),
-          include_manual: params.includeManual !== undefined ? params.includeManual : undefined,
         },
       },
     );
@@ -113,7 +108,6 @@ export const journalAnalyticsApi = {
           ...(queryParams.fromDate ? { from_date: queryParams.fromDate } : {}),
           ...(queryParams.toDate ? { to_date: queryParams.toDate } : {}),
           granularity,
-          include_manual: queryParams.includeManual !== undefined ? queryParams.includeManual : undefined,
         },
       },
     );

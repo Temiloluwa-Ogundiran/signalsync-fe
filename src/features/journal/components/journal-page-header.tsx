@@ -164,7 +164,7 @@ export function JournalPageHeader({
               </span>
               <button
                 onClick={onSyncAccount}
-                className="inline-flex cursor-pointer items-center gap-1 text-text-tertiary underline underline-offset-2 transition-colors hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ai-soft-bg px-2.5 py-1 text-xs font-semibold text-ai-accent transition-colors hover:bg-ai-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-ai-soft-bg disabled:hover:text-ai-accent"
                 aria-label={
                   isSyncPending
                     ? "Syncing account"
@@ -177,7 +177,7 @@ export function JournalPageHeader({
                 }
                 disabled={isSyncPending || isCooldownActive}
               >
-                {isSyncPending && <RefreshCw className="h-3 w-3 animate-spin" />}
+                <RefreshCw className={`h-3 w-3 ${isSyncPending ? "animate-spin" : ""}`} />
                 {isSyncPending ? "Syncing…" : "Resync"}
               </button>
             </div>

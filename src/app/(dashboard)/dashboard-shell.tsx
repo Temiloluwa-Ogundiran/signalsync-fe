@@ -4,11 +4,9 @@ import { Suspense, useState } from "react";
 import { Header, MobileNav, Sidebar } from "@/components/layout";
 import { AppNav } from "@/components/layout/app-nav";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
-import { AddTradeModal } from "@/features/journal/components/add-trade-modal";
-import { EditTradeModal } from "@/features/journal/components/edit-trade-modal";
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
 import { DemoDataBanner } from "@/features/journal/components/demo-data-banner";
-import { useActiveJournalAutoSync } from "@/features/journal/hooks/use-active-journal-auto-sync";
+import { useOnMountSync } from "@/features/journal/hooks/use-on-mount-sync";
 
 export default function DashboardShell({
   children,
@@ -16,7 +14,8 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  useActiveJournalAutoSync();
+  // Sync the active account once on page load (the only auto-sync).
+  useOnMountSync();
 
   return (
     <AiDockProvider>
@@ -60,8 +59,6 @@ export default function DashboardShell({
         )}
 
         <ConnectAccountModal />
-        <AddTradeModal />
-        <EditTradeModal />
 
         <MobileNav />
       </div>

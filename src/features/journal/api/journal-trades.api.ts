@@ -11,7 +11,6 @@ export const journalTradesApi = {
   listByDay: async (
     accountId: string,
     tradingDate: string,
-    includeManual?: boolean,
     token?: string,
   ): Promise<JournalTradeListResponse> => {
     const { data } = await apiClient.get<JournalTradeListResponse>(
@@ -23,7 +22,6 @@ export const journalTradesApi = {
           from_date: tradingDate,
           to_date: tradingDate,
           limit: 200,
-          include_manual: includeManual !== undefined ? includeManual : undefined,
         },
       },
     );
@@ -36,7 +34,6 @@ export const journalTradesApi = {
     fromDate: string | undefined,
     toDate: string | undefined,
     cursorOrLimit?: string | number,
-    includeManual?: boolean,
     token?: string,
   ): Promise<JournalTradeListResponse> => {
     const cursor =
@@ -52,7 +49,6 @@ export const journalTradesApi = {
         to_date: toDate || undefined,
         limit,
         cursor,
-        include_manual: includeManual !== undefined ? includeManual : undefined,
       },
     });
 

@@ -4,10 +4,7 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useJournalUiStore } from "../store/journal-ui-store";
 import { useJournalDay } from "../hooks/use-journal-day-modal";
-import { useDeleteManualTrade } from "../hooks/use-manual-trade";
-import { toast } from "sonner";
 import { JournalDayModalFooter } from "./journal-day-modal-footer";
 import { JournalDayModalHeader } from "./journal-day-modal-header";
 import { JournalDayModalOverview } from "./journal-day-modal-overview";
@@ -40,22 +37,6 @@ export function JournalDayModal({
     params.set("accountId", accountId);
     params.set("focusDate", tradingDate);
     router.push(`/journal?${params.toString()}`);
-  };
-
-  const deleteManualTrade = useDeleteManualTrade(accountId || "");
-
-  const handleDeleteManualTrade = async (tradeId: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this manual trade?");
-    if (!confirmDelete) return;
-
-    try {
-      await deleteManualTrade.mutateAsync(tradeId);
-      toast.success("Manual trade deleted successfully");
-    } catch (err) {
-      toast.error("Failed to delete manual trade", {
-        description: (err as { message?: string })?.message || "An error occurred.",
-      });
-    }
   };
 
   const dayQuery = useJournalDay(accountId, tradingDate, open, {
@@ -142,7 +123,6 @@ export function JournalDayModal({
               <JournalDayModalTradesTable
                 rows={tradeRows}
                 onOpenTradeJournal={openTradeJournal}
-                onDeleteManualTrade={handleDeleteManualTrade}
                 currency={currency}
               />
             </>

@@ -5,17 +5,15 @@ import { journalDailyApi } from "../api/journal-daily.api";
 import { journalTradesApi } from "../api/journal-trades.api";
 import { journalMessagesApi } from "../api/journal-messages.api";
 import type { JournalCreateMessagePayload } from "../types";
-import { useJournalUiStore } from "../store/journal-ui-store";
 
 export const JOURNAL_DAY_MODAL_KEYS = {
   daily: (
     accountId?: string,
     day?: string,
     includeMessages = true,
-    includeManual = true,
-  ) => ["journal-day", "daily", accountId, day, includeMessages, includeManual] as const,
-  trades: (accountId?: string, day?: string, includeManual = true) =>
-    ["journal-day", "trades", accountId, day, includeManual] as const,
+  ) => ["journal-day", "daily", accountId, day, includeMessages] as const,
+  trades: (accountId?: string, day?: string) =>
+    ["journal-day", "trades", accountId, day] as const,
   tradeMessages: (tradeId?: string) =>
     ["journal-day", "trade-messages", tradeId] as const,
   adjacentTradedDates: (
@@ -32,21 +30,18 @@ export function useJournalDay(
 ) {
   const { data: session, status } = useSession();
   const includeMessages = options?.includeMessages ?? true;
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.daily(
       accountId,
       tradingDate,
       includeMessages,
-      includeManual,
     ),
     queryFn: () =>
       journalDailyApi.getDay(
         accountId as string,
         tradingDate as string,
         includeMessages,
-        includeManual,
         session?.accessToken as string,
       ),
     enabled:
@@ -65,19 +60,16 @@ export function useJournalDayTrades(
   enabled = true,
 ) {
   const { data: session, status } = useSession();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   return useQuery({
     queryKey: JOURNAL_DAY_MODAL_KEYS.trades(
       accountId,
       tradingDate,
-      includeManual,
     ),
     queryFn: () =>
       journalTradesApi.listByDay(
         accountId as string,
         tradingDate as string,
-        includeManual,
         session?.accessToken as string,
       ),
     enabled:

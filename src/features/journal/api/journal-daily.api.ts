@@ -13,7 +13,6 @@ export const journalDailyApi = {
     accountId: string,
     tradingDate: string,
     includeMessages = true,
-    includeManual?: boolean,
     token?: string,
   ): Promise<JournalDailyResponse> => {
     const { data } = await apiClient.get<JournalDailyResponse>(
@@ -22,7 +21,6 @@ export const journalDailyApi = {
         ...withAuth(token),
         params: {
           include_messages: includeMessages,
-          include_manual: includeManual !== undefined ? includeManual : undefined,
         },
       },
     );

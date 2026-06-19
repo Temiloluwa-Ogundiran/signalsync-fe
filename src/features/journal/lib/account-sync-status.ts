@@ -3,7 +3,7 @@ import type { JournalAccount, JournalAccountSyncStatus } from "../types";
 export function getAccountSyncStatus(
   account: Pick<
     JournalAccount,
-    | "sync_provider"
+    | "import_method"
     | "connection_state"
     | "last_sync_outcome"
     | "sync_error_message"
@@ -13,7 +13,7 @@ export function getAccountSyncStatus(
 ): JournalAccountSyncStatus {
   if (account.sync_status) return account.sync_status;
 
-  if (account.sync_provider === "csv_import") {
+  if (account.import_method === "csv_upload") {
     return {
       code: "imported",
       severity: "success",

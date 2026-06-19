@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
   RefreshCw,
   Trash2,
+  Archive,
   Server,
-  CheckCircle2,
-  XCircle,
   Pencil,
   Upload
 } from "lucide-react";
@@ -16,28 +16,71 @@ import {
   useJournalAccounts,
   useSyncJournalAccount,
   useDisconnectJournalAccount,
+  useDeleteJournalAccount,
   useUpdateJournalAccount
 } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppLoader } from "@/components/app-loader";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "./journal-day-modal.utils";
 import {
   refreshJournalQueriesAfterManualSync,
   waitForQueuedJournalSyncCompletion,
 } from "@/features/journal/lib/manual-sync-refresh";
 import { toast } from "sonner";
-import {
-  getAccountSyncStatus,
-  isAccountSyncHealthy,
-} from "@/features/journal/lib/account-sync-status";
+import { getAccountSyncStatus } from "@/features/journal/lib/account-sync-status";
+
+/**
+ * Icon button with a styled hover tooltip describing what it does.
+ * Mirrors the sidebar nav tooltip pattern (app-nav.tsx).
+ */
+function IconAction({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+  iconClassName,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  iconClassName?: string;
+  className?: string;
+}) {
+  return (
+    <div className="group/btn relative">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={label}
+        className={cn(
+          "rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-bg-tertiary hover:text-text-primary disabled:opacity-50",
+          className,
+        )}
+      >
+        <Icon className={cn("h-4 w-4", iconClassName)} />
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-overlay mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border-secondary bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/btn:opacity-100"
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export function JournalAccountsPage() {
   const queryClient = useQueryClient();
   const { data: accounts = [], isLoading, refetch: refetchAccounts } = useJournalAccounts();
   const syncAccount = useSyncJournalAccount();
   const disconnectAccount = useDisconnectJournalAccount();
+  const deleteAccount = useDeleteJournalAccount();
   const updateAccount = useUpdateJournalAccount();
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
@@ -77,16 +120,32 @@ export function JournalAccountsPage() {
     }
   };
 
-  const handleDeleteAccount = async (accountId: string, displayName: string) => {
+  const handleArchiveAccount = async (accountId: string, displayName: string) => {
     const confirmed = window.confirm(
-      `Are you sure you want to disconnect account "${displayName}"? This will stop syncing your trades.`
+      `Archive account "${displayName}"? This stops syncing new trades but keeps your existing trade history. You can reconnect it later.`
     );
     if (!confirmed) return;
 
     try {
       await disconnectAccount.mutateAsync(accountId);
     } catch (err) {
-      console.error("Failed to disconnect account", err);
+      console.error("Failed to archive account", err);
+      toast.error("Failed to archive account.");
+    }
+  };
+
+  const handleDeleteAccount = async (accountId: string, displayName: string) => {
+    const confirmed = window.confirm(
+      `Permanently delete account "${displayName}"? This will delete the account and ALL of its trades and journals. This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteAccount.mutateAsync(accountId);
+      toast.success("Account deleted.");
+    } catch (err) {
+      console.error("Failed to delete account", err);
+      toast.error("Failed to delete account.");
     }
   };
 
@@ -112,27 +171,10 @@ export function JournalAccountsPage() {
     });
   };
 
-  const formatNextRetry = (dateString: string | null) => {
-    if (!dateString) return null;
-    const retryAt = new Date(dateString);
-    const diffMs = retryAt.getTime() - Date.now();
-    if (Number.isNaN(diffMs) || diffMs <= 0) return null;
-
-    const diffMins = Math.ceil(diffMs / 60000);
-    if (diffMins <= 1) return "Retrying within a minute";
-    if (diffMins < 60) return `Retrying in ${diffMins} min`;
-
-    const diffHours = Math.ceil(diffMins / 60);
-    return `Retrying in ${diffHours} hr`;
-  };
-
   const getSyncStatusDetail = (account: (typeof accounts)[number]) => {
-    if (account.sync_provider === "csv_import") return null;
+    if (account.import_method === "csv_upload") return null;
     const syncStatus = getAccountSyncStatus(account);
     if (syncStatus.code !== "ready") return syncStatus.detail;
-    if (account.next_sync_not_before) {
-      return formatNextRetry(account.next_sync_not_before) || "Next sync soon";
-    }
     return null;
   };
 
@@ -183,194 +225,177 @@ export function JournalAccountsPage() {
             </CardContent>
           </Card>
         ) : (
-          /* Accounts Table Layout */
-          <Card className="border border-border-secondary bg-card-bg overflow-hidden shadow-sm rounded-xl">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm font-semibold">
-                  <thead>
-                    <tr className="border-b border-border-secondary bg-bg-secondary/40 text-text-tertiary text-xs uppercase tracking-wider">
-                      <th className="px-6 py-4 font-bold">Name</th>
-                      <th className="px-6 py-4 font-bold">Number</th>
-                      <th className="px-6 py-4 font-bold">Server</th>
-                      <th className="px-6 py-4 font-bold">Type</th>
-                      <th className="px-6 py-4 font-bold">Platform</th>
-                      <th className="px-6 py-4 font-bold">Balance</th>
-                      <th className="px-6 py-4 font-bold">Connection</th>
-                      <th className="px-6 py-4 font-bold">Last Sync</th>
-                      <th className="px-6 py-4 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-secondary/40">
-                    {accounts.map((account) => {
-                      const isSyncing = activeSyncingId === account.id;
-                      const accountLabel = account.display_name || "MT5 Trading Account";
-                      const syncStatus = getAccountSyncStatus(account);
-                      const isConnectionReady = isAccountSyncHealthy(syncStatus);
-                      const needsAttention =
-                        syncStatus.severity === "warning" ||
-                        syncStatus.severity === "error";
-                      const balanceText =
-                        account.latest_balance == null
-                          ? "--"
-                          : formatCurrency(
-                              Number(account.latest_balance),
-                              account.currency,
-                            );
-                      const syncStatusDetail = getSyncStatusDetail(account);
-                      
-                      return (
-                        <tr
-                          key={account.id}
-                          className="hover:bg-bg-primary/20 transition-colors"
-                        >
-                          {/* Name */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              {isConnectionReady ? (
-                                <CheckCircle2 className="h-4 w-4 text-kpi-metric-positive flex-shrink-0" />
-                              ) : syncStatus.severity === "pending" ? (
-                                <RefreshCw className="h-4 w-4 animate-spin text-info flex-shrink-0" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-danger flex-shrink-0" />
-                              )}
-                              <span className="text-text-primary font-bold">
-                                {accountLabel}
-                              </span>
-                            </div>
-                          </td>
+          /* Accounts card grid */
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {accounts.map((account) => {
+              const isSyncing = activeSyncingId === account.id;
+              const accountLabel = account.display_name || "MT5 Trading Account";
+              const syncStatus = getAccountSyncStatus(account);
+              const needsAttention =
+                syncStatus.severity === "warning" ||
+                syncStatus.severity === "error";
+              const balanceText =
+                account.latest_balance == null
+                  ? "--"
+                  : formatCurrency(
+                      Number(account.latest_balance),
+                      account.currency,
+                    );
+              const syncStatusDetail = getSyncStatusDetail(account);
+              const isCsv = account.import_method === "csv_upload";
 
-                          {/* Number */}
-                          <td className="px-6 py-4 text-text-secondary">
+              const isLive = account.account_type === "live";
+              const statusTone = needsAttention
+                ? "danger"
+                : syncStatus.severity === "pending"
+                  ? "pending"
+                  : "ok";
+
+              return (
+                <Card
+                  key={account.id}
+                  className="group relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-border-secondary/70 bg-card-bg shadow-[0_1px_3px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-border-secondary hover:shadow-[0_4px_16px_-6px_rgba(15,23,42,0.12)]"
+                >
+                  <CardContent className="flex flex-1 flex-col gap-5 p-5">
+                    {/* Header: avatar + name/server, type badge */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="relative shrink-0">
+                          <Image
+                            src={isCsv ? "/brand/images.png" : "/brand/mt5.jpeg"}
+                            alt={isCsv ? "CSV import" : "MT5"}
+                            width={44}
+                            height={44}
+                            className="h-11 w-11 object-contain mix-blend-multiply dark:mix-blend-screen"
+                          />
+                          {/* Status dot */}
+                          <span
+                            className={cn(
+                              "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card-bg",
+                              statusTone === "ok" && "bg-kpi-metric-positive",
+                              statusTone === "pending" && "bg-info",
+                              statusTone === "danger" && "bg-danger",
+                            )}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate text-sm font-bold text-text-primary">
+                            {accountLabel}
+                          </h3>
+                          <p className="truncate text-xs font-medium text-text-secondary">
                             {account.broker_login}
-                          </td>
-
-                          {/* Server */}
-                          <td className="px-6 py-4 text-text-tertiary font-medium">
+                          </p>
+                          <p className="truncate text-xs font-medium text-text-tertiary">
                             {account.broker_server}
-                          </td>
+                          </p>
+                        </div>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 rounded-full",
+                            statusTone === "ok" && "bg-kpi-metric-positive",
+                            statusTone === "pending" && "bg-info",
+                            statusTone === "danger" && "bg-danger",
+                          )}
+                        />
+                        {isLive ? "Auto-sync" : "Demo"}
+                      </span>
+                    </div>
 
-                          {/* Type */}
-                          <td className="px-6 py-4">
-                            {account.account_type === "live" ? (
-                              <span className="rounded bg-badge-info-bg px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-badge-info-fg">
-                                Live
-                              </span>
-                            ) : (
-                              <span className="rounded bg-badge-warn-bg px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-badge-warn-fg">
-                                Demo
-                              </span>
-                            )}
-                          </td>
+                    {/* Balance — the hero metric */}
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                        Balance
+                      </p>
+                      <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight text-text-primary tabular-nums">
+                        {balanceText}
+                      </p>
+                    </div>
 
-                          {/* Platform */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-text-primary text-xs font-bold">
-                                MT5
-                              </span>
-                            </div>
-                          </td>
+                    {/* Footer: sync status (left) + actions (right) */}
+                    <div className="mt-auto flex items-end justify-between gap-2 border-t border-border-secondary/50 pt-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            statusTone === "ok" && "bg-kpi-metric-positive",
+                            statusTone === "pending" && "bg-info",
+                            statusTone === "danger" && "bg-danger",
+                          )}
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-semibold text-text-secondary">
+                            {isCsv
+                              ? `Last import: ${formatLastSync(account.last_synced_at)}`
+                              : formatLastSync(account.last_synced_at)}
+                          </p>
+                          {syncStatusDetail ? (
+                            <p className="truncate text-[11px] font-medium text-text-tertiary">
+                              {syncStatusDetail}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
 
-                          {/* Balance */}
-                          <td className="px-6 py-4 text-text-primary font-bold">
-                            {balanceText}
-                          </td>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {isCsv ? (
+                          <IconAction
+                            icon={Upload}
+                            label="Import more trades"
+                            onClick={() => openCSVReimportModal(account.id)}
+                          />
+                        ) : (
+                          <IconAction
+                            icon={RefreshCw}
+                            label="Sync account trades"
+                            onClick={() => handleSyncAccount(account.id)}
+                            disabled={isSyncing}
+                            iconClassName={isSyncing ? "animate-spin text-text-primary" : undefined}
+                          />
+                        )}
 
-                          {/* Connection */}
-                          <td className="px-6 py-4">
-                            {account.sync_provider === "csv_import" ? (
-                              <span className="rounded bg-badge-warn-bg px-2 py-0.5 text-[10px] font-bold text-badge-warn-fg uppercase tracking-wider">
-                                CSV
-                              </span>
-                            ) : needsAttention ? (
-                              <span className="rounded bg-danger/15 px-2 py-0.5 text-[10px] font-bold text-danger uppercase tracking-wider">
-                                Attention
-                              </span>
-                            ) : (
-                              <span className="rounded bg-bg-tertiary px-2 py-0.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">
-                                API
-                              </span>
-                            )}
-                          </td>
+                        <IconAction
+                          icon={Pencil}
+                          label="Edit display name"
+                          disabled={updateAccount.isPending}
+                          onClick={async () => {
+                            const newName = window.prompt("Enter a new display name for this account:", accountLabel);
+                            if (newName && newName.trim()) {
+                              try {
+                                await updateAccount.mutateAsync({
+                                  accountId: account.id,
+                                  displayName: newName.trim(),
+                                });
+                              } catch (err) {
+                                console.error("Rename failed", err);
+                                alert("Failed to rename account display name.");
+                              }
+                            }
+                          }}
+                        />
 
-                          {/* Last Sync */}
-                          <td className="px-6 py-4 text-xs">
-                            <div className="space-y-1">
-                              <div className="text-text-secondary">
-                                {account.sync_provider === "csv_import"
-                                  ? `Last import: ${formatLastSync(account.last_synced_at)}`
-                                  : formatLastSync(account.last_synced_at)}
-                              </div>
-                              {syncStatusDetail ? (
-                                <div className="text-[11px] font-medium text-text-tertiary">
-                                  {syncStatusDetail}
-                                </div>
-                              ) : null}
-                            </div>
-                          </td>
+                        <IconAction
+                          icon={Archive}
+                          label="Archive (stops syncing, keeps history)"
+                          onClick={() => handleArchiveAccount(account.id, accountLabel)}
+                          disabled={disconnectAccount.isPending}
+                        />
 
-                          {/* Actions */}
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-3.5">
-                              {account.sync_provider === "csv_import" ? (
-                                <button
-                                  onClick={() => openCSVReimportModal(account.id)}
-                                  className="text-info hover:text-info/80 transition-colors hover:scale-110 duration-150"
-                                  title="Import more trades"
-                                >
-                                  <Upload className="h-4 w-4" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleSyncAccount(account.id)}
-                                  disabled={isSyncing}
-                                  className="text-info hover:text-info/80 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
-                                  title="Sync account trades"
-                                >
-                                  <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin text-brand" : ""}`} />
-                                </button>
-                              )}
-                              
-                              <button
-                                onClick={async () => {
-                                  const newName = window.prompt("Enter a new display name for this account:", accountLabel);
-                                  if (newName && newName.trim()) {
-                                    try {
-                                      await updateAccount.mutateAsync({
-                                        accountId: account.id,
-                                        displayName: newName.trim(),
-                                      });
-                                    } catch (err) {
-                                      console.error("Rename failed", err);
-                                      alert("Failed to rename account display name.");
-                                    }
-                                  }
-                                }}
-                                disabled={updateAccount.isPending}
-                                className="text-info hover:text-info/80 disabled:opacity-50 transition-colors hover:scale-110 duration-150"
-                                title="Edit display name"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              
-                              <button
-                                onClick={() => handleDeleteAccount(account.id, accountLabel)}
-                                className="text-danger hover:text-danger/80 transition-colors hover:scale-110 duration-150"
-                                title="Disconnect account"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                        <IconAction
+                          icon={Trash2}
+                          label="Delete permanently"
+                          onClick={() => handleDeleteAccount(account.id, accountLabel)}
+                          disabled={deleteAccount.isPending}
+                          className="hover:bg-danger/10 hover:text-danger"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

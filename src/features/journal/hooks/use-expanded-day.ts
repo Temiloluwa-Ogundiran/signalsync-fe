@@ -7,7 +7,6 @@ import { journalTradesApi } from "../api/journal-trades.api";
 import type { JournalMessage, JournalTrade } from "../types";
 import { useJournalDay, JOURNAL_DAY_MODAL_KEYS } from "./use-journal-day-modal";
 import { useDayNote, useSaveDayNote } from "./use-day-note";
-import { useJournalUiStore } from "../store/journal-ui-store";
 import { htmlToText } from "@/lib/format/html-to-text";
 
 /**
@@ -23,7 +22,6 @@ export function useExpandedDay(
   const { data: session } = useSession();
   const token = session?.accessToken as string | undefined;
   const queryClient = useQueryClient();
-  const includeManual = useJournalUiStore((s) => s.includeManualTrades);
 
   const dayQuery = useJournalDay(accountId, date, enabled, {
     includeMessages: false,
@@ -75,14 +73,14 @@ export function useExpandedDay(
   const prefetch = useCallback(() => {
     if (!accountId || !date || !token) return;
     queryClient.prefetchQuery({
-      queryKey: JOURNAL_DAY_MODAL_KEYS.daily(accountId, date, false, includeManual),
+      queryKey: JOURNAL_DAY_MODAL_KEYS.daily(accountId, date, false),
       queryFn: () =>
         import("../api/journal-daily.api").then((m) =>
-          m.journalDailyApi.getDay(accountId, date, false, includeManual, token),
+          m.journalDailyApi.getDay(accountId, date, false, token),
         ),
       staleTime: 60_000,
     });
-  }, [accountId, date, token, includeManual, queryClient]);
+  }, [accountId, date, token, queryClient]);
 
   const isLoading =
     enabled &&

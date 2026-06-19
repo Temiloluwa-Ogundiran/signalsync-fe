@@ -29,9 +29,8 @@ export const queryKeys = {
       accountId: string | undefined,
       fromDate: string | undefined,
       toDate: string | undefined,
-      includeManual: boolean,
     ) =>
-      ["journal-trade-history", accountId, fromDate, toDate, includeManual] as const,
+      ["journal-trade-history", accountId, fromDate, toDate] as const,
     feed: (accountId: string) => ["journal-feed", accountId] as const,
     tags: (accountId: string) => ["journal-tags", accountId] as const,
     openPositions: (accountId: string | undefined, limit?: number) =>

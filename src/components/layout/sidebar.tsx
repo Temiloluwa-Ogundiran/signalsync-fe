@@ -11,7 +11,6 @@ import {
   Analytics01Icon,
   Wallet01Icon,
   AiMagicIcon,
-  PlusSignIcon,
   Upload04Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
@@ -63,7 +62,6 @@ export function Sidebar({
   onToggleCollapsed,
 }: SidebarProps) {
   const pathname = usePathname();
-  const openAddTradeModal = useJournalUiStore((s) => s.openAddTradeModal);
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
 
   const visibleItems = navItems.filter(
@@ -182,34 +180,22 @@ export function Sidebar({
         {collapsed ? (
           <button
             type="button"
-            onClick={() => openAddTradeModal(null)}
-            aria-label="Add new trade"
-            title="Add new trade"
+            onClick={() => openConnectModal()}
+            aria-label="Import trades"
+            title="Import trades"
             className="mx-auto flex size-11 items-center justify-center rounded-xl bg-bg-tertiary text-text-primary transition-colors hover:bg-bg-hover cursor-pointer"
           >
-            <HugeiconsIcon icon={PlusSignIcon} size={20} strokeWidth={2} />
+            <HugeiconsIcon icon={Upload04Icon} size={20} strokeWidth={1.5} />
           </button>
         ) : (
-          <div className="flex items-stretch overflow-hidden rounded-xl bg-bg-tertiary">
-            <button
-              type="button"
-              onClick={() => openAddTradeModal(null)}
-              className="flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-hover cursor-pointer"
-            >
-              <HugeiconsIcon icon={PlusSignIcon} size={16} strokeWidth={2} />
-              Add New Trade
-            </button>
-            <div className="my-2 w-px shrink-0 bg-border-secondary/60" aria-hidden />
-            <button
-              type="button"
-              onClick={() => openConnectModal()}
-              aria-label="Import trades"
-              title="Import trades"
-              className="flex w-12 shrink-0 items-center justify-center text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary cursor-pointer"
-            >
-              <HugeiconsIcon icon={Upload04Icon} size={16} strokeWidth={1.5} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => openConnectModal()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-bg-tertiary px-4 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-hover cursor-pointer"
+          >
+            <HugeiconsIcon icon={Upload04Icon} size={16} strokeWidth={1.5} />
+            Import Trades
+          </button>
         )}
       </div>
     </aside>

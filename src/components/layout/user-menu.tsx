@@ -3,19 +3,17 @@
 import Link from "next/link";
 import { LogOut, User } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { User03Icon, Sun03Icon, Moon02Icon } from "@hugeicons/core-free-icons";
+import { User03Icon } from "@hugeicons/core-free-icons";
 import { signOut, useSession } from "next-auth/react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useThemeStore } from "@/features/theme/store";
+import { ThemeSegmentedControl } from "./theme-segmented-control";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
-  const theme = useThemeStore((s) => s.theme);
-  const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const user = session?.user;
   const displayName = user?.displayName || user?.name || "Trader";
   const email = user?.email ?? "";
@@ -89,27 +87,15 @@ export function UserMenu() {
         </Link>
         <button
           type="button"
-          onClick={toggleTheme}
-          className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
-        >
-          <span className="flex items-center gap-2.5">
-            <HugeiconsIcon
-              icon={theme === "dark" ? Sun03Icon : Moon02Icon}
-              size={16}
-              strokeWidth={1.8}
-              className="shrink-0"
-            />
-            {theme === "dark" ? "Light mode" : "Dark mode"}
-          </span>
-        </button>
-        <button
-          type="button"
           onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-text-primary transition-colors hover:bg-sidebar-nav-active-bg cursor-pointer"
         >
           <LogOut className="size-4 shrink-0" />
           Log out
         </button>
+        <div className="mt-1 border-t border-border-secondary pt-2">
+          <ThemeSegmentedControl />
+        </div>
       </PopoverContent>
     </Popover>
   );
