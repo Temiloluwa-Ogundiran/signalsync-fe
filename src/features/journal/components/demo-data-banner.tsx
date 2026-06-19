@@ -1,20 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { InformationCircleIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 
-const DISMISS_KEY = "tp-demo-banner-dismissed";
-
 /**
- * Global, dismissible notice shown on every page while the user's active account
- * is the seeded demo. Self-resolves the active account so it can be mounted once
- * in the app shell. The CTA opens the connect-account flow so the user can add
- * their real trades; the demo account can be removed from the accounts page (and
- * is cleared automatically once a real account is connected).
+ * Global notice shown on every page while the user's active account is the
+ * seeded demo. Self-resolves the active account so it can be mounted once in
+ * the app shell. The CTA opens the connect-account flow so the user can add
+ * their real trades; the demo account can be removed from the accounts page
+ * (and is cleared automatically once a real account is connected).
  */
 export function DemoDataBanner() {
   const { data: accounts = [] } = useJournalAccounts();
@@ -24,19 +21,7 @@ export function DemoDataBanner() {
   const isDemo = Boolean(activeAccount?.is_demo);
   const router = useRouter();
 
-  // Lazy init from localStorage (client-only) so we don't setState in an effect.
-  const [dismissed, setDismissed] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem(DISMISS_KEY) === "1",
-  );
-
-  if (!isDemo || dismissed) return null;
-
-  const dismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "1");
-    setDismissed(true);
-  };
+  if (!isDemo) return null;
 
   return (
     <div className="px-4 pt-4 md:px-8">
@@ -54,17 +39,9 @@ export function DemoDataBanner() {
         <button
           type="button"
           onClick={() => router.push("/accounts")}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-subtle-hover cursor-pointer"
         >
           Add Trades
-        </button>
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Dismiss"
-          className="shrink-0 rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-secondary cursor-pointer"
-        >
-          <HugeiconsIcon icon={Cancel01Icon} size={16} strokeWidth={2} />
         </button>
       </div>
     </div>
