@@ -18,6 +18,7 @@ import {
   useSyncJournalAccount,
   useDisconnectJournalAccount,
   useDeleteJournalAccount,
+  useUnarchiveJournalAccount,
   useUpdateJournalAccount
 } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
@@ -92,6 +93,7 @@ export function JournalAccountsPage() {
   const syncAccount = useSyncJournalAccount();
   const disconnectAccount = useDisconnectJournalAccount();
   const deleteAccount = useDeleteJournalAccount();
+  const unarchiveAccount = useUnarchiveJournalAccount();
   const updateAccount = useUpdateJournalAccount();
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
@@ -100,7 +102,7 @@ export function JournalAccountsPage() {
 
   // Account action dialogs (archive / delete confirmation, rename input).
   type AccountAction = {
-    type: "archive" | "delete" | "rename";
+    type: "archive" | "delete" | "rename" | "reconnect";
     accountId: string;
     accountLabel: string;
   };
@@ -150,6 +152,9 @@ export function JournalAccountsPage() {
   const openDeleteDialog = (accountId: string, accountLabel: string) =>
     setAccountAction({ type: "delete", accountId, accountLabel });
 
+  const openReconnectDialog = (accountId: string, accountLabel: string) =>
+    setAccountAction({ type: "reconnect", accountId, accountLabel });
+
   const openRenameDialog = (accountId: string, accountLabel: string) => {
     setRenameValue(accountLabel);
     setAccountAction({ type: "rename", accountId, accountLabel });
@@ -164,6 +169,19 @@ export function JournalAccountsPage() {
     } catch (err) {
       console.error("Failed to archive account", err);
       toast.error("Failed to archive account.");
+    }
+  };
+
+  const confirmReconnectAccount = async () => {
+    if (!accountAction) return;
+    const { accountId } = accountAction;
+    try {
+      await unarchiveAccount.mutateAsync(accountId);
+      toast.success("Account reconnected.");
+      closeAccountAction();
+    } catch (err) {
+      console.error("Failed to reconnect account", err);
+      toast.error("Failed to reconnect account.");
     }
   };
 
@@ -414,7 +432,8 @@ export function JournalAccountsPage() {
                           <IconAction
                             icon={PlugZap}
                             label="Reconnect account"
-                            onClick={openConnectModal}
+                            onClick={() => openReconnectDialog(account.id, accountLabel)}
+                            disabled={unarchiveAccount.isPending}
                           />
                         ) : isCsv ? (
                           <IconAction
@@ -473,9 +492,11 @@ export function JournalAccountsPage() {
         onConfirmArchive={confirmArchiveAccount}
         onConfirmDelete={confirmDeleteAccount}
         onConfirmRename={confirmRenameAccount}
+        onConfirmReconnect={confirmReconnectAccount}
         archiving={disconnectAccount.isPending}
         deleting={deleteAccount.isPending}
         renaming={updateAccount.isPending}
+        reconnecting={unarchiveAccount.isPending}
       />
     </div>
   );
@@ -489,12 +510,14 @@ function AccountActionDialog({
   onConfirmArchive,
   onConfirmDelete,
   onConfirmRename,
+  onConfirmReconnect,
   archiving,
   deleting,
   renaming,
+  reconnecting,
 }: {
   action: {
-    type: "archive" | "delete" | "rename";
+    type: "archive" | "delete" | "rename" | "reconnect";
     accountId: string;
     accountLabel: string;
   } | null;
@@ -504,9 +527,11 @@ function AccountActionDialog({
   onConfirmArchive: () => void;
   onConfirmDelete: () => void;
   onConfirmRename: () => void;
+  onConfirmReconnect: () => void;
   archiving: boolean;
   deleting: boolean;
   renaming: boolean;
+  reconnecting: boolean;
 }) {
   const open = action !== null;
   const label = action?.accountLabel ?? "";
@@ -546,6 +571,28 @@ function AccountActionDialog({
               </Button>
             </DialogFooter>
           </form>
+        ) : action?.type === "reconnect" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Reconnect “{label}”?</DialogTitle>
+              <DialogDescription>
+                This brings the account back and resumes syncing. Your existing
+                trade history is kept.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={onConfirmReconnect}
+                disabled={reconnecting}
+              >
+                {reconnecting ? "Reconnecting…" : "Reconnect account"}
+              </Button>
+            </DialogFooter>
+          </>
         ) : action?.type === "archive" ? (
           <>
             <DialogHeader>

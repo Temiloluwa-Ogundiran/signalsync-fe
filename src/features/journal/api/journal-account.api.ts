@@ -68,6 +68,18 @@ export const journalAccountApi = {
     await apiClient.delete(`/accounts/${accountId}/purge`, withAuth(token));
   },
 
+  unarchiveAccount: async (
+    accountId: string,
+    token?: string,
+  ): Promise<JournalAccount> => {
+    const { data } = await apiClient.post<JournalAccount>(
+      `/accounts/${accountId}/unarchive`,
+      {},
+      withAuth(token),
+    );
+    return data;
+  },
+
   updateAccount: async (
     accountId: string,
     displayName: string,

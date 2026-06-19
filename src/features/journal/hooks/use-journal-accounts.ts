@@ -143,6 +143,24 @@ export function useDeleteJournalAccount() {
   });
 }
 
+export function useUnarchiveJournalAccount() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (accountId: string) =>
+      journalAccountApi.unarchiveAccount(accountId, session?.accessToken as string),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: JOURNAL_ACCOUNT_KEYS.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["journal-analytics"],
+      });
+    },
+  });
+}
+
 export function useUpdateJournalAccount() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
