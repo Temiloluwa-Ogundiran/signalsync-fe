@@ -189,10 +189,10 @@ export function JournalAccountsPage() {
             <Button
               type="button"
               onClick={openConnectModal}
-              className="flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer shrink-0"
+              className="flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer shrink-0 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               <Plus className="h-4 w-4" />
-              Connect Account
+              Add new account
             </Button>
           ) : null}
         </div>
@@ -254,7 +254,7 @@ export function JournalAccountsPage() {
               return (
                 <Card
                   key={account.id}
-                  className="group relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-border-secondary/70 bg-card-bg shadow-[0_1px_3px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-border-secondary hover:shadow-[0_4px_16px_-6px_rgba(15,23,42,0.12)]"
+                  className="group relative z-0 flex flex-col gap-0 rounded-2xl border border-border-secondary/70 bg-card-bg shadow-[0_1px_3px_rgba(15,23,42,0.05)] transition-all duration-200 hover:z-10 hover:border-border-secondary hover:shadow-[0_4px_16px_-6px_rgba(15,23,42,0.12)]"
                 >
                   <CardContent className="flex flex-1 flex-col gap-5 p-5">
                     {/* Header: avatar + name/server, type badge */}
@@ -311,6 +311,14 @@ export function JournalAccountsPage() {
                       <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight text-text-primary tabular-nums">
                         {balanceText}
                       </p>
+                      <button
+                        type="button"
+                        onClick={openConnectModal}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add trades
+                      </button>
                     </div>
 
                     {/* Footer: sync status (left) + actions (right) */}

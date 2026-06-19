@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Settings, HelpCircle } from "lucide-react";
+import { Settings, HelpCircle, Plus } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -202,6 +202,7 @@ function renderAppFooter(app: NavApp) {
  */
 function JournalNavFooter() {
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
+  const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const { data: accounts = [] } = useJournalAccounts();
 
   const activeAccount =
@@ -222,6 +223,15 @@ function JournalNavFooter() {
           <p className="mt-0.5 text-sm text-text-secondary">Account Balance</p>
         </div>
       ) : null}
+
+      <button
+        type="button"
+        onClick={openConnectModal}
+        className="flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-accent px-3.5 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+      >
+        <Plus className="h-4 w-4" />
+        Add New Trade
+      </button>
     </div>
   );
 }

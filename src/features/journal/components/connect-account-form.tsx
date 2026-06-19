@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Check, ChevronsUpDown, Loader2, PlugZap, Search } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  PlugZap,
+  Search,
+  Calendar,
+  XCircle,
+  CheckCircle2,
+} from "lucide-react";
 import * as z from "zod";
 import { toast } from "sonner";
 import {
@@ -49,6 +59,18 @@ import { ConnectAccountProgress } from "./connect-account-progress";
 interface ConnectAccountFormProps {
   onSuccess?: (account: JournalAccount) => void;
 }
+
+const SUPPORTED_ASSETS = [
+  { label: "Forex", supported: true },
+  { label: "Crypto", supported: true },
+];
+
+const LINKING_STEPS = [
+  "Select your Broker.",
+  "Input your Server. Your server can be found on the MetaTrader 5 login window or from your MetaTrader 5 account creation email.",
+  "Input your Username or Account Number. This is your MT5 account number/login (only numbers are allowed).",
+  "Input your Investor Password. This is your MetaTrader 5 read-only password.",
+];
 
 export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
   const timezone = useMemo(() => getBrowserTimezone(), []);
@@ -107,136 +129,189 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="broker_login"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Account ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="For example: 12345678"
-                    autoComplete="off"
-                    {...field}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
+      {/* Left column: the form */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-5">
+            {/* Start date — UI placeholder; not sent to the backend yet. */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-text-primary">
+                Start date
+              </label>
+              <div className="relative">
+                <Input
+                  readOnly
+                  value="Import all records"
+                  className="h-12 cursor-default bg-bg-input pr-10 text-text-secondary"
+                />
+                <Calendar className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+              </div>
+            </div>
 
-          <FormField
-            control={form.control}
-            name="broker_server"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Broker Server</FormLabel>
-                <FormControl>
-                  <Mt5ServerCombobox
-                    value={field.value}
-                    onChange={(serverName) => {
-                      field.onChange(serverName);
-                      form.clearErrors("broker_server");
-                    }}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="broker_login"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-text-primary">
+                    Account number <span className="text-danger">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="For example: 12345678"
+                      autoComplete="off"
+                      className="h-12 bg-bg-input"
+                      {...field}
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="investor_password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Investor Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Read-only password"
-                    autoComplete="current-password"
-                    {...field}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="broker_server"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-text-primary">
+                    Server <span className="text-danger">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Mt5ServerCombobox
+                      value={field.value}
+                      onChange={(serverName) => {
+                        field.onChange(serverName);
+                        form.clearErrors("broker_server");
+                      }}
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="platform"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Platform</FormLabel>
-                <FormControl>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-border-primary bg-bg-input px-3 py-2 text-sm ring-offset-bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isPending}
-                  >
-                    <option value="MT5">MT5</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="investor_password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-text-primary">
+                    Password <span className="text-danger">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Read-only investor password"
+                      autoComplete="current-password"
+                      className="h-12 bg-bg-input"
+                      {...field}
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="display_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Display Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="For example: My main account"
-                    autoComplete="off"
-                    {...field}
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div className="rounded-xl border border-border-primary bg-bg-tertiary/50 px-3 py-2.5 text-xs text-text-secondary">
+              Timezone auto-detected:{" "}
+              <span className="font-semibold text-text-primary">
+                {timezone}
+              </span>
+            </div>
+          </div>
 
-          <div className="rounded-xl border border-border-primary bg-bg-tertiary/50 px-3 py-2.5 text-xs text-text-secondary">
-            Timezone auto-detected:{" "}
-            <span className="font-semibold text-text-primary">{timezone}</span>
+          {form.formState.errors.root && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+
+          <Button
+            className="h-12 w-full text-sm font-semibold"
+            type="submit"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting Account...
+              </>
+            ) : (
+              <>
+                <PlugZap className="mr-2 h-4 w-4" />
+                Connect
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      {/* Right column: platform info panel */}
+      <aside className="space-y-6 md:border-l md:border-border-secondary md:pl-12">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brand/mt5.jpeg"
+            alt="MetaTrader 5"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain mix-blend-multiply dark:mix-blend-screen"
+          />
+          <h3 className="text-2xl font-bold tracking-tight text-text-primary">
+            MetaTrader 5
+          </h3>
+          <span className="rounded-md bg-info px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+            New
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-text-primary">
+            Supported Asset Types:
+          </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {SUPPORTED_ASSETS.map((asset) => (
+              <span
+                key={asset.label}
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-sm",
+                  asset.supported
+                    ? "font-medium text-text-primary"
+                    : "text-text-tertiary",
+                )}
+              >
+                {asset.supported ? (
+                  <CheckCircle2 className="h-4 w-4 text-kpi-metric-positive" />
+                ) : (
+                  <XCircle className="h-4 w-4 text-text-tertiary" />
+                )}
+                {asset.label}
+              </span>
+            ))}
           </div>
         </div>
 
-        {form.formState.errors.root && (
-          <p className="text-sm font-medium text-destructive">
-            {form.formState.errors.root.message}
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-text-primary">
+            Linking MetaTrader 5
           </p>
-        )}
-
-        <Button className="w-full" type="submit" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting Account...
-            </>
-          ) : (
-            <>
-              <PlugZap className="mr-2 h-4 w-4" />
-              Connect
-            </>
-          )}
-        </Button>
-      </form>
-    </Form>
+          <ol className="space-y-3">
+            {LINKING_STEPS.map((step, i) => (
+              <li key={i} className="flex gap-3 text-sm text-text-secondary">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-text-tertiary" />
+                <span className="leading-relaxed">
+                  {i + 1}. {step}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </aside>
+    </div>
   );
 }
 
@@ -266,6 +341,8 @@ function Mt5ServerCombobox({
     open,
   );
 
+  const tooShort = debouncedSearchValue.trim().length < 4;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -273,7 +350,7 @@ function Mt5ServerCombobox({
           type="button"
           variant="outline"
           className={cn(
-            "h-10 w-full justify-between border-border-primary bg-bg-input px-3 text-left font-normal text-text-primary hover:bg-bg-input",
+            "h-12 w-full justify-between border-border-primary bg-bg-input px-3 text-left font-normal text-text-primary hover:bg-bg-input",
             !value && "text-text-tertiary",
           )}
           disabled={disabled}
@@ -299,20 +376,27 @@ function Mt5ServerCombobox({
           />
         </div>
         <div className="max-h-64 overflow-y-auto p-1">
-          {isFetching && (
+          {tooShort && !isFetching && (
+            <div className="px-3 py-3 text-sm text-text-secondary">
+              Start typing (at least 4 symbols) to see available servers
+            </div>
+          )}
+
+          {!tooShort && isFetching && (
             <div className="flex items-center gap-2 px-3 py-3 text-sm text-text-secondary">
               <Loader2 className="h-4 w-4 animate-spin" />
               Searching servers...
             </div>
           )}
 
-          {!isFetching && servers.length === 0 && (
+          {!tooShort && !isFetching && servers.length === 0 && (
             <div className="px-3 py-3 text-sm text-text-secondary">
               No MT5 server found.
             </div>
           )}
 
-          {!isFetching &&
+          {!tooShort &&
+            !isFetching &&
             servers.map((server) => {
               const isSelected = server.server_name === value;
               return (
