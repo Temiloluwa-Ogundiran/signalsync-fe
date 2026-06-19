@@ -40,12 +40,12 @@ export function DemoDataBanner() {
 
   return (
     <div className="px-4 pt-4 md:px-8">
-      <div className="flex items-center gap-3 rounded-xl border border-badge-info-fg/25 bg-badge-info-bg px-4 py-3">
+      <div className="flex items-center gap-3 rounded-xl border border-hairline bg-surface-subtle px-4 py-3">
         <HugeiconsIcon
           icon={InformationCircleIcon}
           size={18}
           strokeWidth={2}
-          className="shrink-0 text-badge-info-fg"
+          className="shrink-0 text-text-tertiary"
         />
         <p className="flex-1 text-sm text-text-secondary">
           <span className="font-semibold text-text-primary">Demo data.</span>{" "}
@@ -54,7 +54,7 @@ export function DemoDataBanner() {
         <button
           type="button"
           onClick={() => router.push("/accounts")}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-badge-info-fg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer"
         >
           Add Trades
         </button>
