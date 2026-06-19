@@ -16,7 +16,7 @@ export const journalAccountApi = {
       payload,
       {
         ...withAuth(token),
-        timeout: 180_000,
+        timeout: 5_000,
       },
     );
 
