@@ -111,9 +111,11 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
         (error instanceof Error
           ? error.message
           : "Unable to connect account. Please verify your details.");
-      const title = /timed?\s*out|timeout/i.test(message)
-        ? "MT5 verification timed out"
-        : "Account authorization failed";
+      const title = /already connected/i.test(message)
+        ? "Account already connected"
+        : /timed?\s*out|timeout/i.test(message)
+          ? "MT5 verification timed out"
+          : "Account authorization failed";
 
       toast.error(title, {
         description: message,
