@@ -354,9 +354,12 @@ function Mt5ServerCombobox({
           disabled={disabled}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
-            setSearchValue(event.target.value);
-            // Typing clears any previously committed selection.
-            if (value) onChange("");
+            const next = event.target.value;
+            setSearchValue(next);
+            // Commit whatever is typed as the server name — picking from the
+            // dropdown is a convenience, not a requirement. Servers not in our
+            // list are still valid and must be submittable.
+            onChange(next);
             if (!open) setOpen(true);
           }}
           className="h-12 bg-bg-input"
