@@ -38,7 +38,7 @@ export interface JournalAccount {
   timezone: string;
   broker_utc_offset: number;
   display_name: string | null;
-  status: "pending_sync" | "synced" | "error" | "disconnected";
+  status: "pending_sync" | "synced" | "error";
   connection_state:
     | "pending_verification"
     | "verification_failed"
@@ -58,7 +58,7 @@ export interface JournalAccount {
   // Backend serializes the Decimal as a string ("583.61"); may also be a number.
   latest_balance: string | number | null;
   latest_equity: number | null;
-  is_deleted: boolean;
+  is_archived: boolean;
   import_method?: string;
   created_at: string;
   /** True for the seeded demo account (drives the demo banner + badge). */

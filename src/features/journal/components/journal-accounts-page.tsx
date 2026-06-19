@@ -10,7 +10,8 @@ import {
   Archive,
   Server,
   Pencil,
-  Upload
+  Upload,
+  PlugZap,
 } from "lucide-react";
 import {
   useJournalAccounts,
@@ -22,6 +23,15 @@ import {
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { AppLoader } from "@/components/app-loader";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "./journal-day-modal.utils";
@@ -77,7 +87,8 @@ function IconAction({
 
 export function JournalAccountsPage() {
   const queryClient = useQueryClient();
-  const { data: accounts = [], isLoading, refetch: refetchAccounts } = useJournalAccounts();
+  const { data: accounts = [], isLoading, refetch: refetchAccounts } =
+    useJournalAccounts({ includeArchived: true });
   const syncAccount = useSyncJournalAccount();
   const disconnectAccount = useDisconnectJournalAccount();
   const deleteAccount = useDeleteJournalAccount();
@@ -86,6 +97,19 @@ export function JournalAccountsPage() {
   const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
 
   const [activeSyncingId, setActiveSyncingId] = useState<string | null>(null);
+
+  // Account action dialogs (archive / delete confirmation, rename input).
+  type AccountAction = {
+    type: "archive" | "delete" | "rename";
+    accountId: string;
+    accountLabel: string;
+  };
+  const [accountAction, setAccountAction] = useState<AccountAction | null>(
+    null,
+  );
+  const [renameValue, setRenameValue] = useState("");
+
+  const closeAccountAction = () => setAccountAction(null);
 
   const handleSyncAccount = async (accountId: string) => {
     setActiveSyncingId(accountId);
@@ -120,32 +144,55 @@ export function JournalAccountsPage() {
     }
   };
 
-  const handleArchiveAccount = async (accountId: string, displayName: string) => {
-    const confirmed = window.confirm(
-      `Archive account "${displayName}"? This stops syncing new trades but keeps your existing trade history. You can reconnect it later.`
-    );
-    if (!confirmed) return;
+  const openArchiveDialog = (accountId: string, accountLabel: string) =>
+    setAccountAction({ type: "archive", accountId, accountLabel });
 
+  const openDeleteDialog = (accountId: string, accountLabel: string) =>
+    setAccountAction({ type: "delete", accountId, accountLabel });
+
+  const openRenameDialog = (accountId: string, accountLabel: string) => {
+    setRenameValue(accountLabel);
+    setAccountAction({ type: "rename", accountId, accountLabel });
+  };
+
+  const confirmArchiveAccount = async () => {
+    if (!accountAction) return;
+    const { accountId } = accountAction;
     try {
       await disconnectAccount.mutateAsync(accountId);
+      closeAccountAction();
     } catch (err) {
       console.error("Failed to archive account", err);
       toast.error("Failed to archive account.");
     }
   };
 
-  const handleDeleteAccount = async (accountId: string, displayName: string) => {
-    const confirmed = window.confirm(
-      `Permanently delete account "${displayName}"? This will delete the account and ALL of its trades and journals. This cannot be undone.`
-    );
-    if (!confirmed) return;
-
+  const confirmDeleteAccount = async () => {
+    if (!accountAction) return;
+    const { accountId } = accountAction;
     try {
       await deleteAccount.mutateAsync(accountId);
       toast.success("Account deleted.");
+      closeAccountAction();
     } catch (err) {
       console.error("Failed to delete account", err);
       toast.error("Failed to delete account.");
+    }
+  };
+
+  const confirmRenameAccount = async () => {
+    if (!accountAction) return;
+    const newName = renameValue.trim();
+    if (!newName) return;
+    try {
+      await updateAccount.mutateAsync({
+        accountId: accountAction.accountId,
+        displayName: newName,
+      });
+      closeAccountAction();
+    } catch (err) {
+      console.error("Rename failed", err);
+      toast.error("Failed to rename account display name.");
     }
   };
 
@@ -243,6 +290,7 @@ export function JournalAccountsPage() {
                     );
               const syncStatusDetail = getSyncStatusDetail(account);
               const isCsv = account.import_method === "csv_upload";
+              const isArchived = account.is_archived;
 
               const isLive = account.account_type === "live";
               const statusTone = needsAttention
@@ -254,7 +302,10 @@ export function JournalAccountsPage() {
               return (
                 <Card
                   key={account.id}
-                  className="group relative z-0 flex flex-col gap-0 rounded-2xl border border-border-secondary/70 bg-card-bg shadow-[0_1px_3px_rgba(15,23,42,0.05)] transition-all duration-200 hover:z-10 hover:border-border-secondary hover:shadow-[0_4px_16px_-6px_rgba(15,23,42,0.12)]"
+                  className={cn(
+                    "group relative z-0 flex flex-col gap-0 rounded-2xl border border-border-secondary/70 bg-card-bg shadow-[0_1px_3px_rgba(15,23,42,0.05)] transition-all duration-200 hover:z-10 hover:border-border-secondary hover:shadow-[0_4px_16px_-6px_rgba(15,23,42,0.12)]",
+                    isArchived && "opacity-60 grayscale hover:opacity-100",
+                  )}
                 >
                   <CardContent className="flex flex-1 flex-col gap-5 p-5">
                     {/* Header: avatar + name/server, type badge */}
@@ -294,12 +345,16 @@ export function JournalAccountsPage() {
                         <span
                           className={cn(
                             "h-1.5 w-1.5 rounded-full",
-                            statusTone === "ok" && "bg-kpi-metric-positive",
-                            statusTone === "pending" && "bg-info",
-                            statusTone === "danger" && "bg-danger",
+                            isArchived
+                              ? "bg-text-tertiary"
+                              : statusTone === "ok"
+                                ? "bg-kpi-metric-positive"
+                                : statusTone === "pending"
+                                  ? "bg-info"
+                                  : "bg-danger",
                           )}
                         />
-                        {isLive ? "Auto-sync" : "Demo"}
+                        {isArchived ? "Archived" : isLive ? "Auto-sync" : "Demo"}
                       </span>
                     </div>
 
@@ -311,14 +366,16 @@ export function JournalAccountsPage() {
                       <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight text-text-primary tabular-nums">
                         {balanceText}
                       </p>
-                      <button
-                        type="button"
-                        onClick={openConnectModal}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        Add trades
-                      </button>
+                      {!isArchived && (
+                        <button
+                          type="button"
+                          onClick={openConnectModal}
+                          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Add trades
+                        </button>
+                      )}
                     </div>
 
                     {/* Footer: sync status (left) + actions (right) */}
@@ -327,16 +384,22 @@ export function JournalAccountsPage() {
                         <span
                           className={cn(
                             "h-1.5 w-1.5 shrink-0 rounded-full",
-                            statusTone === "ok" && "bg-kpi-metric-positive",
-                            statusTone === "pending" && "bg-info",
-                            statusTone === "danger" && "bg-danger",
+                            isArchived
+                              ? "bg-text-tertiary"
+                              : statusTone === "ok"
+                                ? "bg-kpi-metric-positive"
+                                : statusTone === "pending"
+                                  ? "bg-info"
+                                  : "bg-danger",
                           )}
                         />
                         <div className="min-w-0">
                           <p className="truncate text-xs font-semibold text-text-secondary">
-                            {isCsv
-                              ? `Last import: ${formatLastSync(account.last_synced_at)}`
-                              : formatLastSync(account.last_synced_at)}
+                            {isArchived
+                              ? "Archived — syncing paused"
+                              : isCsv
+                                ? `Last import: ${formatLastSync(account.last_synced_at)}`
+                                : formatLastSync(account.last_synced_at)}
                           </p>
                           {syncStatusDetail ? (
                             <p className="truncate text-[11px] font-medium text-text-tertiary">
@@ -347,7 +410,13 @@ export function JournalAccountsPage() {
                       </div>
 
                       <div className="flex shrink-0 items-center gap-0.5">
-                        {isCsv ? (
+                        {isArchived ? (
+                          <IconAction
+                            icon={PlugZap}
+                            label="Reconnect account"
+                            onClick={openConnectModal}
+                          />
+                        ) : isCsv ? (
                           <IconAction
                             icon={Upload}
                             label="Import more trades"
@@ -367,33 +436,22 @@ export function JournalAccountsPage() {
                           icon={Pencil}
                           label="Edit display name"
                           disabled={updateAccount.isPending}
-                          onClick={async () => {
-                            const newName = window.prompt("Enter a new display name for this account:", accountLabel);
-                            if (newName && newName.trim()) {
-                              try {
-                                await updateAccount.mutateAsync({
-                                  accountId: account.id,
-                                  displayName: newName.trim(),
-                                });
-                              } catch (err) {
-                                console.error("Rename failed", err);
-                                alert("Failed to rename account display name.");
-                              }
-                            }
-                          }}
+                          onClick={() => openRenameDialog(account.id, accountLabel)}
                         />
 
-                        <IconAction
-                          icon={Archive}
-                          label="Archive (stops syncing, keeps history)"
-                          onClick={() => handleArchiveAccount(account.id, accountLabel)}
-                          disabled={disconnectAccount.isPending}
-                        />
+                        {!isArchived && (
+                          <IconAction
+                            icon={Archive}
+                            label="Archive (stops syncing, keeps history)"
+                            onClick={() => openArchiveDialog(account.id, accountLabel)}
+                            disabled={disconnectAccount.isPending}
+                          />
+                        )}
 
                         <IconAction
                           icon={Trash2}
                           label="Delete permanently"
-                          onClick={() => handleDeleteAccount(account.id, accountLabel)}
+                          onClick={() => openDeleteDialog(account.id, accountLabel)}
                           disabled={deleteAccount.isPending}
                           className="hover:bg-danger/10 hover:text-danger"
                         />
@@ -406,6 +464,135 @@ export function JournalAccountsPage() {
           </div>
         )}
       </div>
+
+      <AccountActionDialog
+        action={accountAction}
+        renameValue={renameValue}
+        onRenameChange={setRenameValue}
+        onClose={closeAccountAction}
+        onConfirmArchive={confirmArchiveAccount}
+        onConfirmDelete={confirmDeleteAccount}
+        onConfirmRename={confirmRenameAccount}
+        archiving={disconnectAccount.isPending}
+        deleting={deleteAccount.isPending}
+        renaming={updateAccount.isPending}
+      />
     </div>
+  );
+}
+
+function AccountActionDialog({
+  action,
+  renameValue,
+  onRenameChange,
+  onClose,
+  onConfirmArchive,
+  onConfirmDelete,
+  onConfirmRename,
+  archiving,
+  deleting,
+  renaming,
+}: {
+  action: {
+    type: "archive" | "delete" | "rename";
+    accountId: string;
+    accountLabel: string;
+  } | null;
+  renameValue: string;
+  onRenameChange: (value: string) => void;
+  onClose: () => void;
+  onConfirmArchive: () => void;
+  onConfirmDelete: () => void;
+  onConfirmRename: () => void;
+  archiving: boolean;
+  deleting: boolean;
+  renaming: boolean;
+}) {
+  const open = action !== null;
+  const label = action?.accountLabel ?? "";
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="border border-border-secondary bg-card-bg sm:max-w-md">
+        {action?.type === "rename" ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onConfirmRename();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Rename account</DialogTitle>
+              <DialogDescription>
+                Choose a new display name for this account.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => onRenameChange(e.target.value)}
+              placeholder="Display name"
+              className="mt-4 h-11 bg-bg-input"
+            />
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={renaming || !renameValue.trim()}
+              >
+                {renaming ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : action?.type === "archive" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Archive “{label}”?</DialogTitle>
+              <DialogDescription>
+                This stops syncing new trades but keeps your existing trade
+                history. You can reconnect it later.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={onConfirmArchive}
+                disabled={archiving}
+              >
+                {archiving ? "Archiving…" : "Archive account"}
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Permanently delete “{label}”?</DialogTitle>
+              <DialogDescription>
+                This will delete the account and ALL of its trades and journals.
+                This cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={onConfirmDelete}
+                disabled={deleting}
+                className="bg-danger text-white hover:bg-danger/90"
+              >
+                {deleting ? "Deleting…" : "Delete permanently"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

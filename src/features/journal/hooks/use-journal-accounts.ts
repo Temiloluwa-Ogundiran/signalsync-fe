@@ -2,7 +2,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAccountApi } from "../api/journal-account.api";
 import { ApiException } from "@/lib/api/types";
+import { useJournalUiStore } from "../store/journal-ui-store";
 import type { JournalAccount, JournalAccountConnectPayload } from "../types";
+
+/**
+ * When the active account is removed (deleted/archived), clear the persisted
+ * active-account id so the dashboard re-resolves to a remaining account instead
+ * of querying analytics for an account that no longer exists.
+ */
+function clearActiveAccountIfMatches(accountId: string) {
+  const store = useJournalUiStore.getState();
+  if (store.activeAccountId === accountId) {
+    store.setActiveAccountId("");
+  }
+}
 
 const IMPORTING_CONNECTION_STATES = new Set([
   "pending_verification",
@@ -15,8 +28,9 @@ export const JOURNAL_ACCOUNT_KEYS = {
   mt5Servers: (query: string) => ["journal-accounts", "mt5-servers", query] as const,
 };
 
-export function useJournalAccounts() {
+export function useJournalAccounts(options?: { includeArchived?: boolean }) {
   const { data: session, status } = useSession();
+  const includeArchived = options?.includeArchived ?? false;
 
   return useQuery({
     queryKey: JOURNAL_ACCOUNT_KEYS.list(),
@@ -33,8 +47,12 @@ export function useJournalAccounts() {
       );
       return hasImportingAccount ? 3000 : false;
     },
+    // Archived accounts are hidden everywhere by default; the accounts page
+    // opts in to show them muted.
     select: (accounts: JournalAccount[]) =>
-      accounts.filter((account) => !account.is_deleted && account.status !== "disconnected"),
+      accounts.filter(
+        (account) => includeArchived || !account.is_archived,
+      ),
   });
 }
 
@@ -88,7 +106,8 @@ export function useDisconnectJournalAccount() {
   return useMutation({
     mutationFn: (accountId: string) =>
       journalAccountApi.disconnectAccount(accountId, session?.accessToken as string),
-    onSuccess: () => {
+    onSuccess: (_data, accountId) => {
+      clearActiveAccountIfMatches(accountId);
       queryClient.invalidateQueries({
         queryKey: JOURNAL_ACCOUNT_KEYS.all,
       });
@@ -109,7 +128,8 @@ export function useDeleteJournalAccount() {
   return useMutation({
     mutationFn: (accountId: string) =>
       journalAccountApi.deleteAccount(accountId, session?.accessToken as string),
-    onSuccess: () => {
+    onSuccess: (_data, accountId) => {
+      clearActiveAccountIfMatches(accountId);
       queryClient.invalidateQueries({
         queryKey: JOURNAL_ACCOUNT_KEYS.all,
       });
