@@ -18,6 +18,7 @@ import { JournalPageHeader } from "./journal-page-header";
 import { JournalEmptyState } from "./journal-empty-state";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
+import { buildAccountLabel } from "../lib/account-label";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -165,9 +166,11 @@ export function JournalTradeHistoryPage() {
         accounts={accounts}
         activeAccountId={activeAccountId}
         activeAccountLabel={
-          activeAccount?.display_name ||
-          activeAccount?.broker_login ||
-          (accounts.length === 0 ? "Connect Account" : "Select account")
+          activeAccount
+            ? buildAccountLabel(activeAccount)
+            : accounts.length === 0
+              ? "Connect Account"
+              : "Select account"
         }
         onSelectAccount={selectAccount}
         dateRange={parsedDateRange}

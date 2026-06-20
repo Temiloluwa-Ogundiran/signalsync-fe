@@ -5,9 +5,12 @@ import type { AiContext } from "../types";
 
 // One curated set of starter prompts (previously split across two redundant
 // "Suggested" + "Quick Analysis" sections).
+// All-time framing on purpose — no "right now / this month / recent". The demo
+// dataset is a fixed past stretch, so recency-scoped prompts would return
+// nothing useful; these answer over the full history regardless of dates.
 const STARTER_PROMPTS = [
-  "What's hurting my performance the most right now?",
-  "Summarize my recent trading and identify key patterns.",
+  "What's hurting my performance the most?",
+  "Summarize my trading and identify key patterns.",
   "Am I overtrading or revenge trading?",
   "What's my best performing setup?",
 ];

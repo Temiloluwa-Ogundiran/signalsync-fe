@@ -23,6 +23,7 @@ import {
   JournalPeriodSummary,
   type PeriodSummary,
 } from "./journal-period-summary";
+import { buildAccountLabel } from "../lib/account-label";
 
 function formatDateParam(date: Date) {
   const year = date.getFullYear();
@@ -280,9 +281,11 @@ export function JournalFeedPage() {
         accounts={accounts}
         activeAccountId={activeAccountId}
         activeAccountLabel={
-          activeAccount?.display_name ||
-          activeAccount?.broker_login ||
-          (accounts.length === 0 ? "Connect Account" : "Select account")
+          activeAccount
+            ? buildAccountLabel(activeAccount)
+            : accounts.length === 0
+              ? "Connect Account"
+              : "Select account"
         }
         onSelectAccount={selectAccount}
         dateRange={parsedDateRange}

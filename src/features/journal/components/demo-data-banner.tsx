@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
@@ -20,8 +20,11 @@ export function DemoDataBanner() {
     accounts.find((a) => a.id === resolvedId) ?? accounts[0];
   const isDemo = Boolean(activeAccount?.is_demo);
   const router = useRouter();
+  const pathname = usePathname();
 
-  if (!isDemo) return null;
+  // Hidden on the accounts page — the banner's only CTA is to go there, so it's
+  // redundant once the user has arrived.
+  if (!isDemo || pathname?.startsWith("/accounts")) return null;
 
   return (
     <div className="px-4 pt-4 md:px-8">

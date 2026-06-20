@@ -14,6 +14,7 @@ import {
 } from "../hooks/use-ai-sessions";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { cn } from "@/lib/utils";
+import { buildAccountLabel } from "@/features/journal/lib/account-label";
 
 /**
  * Full-screen Partna AI surface. History lives IN this page now (not the global
@@ -84,9 +85,7 @@ export function AiChatPage() {
     if (id === activeSessionId) setActiveSessionId(null);
   };
 
-  const accountLabel =
-    activeAccount?.display_name ||
-    (activeAccount?.broker_login ? `Account ${activeAccount.broker_login}` : null);
+  const accountLabel = activeAccount ? buildAccountLabel(activeAccount) : null;
 
   const visibleSessions = sessions.filter((s) => !s.is_deleted);
 

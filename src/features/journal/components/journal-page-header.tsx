@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import type { JournalAccountSyncStatus } from "../types";
+import { buildAccountLabel } from "../lib/account-label";
 
 interface JournalPageHeaderProps {
   /** Sync metadata line ("Last sync · Resync"). Dashboard shows it; other pages
@@ -45,6 +46,7 @@ interface AccountOption {
   id: string;
   display_name?: string | null;
   broker_login?: string | null;
+  broker_server?: string | null;
   is_demo?: boolean;
 }
 
@@ -306,17 +308,11 @@ function AccountSelector({
                         isActive ? "text-text-primary" : "text-text-secondary",
                       )}
                     >
-                      {account.display_name ||
-                        `Account ${account.broker_login}`}
+                      {buildAccountLabel(account)}
                     </span>
-                    {account.is_demo ? (
-                      <span className="shrink-0 rounded-full bg-surface-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-                        Demo
-                      </span>
-                    ) : null}
                     {isActive ? (
                       <span className="shrink-0 rounded-full bg-ai-soft-bg px-2 py-0.5 text-[10px] font-semibold text-ai-accent">
-                        Active
+                        Current
                       </span>
                     ) : null}
                   </button>

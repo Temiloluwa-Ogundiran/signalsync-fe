@@ -42,6 +42,7 @@ import {
 } from "@/features/journal/lib/manual-sync-refresh";
 import { toast } from "sonner";
 import { getAccountSyncStatus } from "@/features/journal/lib/account-sync-status";
+import { buildAccountLabel } from "@/features/journal/lib/account-label";
 
 /**
  * Icon button with a styled hover tooltip describing what it does.
@@ -249,7 +250,7 @@ export function JournalAccountsPage() {
         {/* Page header — title + add-account action (when accounts exist;
             the empty state has its own primary CTA). */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-bold tracking-tight">Trading Accounts</h1>
+          <h1 className="text-xl font-bold tracking-tight">Accounts</h1>
           {!isLoading && accounts.length > 0 ? (
             <Button
               type="button"
@@ -294,7 +295,7 @@ export function JournalAccountsPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {accounts.map((account) => {
               const isSyncing = activeSyncingId === account.id;
-              const accountLabel = account.display_name || "MT5 Trading Account";
+              const accountLabel = buildAccountLabel(account);
               const syncStatus = getAccountSyncStatus(account);
               const needsAttention =
                 syncStatus.severity === "warning" ||

@@ -44,6 +44,7 @@ import {
   getAccountSyncStatus,
   isAccountSyncBusy,
 } from "@/features/journal/lib/account-sync-status";
+import { buildAccountLabel } from "@/features/journal/lib/account-label";
 
 const journalWidgetRegistry = getDefaultJournalWidgetRegistry().filter(
   (widget) => widget.visible,
@@ -415,9 +416,11 @@ function JournalPageContent() {
         accounts={accounts}
         activeAccountId={activeAccountId}
         activeAccountLabel={
-          activeAccount?.display_name ||
-          activeAccount?.broker_login ||
-          (accounts.length === 0 ? "Connect Account" : "Select account")
+          activeAccount
+            ? buildAccountLabel(activeAccount)
+            : accounts.length === 0
+              ? "Connect Account"
+              : "Select account"
         }
         onSelectAccount={selectAccount}
         dateRange={parsedDateRange}

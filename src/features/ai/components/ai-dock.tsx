@@ -11,6 +11,7 @@ import { useAiDockStore } from "../store/ai-dock-store";
 import { useAiSession, useAiSessions, useCreateAiSession, useDeleteAiSession } from "../hooks/use-ai-sessions";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
+import { buildAccountLabel } from "@/features/journal/lib/account-label";
 
 export function AiDock() {
   const router = useRouter();
@@ -23,9 +24,7 @@ export function AiDock() {
   const accountId = useJournalUiStore((s) => s.activeAccountId) || null;
   const { data: accounts = [] } = useJournalAccounts();
   const activeAccount = accounts.find((a) => a.id === accountId) ?? null;
-  const accountLabel =
-    activeAccount?.display_name ||
-    (activeAccount?.broker_login ? `Account ${activeAccount.broker_login}` : null);
+  const accountLabel = activeAccount ? buildAccountLabel(activeAccount) : null;
 
   const [showHistory, setShowHistory] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
