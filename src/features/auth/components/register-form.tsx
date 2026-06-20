@@ -10,6 +10,7 @@ import {
   PASSWORD_POLICY_MESSAGE,
   registerPasswordSchema,
 } from "../lib/password-policy";
+import { PasswordStrength } from "./password-strength";
 
 import {
   Form,
@@ -150,6 +151,7 @@ export function RegisterForm({
                     </Button>
                   </div>
                 </FormControl>
+                <PasswordStrength password={field.value} />
                 <p className="text-xs text-text-secondary">
                   {PASSWORD_POLICY_MESSAGE}
                 </p>

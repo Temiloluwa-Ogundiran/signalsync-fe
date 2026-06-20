@@ -5,6 +5,7 @@ import {
   isStrongPassword,
   registerPasswordSchema,
 } from "./password-policy.ts";
+import { getPasswordStrength } from "../../../lib/validation/password-policy.ts";
 
 test("isStrongPassword rejects weak passwords", () => {
   assert.equal(isStrongPassword("password"), false);
@@ -24,4 +25,17 @@ test("registerPasswordSchema returns the shared policy message", () => {
   if (!result.success) {
     assert.equal(result.error.issues[0]?.message, PASSWORD_POLICY_MESSAGE);
   }
+});
+
+test("getPasswordStrength scores empty/weak/strong", () => {
+  assert.deepEqual(getPasswordStrength(""), { score: 0, label: "" });
+  // short, single char class → weak
+  assert.equal(getPasswordStrength("abc").label, "Weak");
+  // meets policy (8+, upper/lower/number) → at least Good
+  assert.ok(getPasswordStrength("Password123").score >= 3);
+  // long + symbol → Strong
+  assert.deepEqual(getPasswordStrength("Password123!xyz"), {
+    score: 4,
+    label: "Strong",
+  });
 });
