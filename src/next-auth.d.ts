@@ -7,6 +7,7 @@ declare module "next-auth" {
       displayName: string | null;
       avatarUrl: string | null;
       isEmailVerified: boolean;
+      onboardingCompleted: boolean;
     } & DefaultSession["user"];
     accessToken: string;
     expiresAt: number;
@@ -17,6 +18,7 @@ declare module "next-auth" {
     displayName?: string | null;
     avatarUrl?: string | null;
     isEmailVerified?: boolean;
+    onboardingCompleted?: boolean;
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;
@@ -32,6 +34,7 @@ declare module "next-auth/jwt" {
     displayName?: string | null;
     avatarUrl?: string | null;
     isEmailVerified?: boolean;
+    onboardingCompleted?: boolean;
     error?: string;
   }
 }

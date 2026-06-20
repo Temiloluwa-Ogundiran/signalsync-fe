@@ -141,6 +141,8 @@ export const authConfig = {
       const isLoggedIn =
         !!auth?.user && !!auth.accessToken && auth.error !== "RefreshAccessTokenError";
       const pathname = nextUrl.pathname;
+      const onboardingCompleted = auth?.user?.onboardingCompleted === true;
+      const isOnboardingRoute = pathname.startsWith("/onboarding");
 
       // Public routes — everything else requires auth
       const PUBLIC_PREFIXES = [
@@ -155,18 +157,35 @@ export const authConfig = {
       const isAuthRoute =
         pathname.startsWith("/login") || pathname.startsWith("/register");
 
+      // ── Onboarding gate (signed-in users only) ──────────────────────────────
+      // A signed-in user who hasn't finished onboarding is funnelled to
+      // /onboarding; once done they can't go back to it.
+      if (isLoggedIn && !onboardingCompleted && !isOnboardingRoute && !isPublicRoute) {
+        return Response.redirect(new URL("/onboarding", nextUrl));
+      }
+      if (isLoggedIn && onboardingCompleted && isOnboardingRoute) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+      if (!isLoggedIn && isOnboardingRoute) {
+        // Not signed in — onboarding requires auth.
+        return false;
+      }
+
       if (!isPublicRoute) {
         // Protected by default — unauthenticated users are redirected to login
         return isLoggedIn;
       }
 
       if (isLoggedIn && isAuthRoute) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        // Onboarded → dashboard; mid-onboarding → onboarding.
+        return Response.redirect(
+          new URL(onboardingCompleted ? "/dashboard" : "/onboarding", nextUrl),
+        );
       }
 
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // First login
       if (user) {
         token.accessToken = user.accessToken;
@@ -177,7 +196,14 @@ export const authConfig = {
         token.avatarUrl = user.avatarUrl;
         token.email = user.email;
         token.isEmailVerified = user.isEmailVerified;
+        token.onboardingCompleted = user.onboardingCompleted ?? false;
         return token;
+      }
+
+      // Client called session.update(...) — used to flip onboardingCompleted to
+      // true after the onboarding flow finishes, without a full re-login.
+      if (trigger === "update" && session?.onboardingCompleted) {
+        token.onboardingCompleted = true;
       }
 
       // Return previous token if the access token has not expired yet
@@ -222,6 +248,7 @@ export const authConfig = {
           displayName: (token.displayName as string) ?? null,
           avatarUrl: (token.avatarUrl as string) ?? null,
           isEmailVerified: token.isEmailVerified as boolean,
+          onboardingCompleted: (token.onboardingCompleted as boolean) ?? false,
           emailVerified: null,
         };
         session.accessToken = token.accessToken as string;

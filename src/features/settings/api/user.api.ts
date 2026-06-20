@@ -100,6 +100,24 @@ export async function updateProfile(
   return res.data;
 }
 
+export interface CompleteOnboardingPayload {
+  trading_experience?: string;
+  primary_goal?: string;
+  referral_source?: string;
+}
+
+export async function completeOnboarding(
+  payload: CompleteOnboardingPayload,
+  token?: string
+): Promise<CurrentUser> {
+  const res: AxiosResponse<CurrentUser> = await apiClient.patch(
+    "/users/me/onboarding",
+    payload,
+    withAuth(token)
+  );
+  return res.data;
+}
+
 export async function uploadAvatar(
   file: File,
   token?: string

@@ -76,6 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 display_name?: string | null;
                 avatar_url?: string | null;
                 is_email_verified: boolean;
+                onboarding_completed?: boolean;
               };
             };
             if (!p?.accessToken || !p?.user?.id) return null;
@@ -86,6 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               avatarUrl: p.user.avatar_url ?? null,
               name: p.user.display_name || p.user.email,
               isEmailVerified: p.user.is_email_verified,
+              onboardingCompleted: p.user.onboarding_completed ?? false,
               accessToken: p.accessToken,
               refreshToken: p.refreshToken ?? "",
               expiresAt:
@@ -147,6 +149,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             avatarUrl: user.avatar_url ?? null,
             name: user.display_name || user.email,
             isEmailVerified: user.is_email_verified,
+            onboardingCompleted: user.onboarding_completed ?? false,
             accessToken: access_token,
             refreshToken: refreshToken,
             expiresAt: Date.now() + (access_token_expiry_minutes * 60 * 1000),
