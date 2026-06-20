@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { AiGreeting } from "./ai-greeting";
 import { AiMessageList } from "./ai-message-list";
@@ -36,13 +36,32 @@ export function AiChatCore({
   const { messages, isStreaming, streamingTool, error, sendMessage, stop, initMessages, clearError } =
     useAiChat(sessionId);
 
-  // Reset to the fetched messages whenever the active session changes.
-  // Intentionally omitting initMessages/initialMessages from deps — firing on
-  // every incremental server message would wipe the live streaming state.
+  // Load a session's messages into the view. The catch: when you select a
+  // session from History, `sessionId` changes immediately but `initialMessages`
+  // (fetched async via useAiSession) lands a tick LATER — so keying only on
+  // sessionId would init to [] and show the empty greeting, never re-syncing
+  // when the data arrives. Track the session we've populated and (re)init once
+  // its messages are available. Never re-init while streaming, so a live
+  // response isn't wiped by a background refetch.
+  const loadedForSession = useRef<string | null>(null);
   useEffect(() => {
-    initMessages(initialMessages ?? []);
+    if (sessionId !== loadedForSession.current) {
+      // New session selected: clear immediately, then fill when data arrives.
+      initMessages([]);
+      loadedForSession.current = null;
+    }
+    if (
+      sessionId &&
+      initialMessages &&
+      !isStreaming &&
+      loadedForSession.current !== sessionId
+    ) {
+      initMessages(initialMessages);
+      loadedForSession.current = sessionId;
+    }
+    if (!sessionId) loadedForSession.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, initialMessages, isStreaming]);
 
   const handleSend = useCallback(
     async (content: string) => {
@@ -62,6 +81,10 @@ export function AiChatCore({
   );
 
   const isEmpty = messages.length === 0;
+  // A session is selected but its messages haven't loaded yet — show a loader,
+  // not the empty greeting (which made selecting a chat look like a new chat).
+  const isLoadingSession =
+    !!sessionId && isEmpty && !isStreaming && !initialMessages;
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-x-hidden">
@@ -79,7 +102,11 @@ export function AiChatCore({
       )}
 
       <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
-        {isEmpty ? (
+        {isLoadingSession ? (
+          <div className="flex h-full items-center justify-center">
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-ai-accent/30 border-t-ai-accent" />
+          </div>
+        ) : isEmpty ? (
           <AiGreeting
             firstName={firstName}
             context={context ?? null}
