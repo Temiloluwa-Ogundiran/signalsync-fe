@@ -34,7 +34,7 @@ export default function DashboardShell({
             <Header />
           </Suspense>
 
-          <main className="scrollbar-thin min-w-0 flex-1 overflow-y-auto">
+          <main className="scrollbar-thin min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
             <DemoDataBanner />
             {children}
           </main>

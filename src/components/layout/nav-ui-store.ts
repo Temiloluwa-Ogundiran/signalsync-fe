@@ -8,6 +8,15 @@ type NavUiState = {
   setSidebarExpanded: (expanded: boolean) => void;
 
   /**
+   * Off-canvas nav drawer open state (small screens only). NOT persisted —
+   * the drawer must always start closed on load, never reopen from storage.
+   */
+  mobileNavOpen: boolean;
+  openMobileNav: () => void;
+  closeMobileNav: () => void;
+  toggleMobileNav: () => void;
+
+  /**
    * Per-collapsible-group open state, keyed by a stable `${appId}:${header}`.
    * Absent key => group is open (groups default to expanded for discoverability).
    */
@@ -23,6 +32,12 @@ export const useNavUiStore = create<NavUiState>()(
         set((state) => ({ sidebarExpanded: !state.sidebarExpanded })),
       setSidebarExpanded: (expanded) => set({ sidebarExpanded: expanded }),
 
+      mobileNavOpen: false,
+      openMobileNav: () => set({ mobileNavOpen: true }),
+      closeMobileNav: () => set({ mobileNavOpen: false }),
+      toggleMobileNav: () =>
+        set((state) => ({ mobileNavOpen: !state.mobileNavOpen })),
+
       groupCollapsed: {},
       toggleGroup: (groupKey) =>
         set((state) => ({
@@ -35,6 +50,11 @@ export const useNavUiStore = create<NavUiState>()(
     {
       name: "nav-ui",
       version: 1,
+      // Never persist the transient drawer state — it must start closed on load.
+      partialize: (state) => ({
+        sidebarExpanded: state.sidebarExpanded,
+        groupCollapsed: state.groupCollapsed,
+      }),
     },
   ),
 );

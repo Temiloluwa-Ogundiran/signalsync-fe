@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
+import { useNavUiStore } from "./nav-ui-store";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { formatMoney } from "@/lib/format/money";
@@ -77,6 +78,14 @@ function RailIcon({
  */
 export function AppNav() {
   const pathname = usePathname();
+  const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
+  const closeMobileNav = useNavUiStore((s) => s.closeMobileNav);
+
+  // Close the off-canvas drawer whenever the route changes (e.g. tapping a nav
+  // link) so it never lingers open over the new page on small screens.
+  useEffect(() => {
+    closeMobileNav();
+  }, [pathname, closeMobileNav]);
 
   const apps = useMemo(
     () =>
@@ -104,12 +113,27 @@ export function AppNav() {
   const railPlusSidebarWidth = isSettings ? "w-[312px]" : "w-[264px]";
 
   return (
-    <div
-      className={cn(
-        "relative hidden h-screen shrink-0 flex-col bg-nav-sidebar-bg lg:flex",
-        railPlusSidebarWidth,
-      )}
-    >
+    <>
+      {/* Backdrop — only below lg, only while the drawer is open. */}
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={closeMobileNav}
+          className="fixed inset-0 z-overlay bg-overlay lg:hidden"
+        />
+      ) : null}
+
+      <div
+        className={cn(
+          // Below lg: fixed off-canvas drawer that slides in from the left.
+          // At lg+: a static in-flow column (rail + contextual sidebar).
+          "fixed inset-y-0 left-0 z-drawer flex h-screen shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+          "lg:static lg:z-auto lg:shadow-none lg:transition-none",
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          railPlusSidebarWidth,
+        )}
+      >
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
           Bottom hairline matches the header's border so the horizontal line runs
           unbroken from the left edge across into the header. */}
@@ -186,7 +210,8 @@ export function AppNav() {
           )}
         </aside>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
