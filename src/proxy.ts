@@ -25,5 +25,11 @@ export default auth((request) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Exclude API, Next internals, and ALL static assets — including files with an
+  // extension (svg/png/…) such as /brand/*.svg. Without the file-extension
+  // exclusion these run through the auth middleware and get 302-redirected by the
+  // gate instead of being served (broken logos on /onboarding).
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff2?|ttf|map)$).*)",
+  ],
 };
