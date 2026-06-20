@@ -3,6 +3,22 @@
 import { Streamdown } from "streamdown";
 import type { Components } from "streamdown";
 import { AiChip, parseChipHref } from "./ai-chips";
+import { AiChart, parseChartSpec } from "./ai-chart";
+
+/** Pull the raw text out of a code block's children (string or nested nodes). */
+function codeText(children: React.ReactNode): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(codeText).join("");
+  if (
+    children &&
+    typeof children === "object" &&
+    "props" in children &&
+    (children as { props?: { children?: React.ReactNode } }).props
+  ) {
+    return codeText((children as { props: { children?: React.ReactNode } }).props.children);
+  }
+  return "";
+}
 
 /**
  * Renders an assistant message as markdown via Streamdown, with two extensions:
@@ -57,7 +73,37 @@ function linkLabel(children: React.ReactNode, fallback: string): string {
   return String(children ?? fallback);
 }
 
+const CHART_LANG_RE = /language-chart/;
+
 const components: Components = {
+  // Intercept ```chart fenced blocks and render a real chart instead of code.
+  // We tag the <code> element via a data attr so the surrounding <pre> can
+  // detect it and skip the code-block chrome.
+  code({ className, children, ...props }) {
+    if (className && CHART_LANG_RE.test(className)) {
+      const spec = parseChartSpec(codeText(children));
+      if (spec) return <AiChart spec={spec} />;
+      // Invalid spec → fall through to normal code rendering.
+    }
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  },
+  pre({ children, ...props }) {
+    // If this <pre> wraps a chart code block, render the child (the AiChart)
+    // bare — no <pre> monospace/scroll chrome around the chart.
+    const child = Array.isArray(children) ? children[0] : children;
+    const childClass =
+      child && typeof child === "object" && "props" in child
+        ? (child as { props?: { className?: string } }).props?.className
+        : undefined;
+    if (childClass && CHART_LANG_RE.test(childClass)) {
+      return <>{children}</>;
+    }
+    return <pre {...props}>{children}</pre>;
+  },
   a({ href, children, ...props }) {
     const chip = parseChipHref(href);
     if (chip) {
