@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
@@ -65,6 +64,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
   const [goal, setGoal] = useState<OptionId | null>(null);
   const [referral, setReferral] = useState<OptionId | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const step = STEP_ORDER[stepIndex];
   // Progress reflects question steps (welcome doesn't count as filled progress).
@@ -85,6 +85,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
 
   const finish = async () => {
     setSubmitting(true);
+    setError(null);
     try {
       await completeOnboarding(
         {
@@ -100,6 +101,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
       router.replace("/dashboard");
     } catch (err) {
       console.error("Failed to complete onboarding", err);
+      setError("Couldn't save that just now — please try again.");
       setSubmitting(false);
     }
   };
@@ -116,12 +118,12 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
     <div className="flex min-h-screen flex-col bg-auth-bg">
       {/* Top bar: logo + slim progress */}
       <header className="flex items-center gap-4 px-5 py-4 sm:px-8">
-        <Image
-          src="/brand/tradpartnalight.svg"
+        {/* Plain <img> — SVG logos don't need next/image optimization and it
+            avoids the broken-image issue on this standalone route. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/tradepartna-logo-full.svg"
           alt="TradePartna"
-          width={150}
-          height={20}
-          priority
           className="h-5 w-auto"
         />
         <div className="ml-2 hidden flex-1 sm:block">
@@ -139,8 +141,14 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         <div className="w-full max-w-xl">
           {step === "welcome" && (
             <div className="flex flex-col items-center text-center">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-ai-soft-bg">
-                <Sparkles className="h-8 w-8 text-ai-accent" />
+              {/* Our logo mark, not a generic AI sparkle. */}
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-border-secondary/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/brand/tradepartna-mark.svg"
+                  alt="TradePartna"
+                  className="h-9 w-auto"
+                />
               </div>
               <h1 className="font-heading text-3xl font-bold text-text-primary">
                 Welcome to TradePartna{firstName ? `, ${firstName}` : ""} 👋
@@ -187,6 +195,11 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
 
       {/* Footer controls */}
       <footer className="fixed inset-x-0 bottom-0 border-t border-border-secondary/50 bg-auth-bg/95 px-5 py-4 backdrop-blur sm:px-8">
+        {error && (
+          <p className="mx-auto mb-2 max-w-xl text-center text-xs font-medium text-danger">
+            {error}
+          </p>
+        )}
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           {stepIndex > 0 ? (
             <button
