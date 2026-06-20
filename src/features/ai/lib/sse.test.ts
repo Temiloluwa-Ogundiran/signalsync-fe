@@ -18,7 +18,7 @@ test("streamChat uses the secure Next proxy without browser bearer tokens", asyn
 
   try {
     const events = [];
-    for await (const event of streamChat("session_1", "hello", "secret-token")) {
+    for await (const event of streamChat("session_1", "hello")) {
       events.push(event);
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { History, Maximize2, MoreHorizontal, Plus, Sparkles, X } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -50,7 +50,7 @@ export function AiDock() {
 
   const { data: sessions = [] } = useAiSessions();
   const { data: activeSessionData } = useAiSession(activeSessionId);
-  const { mutateAsync: createSession, isPending: isCreating } = useCreateAiSession();
+  const { mutateAsync: createSession } = useCreateAiSession();
   const { mutate: deleteSession } = useDeleteAiSession();
 
   // Track which account the current dock session was scoped to.
@@ -58,8 +58,10 @@ export function AiDock() {
   const sessionScopedTo = useRef<string | null | undefined>(undefined);
 
   const startNewSession = async (scopeAccountId?: string | null) => {
+    // No title on create — the backend auto-titles the session from the first
+    // message. The sidebar shows "New chat" as a fallback until then. (Passing
+    // a title here blocks backend auto-titling, leaving every chat "New chat".)
     const s = await createSession({
-      title: "New chat",
       ...(scopeAccountId ? { account_id: scopeAccountId } : {}),
     });
     setActiveSessionId(s.id);
@@ -67,22 +69,27 @@ export function AiDock() {
     return s;
   };
 
-  useEffect(() => {
-    if (!isOpen || isCreating || !session?.accessToken) return;
-    // Create a session if there's none, OR if the account has changed since we last created one.
-    const accountChanged = sessionScopedTo.current !== undefined && sessionScopedTo.current !== accountId;
-    if (!activeSessionId || accountChanged) {
-      startNewSession(accountId).catch((err) => {
-        // Don't swallow: a failed create leaves the composer permanently
-        // disabled. Reset the scope guard so a later run can retry, and log.
-        sessionScopedTo.current = undefined;
-        console.error("Failed to create AI session", err);
-      });
+  // Lazy session creation: we no longer create a session when the dock opens
+  // (that spawned empty "New chat" rows on every open). Instead the composer
+  // calls ensureSession() on first send. We still start a FRESH session when the
+  // scoped account changes mid-conversation.
+  const ensureSession = useCallback(async (): Promise<string | null> => {
+    if (!session?.accessToken) return null;
+    const accountChanged =
+      sessionScopedTo.current !== undefined &&
+      sessionScopedTo.current !== accountId;
+    if (activeSessionId && !accountChanged) return activeSessionId;
+    try {
+      const s = await startNewSession(accountId);
+      return s.id;
+    } catch (err) {
+      sessionScopedTo.current = undefined;
+      console.error("Failed to create AI session", err);
+      return null;
     }
-  // activeSessionId is intentionally included: when it's cleared (deleted/reset)
-  // while the dock is open, this effect must re-run to create a fresh session.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, accountId, activeSessionId, session?.accessToken]);
+    // startNewSession/accountId/activeSessionId are stable enough; deps kept minimal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.accessToken, accountId, activeSessionId]);
 
   const handleNewChat = async () => {
     try {
@@ -119,8 +126,10 @@ export function AiDock() {
       <div
         ref={panelRef}
         className={cn(
-          "fixed right-0 top-0 z-modal flex h-full w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
-          "sm:w-[420px]",
+          // h-[100dvh] (not h-full/100vh) so the panel doesn't run behind mobile
+          // Safari's bottom toolbar, which was cutting off the composer input.
+          "fixed right-0 top-0 z-modal flex h-[100dvh] w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
+          "sm:h-full sm:w-[420px]",
         )}
       >
         {/* Header */}
@@ -240,17 +249,12 @@ export function AiDock() {
               }}
             />
             <div className="relative z-10 h-full">
-            {isCreating && !activeSessionId ? (
-              <div className="flex h-full items-center justify-center">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-              </div>
-            ) : (
               <AiChatCore
                 sessionId={activeSessionId}
                 initialMessages={activeSessionData?.messages}
                 context={context}
+                onEnsureSession={ensureSession}
               />
-            )}
             </div>
           </div>
         )}

@@ -9,17 +9,23 @@ import { useAiChat } from "../hooks/use-ai-chat";
 import type { AiContext, AiMessage } from "../types";
 
 interface AiChatCoreProps {
-  /** The active session ID. When null the composer is disabled. */
+  /** The active session ID, or null when no session exists yet. */
   sessionId: string | null;
   /** Pre-loaded messages for this session (from the sessions query). */
   initialMessages?: AiMessage[];
   context?: AiContext | null;
+  /**
+   * Lazily create (and activate) a session on first send, returning its id.
+   * Lets us avoid spawning empty sessions just from opening the panel.
+   */
+  onEnsureSession?: () => Promise<string | null>;
 }
 
 export function AiChatCore({
   sessionId,
   initialMessages,
   context,
+  onEnsureSession,
 }: AiChatCoreProps) {
   const { data: session } = useSession();
   const firstName =
@@ -27,7 +33,7 @@ export function AiChatCore({
     session?.user?.name?.split(" ")[0] ||
     "Trader";
 
-  const { messages, isStreaming, streamingTool, error, sendMessage, initMessages, clearError } =
+  const { messages, isStreaming, streamingTool, error, sendMessage, stop, initMessages, clearError } =
     useAiChat(sessionId);
 
   // Reset to the fetched messages whenever the active session changes.
@@ -39,10 +45,20 @@ export function AiChatCore({
   }, [sessionId]);
 
   const handleSend = useCallback(
-    (content: string) => {
+    async (content: string) => {
+      // Lazy session creation: if there's no session yet, create one now and
+      // stream into it directly (passing the new id so we don't wait for the
+      // sessionId prop to propagate). This is what keeps empty sessions from
+      // being created just by opening the panel.
+      if (!sessionId) {
+        const newId = onEnsureSession ? await onEnsureSession() : null;
+        if (!newId) return;
+        sendMessage(content, newId);
+        return;
+      }
       sendMessage(content);
     },
-    [sendMessage],
+    [sessionId, onEnsureSession, sendMessage],
   );
 
   const isEmpty = messages.length === 0;
@@ -76,7 +92,12 @@ export function AiChatCore({
 
       <AiComposer
         onSend={handleSend}
-        disabled={isStreaming || !sessionId}
+        isStreaming={isStreaming}
+        onStop={stop}
+        // Allow typing/sending even with no session yet — handleSend creates one
+        // on demand. Only hard-disable if we have neither a session nor a way to
+        // make one.
+        disabled={!sessionId && !onEnsureSession}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AiChatCore } from "./ai-chat-core";
 import { useAiDockStore } from "../store/ai-dock-store";
@@ -32,33 +32,32 @@ export function AiChatPage() {
   const { data: activeSessionData } = useAiSession(activeSessionId);
   const { mutateAsync: createSession } = useCreateAiSession();
 
-  const handleNewChat = async (scopeAccountId?: string | null) => {
-    try {
-      const s = await createSession({
-        title: "New chat",
-        ...(scopeAccountId ? { account_id: scopeAccountId } : {}),
-      });
-      setActiveSessionId(s.id);
-    } catch (err) {
-      // Don't swallow: a failed session create leaves the composer permanently
-      // disabled with no cursor. Reset the guard so the effect can retry, and
-      // log so the failure is visible in the console / error reporting.
-      lastSessionAccountId.current = undefined;
-      console.error("Failed to create AI session", err);
-    }
-  };
-
-  // Track the last account we started a session for so we don't create duplicates.
+  // Track the last account we started a session for, so switching accounts
+  // mid-conversation starts a fresh scoped session on the next send.
   const lastSessionAccountId = useRef<string | null | undefined>(undefined);
 
-  // Auto-create a new scoped session whenever the selected account changes.
-  // undefined means "not yet initialised", null means "no account selected".
-  useEffect(() => {
-    if (lastSessionAccountId.current === accountId) return;
-    lastSessionAccountId.current = accountId;
-    handleNewChat(accountId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountId]);
+  // Lazy session creation: don't create on mount/account-change (that left empty
+  // "New chat" sessions). Create on first send instead, returning the new id so
+  // the composer can stream into it immediately.
+  const ensureSession = useCallback(async (): Promise<string | null> => {
+    const accountChanged =
+      lastSessionAccountId.current !== undefined &&
+      lastSessionAccountId.current !== accountId;
+    if (activeSessionId && !accountChanged) return activeSessionId;
+    try {
+      // No title on create — the backend auto-titles from the first message.
+      const s = await createSession({
+        ...(accountId ? { account_id: accountId } : {}),
+      });
+      setActiveSessionId(s.id);
+      lastSessionAccountId.current = accountId;
+      return s.id;
+    } catch (err) {
+      console.error("Failed to create AI session", err);
+      return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, activeSessionId]);
 
   const accountLabel =
     activeAccount?.display_name ||
@@ -82,6 +81,7 @@ export function AiChatPage() {
           sessionId={activeSessionId}
           initialMessages={activeSessionData?.messages}
           context={null}
+          onEnsureSession={ensureSession}
         />
       </div>
     </div>

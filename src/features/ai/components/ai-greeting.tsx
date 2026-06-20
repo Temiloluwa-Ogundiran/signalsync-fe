@@ -1,18 +1,15 @@
 "use client";
 
-import { Sparkles, Zap } from "lucide-react";
+import { Sparkles, ChevronRight } from "lucide-react";
 import type { AiContext } from "../types";
 
-const SUGGESTED_PROMPTS = [
+// One curated set of starter prompts (previously split across two redundant
+// "Suggested" + "Quick Analysis" sections).
+const STARTER_PROMPTS = [
   "What's hurting my performance the most right now?",
   "Summarize my recent trading and identify key patterns.",
   "Am I overtrading or revenge trading?",
-];
-
-const ACTION_CHIPS = [
   "What's my best performing setup?",
-  "Which symbol am I most profitable on?",
-  "What is my profit factor this month?",
 ];
 
 interface AiGreetingProps {
@@ -21,68 +18,37 @@ interface AiGreetingProps {
   onPromptClick: (prompt: string) => void;
 }
 
-export function AiGreeting({
-  firstName,
-  context,
-  onPromptClick,
-}: AiGreetingProps) {
+export function AiGreeting({ firstName, onPromptClick }: AiGreetingProps) {
   return (
-    <div className="flex flex-col gap-5 px-4 py-5">
-      {/* Context chip */}
-      {/* {context && (
-        <div className="inline-flex self-start items-center gap-1.5 rounded-full border border-brand/25 bg-brand/8 px-3 py-1 text-xs font-medium text-brand">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-          Opened from: {context.source}
-        </div>
-      )} */}
-
+    <div className="flex flex-col gap-6 px-4 py-6">
       {/* Greeting */}
       <div>
-        <h2 className="font-heading text-xl font-bold text-text-primary">
+        <h2 className="font-heading text-2xl font-bold text-text-primary">
           Hey {firstName} 👋
         </h2>
-        <p className="mt-1 text-sm text-text-secondary leading-relaxed">
+        <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
           I analyze your trades, spot patterns, and answer your trading
           questions. What would you like to know?
         </p>
       </div>
 
-      {/* Suggested prompts */}
+      {/* Starter prompts — one clean tappable list */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide">
-          Suggested
+        <p className="px-0.5 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
+          Try asking
         </p>
-        {SUGGESTED_PROMPTS.map((prompt) => (
+        {STARTER_PROMPTS.map((prompt) => (
           <button
             key={prompt}
             type="button"
             onClick={() => onPromptClick(prompt)}
-            className="flex items-start gap-2.5 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-2.5 text-left text-sm text-text-primary transition-all hover:border-ai-border hover:bg-ai-glow hover:shadow-[0_0_0_1px_var(--color-ai-border),0_4px_16px_-6px_var(--color-ai-glow)]"
+            className="group flex items-center gap-3 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-3 text-left text-sm text-text-primary transition-all hover:border-ai-border hover:bg-ai-glow"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ai-accent" />
-            {prompt}
+            <Sparkles className="h-4 w-4 shrink-0 text-ai-accent" />
+            <span className="flex-1 leading-snug">{prompt}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
         ))}
-      </div>
-
-      {/* Take Action chips */}
-      <div>
-        <p className="mb-2 text-xs font-semibold text-text-tertiary uppercase tracking-wide flex items-center gap-1">
-          <Zap className="h-3 w-3 fill-current text-ai-accent" />
-          Quick Analysis
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {ACTION_CHIPS.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              onClick={() => onPromptClick(chip)}
-              className="rounded-full border border-border-secondary/60 bg-card-bg px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-ai-border hover:text-ai-accent-bright"
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );

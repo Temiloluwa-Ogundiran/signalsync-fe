@@ -3,7 +3,7 @@ import type { SSEEvent } from "../types";
 export async function* streamChat(
   sessionId: string,
   content: string,
-  _token?: string,
+  options?: { signal?: AbortSignal },
 ): AsyncGenerator<SSEEvent> {
   const res = await fetch(`/api/proxy/ai/sessions/${sessionId}/stream`, {
     method: "POST",
@@ -11,6 +11,7 @@ export async function* streamChat(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ content }),
+    signal: options?.signal,
   });
 
   if (!res.ok) {
