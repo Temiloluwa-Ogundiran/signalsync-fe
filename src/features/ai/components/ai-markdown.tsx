@@ -21,6 +21,9 @@ import { AiChip, parseChipHref } from "./ai-chips";
  */
 
 const ACTIONS_RE = /^[ \t]*::actions::[ \t]*(.+?)[ \t]*$/im;
+// The model adds ::expand:: when a wide table reads better on the full /ai page.
+// Optional custom label after the marker, e.g. "::expand:: See full table".
+const EXPAND_RE = /^[ \t]*::expand::[ \t]*(.*?)[ \t]*$/im;
 
 export function parseActions(content: string): string[] {
   const m = ACTIONS_RE.exec(content);
@@ -32,9 +35,20 @@ export function parseActions(content: string): string[] {
     .slice(0, 4);
 }
 
-/** Remove the ::actions:: line so it isn't shown in the rendered markdown. */
+/** The expand-to-full-view hint, if the model emitted one. */
+export function parseExpand(content: string): string | null {
+  const m = EXPAND_RE.exec(content);
+  if (!m) return null;
+  return m[1]?.trim() || "Open full view";
+}
+
+/** Remove our control lines so they aren't shown in the rendered markdown. */
 export function stripActions(content: string): string {
-  return content.replace(ACTIONS_RE, "").replace(/\n{3,}$/, "\n").trimEnd();
+  return content
+    .replace(ACTIONS_RE, "")
+    .replace(EXPAND_RE, "")
+    .replace(/\n{3,}$/, "\n")
+    .trimEnd();
 }
 
 function linkLabel(children: React.ReactNode, fallback: string): string {

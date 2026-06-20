@@ -19,6 +19,11 @@ interface AiChatCoreProps {
    * Lets us avoid spawning empty sessions just from opening the panel.
    */
   onEnsureSession?: () => Promise<string | null>;
+  /**
+   * When set (the constrained dock), assistant messages flagged ::expand:: show
+   * an "open full view" button. Omitted on the full /ai page.
+   */
+  onExpand?: () => void;
 }
 
 export function AiChatCore({
@@ -26,6 +31,7 @@ export function AiChatCore({
   initialMessages,
   context,
   onEnsureSession,
+  onExpand,
 }: AiChatCoreProps) {
   const { data: session } = useSession();
   const firstName =
@@ -118,6 +124,7 @@ export function AiChatCore({
             streamingTool={streamingTool}
             onAction={handleSend}
             isStreaming={isStreaming}
+            onExpand={onExpand}
           />
         )}
       </div>

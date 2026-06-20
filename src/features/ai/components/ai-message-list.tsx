@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Sparkles, ArrowUpRight } from "lucide-react";
+import { Sparkles, ArrowUpRight, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AiMarkdown, parseActions, stripActions } from "./ai-markdown";
+import { AiMarkdown, parseActions, parseExpand, stripActions } from "./ai-markdown";
 import type { StreamingMessage } from "../types";
 
 interface AiMessageListProps {
@@ -13,6 +13,12 @@ interface AiMessageListProps {
   onAction?: (prompt: string) => void;
   /** Disable follow-up buttons while a response is streaming. */
   isStreaming?: boolean;
+  /**
+   * When provided (i.e. on the constrained dock), an "open full view" button is
+   * shown for messages the model flags with ::expand::. Omitted on the full
+   * /ai page, where there's nowhere wider to go.
+   */
+  onExpand?: () => void;
 }
 
 function ToolIndicator({ name }: { name: string }) {
@@ -62,10 +68,12 @@ function FollowUpActions({
 function MessageBubble({
   msg,
   onAction,
+  onExpand,
   isStreaming,
 }: {
   msg: StreamingMessage;
   onAction?: (prompt: string) => void;
+  onExpand?: () => void;
   isStreaming?: boolean;
 }) {
   const isUser = msg.role === "user";
@@ -73,6 +81,8 @@ function MessageBubble({
   // Only surface follow-up actions once the message has finished streaming —
   // a half-streamed ::actions:: line would flicker incomplete buttons.
   const actions = !isUser && !msg.isStreaming ? parseActions(content) : [];
+  const expandLabel =
+    !isUser && !msg.isStreaming && onExpand ? parseExpand(content) : null;
   const body = !isUser ? stripActions(content) : content;
 
   return (
@@ -85,10 +95,14 @@ function MessageBubble({
         )}
         <div
           className={cn(
-            "max-w-[85%] min-w-0 break-words overflow-hidden rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+            "min-w-0 break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
             isUser
-              ? "bg-brand text-brand-foreground rounded-tr-sm"
-              : "bg-card-bg border border-border-secondary/50 text-text-primary rounded-tl-sm",
+              ? "max-w-[85%] overflow-hidden bg-brand text-brand-foreground rounded-tr-sm"
+              // Assistant bubbles run wider so tables/breakdowns have room.
+              // overflow-x is left to inner blocks (tables scroll horizontally;
+              // see .ai-markdown table wrapper in globals.css) so wide content
+              // isn't clipped.
+              : "w-full max-w-[95%] bg-card-bg border border-border-secondary/50 text-text-primary rounded-tl-sm",
           )}
         >
           {isUser ? (
@@ -104,7 +118,22 @@ function MessageBubble({
       </div>
       {!isUser && (
         // Indent to align under the bubble (avatar 28px + gap 12px).
-        <div className="pl-10">
+        <div className="flex flex-col gap-2 pl-10">
+          {expandLabel && onExpand && (
+            <button
+              type="button"
+              onClick={onExpand}
+              className={cn(
+                "mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1",
+                "text-xs font-medium text-ai-accent",
+                "border-ai-soft-border bg-ai-soft-bg",
+                "transition-colors hover:border-ai-accent hover:bg-ai-glow",
+              )}
+            >
+              <Maximize2 className="h-3 w-3" />
+              {expandLabel}
+            </button>
+          )}
           <FollowUpActions actions={actions} onAction={onAction} disabled={isStreaming} />
         </div>
       )}
@@ -117,6 +146,7 @@ export function AiMessageList({
   streamingTool,
   onAction,
   isStreaming,
+  onExpand,
 }: AiMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +161,7 @@ export function AiMessageList({
           key={msg.id}
           msg={msg}
           onAction={onAction}
+          onExpand={onExpand}
           isStreaming={isStreaming}
         />
       ))}

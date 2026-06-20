@@ -253,6 +253,7 @@ export function AiDock() {
                 initialMessages={activeSessionData?.messages}
                 context={context}
                 onEnsureSession={ensureSession}
+                onExpand={handleExpand}
               />
             </div>
           </div>

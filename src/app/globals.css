@@ -6,6 +6,23 @@
    relative from this file (src/app/) to the repo node_modules (two levels up). */
 @source "../../node_modules/streamdown/dist/*.js";
 
+/* AI chat markdown: keep wide tables inside the bubble. The table wrapper
+   scrolls horizontally instead of forcing the whole message wider than the
+   chat column (which clipped the last column on mobile). */
+.ai-markdown [data-streamdown="table-wrapper"] {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.ai-markdown table {
+  width: max-content;
+  min-width: 100%;
+}
+/* Don't let cells wrap awkwardly mid-table; let the wrapper scroll instead. */
+.ai-markdown table td,
+.ai-markdown table th {
+  white-space: nowrap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* ===== Light Theme (default) ===== */
