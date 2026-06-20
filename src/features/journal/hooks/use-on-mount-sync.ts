@@ -14,6 +14,8 @@ import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import type { JournalAccount } from "@/features/journal/types";
 
 function isSyncable(account: JournalAccount): boolean {
+  // Demo accounts are synthetic — never sync them (the backend no-ops too).
+  if (account.is_demo) return false;
   if (account.import_method === "csv_upload") return false;
   if (account.connection_state !== "ready") return false;
   // Respect the backend cooldown — a sync within next_sync_not_before would be

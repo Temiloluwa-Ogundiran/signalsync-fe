@@ -406,6 +406,9 @@ function JournalPageContent() {
       />
       <JournalPageHeader
         title="Dashboard"
+        // Demo accounts are synthetic and never sync — hide the "Last sync ·
+        // Resync" line for them.
+        showSyncMeta={!activeAccount?.is_demo}
         isSyncPending={isSyncBusy}
         lastSyncedAt={activeAccount?.last_synced_at}
         nextSyncNotBefore={activeAccount?.next_sync_not_before}
