@@ -158,15 +158,13 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         <div className="w-full max-w-xl">
           {step === "welcome" && (
             <div className="flex flex-col items-center text-center">
-              {/* Our logo mark, not a generic AI sparkle. */}
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-border-secondary/60">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/brand/tradepartna-mark.svg"
-                  alt="TradePartna"
-                  className="h-9 w-auto"
-                />
-              </div>
+              {/* Our logo mark — no background tile. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/brand/tradepartna-mark.svg"
+                alt="TradePartna"
+                className="mb-6 h-12 w-auto"
+              />
               <h1 className="font-heading text-3xl font-bold text-text-primary">
                 Welcome to TradePartna{firstName ? `, ${firstName}` : ""} 👋
               </h1>
@@ -174,6 +172,16 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
                 A couple of quick questions so we can build the right experience
                 for traders like you. Takes under a minute.
               </p>
+              {/* CTA lives inline on welcome (directly under the text), not in
+                  the fixed footer. */}
+              <button
+                type="button"
+                onClick={next}
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-ai-accent-bright active:scale-[0.98]"
+              >
+                Let&apos;s go
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           )}
 
@@ -210,21 +218,16 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         </div>
       </main>
 
-      {/* Footer controls */}
+      {/* Footer controls — question steps only; welcome has its CTA inline. */}
+      {step !== "welcome" && (
       <footer className="fixed inset-x-0 bottom-0 border-t border-border-secondary/50 bg-auth-bg/95 px-5 py-4 backdrop-blur sm:px-8">
         {error && (
           <p className="mx-auto mb-2 max-w-xl text-center text-xs font-medium text-danger">
             {error}
           </p>
         )}
-        <div
-          className={cn(
-            "mx-auto flex max-w-xl items-center gap-3",
-            // Welcome has no Back button → center the single CTA. Other steps
-            // split Back (left) and Continue (right).
-            step === "welcome" ? "justify-center" : "justify-between",
-          )}
-        >
+        {/* Question steps only: Back (left) + Continue (right). */}
+        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           {stepIndex > 0 && (
             <button
               type="button"
@@ -258,11 +261,6 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
                 Finish
                 <Check className="h-4 w-4" />
               </>
-            ) : step === "welcome" ? (
-              <>
-                Let&apos;s go
-                <ArrowRight className="h-4 w-4" />
-              </>
             ) : (
               <>
                 Continue
@@ -272,6 +270,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
           </button>
         </div>
       </footer>
+      )}
     </div>
   );
 }
