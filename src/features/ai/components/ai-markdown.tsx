@@ -7,9 +7,12 @@ import { AiChip, parseChipHref } from "./ai-chips";
 /**
  * Renders an assistant message as markdown via Streamdown, with two extensions:
  *
- * 1. Clickable chips — links using the custom `trade:` / `setup:` / `day:`
- *    schemes render as <AiChip> instead of anchors (see ai-chips.tsx). Ordinary
- *    links fall through to Streamdown's default safe-link handling.
+ * 1. Clickable chips — links pointing at our in-app destinations
+ *    (/trade-history?tradeId=, /journal?focusDate=, /strategies?setup=) render as
+ *    <AiChip> instead of plain anchors. We use real relative URLs rather than a
+ *    custom `trade:` scheme because Streamdown runs rehype-sanitize, which strips
+ *    links with unknown protocols (they'd render as "[blocked]"). Relative paths
+ *    always survive.
  *
  * 2. Follow-up actions — the model ends some answers with a single line:
  *      ::actions:: First | Second | Third
@@ -34,26 +37,23 @@ export function stripActions(content: string): string {
   return content.replace(ACTIONS_RE, "").replace(/\n{3,}$/, "\n").trimEnd();
 }
 
-// Preserve our custom schemes through react-markdown's URL sanitizer (its
-// default transform would blank out non-http(s) hrefs like `trade:...`).
-function urlTransform(url: string): string {
-  if (/^(trade|setup|day):/i.test(url)) return url;
-  // Fall back to a conservative allow-list for everything else.
-  if (/^(https?:|mailto:|#|\/)/i.test(url)) return url;
-  return "";
+function linkLabel(children: React.ReactNode, fallback: string): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(String).join("");
+  return String(children ?? fallback);
 }
 
 const components: Components = {
   a({ href, children, ...props }) {
     const chip = parseChipHref(href);
     if (chip) {
-      const label =
-        typeof children === "string"
-          ? children
-          : Array.isArray(children)
-            ? children.join("")
-            : String(children ?? chip.value);
-      return <AiChip scheme={chip.scheme} value={chip.value} label={label} />;
+      return (
+        <AiChip
+          scheme={chip.scheme}
+          href={chip.href}
+          label={linkLabel(children, chip.href)}
+        />
+      );
     }
     return (
       <a
@@ -81,8 +81,7 @@ export function AiMarkdown({
       className="ai-markdown space-y-2"
       parseIncompleteMarkdown
       components={components}
-      urlTransform={urlTransform}
-      // Our chips handle navigation themselves; skip Streamdown's link-safety
+      // Our chips own their click handling; skip Streamdown's link-safety
       // interstitial which would otherwise wrap every link.
       linkSafety={{ enabled: false }}
       isAnimating={isStreaming}

@@ -8,31 +8,34 @@ import { cn } from "@/lib/utils";
 /**
  * Clickable reference chips emitted inline by the AI.
  *
- * The model writes markdown links with a custom scheme — `trade:`, `setup:`, or
- * `day:` — and `ai-markdown.tsx` routes any link whose href starts with one of
- * those schemes to <AiChip>. Each chip deep-links into the app:
- *   - trade:<uuid>     -> /trade-history?tradeId=<uuid>  (opens the trade panel)
- *   - day:<YYYY-MM-DD> -> /journal?focusDate=<date>      (auto-expands that day)
- *   - setup:<name>     -> /strategies                    (the setups list)
+ * The model writes ordinary markdown links pointing at REAL in-app destinations:
+ *   - /trade-history?tradeId=<uuid>  -> opens the trade detail panel
+ *   - /journal?focusDate=<YYYY-MM-DD> -> auto-expands that day
+ *   - /strategies?setup=<name>        -> the strategies list
+ *
+ * We use real relative URLs (not a custom `trade:` scheme) on purpose: Streamdown
+ * runs rehype-sanitize, which strips links with unknown protocols — relative
+ * paths always pass. `ai-markdown.tsx` matches these paths and renders <AiChip>,
+ * which does SPA navigation via the router (falling back to a normal link if JS
+ * never runs).
  */
 
 export type ChipScheme = "trade" | "setup" | "day";
 
-export function parseChipHref(
-  href: string | undefined,
-): { scheme: ChipScheme; value: string } | null {
+export interface ParsedChip {
+  scheme: ChipScheme;
+  /** The destination href (relative), used for navigation + <a> fallback. */
+  href: string;
+}
+
+/** Detect a chip link from its href. Returns null for ordinary links. */
+export function parseChipHref(href: string | undefined): ParsedChip | null {
   if (!href) return null;
-  const m = /^(trade|setup|day):(.*)$/i.exec(href);
-  if (!m) return null;
-  const scheme = m[1].toLowerCase() as ChipScheme;
-  // The model URL-encodes spaces in setup names; decode defensively.
-  let value = m[2];
-  try {
-    value = decodeURIComponent(value);
-  } catch {
-    /* leave as-is on malformed encoding */
-  }
-  return { scheme, value: value.trim() };
+  // Only intercept our own internal destinations.
+  if (/^\/trade-history\?.*\btradeId=/.test(href)) return { scheme: "trade", href };
+  if (/^\/journal\?.*\bfocusDate=/.test(href)) return { scheme: "day", href };
+  if (/^\/strategies(\?|$)/.test(href)) return { scheme: "setup", href };
+  return null;
 }
 
 const ICONS: Record<ChipScheme, typeof TrendingUp> = {
@@ -41,43 +44,43 @@ const ICONS: Record<ChipScheme, typeof TrendingUp> = {
   day: CalendarDays,
 };
 
+const TITLES: Record<ChipScheme, string> = {
+  trade: "View this trade",
+  day: "Open this day in your journal",
+  setup: "View your strategies",
+};
+
 export function AiChip({
   scheme,
-  value,
+  href,
   label,
 }: {
   scheme: ChipScheme;
-  value: string;
+  href: string;
   /** Visible text (the markdown link text). */
   label: string;
 }) {
   const router = useRouter();
 
-  const onClick = useCallback(() => {
-    if (scheme === "trade") {
-      router.push(`/trade-history?tradeId=${encodeURIComponent(value)}`);
-    } else if (scheme === "day") {
-      router.push(`/journal?focusDate=${encodeURIComponent(value)}`);
-    } else if (scheme === "setup") {
-      router.push("/strategies");
-    }
-  }, [router, scheme, value]);
+  const onClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Let modifier-clicks (open in new tab) behave normally.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      router.push(href);
+    },
+    [router, href],
+  );
 
   const Icon = ICONS[scheme];
 
   return (
-    <button
-      type="button"
+    <a
+      href={href}
       onClick={onClick}
-      title={
-        scheme === "trade"
-          ? "View this trade"
-          : scheme === "day"
-            ? "Open this day in your journal"
-            : "View your strategies"
-      }
+      title={TITLES[scheme]}
       className={cn(
-        "inline-flex max-w-full items-center gap-1 rounded-md align-baseline",
+        "inline-flex max-w-full items-center gap-1 rounded-md align-baseline no-underline",
         "border border-ai-soft-border bg-ai-soft-bg px-1.5 py-0.5",
         "text-[0.8em] font-medium leading-tight text-ai-accent",
         "transition-colors hover:border-ai-accent hover:bg-ai-glow",
@@ -86,6 +89,6 @@ export function AiChip({
     >
       <Icon className="h-3 w-3 shrink-0" />
       <span className="truncate">{label}</span>
-    </button>
+    </a>
   );
 }
