@@ -14,6 +14,7 @@ import type { CurveIntradayDay, JournalMessage, JournalTrade } from "../types";
 import { annotateTrade } from "../lib/journal-trade-tags";
 import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 import { useExpandedDay } from "../hooks/use-expanded-day";
+import { useCoachRead, useRefreshCoachRead } from "@/features/ai/hooks/use-coach-read";
 import { JournalCoachsRead } from "./journal-coachs-read";
 import { JournalDayStatStrip, type DayStat } from "./journal-day-stat-strip";
 import { JournalTradesTable, type TradeLineData } from "./journal-trades-table";
@@ -132,6 +133,13 @@ export function JournalDayCard({
 
   const net = day?.net_pnl ?? netPnl;
   const trades = day?.trades_count ?? tradeCount;
+
+  // Coach's Read: generate the day narrative once the card is expanded AND has
+  // trades (no point reading a zero-trade day). Cached server-side after first
+  // generation, so re-opening is instant.
+  const coachEnabled = expanded && trades > 0;
+  const coachRead = useCoachRead(accountId, date, coachEnabled);
+  const refreshCoach = useRefreshCoachRead(accountId);
   const wins = day?.win_count ?? winCount;
   const losses = day?.loss_count ?? lossCount;
   const hasTrades = trades > 0;
@@ -317,11 +325,16 @@ export function JournalDayCard({
             </div>
           ) : (
             <>
-              {/* Coach's Read — static shell; TODO(ai) wire the read/insight to a
-                  day-AI endpoint. "Continue with coach" opens the Partna AI dock
-                  scoped to this day. */}
+              {/* Coach's Read — an AI narrative of the day, generated on expand
+                  and cached server-side. "Continue with coach" opens the Partna
+                  AI dock scoped to this day for follow-up. */}
               <JournalCoachsRead
-                read="Coach's read isn't available yet — connect Partna AI to get a daily breakdown of what worked and where discipline slipped."
+                read={coachRead.data?.read ?? ""}
+                insight={coachRead.data?.insight || undefined}
+                isLoading={coachEnabled && coachRead.isLoading}
+                isError={coachRead.isError}
+                isRefreshing={refreshCoach.isPending}
+                onRefresh={trades > 0 ? () => refreshCoach.mutate(date) : undefined}
                 onContinue={() => onContinueCoach(date)}
               />
 

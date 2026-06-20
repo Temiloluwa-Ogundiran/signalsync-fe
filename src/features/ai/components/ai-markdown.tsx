@@ -67,6 +67,21 @@ export function stripActions(content: string): string {
     .trimEnd();
 }
 
+// While streaming, an unterminated ```chart fence (no closing ```) would render
+// its raw JSON as code until the block completes. Detect that trailing open
+// fence and swap it for a placeholder so the user sees "Building chart…" instead
+// of a wall of JSON.
+function hideStreamingChart(content: string): string {
+  const lastChart = content.lastIndexOf("```chart");
+  if (lastChart === -1) return content;
+  // Closing ``` count after the opener — 0 means the block is still streaming.
+  const closes = (content.slice(lastChart).match(/```/g)?.length ?? 0) - 1;
+  if (closes <= 0) {
+    return content.slice(0, lastChart).replace(/\n*$/, "") + "\n\n_📊 Building chart…_\n";
+  }
+  return content;
+}
+
 function linkLabel(children: React.ReactNode, fallback: string): string {
   if (typeof children === "string") return children;
   if (Array.isArray(children)) return children.map(String).join("");
@@ -136,6 +151,9 @@ export function AiMarkdown({
   content: string;
   isStreaming?: boolean;
 }) {
+  // While streaming, swap a not-yet-closed ```chart block for a "Building chart…"
+  // placeholder so the raw JSON spec never flashes as text.
+  const rendered = isStreaming ? hideStreamingChart(content) : content;
   return (
     <Streamdown
       className="ai-markdown space-y-2"
@@ -146,7 +164,7 @@ export function AiMarkdown({
       linkSafety={{ enabled: false }}
       isAnimating={isStreaming}
     >
-      {content}
+      {rendered}
     </Streamdown>
   );
 }

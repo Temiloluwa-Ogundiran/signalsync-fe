@@ -4,6 +4,7 @@ import type {
   AiSessionListResponse,
   AiSessionWithMessages,
   AiUsage,
+  CoachRead,
 } from "../types";
 
 export const aiApi = {
@@ -57,6 +58,19 @@ export const aiApi = {
 
   getUsage: async (token?: string): Promise<AiUsage> => {
     const { data } = await apiClient.get<AiUsage>("/ai/usage", withAuth(token));
+    return data;
+  },
+
+  getCoachRead: async (
+    accountId: string,
+    date: string,
+    options?: { refresh?: boolean },
+    token?: string,
+  ): Promise<CoachRead> => {
+    const { data } = await apiClient.get<CoachRead>("/ai/coach-read", {
+      ...withAuth(token),
+      params: { account_id: accountId, date, refresh: options?.refresh },
+    });
     return data;
   },
 };

@@ -45,6 +45,13 @@ export type SSEEvent =
   | { type: "done"; message_id: string }
   | { type: "error"; detail: string };
 
+export interface CoachRead {
+  trading_date: string;
+  read: string;
+  insight: string;
+  cached: boolean;
+}
+
 export interface AiUsage {
   credits_used: number;
   credits_limit: number;
