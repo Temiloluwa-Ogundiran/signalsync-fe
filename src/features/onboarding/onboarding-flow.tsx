@@ -165,8 +165,17 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         </div>
       </header>
 
-      {/* Body */}
-      <main className="relative z-10 flex flex-1 items-start justify-center px-5 pb-28 pt-6 sm:items-center sm:pt-0">
+      {/* Body. Welcome centers vertically on every size (no footer, short
+          content). Question steps stay top-aligned on mobile so long option
+          lists scroll from the top; they center only at sm+. */}
+      <main
+        className={cn(
+          "relative z-10 flex flex-1 justify-center px-5",
+          step === "welcome"
+            ? "items-center pb-28"
+            : "items-start pt-6 pb-28 sm:items-center sm:pt-0",
+        )}
+      >
         <div className="w-full max-w-xl">
           {step === "welcome" && (
             <div className="flex flex-col items-center text-center">
