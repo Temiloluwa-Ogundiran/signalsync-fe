@@ -182,7 +182,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
                 Welcome to TradePartna{firstName ? `, ${firstName}` : ""} 👋
               </h1>
               <p className="mt-3 max-w-md text-[15px] leading-relaxed text-text-secondary">
-                Your AI trading partner — journal every trade, uncover your
+                Your AI trading partner. Journal every trade, uncover your
                 patterns, and build the discipline that makes traders profitable.
               </p>
               {/* CTA lives inline on welcome (directly under the text), not in
