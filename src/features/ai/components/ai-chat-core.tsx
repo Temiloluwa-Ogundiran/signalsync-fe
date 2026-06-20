@@ -64,7 +64,7 @@ export function AiChatCore({
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-w-0 flex-col overflow-x-hidden">
       {error && (
         <div className="mx-3 mt-2 rounded-lg bg-danger-light border border-danger/20 px-3 py-2 text-xs text-danger flex items-center justify-between">
           <span>{error}</span>
@@ -78,7 +78,7 @@ export function AiChatCore({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
         {isEmpty ? (
           <AiGreeting
             firstName={firstName}

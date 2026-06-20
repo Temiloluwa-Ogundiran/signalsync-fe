@@ -4,7 +4,7 @@ export const metadata = { title: "Partna AI" };
 
 export default function AiPage() {
   return (
-    <div className="h-full">
+    <div className="h-full min-w-0 overflow-x-hidden">
       <AiChatPage />
     </div>
   );

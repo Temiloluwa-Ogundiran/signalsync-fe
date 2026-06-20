@@ -22,7 +22,7 @@ function ToolIndicator({ name }: { name: string }) {
 function MessageBubble({ msg }: { msg: StreamingMessage }) {
   const isUser = msg.role === "user";
   return (
-    <div className={cn("flex gap-3", isUser && "flex-row-reverse")}>
+    <div className={cn("flex min-w-0 gap-3", isUser && "flex-row-reverse")}>
       {!isUser && (
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/15 text-brand mt-0.5">
           <Sparkles className="h-3.5 w-3.5" />
@@ -30,7 +30,7 @@ function MessageBubble({ msg }: { msg: StreamingMessage }) {
       )}
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+          "max-w-[85%] min-w-0 break-words overflow-hidden rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
           isUser
             ? "bg-brand text-brand-foreground rounded-tr-sm"
             : "bg-card-bg border border-border-secondary/50 text-text-primary rounded-tl-sm",
@@ -60,7 +60,7 @@ export function AiMessageList({ messages, streamingTool }: AiMessageListProps) {
   }, [messages, streamingTool]);
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-3">
+    <div className="flex min-w-0 flex-col gap-4 px-4 py-3">
       {messages.map((msg) => (
         <MessageBubble key={msg.id} msg={msg} />
       ))}
