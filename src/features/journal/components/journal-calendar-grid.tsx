@@ -103,7 +103,7 @@ export function JournalCalendarGrid({
               onClick={() => onSelectDay(day)}
               style={pnl !== 0 ? heatStyle(pnl) : undefined}
               className={cn(
-                "group relative flex min-h-[4.4rem] sm:min-h-[5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary",
+                "group relative flex min-h-[4.4rem] sm:min-h-[5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary active:scale-[0.97]",
                 day === todayDay &&
                   "ring-2 ring-(--calendar-selected-ring) ring-offset-0",
               )}

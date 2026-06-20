@@ -19,7 +19,6 @@ import {
   type NavApp,
 } from "./nav-registry";
 import { ContextualNav } from "./nav-shared";
-import { AiNavSidebar } from "./ai-nav-sidebar";
 
 /** A single rail icon (tier 1) with hover tooltip + active violet treatment. */
 function RailIcon({
@@ -116,9 +115,13 @@ export function AppNav() {
   const sidebarWidth = isSettings
     ? "flex-1 lg:flex-none lg:w-[248px]"
     : "flex-1 lg:flex-none lg:w-[200px]";
-  const drawerWidth = isSettings
-    ? "lg:w-[312px]"
-    : "lg:w-[264px]";
+  // Partna AI has no tier-2 panel, so its column is just the icon rail (64px).
+  // On mobile we still let the drawer take the standard width for tappability.
+  const drawerWidth = activeApp.isAI
+    ? "lg:w-16"
+    : isSettings
+      ? "lg:w-[312px]"
+      : "lg:w-[264px]";
 
   return (
     <>
@@ -140,7 +143,7 @@ export function AppNav() {
           // mobile Safari's bottom toolbar (which 100vh ignores) so the pinned
           // Settings/Help icons aren't hidden. Width is viewport-relative.
           // At lg+: a static in-flow full-height column at the desktop width.
-          "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+          "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col overscroll-contain bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
           "w-[80%] max-w-[300px]",
           "lg:static lg:z-auto lg:h-screen lg:shadow-none lg:transition-none lg:max-w-none",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -176,7 +179,7 @@ export function AppNav() {
       <div className="flex min-h-0 flex-1">
         {/* TIER 1 — icon rail (slightly darkest tone) */}
         <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">
-          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto py-5">
+          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto overscroll-contain py-5">
             {topApps.map((app) => (
               <RailIcon
                 key={app.id}
@@ -205,24 +208,23 @@ export function AppNav() {
 
         {/* TIER 2 — contextual sidebar (clear tonal step lighter than the rail).
             A near-subliminal seam sharpens the boundary without reading as a line.
-            Partna AI hosts its session/history nav here instead of generic groups. */}
-        <aside
-          className={cn(
-            "relative flex h-full shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans",
-            sidebarWidth,
-          )}
-        >
-          {activeApp.isAI ? (
-            <AiNavSidebar app={activeApp} apps={topApps} />
-          ) : (
+            Partna AI is the exception: it has NO tier-2 here — its history lives
+            in the full-screen /ai page — so the AI app shows the rail only. */}
+        {!activeApp.isAI ? (
+          <aside
+            className={cn(
+              "relative flex h-full shrink-0 flex-col border-l border-nav-seam bg-nav-sidebar-bg font-sans",
+              sidebarWidth,
+            )}
+          >
             <ContextualNav
               app={activeApp}
               apps={topApps}
               pathname={pathname}
               footer={renderAppFooter(activeApp)}
             />
-          )}
-        </aside>
+          </aside>
+        ) : null}
       </div>
       </div>
     </>

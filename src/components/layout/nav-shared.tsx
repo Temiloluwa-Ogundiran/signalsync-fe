@@ -198,7 +198,7 @@ export function ContextualNav({
 }) {
   return (
     <>
-      <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
+      <nav className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-3">
         {/* Standalone apps (Settings) are a context you enter/exit → back header.
             Main apps get the switcher to hop between them. */}
         {app.standalone ? (

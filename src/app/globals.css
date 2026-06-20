@@ -712,6 +712,52 @@ body {
   html {
     @apply font-sans;
   }
+
+  /* ── Mobile tap feedback ──────────────────────────────────────────────────
+     On touch devices `hover:` never fires, so any element styled with only a
+     hover state gives no feedback on tap. Most of the app uses hover-only, so
+     we add a subtle universal active-press feedback for interactive elements
+     and remove the inconsistent native tap-highlight flash. Elements with their
+     own richer active: styles still win (this is just a baseline). */
+  button,
+  a,
+  summary,
+  label,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  .cursor-pointer {
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    button:active,
+    a:active,
+    [role="button"]:active,
+    [role="tab"]:active,
+    [role="menuitem"]:active,
+    .cursor-pointer:active {
+      opacity: 0.6;
+      transition: opacity 0.05s ease-out;
+    }
+    /* Don't dim disabled controls. */
+    button:disabled:active,
+    [aria-disabled="true"]:active {
+      opacity: inherit;
+    }
+  }
+
+  /* ── iOS zoom-on-focus fix ────────────────────────────────────────────────
+     Mobile Safari auto-zooms when focusing a form control whose font-size is
+     under 16px (our inputs use text-sm = 14px). Force ≥16px on touch devices
+     only — desktop keeps its smaller type. We intentionally do NOT disable
+     pinch-zoom via the viewport meta (that's an accessibility regression). */
+  @media (hover: none) and (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
 }
 
 /* ===== Partna AI trigger ("Ask Partna AI") =====

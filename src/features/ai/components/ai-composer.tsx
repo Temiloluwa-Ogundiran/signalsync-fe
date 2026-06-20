@@ -89,9 +89,9 @@ export function AiComposer({
             disabled={!canSend}
             aria-label="Send message"
             className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-colors",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-transform",
               canSend
-                ? "bg-ai-accent text-white hover:bg-ai-accent-bright"
+                ? "bg-ai-accent text-white hover:bg-ai-accent-bright active:scale-90"
                 : "bg-bg-tertiary text-text-tertiary cursor-not-allowed",
             )}
           >
