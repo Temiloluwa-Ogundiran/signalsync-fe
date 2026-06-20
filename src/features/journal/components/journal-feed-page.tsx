@@ -226,10 +226,17 @@ export function JournalFeedPage() {
   const [focus, setFocus] = useState<{ date: string; nonce: number } | null>(
     null,
   );
+  // Focus = expand AND scroll to / flash the day's session note. Use ONLY for
+  // the explicit "Write" intent, not for plain view/expand.
   const requestFocus = (date: string) => {
     setExpandedDate(date);
     setFocus((prev) => ({ date, nonce: (prev?.nonce ?? 0) + 1 }));
   };
+
+  // Expand a day to view it (calendar-day click) WITHOUT jumping to the note —
+  // it just opens the dropdown in place. (Bumping the focus nonce here is what
+  // made viewing a day scroll the page down to the note editor.)
+  const expandDay = (date: string) => setExpandedDate(date);
 
   // Deep-link: ?focusDate=YYYY-MM-DD (from trade history / trade form / day modal)
   // expands and focuses that day's note, then strips the param.
@@ -248,7 +255,8 @@ export function JournalFeedPage() {
 
   const onSelectCalendarDay = (day: number) => {
     setSelectedDay(day);
-    requestFocus(formatDateParam(new Date(calYear, calMonth, day)));
+    // View intent: expand the day's card in place, don't scroll to its note.
+    expandDay(formatDateParam(new Date(calYear, calMonth, day)));
   };
 
   // "Write" expands the day's card and focuses the inline session note.
