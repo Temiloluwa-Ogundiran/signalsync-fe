@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppLoader } from "@/components/app-loader";
 import { toast } from "sonner";
@@ -124,13 +124,53 @@ export function JournalTradeHistoryPage() {
     [tradeHistoryQuery.data],
   );
 
-  // Trade-detail side panel: track the open trade by id and resolve its (fresh)
-  // row from `rows` so the panel reflects post-mutation data.
-  const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
+  // Trade-detail side panel. The open trade can come from two places:
+  //   - a row click (local state), or
+  //   - a deep-link from the AI copilot: /trade-history?tradeId=<uuid>.
+  // Derive the effective id from both so the URL drives the panel without a
+  // setState-in-effect. A local click takes precedence over the param.
+  const [clickedTradeId, setClickedTradeId] = useState<string | null>(null);
+  const deepLinkTradeId = searchParams.get("tradeId");
+  const selectedTradeId = clickedTradeId ?? deepLinkTradeId;
+  const setSelectedTradeId = setClickedTradeId;
+
   const selectedTrade = useMemo(
     () => rows.find((r) => r.id === selectedTradeId) ?? null,
     [rows, selectedTradeId],
   );
+
+  // The target trade may live on a later page (history is paginated, recent
+  // first). While we have a selection that isn't loaded yet, keep pulling pages
+  // until it surfaces or we run out — AI-referenced trades are usually recent,
+  // so this converges in a page or two.
+  const selectionLoaded = !selectedTradeId || !!selectedTrade;
+  useEffect(() => {
+    if (
+      selectedTradeId &&
+      !selectionLoaded &&
+      tradeHistoryQuery.hasNextPage &&
+      !tradeHistoryQuery.isFetchingNextPage
+    ) {
+      void tradeHistoryQuery.fetchNextPage();
+    }
+  }, [
+    selectedTradeId,
+    selectionLoaded,
+    tradeHistoryQuery.hasNextPage,
+    tradeHistoryQuery.isFetchingNextPage,
+    tradeHistoryQuery,
+  ]);
+
+  const closeTradePanel = () => {
+    setSelectedTradeId(null);
+    // Drop ?tradeId from the URL so a refresh / back doesn't re-open the panel.
+    if (searchParams.get("tradeId")) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("tradeId");
+      const q = params.toString();
+      router.replace(q ? `/trade-history?${q}` : "/trade-history");
+    }
+  };
 
   // Journaling lives on the Day Journal feed now — jump there and focus the
   // day's session note via ?focusDate.
@@ -195,11 +235,18 @@ export function JournalTradeHistoryPage() {
         />
       )}
 
+      {/* Deep-linked trade still loading from a later page. */}
+      {selectedTradeId && !selectionLoaded && (
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full border border-border-secondary/60 bg-card-bg px-3 py-1.5 text-xs text-text-secondary shadow-sm">
+          Finding trade…
+        </div>
+      )}
+
       <TradeDetailPanel
         trade={selectedTrade}
         accountId={activeAccountId || ""}
         open={!!selectedTrade}
-        onClose={() => setSelectedTradeId(null)}
+        onClose={closeTradePanel}
       />
     </div>
   );

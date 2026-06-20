@@ -86,7 +86,12 @@ export function AiChatCore({
             onPromptClick={handleSend}
           />
         ) : (
-          <AiMessageList messages={messages} streamingTool={streamingTool} />
+          <AiMessageList
+            messages={messages}
+            streamingTool={streamingTool}
+            onAction={handleSend}
+            isStreaming={isStreaming}
+          />
         )}
       </div>
 

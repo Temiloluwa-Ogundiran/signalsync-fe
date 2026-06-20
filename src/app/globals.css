@@ -2,6 +2,10 @@
 @import "../../node_modules/tw-animate-css/dist/tw-animate.css";
 @import "../../node_modules/shadcn/dist/tailwind.css";
 
+/* Streamdown (AI markdown renderer) — let Tailwind scan its classes. Path is
+   relative from this file (src/app/) to the repo node_modules (two levels up). */
+@source "../../node_modules/streamdown/dist/*.js";
+
 @custom-variant dark (&:is(.dark *));
 
 /* ===== Light Theme (default) ===== */
