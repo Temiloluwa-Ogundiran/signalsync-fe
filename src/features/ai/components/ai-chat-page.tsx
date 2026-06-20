@@ -13,6 +13,7 @@ import {
   useDeleteAiSession,
 } from "../hooks/use-ai-sessions";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import { cn } from "@/lib/utils";
 
 /**
  * Full-screen Partna AI surface. History lives IN this page now (not the global
@@ -154,22 +155,29 @@ export function AiChatPage() {
         </div>
       </div>
 
-      {/* Mobile history drawer + backdrop (lg:hidden). */}
-      {historyOpen ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close history"
-            onClick={() => setHistoryOpen(false)}
-            className="fixed inset-0 z-nav-backdrop touch-none bg-black/60 lg:hidden"
-          />
-          {/* AiSessionSidebar provides the "History" + "New chat" header; tap the
-              backdrop (or pick/start a chat) to close. */}
-          <aside className="fixed inset-y-0 left-0 z-nav-drawer flex w-[80%] max-w-[300px] flex-col overscroll-contain bg-bg-secondary shadow-2xl lg:hidden">
-            {historyPane}
-          </aside>
-        </>
-      ) : null}
+      {/* Mobile history drawer + backdrop (lg:hidden). Always mounted and
+          animated via transitions (slide + fade) so it opens/closes smoothly
+          instead of popping in. */}
+      <button
+        type="button"
+        aria-label="Close history"
+        onClick={() => setHistoryOpen(false)}
+        tabIndex={historyOpen ? 0 : -1}
+        className={cn(
+          "fixed inset-0 z-nav-backdrop touch-none bg-black/60 transition-opacity duration-200 lg:hidden",
+          historyOpen ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+      {/* AiSessionSidebar provides the "History" + "New chat" header; tap the
+          backdrop (or pick/start a chat) to close. */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-nav-drawer flex w-[80%] max-w-[300px] flex-col overscroll-contain bg-bg-secondary shadow-2xl transition-transform duration-200 ease-out lg:hidden",
+          historyOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        {historyPane}
+      </aside>
     </div>
   );
 }

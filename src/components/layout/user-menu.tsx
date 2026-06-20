@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { ThemeSegmentedControl } from "./theme-segmented-control";
 
 export function UserMenu() {
@@ -26,7 +27,14 @@ export function UserMenu() {
         <button
           type="button"
           aria-label="Account menu"
-          className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-tertiary ring-1 ring-border-secondary/60 transition-opacity hover:opacity-90 cursor-pointer"
+          className={cn(
+            "relative flex size-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden",
+            avatarUrl
+              ? // Photo: keep a filled circle the image fills.
+                "rounded-full bg-bg-tertiary ring-1 ring-border-secondary/60 transition-opacity hover:opacity-90"
+              : // Icon fallback: match the notification bell — bordered, no fill.
+                "rounded-[10px] border border-border-secondary bg-chrome-bar-bg text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary",
+          )}
         >
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -40,7 +48,7 @@ export function UserMenu() {
               icon={User03Icon}
               size={20}
               strokeWidth={1.8}
-              className="text-text-secondary"
+              className="text-current"
             />
           )}
         </button>

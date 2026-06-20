@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "./user-menu";
 import { NotificationBell } from "./notification-bell";
 import { useNavUiStore } from "./nav-ui-store";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const openAi = useAiDockStore((s) => s.open);
@@ -41,11 +42,16 @@ export function Header() {
           </button>
         )}
 
-        {/* Brand — owns the logo now (independent of nav column width). */}
+        {/* Brand — always on desktop. On mobile it's hidden where the hamburger
+            takes the left slot, but shown on the AI page (no hamburger there, so
+            the space is free). */}
         <Link
           href="/dashboard"
           aria-label="TradePartna home"
-          className="flex shrink-0 items-center"
+          className={cn(
+            "shrink-0 items-center lg:flex",
+            isAiPage ? "flex" : "hidden",
+          )}
         >
           {/* Light vs dark wordmark — toggled by `.dark` on <html>, no flash. */}
           <Image
