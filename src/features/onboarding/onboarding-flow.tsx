@@ -10,7 +10,7 @@ import {
   Notebook01Icon,
   Analytics01Icon,
   AiMagicIcon,
-  SecurityCheckIcon,
+  TestTubeIcon,
   ChampionIcon,
   GoogleIcon,
   NewTwitterIcon,
@@ -45,8 +45,8 @@ const GOAL: Option[] = [
   { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: Notebook01Icon, tint: "bg-blue-500/12 text-blue-600" },
   { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: Analytics01Icon, tint: "bg-violet-500/12 text-violet-600" },
   { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from Partna AI", icon: AiMagicIcon, tint: "bg-ai-soft-bg text-ai-accent" },
-  { id: "discipline", label: "Build discipline & consistency", hint: "Stick to my rules", icon: SecurityCheckIcon, tint: "bg-emerald-500/12 text-emerald-600" },
-  { id: "funded", label: "Pass / track a funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-amber-500/15 text-amber-600" },
+  { id: "backtest", label: "Backtest strategies", hint: "Test ideas against historical data", icon: TestTubeIcon, tint: "bg-emerald-500/12 text-emerald-600" },
+  { id: "funded", label: "Track a prop-firm funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-amber-500/15 text-amber-600" },
 ];
 
 const REFERRAL: Option[] = [
@@ -67,8 +67,13 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
 
   const [stepIndex, setStepIndex] = useState(0);
   const [experience, setExperience] = useState<OptionId | null>(null);
-  const [goal, setGoal] = useState<OptionId | null>(null);
+  const [goals, setGoals] = useState<OptionId[]>([]); // multi-select
   const [referral, setReferral] = useState<OptionId | null>(null);
+
+  const toggleGoal = (id: OptionId) =>
+    setGoals((prev) =>
+      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
+    );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,7 +87,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
   const canContinue =
     step === "welcome" ||
     (step === "experience" && !!experience) ||
-    (step === "goal" && !!goal) ||
+    (step === "goal" && goals.length > 0) ||
     (step === "referral" && !!referral);
 
   const isLast = step === "referral";
@@ -96,7 +101,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
       await completeOnboarding(
         {
           trading_experience: experience ?? undefined,
-          primary_goal: goal ?? undefined,
+          primary_goal: goals.length ? goals.join(",") : undefined,
           referral_source: referral ?? undefined,
         },
         session?.accessToken,
@@ -167,8 +172,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               </h1>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-text-secondary">
                 A couple of quick questions so we can build the right experience
-                for traders like you. Takes under a minute — your demo data is
-                already waiting on the other side.
+                for traders like you. Takes under a minute.
               </p>
             </div>
           )}
@@ -186,10 +190,11 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
           {step === "goal" && (
             <Question
               title="What do you want from TradePartna?"
-              subtitle="Pick the one that matters most right now."
+              subtitle="Select all that apply."
               options={GOAL}
-              selected={goal}
-              onSelect={setGoal}
+              selectedIds={goals}
+              onToggle={toggleGoal}
+              multi
             />
           )}
 
@@ -266,19 +271,22 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
   );
 }
 
-function Question({
-  title,
-  subtitle,
-  options,
-  selected,
-  onSelect,
-}: {
+type QuestionProps = {
   title: string;
   subtitle?: string;
   options: Option[];
-  selected: OptionId | null;
-  onSelect: (id: OptionId) => void;
-}) {
+} & (
+  | { multi?: false; selected: OptionId | null; onSelect: (id: OptionId) => void }
+  | { multi: true; selectedIds: OptionId[]; onToggle: (id: OptionId) => void }
+);
+
+function Question(props: QuestionProps) {
+  const { title, subtitle, options } = props;
+  const isOn = (id: OptionId) =>
+    props.multi ? props.selectedIds.includes(id) : props.selected === id;
+  const handle = (id: OptionId) =>
+    props.multi ? props.onToggle(id) : props.onSelect(id);
+
   return (
     <div>
       <h2 className="text-center font-heading text-2xl font-bold text-text-primary">
@@ -289,12 +297,12 @@ function Question({
       )}
       <div className="mt-7 flex flex-col gap-2.5">
         {options.map((opt) => {
-          const isSelected = selected === opt.id;
+          const isSelected = isOn(opt.id);
           return (
             <button
               key={opt.id}
               type="button"
-              onClick={() => onSelect(opt.id)}
+              onClick={() => handle(opt.id)}
               className={cn(
                 "flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-all active:scale-[0.99]",
                 isSelected
@@ -327,7 +335,8 @@ function Question({
               </span>
               <span
                 className={cn(
-                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                  "flex h-5 w-5 shrink-0 items-center justify-center border transition-colors",
+                  props.multi ? "rounded-md" : "rounded-full",
                   isSelected
                     ? "border-ai-accent bg-ai-accent text-white"
                     : "border-border-secondary",
