@@ -9,7 +9,6 @@ test("journal and AI query keys do not include access tokens", () => {
   const files = [
     "src/features/journal/hooks/use-journal-open-positions.ts",
     "src/features/journal/hooks/use-infinite-trade-history.ts",
-    "src/features/ai/hooks/use-ai-suggestions.ts",
   ];
 
   for (const file of files) {

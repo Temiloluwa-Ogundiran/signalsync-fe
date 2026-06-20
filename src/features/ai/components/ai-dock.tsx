@@ -115,14 +115,6 @@ export function AiDock() {
 
   return (
     <>
-      {/* Backdrop (subtle) — mobile only. On desktop it's display:none, but we
-          also disable pointer events as a guard so it can never intercept
-          clicks meant for content behind it. */}
-      <div
-        className="fixed inset-0 z-40 bg-overlay backdrop-blur-[1px] md:hidden md:pointer-events-none"
-        onClick={close}
-      />
-
       {/* Dock panel */}
       <div
         ref={panelRef}
