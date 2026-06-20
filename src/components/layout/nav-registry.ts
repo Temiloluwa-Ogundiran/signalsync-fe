@@ -20,6 +20,7 @@ import {
   SecurityCheckIcon,
   CreditCardIcon,
   Tag01Icon,
+  Exchange01Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -139,6 +140,22 @@ export function buildNavRegistry(actionFns: {
               route: "/reports",
               comingSoon: true,
             },
+          ],
+        },
+      ],
+    },
+    {
+      id: "copy-trading",
+      name: "Copy Trading",
+      icon: Exchange01Icon,
+      route: "/copy-trading",
+      groups: [
+        {
+          items: [
+            { icon: Home04Icon, label: "Overview", route: "/copy-trading" },
+            { icon: StrategyIcon, label: "Routes", route: "/copy-trading/routes" },
+            { icon: Wallet01Icon, label: "Account Controls", route: "/copy-trading/accounts" },
+            { icon: Clock01Icon, label: "Activity", route: "/copy-trading/activity" },
           ],
         },
       ],

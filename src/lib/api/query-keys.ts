@@ -48,6 +48,13 @@ export const queryKeys = {
     detail: (accountId: string) => ["trading-account", accountId] as const,
   },
 
+  copyTrading: {
+    settings: () => ["copy-trading", "settings"] as const,
+    routes: () => ["copy-trading", "routes"] as const,
+    policies: () => ["copy-trading", "account-policies"] as const,
+    activity: () => ["copy-trading", "activity"] as const,
+  },
+
   users: {
     profile: (userId: string) => ["user-profile", userId] as const,
   },
