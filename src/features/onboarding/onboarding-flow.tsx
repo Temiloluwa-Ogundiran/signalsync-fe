@@ -126,9 +126,21 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-auth-bg">
+    <div className="relative flex min-h-screen flex-col bg-auth-bg">
+      {/* Soft brand gradient bleeding from the top — only on the welcome screen,
+          where it adds warmth without distracting from the question lists. */}
+      {step === "welcome" && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[55vh]"
+          style={{
+            background:
+              "radial-gradient(120% 75% at 50% 0%, color-mix(in srgb, var(--color-ai-accent) 28%, transparent) 0%, transparent 60%)",
+          }}
+        />
+      )}
       {/* Top bar: logo + slim progress */}
-      <header className="flex items-center gap-4 px-5 py-4 sm:px-8">
+      <header className="relative z-10 flex items-center gap-4 px-5 py-4 sm:px-8">
         {/* Dark wordmark on light, white wordmark on dark — same swap the app
             header uses. Plain <img> (SVGs don't need next/image). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -154,7 +166,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
       </header>
 
       {/* Body */}
-      <main className="flex flex-1 items-start justify-center px-5 pb-28 pt-6 sm:items-center sm:pt-0">
+      <main className="relative z-10 flex flex-1 items-start justify-center px-5 pb-28 pt-6 sm:items-center sm:pt-0">
         <div className="w-full max-w-xl">
           {step === "welcome" && (
             <div className="flex flex-col items-center text-center">
@@ -168,9 +180,9 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               <h1 className="font-heading text-3xl font-bold text-text-primary">
                 Welcome to TradePartna{firstName ? `, ${firstName}` : ""} 👋
               </h1>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-text-secondary">
-                A couple of quick questions so we can build the right experience
-                for traders like you. Takes under a minute.
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-text-secondary">
+                Your AI trading partner — journal every trade, uncover your
+                patterns, and build the discipline that makes traders profitable.
               </p>
               {/* CTA lives inline on welcome (directly under the text), not in
                   the fixed footer. */}
