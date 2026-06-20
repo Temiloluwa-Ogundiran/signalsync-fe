@@ -124,13 +124,19 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
     <div className="flex min-h-screen flex-col bg-auth-bg">
       {/* Top bar: logo + slim progress */}
       <header className="flex items-center gap-4 px-5 py-4 sm:px-8">
-        {/* Plain <img> — SVG logos don't need next/image optimization and it
-            avoids the broken-image issue on this standalone route. */}
+        {/* Dark wordmark on light, white wordmark on dark — same swap the app
+            header uses. Plain <img> (SVGs don't need next/image). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/tradpartnalight.svg"
+          alt="TradePartna"
+          className="h-5 w-auto dark:hidden"
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/brand/tradepartna-logo-full.svg"
           alt="TradePartna"
-          className="h-5 w-auto"
+          className="hidden h-5 w-auto dark:block"
         />
         <div className="ml-2 hidden flex-1 sm:block">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-secondary/50">
