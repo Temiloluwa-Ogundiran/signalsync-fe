@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { ArrowLeft, ArrowRight, Check, Loader2, LogOut } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 import {
@@ -139,22 +139,32 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
           }}
         />
       )}
-      {/* Top bar: centered logo (progress lives at the bottom). */}
-      <header className="relative z-10 flex items-center justify-center px-5 py-4 sm:px-8">
-        {/* Dark wordmark on light, white wordmark on dark — same swap the app
-            header uses. Plain <img> (SVGs don't need next/image). */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/tradpartnalight.svg"
-          alt="TradePartna"
-          className="h-5 w-auto dark:hidden"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/tradepartna-logo-full.svg"
-          alt="TradePartna"
-          className="hidden h-5 w-auto dark:block"
-        />
+      {/* Top bar: logo left, logout right (progress lives at the bottom). */}
+      <header className="relative z-10 flex items-center justify-between px-5 py-4 sm:px-8">
+        <span className="flex items-center">
+          {/* Dark wordmark on light, white wordmark on dark — same swap the app
+              header uses. Plain <img> (SVGs don't need next/image). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/tradpartnalight.svg"
+            alt="TradePartna"
+            className="h-5 w-auto dark:hidden"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/tradepartna-logo-full.svg"
+            alt="TradePartna"
+            className="hidden h-5 w-auto dark:block"
+          />
+        </span>
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/login", redirect: true })}
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
       </header>
 
       {/* Body. Welcome centers vertically on every size (no footer, short
