@@ -217,8 +217,15 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
             {error}
           </p>
         )}
-        <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
-          {stepIndex > 0 ? (
+        <div
+          className={cn(
+            "mx-auto flex max-w-xl items-center gap-3",
+            // Welcome has no Back button → center the single CTA. Other steps
+            // split Back (left) and Continue (right).
+            step === "welcome" ? "justify-center" : "justify-between",
+          )}
+        >
+          {stepIndex > 0 && (
             <button
               type="button"
               onClick={goBack}
@@ -228,8 +235,6 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
-          ) : (
-            <span />
           )}
 
           <button
