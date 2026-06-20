@@ -119,7 +119,7 @@ export function AiDock() {
       <div
         ref={panelRef}
         className={cn(
-          "fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
+          "fixed right-0 top-0 z-modal flex h-full w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
           "sm:w-[420px]",
         )}
       >

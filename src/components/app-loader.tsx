@@ -18,7 +18,7 @@ export function AppLoader({
     <div
       className={
         fullScreen
-          ? "fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-bg-primary font-sans"
+          ? "fixed inset-0 z-loader flex flex-col items-center justify-center gap-5 bg-bg-primary font-sans"
           : "relative flex min-h-[50vh] w-full flex-col items-center justify-center gap-5 font-sans"
       }
     >

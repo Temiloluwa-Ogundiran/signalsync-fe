@@ -576,11 +576,38 @@
   --spacing-rail: 31%; /* journal right rail (trades panel) width */
   --spacing-chrome: 26px; /* header/chrome horizontal padding */
 
-  /* Z-index scale — replaces ad-hoc 30/40/50 magic */
-  --z-header: 30;
-  --z-overlay: 40;
-  --z-drawer: 50;
-  --z-tooltip: 60; /* hover tooltips must sit above header/drawer/sidebar */
+  /* ── Z-index ladder ───────────────────────────────────────────────────────
+     One source of truth. Higher number = paints on top. Every layer below has
+     a clear job; use the token, never a raw z-[n], so the order can't drift.
+
+       base ........ page content (no z-index; default layer 0)
+       header (30) . the sticky top chrome bar
+       nav-backdrop (40) / nav-drawer (50)
+                     the mobile off-canvas nav + its dimming backdrop. The
+                     drawer must beat the header so it covers the whole screen.
+       modal-backdrop (60) / modal (70)
+                     dialogs, sheets, the AI dock, the connect-account modal,
+                     popovers. Must sit ABOVE the nav drawer.
+       toast (80) ... transient notifications
+       tooltip (90) . hover tooltips/popups — always on top of everything
+       loader (100) . full-screen app boot loader, above all
+
+     NOTE: Tailwind v4 only turns a theme var into a `z-<name>` utility when it
+     is in the `--z-index-*` namespace. The old `--z-*` names generated NO
+     utility at all (so `z-drawer`/`z-overlay` were silently no-ops).
+     ────────────────────────────────────────────────────────────────────────*/
+  --z-index-header: 30;
+  --z-index-nav-backdrop: 40;
+  --z-index-nav-drawer: 50;
+  --z-index-modal-backdrop: 60;
+  --z-index-modal: 70;
+  --z-index-toast: 80;
+  --z-index-tooltip: 90;
+  --z-index-loader: 100;
+
+  /* Back-compat: the old utility names used across the app still resolve. */
+  --z-index-overlay: 40;
+  --z-index-drawer: 50;
 }
 
 /* ===== Global resets ===== */

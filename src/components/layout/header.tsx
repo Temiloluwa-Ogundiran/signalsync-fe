@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Sparkles } from "lucide-react";
+import { Menu, Sparkles, X } from "lucide-react";
 import { useAiDockStore } from "@/features/ai/store/ai-dock-store";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,26 @@ import { useNavUiStore } from "./nav-ui-store";
 
 export function Header() {
   const openAi = useAiDockStore((s) => s.open);
-  const openMobileNav = useNavUiStore((s) => s.openMobileNav);
+  const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
+  const toggleMobileNav = useNavUiStore((s) => s.toggleMobileNav);
 
   return (
     <header className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome font-sans border-b border-nav-hairline">
       <div className="flex w-full min-w-0 items-center gap-3">
         <button
           type="button"
-          onClick={openMobileNav}
-          aria-label="Open menu"
-          className="-ml-1 shrink-0 rounded-lg p-2 text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary lg:hidden"
+          onClick={toggleMobileNav}
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileNavOpen}
+          // z-tooltip keeps the toggle above the open drawer's backdrop so it
+          // stays tappable to close the drawer.
+          className="relative z-tooltip -ml-1 shrink-0 rounded-lg p-2 text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary lg:hidden"
         >
-          <Menu className="h-6 w-6" />
+          {mobileNavOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </button>
 
         <div className="min-w-0 flex-1" />

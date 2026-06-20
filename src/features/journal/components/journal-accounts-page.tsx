@@ -78,7 +78,7 @@ function IconAction({
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-overlay mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border-secondary bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/btn:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 z-tooltip mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border-secondary bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/btn:opacity-100"
       >
         {label}
       </span>

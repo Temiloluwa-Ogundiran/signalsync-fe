@@ -61,7 +61,7 @@ function RailIcon({
       {/* Tooltip */}
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-full top-1/2 z-overlay ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
       >
         {app.name}
       </span>
@@ -128,20 +128,19 @@ export function AppNav() {
           type="button"
           aria-label="Close menu"
           onClick={closeMobileNav}
-          className="fixed inset-0 z-overlay touch-none bg-black/60 lg:hidden"
+          className="fixed inset-x-0 bottom-0 top-header z-nav-backdrop touch-none bg-black/60 lg:hidden"
         />
       ) : null}
 
       <div
         className={cn(
-          // Below lg: fixed off-canvas drawer that slides in from the left.
-          // Viewport-relative width so it fits the phone and leaves a sliver of
-          // backdrop; capped so it never gets absurdly wide on small tablets.
-          // At lg+: a static in-flow column at the exact desktop width.
-          // Use dvh (dynamic viewport height) below lg so the drawer doesn't run
-          // behind mobile Safari's bottom toolbar (which 100vh ignores) — that
-          // was hiding the pinned Settings/Help icons at the bottom of the rail.
-          "fixed inset-y-0 left-0 z-drawer flex h-[100dvh] shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+          // Below lg: fixed off-canvas drawer that slides in from the left and
+          // sits BELOW the real top header (which stays visible), so it starts at
+          // top:header-height and runs to the bottom. dvh keeps it clear of
+          // mobile Safari's bottom toolbar (which 100vh ignores) so the pinned
+          // Settings/Help icons aren't hidden. Width is viewport-relative.
+          // At lg+: a static in-flow full-height column at the desktop width.
+          "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
           "w-[80%] max-w-[300px]",
           "lg:static lg:z-auto lg:h-screen lg:shadow-none lg:transition-none lg:max-w-none",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -149,9 +148,9 @@ export function AppNav() {
         )}
       >
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
-          Bottom hairline matches the header's border so the horizontal line runs
-          unbroken from the left edge across into the header. */}
-      <div className="flex h-header shrink-0 items-center border-b border-nav-hairline px-4">
+          Desktop only: on mobile the real top header stays visible and the drawer
+          sits below it, so this redundant logo bar is hidden. */}
+      <div className="hidden h-header shrink-0 items-center border-b border-nav-hairline px-4 lg:flex">
         <Link href="/dashboard" aria-label="TradePartna home" className="flex">
           {/* Light vs dark logo — toggled by the `.dark` class on <html> so it
               swaps with no JS/hydration flash. Light logo has dark text. */}
@@ -294,7 +293,7 @@ function RailPinned({
       </a>
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-full top-1/2 z-overlay ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
       >
         {label}
       </span>

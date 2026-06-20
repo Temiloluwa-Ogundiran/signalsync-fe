@@ -134,7 +134,7 @@ function ConnectAccountFlow() {
     <DialogContent
       showCloseButton={false}
       overlayClassName="bg-[#F6F6F9] dark:bg-[#0B0B11]"
-      className="fixed inset-0 left-0 top-0 z-50 grid h-screen w-screen max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr] gap-0 rounded-none border-0 bg-[#F6F6F9] p-0 ring-0 sm:max-w-none dark:bg-[#0B0B11]"
+      className="fixed inset-0 left-0 top-0 z-modal grid h-screen w-screen max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr] gap-0 rounded-none border-0 bg-[#F6F6F9] p-0 ring-0 sm:max-w-none dark:bg-[#0B0B11]"
     >
       {/* Top bar: back + close */}
       <div className="flex items-center justify-between px-4 pt-4">

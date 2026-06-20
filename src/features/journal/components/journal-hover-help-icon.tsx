@@ -34,7 +34,7 @@ export function JournalHoverHelpIcon({
 
   return (
     <span
-      className="group relative z-tooltip inline-flex shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-(--calendar-selected-ring)"
+      className="group relative inline-flex shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-(--calendar-selected-ring)"
       tabIndex={0}
       aria-label={ariaLabel}
     >
