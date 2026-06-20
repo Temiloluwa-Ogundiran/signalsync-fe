@@ -1,8 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout";
 import { AppNav } from "@/components/layout/app-nav";
+import { useNavUiStore } from "@/components/layout/nav-ui-store";
 import { ConnectAccountModal } from "@/features/journal/components/connect-account-modal";
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
 import { DemoDataBanner } from "@/features/journal/components/demo-data-banner";
@@ -15,6 +17,9 @@ export default function DashboardShell({
 }) {
   // Sync the active account once on page load (the only auto-sync).
   useOnMountSync();
+  // While the off-canvas drawer is open, freeze the page scroller so the
+  // content behind the backdrop can't scroll on touch.
+  const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
 
   return (
     <AiDockProvider>
@@ -34,7 +39,12 @@ export default function DashboardShell({
             <Header />
           </Suspense>
 
-          <main className="scrollbar-thin min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <main
+            className={cn(
+              "scrollbar-thin min-w-0 flex-1 overflow-x-hidden",
+              mobileNavOpen ? "overflow-y-hidden" : "overflow-y-auto",
+            )}
+          >
             <DemoDataBanner />
             {children}
           </main>

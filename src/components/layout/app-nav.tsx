@@ -83,6 +83,7 @@ export function AppNav() {
 
   // Close the off-canvas drawer whenever the route changes (e.g. tapping a nav
   // link) so it never lingers open over the new page on small screens.
+  // (Background scroll is frozen by the shell, which owns the page scroller.)
   useEffect(() => {
     closeMobileNav();
   }, [pathname, closeMobileNav]);
@@ -108,9 +109,16 @@ export function AppNav() {
 
   // Settings has longer labels (e.g. "Custom Tags") — give its context a
   // slightly wider sidebar than the standard apps so labels don't truncate.
+  // Desktop (lg+) uses fixed widths; below lg the drawer is viewport-relative
+  // and the contextual sidebar flexes to fill it (so labels never clip).
+  // Full literal class strings only — Tailwind cannot see interpolated names.
   const isSettings = activeApp.id === "settings";
-  const sidebarWidth = isSettings ? "w-[248px]" : "w-[200px]";
-  const railPlusSidebarWidth = isSettings ? "w-[312px]" : "w-[264px]";
+  const sidebarWidth = isSettings
+    ? "flex-1 lg:flex-none lg:w-[248px]"
+    : "flex-1 lg:flex-none lg:w-[200px]";
+  const drawerWidth = isSettings
+    ? "lg:w-[312px]"
+    : "lg:w-[264px]";
 
   return (
     <>
@@ -120,18 +128,21 @@ export function AppNav() {
           type="button"
           aria-label="Close menu"
           onClick={closeMobileNav}
-          className="fixed inset-0 z-overlay bg-overlay lg:hidden"
+          className="fixed inset-0 z-overlay touch-none bg-overlay lg:hidden"
         />
       ) : null}
 
       <div
         className={cn(
           // Below lg: fixed off-canvas drawer that slides in from the left.
-          // At lg+: a static in-flow column (rail + contextual sidebar).
+          // Viewport-relative width so it fits the phone and leaves a sliver of
+          // backdrop; capped so it never gets absurdly wide on small tablets.
+          // At lg+: a static in-flow column at the exact desktop width.
           "fixed inset-y-0 left-0 z-drawer flex h-screen shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
-          "lg:static lg:z-auto lg:shadow-none lg:transition-none",
+          "w-[85vw] max-w-[340px]",
+          "lg:static lg:z-auto lg:shadow-none lg:transition-none lg:max-w-none",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          railPlusSidebarWidth,
+          drawerWidth,
         )}
       >
       {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
