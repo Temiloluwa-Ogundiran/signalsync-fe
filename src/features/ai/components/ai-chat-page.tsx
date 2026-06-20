@@ -108,18 +108,19 @@ export function AiChatPage() {
 
       {/* Chat column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar — account scope chip + mobile-only History toggle. */}
-        <div className="flex items-center justify-between gap-2 border-b border-border-secondary/40 px-4 py-2">
-          <button
-            type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary lg:hidden"
-          >
-            <History className="h-4 w-4" />
-            History
-          </button>
-
-          {accountLabel ? (
+        {/* Top bar — only rendered when it has content: the mobile History
+            toggle (hidden at lg+) and/or the account scope chip. Otherwise it
+            would be an empty bordered strip (a stray line) on desktop. */}
+        {accountLabel ? (
+          <div className="flex items-center justify-between gap-2 border-b border-border-secondary/40 px-4 py-2">
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary lg:hidden"
+            >
+              <History className="h-4 w-4" />
+              History
+            </button>
             <span className="ml-auto inline-flex items-center gap-1.5">
               <span className="text-[10px] font-medium uppercase tracking-wide text-text-secondary">
                 Scoped to
@@ -128,10 +129,20 @@ export function AiChatPage() {
                 {accountLabel}
               </span>
             </span>
-          ) : (
-            <span className="ml-auto" />
-          )}
-        </div>
+          </div>
+        ) : (
+          // No scope chip → only the mobile History toggle needs a bar.
+          <div className="flex items-center border-b border-border-secondary/40 px-4 py-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary"
+            >
+              <History className="h-4 w-4" />
+              History
+            </button>
+          </div>
+        )}
 
         <div className="min-h-0 flex-1">
           <AiChatCore

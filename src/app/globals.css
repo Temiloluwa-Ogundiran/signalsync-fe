@@ -746,17 +746,19 @@ body {
     }
   }
 
-  /* ── iOS zoom-on-focus fix ────────────────────────────────────────────────
-     Mobile Safari auto-zooms when focusing a form control whose font-size is
-     under 16px (our inputs use text-sm = 14px). Force ≥16px on touch devices
-     only — desktop keeps its smaller type. We intentionally do NOT disable
-     pinch-zoom via the viewport meta (that's an accessibility regression). */
-  @media (hover: none) and (pointer: coarse) {
-    input,
-    textarea,
-    select {
-      font-size: 16px;
-    }
+}
+
+/* ── iOS zoom-on-focus fix ──────────────────────────────────────────────────
+   Mobile Safari auto-zooms when focusing a form control whose font-size is
+   under 16px (our inputs use text-sm = 14px). Force ≥16px on touch devices.
+   This MUST sit OUTSIDE @layer so it beats Tailwind's `text-sm` utility (which
+   lives in the utilities layer and would otherwise win). Desktop keeps its
+   smaller type. Pinch-zoom is intentionally left enabled (a11y). */
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
 

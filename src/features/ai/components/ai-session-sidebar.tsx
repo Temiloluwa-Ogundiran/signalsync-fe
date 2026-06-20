@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { History, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AiSession } from "../types";
 
@@ -22,14 +22,18 @@ export function AiSessionSidebar({
 }: AiSessionSidebarProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border-secondary/40">
-        <span className="text-sm font-semibold text-text-primary">History</span>
+      <div className="flex flex-col gap-3 px-3 pt-3 pb-2 border-b border-border-secondary/40">
+        <div className="flex items-center gap-2 px-1">
+          <History className="h-4 w-4 text-text-tertiary" />
+          <span className="text-sm font-semibold text-text-primary">History</span>
+        </div>
+        {/* Prominent primary action — a filled brand pill, not a bare text link. */}
         <button
           type="button"
           onClick={onNew}
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand/10 transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-2.5 text-sm font-semibold text-brand-foreground shadow-sm transition-all hover:bg-brand-hover hover:shadow active:scale-[0.98]"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-4 w-4" />
           New chat
         </button>
       </div>

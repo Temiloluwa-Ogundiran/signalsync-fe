@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Settings, HelpCircle, Plus } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -125,8 +124,9 @@ export function AppNav() {
 
   return (
     <>
-      {/* Backdrop — only below lg, only while the drawer is open. */}
-      {mobileNavOpen ? (
+      {/* Backdrop — only below lg, only while the drawer is open. The AI app has
+          no tier-2, so it stays an inline rail on mobile (no drawer/backdrop). */}
+      {mobileNavOpen && !activeApp.isAI ? (
         <button
           type="button"
           aria-label="Close menu"
@@ -137,45 +137,25 @@ export function AppNav() {
 
       <div
         className={cn(
-          // Below lg: fixed off-canvas drawer that slides in from the left and
-          // sits BELOW the real top header (which stays visible), so it starts at
-          // top:header-height and runs to the bottom. dvh keeps it clear of
-          // mobile Safari's bottom toolbar (which 100vh ignores) so the pinned
-          // Settings/Help icons aren't hidden. Width is viewport-relative.
-          // At lg+: a static in-flow full-height column at the desktop width.
-          "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col overscroll-contain bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
-          "w-[80%] max-w-[300px]",
-          "lg:static lg:z-auto lg:h-screen lg:shadow-none lg:transition-none lg:max-w-none",
-          mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          drawerWidth,
+          activeApp.isAI
+            ? // Partna AI: rail-only, always an in-flow static column (even on
+              // mobile) — there's nothing to put in a drawer, so the rail just
+              // stays pinned and the hamburger is hidden (see Header).
+              "static flex h-full w-16 shrink-0 flex-col bg-nav-sidebar-bg"
+            : cn(
+                // Other apps — below lg: fixed off-canvas drawer below the header
+                // (dvh keeps the pinned icons clear of Safari's bottom toolbar).
+                // At lg+: a static in-flow full-height column at the desktop width.
+                "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col overscroll-contain bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+                "w-[80%] max-w-[300px]",
+                "lg:static lg:z-auto lg:h-full lg:shadow-none lg:transition-none lg:max-w-none",
+                mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+                drawerWidth,
+              ),
         )}
       >
-      {/* Brand bar — full logo, flush to the left edge, spanning rail + sidebar.
-          Desktop only: on mobile the real top header stays visible and the drawer
-          sits below it, so this redundant logo bar is hidden. */}
-      <div className="hidden h-header shrink-0 items-center border-b border-nav-hairline px-4 lg:flex">
-        <Link href="/dashboard" aria-label="TradePartna home" className="flex">
-          {/* Light vs dark logo — toggled by the `.dark` class on <html> so it
-              swaps with no JS/hydration flash. Light logo has dark text. */}
-          <Image
-            src="/brand/tradpartnalight.svg"
-            alt="TradePartna"
-            width={156}
-            height={20}
-            priority
-            className="h-5 w-auto dark:hidden"
-          />
-          <Image
-            src="/brand/tradepartna-logo-full.svg"
-            alt="TradePartna"
-            width={156}
-            height={20}
-            priority
-            className="hidden h-5 w-auto dark:block"
-          />
-        </Link>
-      </div>
-
+      {/* No brand bar here — the full-width Header owns the logo now, so the nav
+          column starts directly with the rail/sidebar below the header. */}
       <div className="flex min-h-0 flex-1">
         {/* TIER 1 — icon rail (slightly darkest tone) */}
         <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">

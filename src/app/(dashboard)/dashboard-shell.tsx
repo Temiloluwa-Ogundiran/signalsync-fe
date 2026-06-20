@@ -23,25 +23,28 @@ export default function DashboardShell({
 
   return (
     <AiDockProvider>
-      <div className="flex h-screen flex-row overflow-hidden bg-bg-primary">
-        {/* Two-tier icon rail + contextual sidebar (registry-driven). */}
-        <AppNav />
+      {/* Column layout: a full-width header on top (logo + global actions), then
+          a row of nav + content below. The header owns the logo so its size is
+          independent of the nav column width. */}
+      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary">
+        <Suspense
+          fallback={
+            <div
+              className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome"
+              aria-hidden
+            />
+          }
+        >
+          <Header />
+        </Suspense>
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-bg-canvas dark:bg-bg-primary">
-          <Suspense
-            fallback={
-              <div
-                className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome"
-                aria-hidden
-              />
-            }
-          >
-            <Header />
-          </Suspense>
+        <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
+          {/* Two-tier icon rail + contextual sidebar (registry-driven). */}
+          <AppNav />
 
           <main
             className={cn(
-              "scrollbar-thin min-w-0 flex-1 overflow-x-hidden",
+              "scrollbar-thin min-w-0 flex-1 overflow-x-hidden bg-bg-canvas dark:bg-bg-primary",
               mobileNavOpen ? "overflow-y-hidden" : "overflow-y-auto",
             )}
           >
