@@ -3,18 +3,22 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { IconSvgElement } from "@hugeicons/react";
 import {
-  ArrowLeft,
-  ArrowRight,
-  BarChart3,
-  BookOpenText,
-  Check,
-  Loader2,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Trophy,
-} from "lucide-react";
+  Notebook01Icon,
+  Analytics01Icon,
+  AiMagicIcon,
+  SecurityCheckIcon,
+  ChampionIcon,
+  GoogleIcon,
+  NewTwitterIcon,
+  YoutubeIcon,
+  UserMultiple02Icon,
+  UserGroup02Icon,
+  MoreHorizontalCircle01Icon,
+} from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { completeOnboarding } from "@/features/settings/api/user.api";
 
@@ -24,7 +28,9 @@ interface Option {
   id: OptionId;
   label: string;
   hint?: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: IconSvgElement;
+  /** Tailwind classes for the icon tile: [bg, text]. */
+  tint?: string;
 }
 
 const EXPERIENCE: Option[] = [
@@ -36,20 +42,20 @@ const EXPERIENCE: Option[] = [
 ];
 
 const GOAL: Option[] = [
-  { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: BookOpenText },
-  { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: BarChart3 },
-  { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from Partna AI", icon: Sparkles },
-  { id: "discipline", label: "Build discipline & consistency", hint: "Stick to my rules", icon: ShieldCheck },
-  { id: "funded", label: "Pass / track a funded challenge", hint: "Prop-firm evaluations", icon: Trophy },
+  { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: Notebook01Icon, tint: "bg-blue-500/12 text-blue-600" },
+  { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: Analytics01Icon, tint: "bg-violet-500/12 text-violet-600" },
+  { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from Partna AI", icon: AiMagicIcon, tint: "bg-ai-soft-bg text-ai-accent" },
+  { id: "discipline", label: "Build discipline & consistency", hint: "Stick to my rules", icon: SecurityCheckIcon, tint: "bg-emerald-500/12 text-emerald-600" },
+  { id: "funded", label: "Pass / track a funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-amber-500/15 text-amber-600" },
 ];
 
 const REFERRAL: Option[] = [
-  { id: "google", label: "Google search" },
-  { id: "x", label: "X (Twitter)" },
-  { id: "youtube", label: "YouTube" },
-  { id: "friend", label: "A friend or colleague" },
-  { id: "community", label: "A trading community" },
-  { id: "other", label: "Other" },
+  { id: "google", label: "Google search", icon: GoogleIcon, tint: "bg-red-500/10 text-red-500" },
+  { id: "x", label: "X (Twitter)", icon: NewTwitterIcon, tint: "bg-zinc-900/8 text-zinc-900" },
+  { id: "youtube", label: "YouTube", icon: YoutubeIcon, tint: "bg-red-600/10 text-red-600" },
+  { id: "friend", label: "A friend or colleague", icon: UserMultiple02Icon, tint: "bg-teal-500/12 text-teal-600" },
+  { id: "community", label: "A trading community", icon: UserGroup02Icon, tint: "bg-indigo-500/12 text-indigo-600" },
+  { id: "other", label: "Other", icon: MoreHorizontalCircle01Icon, tint: "bg-zinc-500/10 text-zinc-500" },
 ];
 
 type StepKey = "welcome" | "experience" | "goal" | "referral";
@@ -278,14 +284,13 @@ function Question({
       <div className="mt-7 flex flex-col gap-2.5">
         {options.map((opt) => {
           const isSelected = selected === opt.id;
-          const Icon = opt.icon ?? Target;
           return (
             <button
               key={opt.id}
               type="button"
               onClick={() => onSelect(opt.id)}
               className={cn(
-                "flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all active:scale-[0.99]",
+                "flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-all active:scale-[0.99]",
                 isSelected
                   ? "border-ai-accent bg-ai-soft-bg ring-1 ring-ai-accent"
                   : "border-border-secondary/70 bg-card-bg hover:border-ai-border hover:bg-ai-glow",
@@ -294,11 +299,16 @@ function Question({
               {opt.icon ? (
                 <span
                   className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                    isSelected ? "bg-ai-accent/15 text-ai-accent" : "bg-bg-tertiary text-text-tertiary",
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                    opt.tint ?? "bg-bg-tertiary text-text-tertiary",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <HugeiconsIcon
+                    icon={opt.icon}
+                    size={22}
+                    strokeWidth={1.8}
+                    className="text-current"
+                  />
                 </span>
               ) : null}
               <span className="flex min-w-0 flex-1 flex-col">
