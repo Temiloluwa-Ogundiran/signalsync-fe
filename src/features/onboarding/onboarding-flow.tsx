@@ -139,8 +139,8 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
           }}
         />
       )}
-      {/* Top bar: logo + slim progress */}
-      <header className="relative z-10 flex items-center gap-4 px-5 py-4 sm:px-8">
+      {/* Top bar: centered logo (progress lives at the bottom). */}
+      <header className="relative z-10 flex items-center justify-center px-5 py-4 sm:px-8">
         {/* Dark wordmark on light, white wordmark on dark — same swap the app
             header uses. Plain <img> (SVGs don't need next/image). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -155,14 +155,6 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
           alt="TradePartna"
           className="hidden h-5 w-auto dark:block"
         />
-        <div className="ml-2 hidden flex-1 sm:block">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-secondary/50">
-            <div
-              className="h-full rounded-full bg-ai-accent transition-all duration-300"
-              style={{ width: `${Math.max(progress, 4)}%` }}
-            />
-          </div>
-        </div>
       </header>
 
       {/* Body. Welcome centers vertically on every size (no footer, short
@@ -242,6 +234,15 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
       {/* Footer controls — question steps only; welcome has its CTA inline. */}
       {step !== "welcome" && (
       <footer className="fixed inset-x-0 bottom-0 border-t border-border-secondary/50 bg-auth-bg/95 px-5 py-4 backdrop-blur sm:px-8">
+        {/* Progress lives at the bottom now. */}
+        <div className="mx-auto mb-3 max-w-xl">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-secondary/50">
+            <div
+              className="h-full rounded-full bg-ai-accent transition-all duration-300"
+              style={{ width: `${Math.max(progress, 4)}%` }}
+            />
+          </div>
+        </div>
         {error && (
           <p className="mx-auto mb-2 max-w-xl text-center text-xs font-medium text-danger">
             {error}
