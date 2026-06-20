@@ -41,6 +41,69 @@ class RefreshFailureError extends Error {
   }
 }
 
+type RefreshedTokenFields = {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+};
+
+// Single-flight: NextAuth runs the `jwt` callback per request, so concurrent
+// requests on an expired access token would each fire `/auth/refresh` and race
+// the backend's token rotation — the loser ends up pinned to a revoked token and
+// gets force-logged-out. Dedupe by sharing one in-flight refresh per refresh
+// token. Module scope persists for the life of the server instance.
+const inFlightRefreshes = new Map<string, Promise<RefreshedTokenFields>>();
+
+async function performRefresh(refreshToken: string): Promise<RefreshedTokenFields> {
+  const backendUrl = resolveAuthBackendUrl();
+  const res = await fetch(`${backendUrl}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Cookie": `refresh_token=${refreshToken}`,
+    },
+  });
+
+  const rawBody = await res.text();
+  const tokens = parseJsonObjectSafely(rawBody, res.headers.get("content-type"));
+
+  if (!res.ok) {
+    throw buildRefreshFailureError(res, rawBody);
+  }
+
+  if (
+    !tokens ||
+    typeof tokens.access_token !== "string" ||
+    typeof tokens.access_token_expiry_minutes !== "number"
+  ) {
+    throw new Error("Refresh endpoint returned an invalid response payload.");
+  }
+
+  // Adopt the rotated refresh token. The backend now always returns a fresh
+  // cookie on a successful refresh (normal rotation AND the concurrent-rotation
+  // grace path), so `rotated` should be present; the fallback only guards a
+  // legacy/edge response that omits it.
+  const rotated = extractRefreshToken(res);
+  const newRefreshToken = rotated ?? refreshToken;
+
+  return {
+    accessToken: tokens.access_token,
+    refreshToken: newRefreshToken,
+    expiresAt: Date.now() + tokens.access_token_expiry_minutes * 60 * 1000,
+  };
+}
+
+function refreshSession(refreshToken: string): Promise<RefreshedTokenFields> {
+  const existing = inFlightRefreshes.get(refreshToken);
+  if (existing) {
+    return existing;
+  }
+  const promise = performRefresh(refreshToken).finally(() => {
+    inFlightRefreshes.delete(refreshToken);
+  });
+  inFlightRefreshes.set(refreshToken, promise);
+  return promise;
+}
+
 function buildRefreshFailureError(
   response: Response,
   rawBody: string,
@@ -127,50 +190,17 @@ export const authConfig = {
         return token;
       }
 
-      // Access token has expired, try to update it using refresh_token
+      // Access token has expired, try to update it using refresh_token.
+      // Concurrent jwt-callback invocations share a single in-flight request
+      // (see refreshSession) so they don't race the backend's token rotation.
       try {
-        const backendUrl = resolveAuthBackendUrl();
-        const res = await fetch(`${backendUrl}/auth/refresh`, {
-          method: "POST",
-          headers: {
-            "Cookie": `refresh_token=${token.refreshToken}`,
-          },
-        });
-
-        const rawBody = await res.text();
-        const tokens = parseJsonObjectSafely(
-          rawBody,
-          res.headers.get("content-type"),
-        );
-
-        if (!res.ok) {
-          throw buildRefreshFailureError(res, rawBody);
-        }
-
-        if (
-          !tokens ||
-          typeof tokens.access_token !== "string" ||
-          typeof tokens.access_token_expiry_minutes !== "number"
-        ) {
-          throw new Error("Refresh endpoint returned an invalid response payload.");
-        }
-        
-        // Extract the rotated refresh token if provided
-        const rotated = extractRefreshToken(res);
-        const newRefreshToken = rotated ?? (token.refreshToken as string);
-
-        // TEMP debug: did we adopt a rotated token, or keep the (possibly stale)
-        // old one? Keeping the old one across cycles is the suspected logout bug.
-        const prev = (token.refreshToken as string) ?? "";
-        console.info(
-          `[auth.refresh] captured=${Boolean(rotated)} changed=${rotated !== undefined && rotated !== prev} prevPfx=${prev.slice(0, 8)} newPfx=${newRefreshToken.slice(0, 8)}`,
-        );
+        const refreshed = await refreshSession(token.refreshToken as string);
 
         return {
           ...token,
-          accessToken: tokens.access_token,
-          refreshToken: newRefreshToken,
-          expiresAt: Date.now() + (tokens.access_token_expiry_minutes * 60 * 1000),
+          accessToken: refreshed.accessToken,
+          refreshToken: refreshed.refreshToken,
+          expiresAt: refreshed.expiresAt,
         };
       } catch (error) {
         if (error instanceof RefreshFailureError && error.status === 401) {

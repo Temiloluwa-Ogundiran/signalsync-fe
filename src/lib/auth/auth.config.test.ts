@@ -184,6 +184,84 @@ test("jwt callback treats expired refresh token as expected session expiry", asy
   }
 });
 
+test("jwt callback adopts the rotated refresh token from the grace-path cookie", async () => {
+  const originalFetch = global.fetch;
+
+  global.fetch = (async () =>
+    new Response(
+      JSON.stringify({
+        access_token: "fresh-token",
+        access_token_expiry_minutes: 30,
+      }),
+      {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+          "set-cookie": "refresh_token=rotated-token; Path=/; HttpOnly",
+        },
+      },
+    )) as typeof fetch;
+
+  try {
+    const result = await authConfig.callbacks.jwt({
+      token: {
+        accessToken: "expired-token",
+        refreshToken: "stale-token",
+        expiresAt: Date.now() - 60_000,
+      },
+    } as never);
+
+    assert.equal(result.accessToken, "fresh-token");
+    // The fix: adopt the rotated token the backend returned, never the stale one.
+    assert.equal(result.refreshToken, "rotated-token");
+    assert.equal(result.error, undefined);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("jwt callback single-flights concurrent refreshes of the same token", async () => {
+  const originalFetch = global.fetch;
+  let fetchCalls = 0;
+
+  global.fetch = (async () => {
+    fetchCalls += 1;
+    return new Response(
+      JSON.stringify({
+        access_token: "fresh-token",
+        access_token_expiry_minutes: 30,
+      }),
+      {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+          "set-cookie": "refresh_token=rotated-token; Path=/; HttpOnly",
+        },
+      },
+    );
+  }) as typeof fetch;
+
+  try {
+    const makeCall = () =>
+      authConfig.callbacks.jwt({
+        token: {
+          accessToken: "expired-token",
+          refreshToken: "shared-token",
+          expiresAt: Date.now() - 60_000,
+        },
+      } as never);
+
+    const [a, b] = await Promise.all([makeCall(), makeCall()]);
+
+    // Two concurrent refreshes of the same token collapse into ONE backend call.
+    assert.equal(fetchCalls, 1);
+    assert.equal(a.refreshToken, "rotated-token");
+    assert.equal(b.refreshToken, "rotated-token");
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test("jwt callback prefers AUTH_BACKEND_URL for server-side auth requests", async () => {
   const originalFetch = global.fetch;
   const originalEnvValue = process.env.AUTH_BACKEND_URL;
