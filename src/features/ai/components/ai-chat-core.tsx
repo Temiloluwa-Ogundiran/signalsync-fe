@@ -51,17 +51,24 @@ export function AiChatCore({
   // response isn't wiped by a background refetch.
   const loadedForSession = useRef<string | null>(null);
   useEffect(() => {
+    // While a response is streaming, leave messages alone. This is the
+    // lazy-create case: clicking a greeting suggestion creates a session AND
+    // starts streaming into it, so `sessionId` flips null→newId mid-stream.
+    // Clearing here would wipe the optimistic user+assistant messages, leaving
+    // the greeting up with the stop button stuck on. Adopt the new id as
+    // already-loaded so the post-stream refetch doesn't re-wipe it either.
+    if (isStreaming) {
+      if (sessionId) loadedForSession.current = sessionId;
+      return;
+    }
+
     if (sessionId !== loadedForSession.current) {
-      // New session selected: clear immediately, then fill when data arrives.
+      // A different session was selected (e.g. from History): clear now, then
+      // fill once its messages arrive (initialMessages lands a tick later).
       initMessages([]);
       loadedForSession.current = null;
     }
-    if (
-      sessionId &&
-      initialMessages &&
-      !isStreaming &&
-      loadedForSession.current !== sessionId
-    ) {
+    if (sessionId && initialMessages && loadedForSession.current !== sessionId) {
       initMessages(initialMessages);
       loadedForSession.current = sessionId;
     }
