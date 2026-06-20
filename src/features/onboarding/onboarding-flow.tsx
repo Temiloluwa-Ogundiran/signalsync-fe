@@ -241,9 +241,10 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         </div>
       </main>
 
-      {/* Footer controls — question steps only; welcome has its CTA inline. */}
+      {/* Footer controls — question steps only; welcome has its CTA inline.
+          z-20 keeps it above <main> (z-10) so the buttons are clickable. */}
       {step !== "welcome" && (
-      <footer className="fixed inset-x-0 bottom-0 border-t border-border-secondary/50 bg-auth-bg/95 px-5 py-4 backdrop-blur sm:px-8">
+      <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-border-secondary/50 bg-auth-bg/95 px-5 py-4 backdrop-blur sm:px-8">
         {/* Progress lives at the bottom now. */}
         <div className="mx-auto mb-3 max-w-xl">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-secondary/50">
