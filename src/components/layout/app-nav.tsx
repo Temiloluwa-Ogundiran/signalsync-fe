@@ -128,7 +128,7 @@ export function AppNav() {
           type="button"
           aria-label="Close menu"
           onClick={closeMobileNav}
-          className="fixed inset-0 z-overlay touch-none bg-overlay lg:hidden"
+          className="fixed inset-0 z-overlay touch-none bg-black/60 lg:hidden"
         />
       ) : null}
 
@@ -138,9 +138,12 @@ export function AppNav() {
           // Viewport-relative width so it fits the phone and leaves a sliver of
           // backdrop; capped so it never gets absurdly wide on small tablets.
           // At lg+: a static in-flow column at the exact desktop width.
-          "fixed inset-y-0 left-0 z-drawer flex h-screen shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
-          "w-[85vw] max-w-[340px]",
-          "lg:static lg:z-auto lg:shadow-none lg:transition-none lg:max-w-none",
+          // Use dvh (dynamic viewport height) below lg so the drawer doesn't run
+          // behind mobile Safari's bottom toolbar (which 100vh ignores) — that
+          // was hiding the pinned Settings/Help icons at the bottom of the rail.
+          "fixed inset-y-0 left-0 z-drawer flex h-[100dvh] shrink-0 flex-col bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+          "w-[80%] max-w-[300px]",
+          "lg:static lg:z-auto lg:h-screen lg:shadow-none lg:transition-none lg:max-w-none",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           drawerWidth,
         )}
@@ -184,8 +187,9 @@ export function AppNav() {
             ))}
           </div>
 
-          {/* Pinned: Settings (real app) + Help */}
-          <div className="flex shrink-0 flex-col items-center gap-1.5 pb-4 pt-2">
+          {/* Pinned: Settings (real app) + Help. Safe-area bottom padding keeps
+              these clear of the iPhone home indicator inside the drawer. */}
+          <div className="flex shrink-0 flex-col items-center gap-1.5 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {settingsApp ? (
               <RailIcon
                 app={settingsApp}

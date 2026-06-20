@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   },
   description:
     "An AI coach that reviews every trade — journal, tag, and improve with systematic confidence.",
+};
+
+// viewport-fit=cover lets env(safe-area-inset-*) resolve on notched/home-
+// indicator devices so fixed UI (e.g. the mobile nav drawer) can pad around it.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
