@@ -85,6 +85,7 @@ test("safety and help components use impact-focused wording", () => {
   assert.match(feature("copy-safety-bar.tsx"), /Emergency actions/);
   assert.match(feature("shared/field-help.tsx"), /role="tooltip"/);
   assert.match(feature("shared/field-help.tsx"), /aria-describedby/);
+  assert.match(feature("shared/field-help.tsx"), /Tooltip\.Portal/);
   assert.match(
     feature("emergency-actions-dialog.tsx"),
     /manual trades are never affected/i,
