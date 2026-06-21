@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { QRCodeSVG } from "qrcode.react";
 import { Activity, AlertTriangle, Bot, Cable, Link2, Plus, Radio, Route, Save, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppLoader } from "@/components/app-loader";
@@ -133,4 +133,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) { return <label className="flex items-center justify-between gap-3 rounded-lg border border-border-primary px-3 py-2.5 text-sm text-text-primary"><span>{label}</span><Switch checked={checked} onCheckedChange={onChange} /></label>; }
 function Select({ value, onChange, children }: { value: string; onChange: (value: string) => void; children: React.ReactNode }) { return <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full rounded-md border border-border-primary bg-background px-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/30">{children}</select>; }
 function EmptyState({ icon: Icon, title, body, compact = false }: { icon: typeof Link2; title: string; body: string; compact?: boolean }) { return <div className={cn("flex flex-col items-center justify-center text-center", compact ? "px-4 py-10" : "min-h-72 rounded-lg border border-dashed border-border-secondary bg-card-bg px-6 py-12")}><div className="flex size-10 items-center justify-center rounded-lg bg-bg-tertiary text-text-secondary"><Icon className="size-5" /></div><h2 className="mt-3 font-semibold text-text-primary">{title}</h2><p className="mt-1 max-w-md text-sm leading-6 text-text-secondary">{body}</p></div>; }
-function QRCodeSVG({ value, size }: { value: string; size: number }) { return <Image src={value} width={size} height={size} unoptimized alt="Telegram sign-in QR code" />; }
