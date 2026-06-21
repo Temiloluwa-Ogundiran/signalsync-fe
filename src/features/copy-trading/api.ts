@@ -108,16 +108,23 @@ export const copyTradingApi = {
   deleteSource: async (sourceId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/copy-trading/sources/${sourceId}`, withAuth(token));
   },
+  relearnSource: async (sourceId: string, token?: string): Promise<TelegramSource> =>
+    (await apiClient.post<TelegramSource>(`/copy-trading/sources/${sourceId}/learn`, {}, withAuth(token))).data,
   revealActivityRaw: async (eventId: string, token?: string): Promise<{ raw_message: string | null }> =>
     (await apiClient.get<{ raw_message: string | null }>(`/copy-trading/activity/${eventId}/raw`, withAuth(token))).data,
   createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>("/copy-trading/routes", payload, withAuth(token))).data,
+  updateRoute: async (routeId: string, payload: Partial<CopyRouteInput>, token?: string): Promise<CopyRoute> =>
+    (await apiClient.patch<CopyRoute>(`/copy-trading/routes/${routeId}`, payload, withAuth(token))).data,
   activateRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/activate`, {}, withAuth(token))).data,
   pauseRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/pause`, {}, withAuth(token))).data,
   resumeRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/resume`, {}, withAuth(token))).data,
+  deleteRoute: async (routeId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/copy-trading/routes/${routeId}`, withAuth(token));
+  },
   emergency: async (payload: { action: string; scope: string; scope_id?: string; confirmation: string }, token?: string) =>
     (await apiClient.post("/copy-trading/emergency", payload, withAuth(token))).data,
 };

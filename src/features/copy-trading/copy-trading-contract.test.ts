@@ -43,6 +43,12 @@ test("complete copy trading workflows are exposed", () => {
     assert.match(api, new RegExp(contract.replaceAll("/", "\\/")));
   }
   assert.match(page, /Connect Telegram/);
-  assert.match(page, /Channel learning/);
+  assert.match(page, /Analyze channel/);
+  assert.match(page, /Edit copy route/);
+  assert.match(page, /Reveal source message/);
   assert.match(page, /Emergency controls/);
+  assert.match(api, /relearnSource/);
+  assert.match(api, /updateRoute/);
+  assert.match(api, /deleteRoute/);
+  assert.match(page, /Channel learning/);
 });

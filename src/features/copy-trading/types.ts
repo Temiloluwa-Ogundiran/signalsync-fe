@@ -38,6 +38,13 @@ export interface CopyRoute {
   process_all_group_authors: boolean;
   notify_success: boolean;
   notify_failure: boolean;
+  allow_sl_tp_updates: boolean;
+  allow_break_even: boolean;
+  allow_additional_tp: boolean;
+  allow_partial_close: boolean;
+  allow_full_close: boolean;
+  allow_pending_cancel: boolean;
+  unsafe_minimum_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -157,7 +157,7 @@ export function buildNavRegistry(actionFns: {
           items: [
             { icon: Home04Icon, label: "Overview", route: "/copy-trading" },
             { icon: StrategyIcon, label: "Routes", route: "/copy-trading/routes" },
-            { icon: Wallet01Icon, label: "Account Controls", route: "/copy-trading/accounts" },
+            { icon: Wallet01Icon, label: "Accounts", route: "/copy-trading/accounts" },
             { icon: Clock01Icon, label: "Activity", route: "/copy-trading/activity" },
           ],
         },
