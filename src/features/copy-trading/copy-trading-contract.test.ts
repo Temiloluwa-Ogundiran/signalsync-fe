@@ -70,3 +70,28 @@ test("Telegram source search refreshes the live dialog list", () => {
   assert.match(page, /useTelegramDialogs\(connectionId, open\)/);
   assert.match(page, /Refresh channels and groups/);
 });
+
+test("copy trading navigation uses the approved information architecture", () => {
+  const nav = readFileSync(
+    join(ROOT, "src/components/layout/nav-registry.ts"),
+    "utf8",
+  );
+  const settingsPage = readFileSync(
+    join(ROOT, "src/app/(dashboard)/copy-trading/settings/page.tsx"),
+    "utf8",
+  );
+  const legacyPage = readFileSync(
+    join(ROOT, "src/app/(dashboard)/copy-trading/accounts/page.tsx"),
+    "utf8",
+  );
+
+  for (const label of ["Overview", "Routes", "Activity", "Settings"]) {
+    assert.match(nav, new RegExp(`label: "${label}"`));
+  }
+  assert.doesNotMatch(
+    nav,
+    /label: "Accounts", route: "\/copy-trading\/accounts"/,
+  );
+  assert.match(settingsPage, /view="settings"/);
+  assert.match(legacyPage, /redirect\("\/copy-trading\/settings"\)/);
+});

@@ -7,6 +7,25 @@ export type CopyRouteState =
   | "unsupported"
   | "target_unavailable";
 
+export type CopyTradingMode = "setup" | "monitoring";
+
+export type AutomationHealthTone =
+  | "success"
+  | "warning"
+  | "neutral"
+  | "danger";
+
+export interface AutomationHealth {
+  tone: AutomationHealthTone;
+  label: string;
+  description: string;
+}
+
+export interface ActivityPresentation {
+  actionLabel: string;
+  statusLabel: string;
+}
+
 export interface CopyTradingSettings {
   user_id: string;
   is_paused: boolean;
@@ -71,6 +90,8 @@ export interface CopyTargetAccount {
   broker_login: string;
   is_archived: boolean;
   connection_state: string;
+  broker_server?: string;
+  account_balance?: string | number | null;
 }
 
 export interface TelegramConnection {

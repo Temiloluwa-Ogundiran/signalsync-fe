@@ -1,3 +1,5 @@
-import { CopyTradingPage } from "@/features/copy-trading/copy-trading-page";
+import { redirect } from "next/navigation";
 
-export default function Page() { return <CopyTradingPage view="accounts" />; }
+export default function Page() {
+  redirect("/copy-trading/settings");
+}
