@@ -21,14 +21,16 @@ import {
  */
 function NavItemRow({
   item,
+  siblings,
   pathname,
   onNavigate,
 }: {
   item: NavItem;
+  siblings: NavItem[];
   pathname: string;
   onNavigate?: () => void;
 }) {
-  const active = isItemActive(item, pathname);
+  const active = isItemActive(item, pathname, siblings);
 
   const inner = (
     <>
@@ -167,6 +169,7 @@ function NavGroupBlock({
             <NavItemRow
               key={item.label + item.route}
               item={item}
+              siblings={group.items}
               pathname={pathname}
               onNavigate={onNavigate}
             />
