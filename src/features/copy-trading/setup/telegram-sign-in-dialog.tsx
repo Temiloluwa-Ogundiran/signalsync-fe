@@ -1,0 +1,193 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Loader2, QrCode, Smartphone } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useCopyTradingActions } from "../hooks";
+import type { TelegramAuth } from "../types";
+import { apiError } from "../utils";
+import { Field } from "../shared/form-controls";
+
+export function TelegramSignInDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const actions = useCopyTradingActions();
+  const [method, setMethod] = useState<"phone" | "qr">("qr");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [auth, setAuth] = useState<TelegramAuth | null>(null);
+
+  useEffect(() => {
+    if (!auth || ["ready", "failed"].includes(auth.state)) return;
+    const timer = window.setInterval(async () => {
+      try {
+        const next = await actions.getAuth(auth.auth_id);
+        setAuth(next);
+        if (next.state === "ready") {
+          toast.success("Telegram connected");
+          onOpenChange(false);
+        } else if (next.state === "failed") {
+          toast.error(next.message);
+        }
+      } catch {
+        window.clearInterval(timer);
+      }
+    }, 1200);
+    return () => window.clearInterval(timer);
+  }, [actions, auth, onOpenChange]);
+
+  const start = async () => {
+    try {
+      setAuth(
+        method === "phone"
+          ? await actions.startPhone.mutateAsync(phone)
+          : await actions.startQr.mutateAsync(),
+      );
+    } catch (error) {
+      toast.error("Could not connect Telegram", {
+        description: apiError(error),
+      });
+    }
+  };
+
+  const changeOpen = (value: boolean) => {
+    if (!value) {
+      setAuth(null);
+      setCode("");
+      setPassword("");
+    }
+    onOpenChange(value);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={changeOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Connect Telegram</DialogTitle>
+          <DialogDescription>
+            Connect the account that receives your trading signals.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-2 gap-1 rounded-md bg-bg-tertiary p-1">
+          <Button
+            variant={method === "qr" ? "secondary" : "ghost"}
+            onClick={() => setMethod("qr")}
+          >
+            <QrCode className="size-4" />
+            QR code
+          </Button>
+          <Button
+            variant={method === "phone" ? "secondary" : "ghost"}
+            onClick={() => setMethod("phone")}
+          >
+            <Smartphone className="size-4" />
+            Phone number
+          </Button>
+        </div>
+        {!auth ? (
+          <div className="space-y-4">
+            {method === "phone" ? (
+              <Field label="Telegram phone number">
+                <Input
+                  placeholder="+234..."
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                />
+              </Field>
+            ) : (
+              <p className="rounded-md border border-border-primary bg-bg-tertiary px-3 py-3 text-sm leading-6 text-text-secondary">
+                Open Telegram on your phone, then go to Settings, Devices, and
+                Link Desktop Device.
+              </p>
+            )}
+            <Button
+              className="w-full"
+              onClick={start}
+              disabled={
+                (method === "phone" && phone.length < 7) ||
+                actions.startPhone.isPending ||
+                actions.startQr.isPending
+              }
+            >
+              {actions.startPhone.isPending || actions.startQr.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : null}
+              {method === "qr" ? "Connect with QR code" : "Use phone number"}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 rounded-md border border-border-primary bg-bg-tertiary p-3 text-sm text-text-secondary">
+              {!["code_required", "password_required", "failed"].includes(
+                auth.state,
+              ) ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : null}
+              {auth.message}
+            </div>
+            {auth.state === "qr_required" && auth.qr_url ? (
+              <div className="flex justify-center rounded-md bg-white p-5">
+                <QRCodeSVG value={auth.qr_url} size={220} />
+              </div>
+            ) : null}
+            {auth.state === "code_required" ? (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Telegram code"
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                />
+                <Button
+                  onClick={async () =>
+                    setAuth(await actions.submitCode(auth.auth_id, code))
+                  }
+                >
+                  Verify
+                </Button>
+              </div>
+            ) : null}
+            {auth.state === "password_required" ? (
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  placeholder="Two-step password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <Button
+                  onClick={async () =>
+                    setAuth(
+                      await actions.submitPassword(auth.auth_id, password),
+                    )
+                  }
+                >
+                  Verify
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
+        <p className="text-xs leading-5 text-text-tertiary">
+          TradePartna uses a read-only session. It can read channels you select
+          but cannot send messages or change your Telegram account. Your
+          two-step password is never stored.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -18,9 +18,7 @@ export const copyTradingApi = {
       "/accounts",
       withAuth(token),
     );
-    return data.filter(
-      (account) => !account.is_archived && account.connection_state === "ready",
-    );
+    return data.filter((account) => !account.is_archived);
   },
 
   getSettings: async (token?: string): Promise<CopyTradingSettings> => {

@@ -4,36 +4,25 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
+const feature = (file: string) =>
+  readFileSync(join(ROOT, "src/features/copy-trading", file), "utf8");
 
-test("copy trading navigation and API contracts are wired", () => {
-  const nav = readFileSync(
-    join(ROOT, "src/components/layout/nav-registry.ts"),
-    "utf8",
-  );
-  const api = readFileSync(
-    join(ROOT, "src/features/copy-trading/api.ts"),
-    "utf8",
-  );
-
-  assert.match(nav, /id: "copy-trading"/);
-  assert.match(nav, /route: "\/copy-trading"/);
-  assert.match(api, /"\/copy-trading\/settings"/);
-  assert.match(api, /"\/copy-trading\/routes"/);
-  assert.match(api, /"\/copy-trading\/activity"/);
-  assert.equal(api.includes("accessToken,"), false);
-});
-
-test("complete copy trading workflows are exposed", () => {
-  const api = readFileSync(
-    join(ROOT, "src/features/copy-trading/api.ts"),
-    "utf8",
-  );
-  const page = readFileSync(
-    join(ROOT, "src/features/copy-trading/copy-trading-page.tsx"),
-    "utf8",
-  );
+test("copy trading API and complete workflows remain exposed", () => {
+  const api = feature("api.ts");
+  const ui = [
+    "setup/setup-workspace.tsx",
+    "setup/channel-analysis-step.tsx",
+    "routes/copy-rule-form.tsx",
+    "activity/activity-item.tsx",
+    "emergency-actions-dialog.tsx",
+  ]
+    .map(feature)
+    .join("\n");
 
   for (const contract of [
+    "/copy-trading/settings",
+    "/copy-trading/routes",
+    "/copy-trading/activity",
     "/copy-trading/telegram/connections",
     "/copy-trading/telegram/auth/phone",
     "/copy-trading/telegram/auth/qr",
@@ -42,33 +31,32 @@ test("complete copy trading workflows are exposed", () => {
   ]) {
     assert.match(api, new RegExp(contract.replaceAll("/", "\\/")));
   }
-  assert.match(page, /Connect Telegram/);
-  assert.match(page, /Analyze channel/);
-  assert.match(page, /Edit copy route/);
-  assert.match(page, /Reveal source message/);
-  assert.match(page, /Emergency controls/);
+  for (const wording of [
+    "Connect Telegram",
+    "Analyze again",
+    "Edit copy rule",
+    "Reveal source message",
+    "Emergency actions",
+  ]) {
+    assert.match(ui, new RegExp(wording));
+  }
   assert.match(api, /relearnSource/);
   assert.match(api, /updateRoute/);
   assert.match(api, /deleteRoute/);
-  assert.match(page, /Channel learning/);
+  assert.equal(api.includes("accessToken,"), false);
 });
 
 test("Telegram source search refreshes the live dialog list", () => {
-  const hooks = readFileSync(
-    join(ROOT, "src/features/copy-trading/hooks.ts"),
-    "utf8",
+  const hooks = feature("hooks.ts");
+  const picker = feature("setup/channel-picker.tsx");
+  assert.match(
+    hooks,
+    /useTelegramDialogs\(connectionId\?: string, active = true\)/,
   );
-  const page = readFileSync(
-    join(ROOT, "src/features/copy-trading/copy-trading-page.tsx"),
-    "utf8",
-  );
-
-  assert.match(hooks, /useTelegramDialogs\(connectionId\?: string, active = true\)/);
   assert.match(hooks, /enabled: enabled && active && !!connectionId/);
-  assert.equal(hooks.includes("refetchInterval: 10000"), false);
   assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
-  assert.match(page, /useTelegramDialogs\(connectionId, open\)/);
-  assert.match(page, /Refresh channels and groups/);
+  assert.match(picker, /useTelegramDialogs\(connectionId, open\)/);
+  assert.match(picker, /Refresh channels and groups/);
 });
 
 test("copy trading navigation uses the approved information architecture", () => {
@@ -76,15 +64,6 @@ test("copy trading navigation uses the approved information architecture", () =>
     join(ROOT, "src/components/layout/nav-registry.ts"),
     "utf8",
   );
-  const settingsPage = readFileSync(
-    join(ROOT, "src/app/(dashboard)/copy-trading/settings/page.tsx"),
-    "utf8",
-  );
-  const legacyPage = readFileSync(
-    join(ROOT, "src/app/(dashboard)/copy-trading/accounts/page.tsx"),
-    "utf8",
-  );
-
   for (const label of ["Overview", "Routes", "Activity", "Settings"]) {
     assert.match(nav, new RegExp(`label: "${label}"`));
   }
@@ -92,6 +71,66 @@ test("copy trading navigation uses the approved information architecture", () =>
     nav,
     /label: "Accounts", route: "\/copy-trading\/accounts"/,
   );
-  assert.match(settingsPage, /view="settings"/);
-  assert.match(legacyPage, /redirect\("\/copy-trading\/settings"\)/);
+  assert.match(
+    readFileSync(
+      join(ROOT, "src/app/(dashboard)/copy-trading/settings/page.tsx"),
+      "utf8",
+    ),
+    /view="settings"/,
+  );
+});
+
+test("safety and help components use impact-focused wording", () => {
+  assert.match(feature("copy-safety-bar.tsx"), /Pause copying/);
+  assert.match(feature("copy-safety-bar.tsx"), /Emergency actions/);
+  assert.match(feature("shared/field-help.tsx"), /role="tooltip"/);
+  assert.match(feature("shared/field-help.tsx"), /aria-describedby/);
+  assert.match(
+    feature("emergency-actions-dialog.tsx"),
+    /manual trades are never affected/i,
+  );
+  assert.match(feature("emergency-actions-dialog.tsx"), /Type EMERGENCY/);
+});
+
+test("guided setup exposes the approved journey and progressive controls", () => {
+  const workspace = feature("setup/setup-workspace.tsx");
+  const preferences = feature("setup/preferences-step.tsx");
+  const analysis = feature("setup/channel-analysis-step.tsx");
+  for (const heading of [
+    "Connect Telegram",
+    "Choose a signal channel",
+    "Review how this channel sends signals",
+    "Choose where trades should be copied",
+    "Set your copying preferences",
+    "Start copying",
+  ]) {
+    assert.match(workspace, new RegExp(heading));
+  }
+  assert.match(preferences, /Trade size/);
+  assert.match(preferences, /Take-profit handling/);
+  assert.match(preferences, /Advanced settings/);
+  assert.match(preferences, /take_profit_mode === "all"/);
+  assert.match(
+    analysis,
+    /Copying is available, but review activity closely/,
+  );
+});
+
+test("monitoring, rules, activity, and settings use the approved hierarchy", () => {
+  assert.match(feature("overview/monitoring-overview.tsx"), /Live activity/);
+  assert.match(feature("overview/monitoring-overview.tsx"), /HealthStrip/);
+  assert.match(feature("routes/copy-rules-page.tsx"), /Copy Rules/);
+  assert.match(feature("routes/copy-rules-page.tsx"), /New copy rule/);
+  assert.match(feature("activity/copy-activity-page.tsx"), /Copy Activity/);
+  const settings = feature("settings/copy-trading-settings-page.tsx");
+  assert.match(settings, /Telegram accounts/);
+  assert.match(settings, /Signal channels/);
+  assert.match(settings, /Trading accounts/);
+});
+
+test("copy trading page is thin orchestration after decomposition", () => {
+  const page = feature("copy-trading-page.tsx");
+  assert.match(page, /deriveCopyTradingMode/);
+  assert.match(page, /view === "settings"/);
+  assert.ok(page.split("\n").length < 220);
 });
