@@ -14,7 +14,7 @@ export const defaultCopyPreferences: CopyRouteInput = {
   take_profit_mode: "all",
   lot_distribution: "split_total",
   pending_orders_enabled: true,
-  minimum_fields: "direction,symbol",
+  minimum_fields: "direction_symbol_sl_tp",
   assembly_window_seconds: 90,
   process_all_group_authors: false,
   notify_success: true,
@@ -42,6 +42,8 @@ export function PreferencesStep({
   submitLabel?: string;
 }) {
   const [advanced, setAdvanced] = useState(false);
+  const usesUnsafeMinimum =
+    value.minimum_fields !== "direction_symbol_sl_tp";
   const update = <K extends keyof CopyRouteInput>(
     key: K,
     next: CopyRouteInput[K],
@@ -135,16 +137,26 @@ export function PreferencesStep({
               >
                 <Select
                   value={value.minimum_fields}
-                  onChange={(next) => update("minimum_fields", next)}
+                  onChange={(next) =>
+                    update(
+                      "minimum_fields",
+                      next as CopyRouteInput["minimum_fields"],
+                    )
+                  }
                 >
-                  <option value="direction,symbol">Direction and symbol</option>
-                  <option value="direction">Direction only (unsafe)</option>
-                  <option value="direction,symbol,entry">
+                  <option value="direction_symbol_sl_tp">
+                    Direction, symbol, stop loss and take profit
+                  </option>
+                  <option value="direction_symbol_entry">
                     Direction, symbol and entry
                   </option>
-                  <option value="direction,symbol,entry,sl,tp">
-                    Direction, symbol, entry, stop loss and take profit
+                  <option value="direction_symbol_sl">
+                    Direction, symbol and stop loss
                   </option>
+                  <option value="direction_symbol_tp">
+                    Direction, symbol and take profit
+                  </option>
+                  <option value="direction_symbol">Direction and symbol</option>
                 </Select>
               </Field>
               <Field
@@ -164,10 +176,10 @@ export function PreferencesStep({
                 />
               </Field>
             </div>
-            {value.minimum_fields === "direction" ? (
+            {usesUnsafeMinimum ? (
               <Toggle
-                label="I understand this may copy the wrong instrument"
-                description="TradePartna may use context from earlier messages. Review activity closely when this is enabled."
+                label="I understand this may place an incomplete trade"
+                description="The trade may be placed before stop loss, take profit, or entry details arrive. Later channel updates can still modify it."
                 checked={value.unsafe_minimum_confirmed}
                 onChange={(next) =>
                   update("unsafe_minimum_confirmed", next)
@@ -226,8 +238,7 @@ export function PreferencesStep({
           disabled={
             busy ||
             Number(value.fixed_lot) <= 0 ||
-            (value.minimum_fields === "direction" &&
-              !value.unsafe_minimum_confirmed)
+            (usesUnsafeMinimum && !value.unsafe_minimum_confirmed)
           }
         >
           {busy ? "Saving..." : submitLabel}

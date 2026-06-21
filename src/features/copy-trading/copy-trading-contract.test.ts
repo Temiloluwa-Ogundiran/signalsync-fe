@@ -116,6 +116,21 @@ test("guided setup exposes the approved journey and progressive controls", () =>
   );
 });
 
+test("copy rule minimum details match the backend enum contract", () => {
+  const preferences = feature("setup/preferences-step.tsx");
+  for (const value of [
+    "direction_symbol",
+    "direction_symbol_entry",
+    "direction_symbol_sl",
+    "direction_symbol_tp",
+    "direction_symbol_sl_tp",
+  ]) {
+    assert.match(preferences, new RegExp(`value=\"${value}\"`));
+  }
+  assert.match(preferences, /minimum_fields: "direction_symbol_sl_tp"/);
+  assert.doesNotMatch(preferences, /value="direction,/);
+});
+
 test("monitoring, rules, activity, and settings use the approved hierarchy", () => {
   assert.match(feature("overview/monitoring-overview.tsx"), /Live activity/);
   assert.match(feature("overview/monitoring-overview.tsx"), /HealthStrip/);
