@@ -21,6 +21,9 @@ import {
   CreditCardIcon,
   Tag01Icon,
   Exchange01Icon,
+  Shield01Icon,
+  CrosshairIcon,
+  Target02Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -156,6 +159,22 @@ export function buildNavRegistry(actionFns: {
             { icon: StrategyIcon, label: "Routes", route: "/copy-trading/routes" },
             { icon: Wallet01Icon, label: "Account Controls", route: "/copy-trading/accounts" },
             { icon: Clock01Icon, label: "Activity", route: "/copy-trading/activity" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "partna-guard",
+      name: "Partna Guard",
+      icon: Shield01Icon,
+      route: "/guard",
+      flag: "GUARD" as FeatureFlag,
+      groups: [
+        {
+          items: [
+            { icon: CrosshairIcon, label: "Awareness", route: "/guard" },
+            { icon: Target02Icon, label: "Rules & Contract", route: "/guard/rules" },
+            { icon: Wallet01Icon, label: "Accounts", route: "/guard/accounts" },
           ],
         },
       ],
