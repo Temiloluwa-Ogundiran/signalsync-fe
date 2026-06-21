@@ -97,6 +97,7 @@ export function useCopyTradingActions() {
     pauseConnection: useMutation({ mutationFn: ({ id, paused }: { id: string; paused: boolean }) => copyTradingApi.pauseConnection(id, paused, token), onSuccess: refresh }),
     createSource: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createSource>[0]) => copyTradingApi.createSource(payload, token), onSuccess: refresh }),
     pauseSource: useMutation({ mutationFn: ({ id, paused }: { id: string; paused: boolean }) => copyTradingApi.pauseSource(id, paused, token), onSuccess: refresh }),
+    deleteSource: useMutation({ mutationFn: (id: string) => copyTradingApi.deleteSource(id, token), onSuccess: refresh }),
     revealRaw: (eventId: string) => copyTradingApi.revealActivityRaw(eventId, token),
     createRoute: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createRoute>[0]) => copyTradingApi.createRoute(payload, token), onSuccess: refresh }),
     routeAction: useMutation({ mutationFn: ({ id, action }: { id: string; action: "activate" | "pause" | "resume" }) => action === "activate" ? copyTradingApi.activateRoute(id, token) : action === "pause" ? copyTradingApi.pauseRoute(id, token) : copyTradingApi.resumeRoute(id, token), onSuccess: refresh }),

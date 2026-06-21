@@ -105,6 +105,9 @@ export const copyTradingApi = {
     (await apiClient.post<TelegramSource>("/copy-trading/sources", payload, withAuth(token))).data,
   pauseSource: async (sourceId: string, isPaused: boolean, token?: string): Promise<TelegramSource> =>
     (await apiClient.patch<TelegramSource>(`/copy-trading/sources/${sourceId}/pause`, { is_paused: isPaused }, withAuth(token))).data,
+  deleteSource: async (sourceId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/copy-trading/sources/${sourceId}`, withAuth(token));
+  },
   revealActivityRaw: async (eventId: string, token?: string): Promise<{ raw_message: string | null }> =>
     (await apiClient.get<{ raw_message: string | null }>(`/copy-trading/activity/${eventId}/raw`, withAuth(token))).data,
   createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>
