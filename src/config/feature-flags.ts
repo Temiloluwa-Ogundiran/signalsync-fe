@@ -12,6 +12,8 @@
 export const FEATURE_FLAGS = {
   /** /ai  — Partna AI copilot (dock + full page) */
   AI: true,
+  /** /guard — Partna Guard, the read-only prop-challenge watchdog rail */
+  GUARD: false,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;
