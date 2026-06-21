@@ -158,9 +158,25 @@ export function SetupWorkspace({
           : "Administrators only",
       ],
       [
-        "Message waiting time",
-        `${preferences.assembly_window_seconds ?? 90} seconds`,
+        "Entry policy",
+        preferences.minimum_fields === "direction_symbol"
+          ? "Enter immediately without SL or TP"
+          : preferences.minimum_fields === "direction_symbol_sl"
+            ? "Wait for stop loss"
+            : preferences.minimum_fields === "direction_symbol_tp"
+              ? "Wait for take profit"
+              : preferences.minimum_fields === "direction_symbol_entry"
+                ? "Wait for entry price"
+                : "Wait for stop loss and take profit",
       ],
+      ...(preferences.minimum_fields === "direction_symbol"
+        ? []
+        : [
+            [
+              "Waiting time",
+              `${preferences.assembly_window_seconds ?? 90} seconds`,
+            ],
+          ]),
     ],
     [preferences],
   );

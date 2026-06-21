@@ -109,6 +109,9 @@ test("guided setup exposes the approved journey and progressive controls", () =>
   }
   assert.match(preferences, /Trade size/);
   assert.match(preferences, /Take-profit handling/);
+  assert.match(preferences, /When to enter/);
+  assert.match(preferences, /Enter immediately without SL or TP/);
+  assert.match(preferences, /signal is marked as missed/);
   assert.match(preferences, /Advanced settings/);
   assert.match(preferences, /take_profit_mode === "all"/);
   assert.match(

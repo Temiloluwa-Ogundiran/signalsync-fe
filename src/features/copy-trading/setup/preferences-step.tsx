@@ -106,6 +106,66 @@ export function PreferencesStep({
         </Field>
       ) : null}
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="When to enter"
+          help="Choose which signal details must arrive before TradePartna places the trade."
+        >
+          <Select
+            value={value.minimum_fields}
+            onChange={(next) =>
+              update(
+                "minimum_fields",
+                next as CopyRouteInput["minimum_fields"],
+              )
+            }
+          >
+            <option value="direction_symbol_sl_tp">
+              Wait for stop loss and take profit (recommended)
+            </option>
+            <option value="direction_symbol_sl">Wait for stop loss</option>
+            <option value="direction_symbol_tp">Wait for take profit</option>
+            <option value="direction_symbol_entry">Wait for entry price</option>
+            <option value="direction_symbol">
+              Enter immediately without SL or TP
+            </option>
+          </Select>
+        </Field>
+        {value.minimum_fields !== "direction_symbol" ? (
+          <Field
+            label="Waiting time"
+            help="If the required details do not arrive before this time ends, the signal is marked as missed."
+          >
+            <Input
+              type="number"
+              min="1"
+              max="600"
+              value={value.assembly_window_seconds ?? 90}
+              onChange={(event) =>
+                update(
+                  "assembly_window_seconds",
+                  Number(event.target.value),
+                )
+              }
+            />
+          </Field>
+        ) : (
+          <div className="rounded-md border border-border-primary bg-bg-tertiary px-3 py-3 text-sm leading-6 text-text-secondary">
+            The trade is placed as soon as direction and symbol arrive. Later
+            stop-loss and take-profit messages can update it automatically.
+          </div>
+        )}
+      </div>
+
+      {usesUnsafeMinimum ? (
+        <Toggle
+          label="Allow entry before every protection detail arrives"
+          description="The trade may be placed without stop loss, take profit, or entry details selected above. Later channel updates can still modify it."
+          checked={value.unsafe_minimum_confirmed}
+          onChange={(next) => update("unsafe_minimum_confirmed", next)}
+        />
+      ) : null}
+
       <Toggle
         label="Pending orders"
         description="Send limit and stop orders to the broker as soon as the channel posts them."
@@ -127,65 +187,9 @@ export function PreferencesStep({
       {advanced ? (
         <div className="space-y-5">
           <FormSection
-            title="Signal handling"
-            description="Control when a message is complete enough to place a trade."
+            title="Message authors"
+            description="Choose whose messages can control trades in Telegram groups."
           >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Required signal details"
-                help="The minimum information TradePartna must have before it can place a trade."
-              >
-                <Select
-                  value={value.minimum_fields}
-                  onChange={(next) =>
-                    update(
-                      "minimum_fields",
-                      next as CopyRouteInput["minimum_fields"],
-                    )
-                  }
-                >
-                  <option value="direction_symbol_sl_tp">
-                    Direction, symbol, stop loss and take profit
-                  </option>
-                  <option value="direction_symbol_entry">
-                    Direction, symbol and entry
-                  </option>
-                  <option value="direction_symbol_sl">
-                    Direction, symbol and stop loss
-                  </option>
-                  <option value="direction_symbol_tp">
-                    Direction, symbol and take profit
-                  </option>
-                  <option value="direction_symbol">Direction and symbol</option>
-                </Select>
-              </Field>
-              <Field
-                label="Message waiting time"
-                help="How long TradePartna waits for follow-up messages such as stop loss or take profit."
-              >
-                <Input
-                  type="number"
-                  min="1"
-                  value={value.assembly_window_seconds ?? 90}
-                  onChange={(event) =>
-                    update(
-                      "assembly_window_seconds",
-                      Number(event.target.value),
-                    )
-                  }
-                />
-              </Field>
-            </div>
-            {usesUnsafeMinimum ? (
-              <Toggle
-                label="I understand this may place an incomplete trade"
-                description="The trade may be placed before stop loss, take profit, or entry details arrive. Later channel updates can still modify it."
-                checked={value.unsafe_minimum_confirmed}
-                onChange={(next) =>
-                  update("unsafe_minimum_confirmed", next)
-                }
-              />
-            ) : null}
             <Toggle
               label="Accept messages from all group members"
               description="Off by default. Channel posts and group administrator messages are always accepted."

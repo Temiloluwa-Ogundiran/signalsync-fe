@@ -97,6 +97,7 @@ export function humanizeActivity(event: {
     "signal.waiting": "Waiting for details",
     "signal.skipped": "Signal skipped",
     "signal.failed": "Signal could not be read",
+    "signal.expired": "Incomplete signal expired",
     "broker.uncertain": "Confirming broker result",
     "broker.reconciled": "Broker result confirmed",
     "broker.succeeded": "Trade completed",
