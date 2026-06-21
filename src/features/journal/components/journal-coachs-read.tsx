@@ -128,9 +128,9 @@ export function JournalCoachsRead({
                 icon={Alert02Icon}
                 size={15}
                 strokeWidth={2}
-                className="mt-0.5 shrink-0 text-warning"
+                className="mt-0.5 shrink-0 text-warning-text"
               />
-              <p className="text-sm leading-relaxed text-warning">{insight}</p>
+              <p className="text-sm leading-relaxed text-warning-text">{insight}</p>
             </div>
           ) : null}
 

@@ -88,6 +88,7 @@
   --danger-light: #fce7e7;
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
+  --warning-text: #a16207;
   --info: #3b82f6;
   --info-light: rgba(59, 130, 246, 0.08);
 
@@ -263,6 +264,7 @@
   --red-deep: #dc2626;
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
+  --warning-text: #fbbf24;
   --info: #71717a;
   --info-light: rgba(113, 113, 122, 0.1);
 
@@ -473,6 +475,7 @@
   --color-red-deep: var(--red-deep);
   --color-warning: var(--warning);
   --color-warning-light: var(--warning-light);
+  --color-warning-text: var(--warning-text);
   --color-info: var(--info);
   --color-info-light: var(--info-light);
 

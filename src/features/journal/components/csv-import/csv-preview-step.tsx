@@ -89,7 +89,7 @@ export function CSVPreviewStep({
 
       {/* Warnings Panel */}
       {warnings.length > 0 && (
-        <div className="rounded-xl border border-warning/20 bg-warning-light p-3 text-warning flex items-start gap-2.5">
+        <div className="rounded-xl border border-warning/20 bg-warning-light p-3 text-warning-text flex items-start gap-2.5">
           <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
             <h4 className="text-xs font-bold uppercase tracking-wider">
