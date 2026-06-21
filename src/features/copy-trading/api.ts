@@ -5,6 +5,11 @@ import type {
   CopyRoute,
   CopyTradingSettings,
   CopyTargetAccount,
+  CopyRouteInput,
+  TelegramAuth,
+  TelegramConnection,
+  TelegramDialog,
+  TelegramSource,
 } from "./types";
 
 export const copyTradingApi = {
@@ -74,4 +79,36 @@ export const copyTradingApi = {
     );
     return data;
   },
+
+  listConnections: async (token?: string): Promise<TelegramConnection[]> =>
+    (await apiClient.get<TelegramConnection[]>("/copy-trading/telegram/connections", withAuth(token))).data,
+  startPhoneAuth: async (phone: string, token?: string): Promise<TelegramAuth> =>
+    (await apiClient.post<TelegramAuth>("/copy-trading/telegram/auth/phone", { phone }, withAuth(token))).data,
+  startQrAuth: async (token?: string): Promise<TelegramAuth> =>
+    (await apiClient.post<TelegramAuth>("/copy-trading/telegram/auth/qr", {}, withAuth(token))).data,
+  getAuth: async (authId: string, token?: string): Promise<TelegramAuth> =>
+    (await apiClient.get<TelegramAuth>(`/copy-trading/telegram/auth/${authId}`, withAuth(token))).data,
+  submitCode: async (authId: string, code: string, token?: string): Promise<TelegramAuth> =>
+    (await apiClient.post<TelegramAuth>(`/copy-trading/telegram/auth/${authId}/code`, { code }, withAuth(token))).data,
+  submitPassword: async (authId: string, password: string, token?: string): Promise<TelegramAuth> =>
+    (await apiClient.post<TelegramAuth>(`/copy-trading/telegram/auth/${authId}/password`, { password }, withAuth(token))).data,
+  disconnect: async (connectionId: string, token?: string): Promise<void> => {
+    await apiClient.delete(`/copy-trading/telegram/connections/${connectionId}`, withAuth(token));
+  },
+  listDialogs: async (connectionId: string, token?: string): Promise<TelegramDialog[]> =>
+    (await apiClient.get<TelegramDialog[]>(`/copy-trading/telegram/connections/${connectionId}/dialogs`, withAuth(token))).data,
+  listSources: async (token?: string): Promise<TelegramSource[]> =>
+    (await apiClient.get<TelegramSource[]>("/copy-trading/sources", withAuth(token))).data,
+  createSource: async (payload: Omit<TelegramSource, "id" | "state" | "unsupported_reason" | "is_paused" | "profile">, token?: string): Promise<TelegramSource> =>
+    (await apiClient.post<TelegramSource>("/copy-trading/sources", payload, withAuth(token))).data,
+  createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>
+    (await apiClient.post<CopyRoute>("/copy-trading/routes", payload, withAuth(token))).data,
+  activateRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
+    (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/activate`, {}, withAuth(token))).data,
+  pauseRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
+    (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/pause`, {}, withAuth(token))).data,
+  resumeRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
+    (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/resume`, {}, withAuth(token))).data,
+  emergency: async (payload: { action: string; scope: string; scope_id?: string; confirmation: string }, token?: string) =>
+    (await apiClient.post("/copy-trading/emergency", payload, withAuth(token))).data,
 };

@@ -22,3 +22,27 @@ test("copy trading navigation and API contracts are wired", () => {
   assert.match(api, /"\/copy-trading\/activity"/);
   assert.equal(api.includes("accessToken,"), false);
 });
+
+test("complete copy trading workflows are exposed", () => {
+  const api = readFileSync(
+    join(ROOT, "src/features/copy-trading/api.ts"),
+    "utf8",
+  );
+  const page = readFileSync(
+    join(ROOT, "src/features/copy-trading/copy-trading-page.tsx"),
+    "utf8",
+  );
+
+  for (const contract of [
+    "/copy-trading/telegram/connections",
+    "/copy-trading/telegram/auth/phone",
+    "/copy-trading/telegram/auth/qr",
+    "/copy-trading/sources",
+    "/copy-trading/emergency",
+  ]) {
+    assert.match(api, new RegExp(contract.replaceAll("/", "\\/")));
+  }
+  assert.match(page, /Connect Telegram/);
+  assert.match(page, /Channel learning/);
+  assert.match(page, /Emergency controls/);
+});
