@@ -463,15 +463,26 @@ function Sources({
                 </div>
               </div>
               {source.profile ? (
-                <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 border-t border-border-primary pt-4 text-xs sm:grid-cols-4">
-                  <ProfileValue label="Signal style" value={source.profile.signal_style} />
-                  <ProfileValue label="Assembly window" value={`${source.profile.recommended_assembly_window_seconds}s`} />
-                  <ProfileValue
-                    label="Image signals"
-                    value={source.profile.image_primary ? "Unsupported" : `${Math.round(source.profile.image_frequency * 100)}%`}
-                  />
-                  <ProfileValue label="Messages sampled" value={String(source.profile.sample_count)} />
-                </dl>
+                <>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 border-t border-border-primary pt-4 text-xs sm:grid-cols-4">
+                    <ProfileValue label="Signal style" value={source.profile.signal_style} />
+                    <ProfileValue label="Assembly window" value={`${source.profile.recommended_assembly_window_seconds}s`} />
+                    <ProfileValue
+                      label="Image signals"
+                      value={source.profile.image_primary ? "Unsupported" : `${Math.round(source.profile.image_frequency * 100)}%`}
+                    />
+                    <ProfileValue label="Messages sampled" value={String(source.profile.sample_count)} />
+                  </dl>
+                  {source.profile.confidence === "low" && !source.profile.image_primary && (
+                    <div className="mt-4 flex gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2.5 text-sm text-text-secondary">
+                      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
+                      <p>
+                        This channel has an inconsistent signal pattern. Copying is still available,
+                        but review activity closely while the parser learns from new messages.
+                      </p>
+                    </div>
+                  )}
+                </>
               ) : source.state === "learning" ? (
                 <div className="mt-4 flex items-center gap-2 border-t border-border-primary pt-4 text-sm text-text-secondary">
                   <Loader2 className="size-4 animate-spin" />
