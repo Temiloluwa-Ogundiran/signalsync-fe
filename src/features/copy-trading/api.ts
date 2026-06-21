@@ -95,12 +95,18 @@ export const copyTradingApi = {
   disconnect: async (connectionId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/copy-trading/telegram/connections/${connectionId}`, withAuth(token));
   },
+  pauseConnection: async (connectionId: string, isPaused: boolean, token?: string): Promise<TelegramConnection> =>
+    (await apiClient.patch<TelegramConnection>(`/copy-trading/telegram/connections/${connectionId}`, { is_paused: isPaused }, withAuth(token))).data,
   listDialogs: async (connectionId: string, token?: string): Promise<TelegramDialog[]> =>
     (await apiClient.get<TelegramDialog[]>(`/copy-trading/telegram/connections/${connectionId}/dialogs`, withAuth(token))).data,
   listSources: async (token?: string): Promise<TelegramSource[]> =>
     (await apiClient.get<TelegramSource[]>("/copy-trading/sources", withAuth(token))).data,
   createSource: async (payload: Omit<TelegramSource, "id" | "state" | "unsupported_reason" | "is_paused" | "profile">, token?: string): Promise<TelegramSource> =>
     (await apiClient.post<TelegramSource>("/copy-trading/sources", payload, withAuth(token))).data,
+  pauseSource: async (sourceId: string, isPaused: boolean, token?: string): Promise<TelegramSource> =>
+    (await apiClient.patch<TelegramSource>(`/copy-trading/sources/${sourceId}/pause`, { is_paused: isPaused }, withAuth(token))).data,
+  revealActivityRaw: async (eventId: string, token?: string): Promise<{ raw_message: string | null }> =>
+    (await apiClient.get<{ raw_message: string | null }>(`/copy-trading/activity/${eventId}/raw`, withAuth(token))).data,
   createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>("/copy-trading/routes", payload, withAuth(token))).data,
   activateRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
