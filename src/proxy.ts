@@ -3,9 +3,7 @@ import { authConfig } from "@/lib/auth/auth.config";
 import { NextResponse } from "next/server";
 import { FEATURE_FLAGS } from "@/config/feature-flags";
 
-const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [
-  { flag: "GUARD", prefix: "/guard" },
-];
+const FLAGGED_ROUTES: Array<{ flag: keyof typeof FEATURE_FLAGS; prefix: string }> = [];
 
 const FALLBACK_ROUTE = "/dashboard";
 

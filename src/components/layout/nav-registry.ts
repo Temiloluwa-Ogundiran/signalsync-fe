@@ -21,9 +21,6 @@ import {
   CreditCardIcon,
   Tag01Icon,
   Exchange01Icon,
-  Shield01Icon,
-  CrosshairIcon,
-  Target02Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -164,22 +161,6 @@ export function buildNavRegistry(actionFns: {
       ],
     },
     {
-      id: "partna-guard",
-      name: "Partna Guard",
-      icon: Shield01Icon,
-      route: "/guard",
-      flag: "GUARD" as FeatureFlag,
-      groups: [
-        {
-          items: [
-            { icon: CrosshairIcon, label: "Awareness", route: "/guard" },
-            { icon: Target02Icon, label: "Rules & Contract", route: "/guard/rules" },
-            { icon: Wallet01Icon, label: "Accounts", route: "/guard/accounts" },
-          ],
-        },
-      ],
-    },
-    {
       id: "backtesting",
       name: "Backtesting",
       icon: FlaskConicalIcon,
@@ -309,10 +290,11 @@ function routeIsActive(route: string, pathname: string): boolean {
 /**
  * True when this item is the active one in its group.
  *
- * Uses longest-prefix-wins among `siblings` so a parent route (e.g. `/guard`)
- * does not stay highlighted on a child page (`/guard/rules`): only the most
- * specific matching route is active. `siblings` defaults to just the item, which
- * preserves the old prefix-match behavior for callers that don't pass a group.
+ * Uses longest-prefix-wins among `siblings` so a parent route (e.g.
+ * `/copy-trading`) does not stay highlighted on a child page
+ * (`/copy-trading/routes`): only the most specific matching route is active.
+ * `siblings` defaults to just the item, which preserves the old prefix-match
+ * behavior for callers that don't pass a group.
  */
 export function isItemActive(
   item: NavItem,
