@@ -1,168 +1,136 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Activity,
-  Link2,
-  Radio,
-  Route,
-  Save,
-  ShieldCheck,
-} from "lucide-react";
+import Image from "next/image";
+import { Activity, AlertTriangle, Bot, Cable, Link2, Plus, Radio, Route, Save, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { AppLoader } from "@/components/app-loader";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { AppLoader } from "@/components/app-loader";
 import { cn } from "@/lib/utils";
 import {
-  useCopyAccountPolicies,
-  useCopyActivity,
-  useCopyRoutes,
-  useCopyTradingSettings,
-  useCopyTargetAccounts,
-  useUpdateCopyAccountPolicy,
+  useCopyAccountPolicies, useCopyActivity, useCopyRoutes, useCopyTargetAccounts,
+  useCopyTradingActions, useCopyTradingSettings, useTelegramConnections,
+  useTelegramDialogs, useTelegramSources, useUpdateCopyAccountPolicy,
   useUpdateCopyTradingSettings,
 } from "./hooks";
-import type { CopyAccountPolicy, CopyActivity as CopyActivityType } from "./types";
+import type { CopyAccountPolicy, CopyActivity as CopyActivityType, CopyRouteInput, TelegramAuth, TelegramConnection, TelegramSource } from "./types";
 
 export type CopyTradingView = "overview" | "routes" | "accounts" | "activity";
 
-const viewMeta: Record<CopyTradingView, { title: string; description: string }> = {
-  overview: { title: "Copy Trading", description: "Automation status and routing health" },
-  routes: { title: "Copy Routes", description: "Telegram sources mapped to MT5 accounts" },
-  accounts: { title: "Account Controls", description: "Maximum lots and account-level pause controls" },
-  activity: { title: "Copy Activity", description: "A permanent timeline of automated actions" },
-};
+const viewMeta = {
+  overview: ["Copy Trading", "Telegram connections, channel learning and automation health"],
+  routes: ["Copy Routes", "Channel-to-account rules, sizing and trade management"],
+  accounts: ["Account Controls", "Account caps, pause controls and emergency actions"],
+  activity: ["Copy Activity", "Signal detection through final broker outcome"],
+} as const;
 
 export function CopyTradingPage({ view }: { view: CopyTradingView }) {
+  const [connectOpen, setConnectOpen] = useState(false);
   const settings = useCopyTradingSettings();
   const routes = useCopyRoutes();
   const policies = useCopyAccountPolicies();
   const activity = useCopyActivity();
+  const connections = useTelegramConnections();
+  const sources = useTelegramSources();
   const updateSettings = useUpdateCopyTradingSettings();
-  const meta = viewMeta[view];
-
-  const isLoading = settings.isLoading || routes.isLoading || policies.isLoading;
-  if (isLoading) return <AppLoader />;
+  const [title, description] = viewMeta[view];
+  if ([settings, routes, policies, connections, sources].some((query) => query.isLoading)) return <AppLoader />;
 
   const handleAutomation = async (enabled: boolean) => {
-    try {
-      await updateSettings.mutateAsync(!enabled);
-      toast.success(enabled ? "Copy trading resumed" : "Copy trading paused");
-    } catch {
-      toast.error("Could not update copy trading");
-    }
+    try { await updateSettings.mutateAsync(!enabled); toast.success(enabled ? "Automatic copying resumed" : "Automatic copying paused"); }
+    catch { toast.error("Could not update automatic copying"); }
   };
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <header className="flex flex-col gap-4 border-b border-border-primary pb-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">{meta.title}</h1>
-          <p className="mt-1 text-sm text-text-secondary">{meta.description}</p>
-        </div>
-        <div className="flex items-center gap-3 rounded-lg border border-border-primary bg-card-bg px-3 py-2">
-          <span className="text-sm font-medium text-text-primary">
-            {settings.data?.is_paused ? "Automation paused" : "Automation ready"}
-          </span>
-          <Switch
-            checked={!settings.data?.is_paused}
-            onCheckedChange={handleAutomation}
-            disabled={updateSettings.isPending}
-            aria-label="Toggle copy trading automation"
-          />
+        <div><h1 className="text-2xl font-bold text-text-primary">{title}</h1><p className="mt-1 text-sm text-text-secondary">{description}</p></div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setConnectOpen(true)}><Plus className="size-4" />Connect Telegram</Button>
+          <div className="flex items-center gap-3 rounded-lg border border-border-primary bg-card-bg px-3 py-2">
+            <span className="text-sm font-medium text-text-primary">{settings.data?.is_paused ? "Paused" : "Automation ready"}</span>
+            <Switch checked={!settings.data?.is_paused} onCheckedChange={handleAutomation} disabled={updateSettings.isPending} aria-label="Toggle copy trading automation" />
+          </div>
         </div>
       </header>
 
-      {view === "overview" ? (
-        <Overview
-          routeCount={routes.data?.length ?? 0}
-          activeCount={routes.data?.filter((route) => route.state === "active").length ?? 0}
-          activity={activity.data ?? []}
-        />
-      ) : null}
-      {view === "routes" ? <RoutesTable routes={routes.data ?? []} /> : null}
-      {view === "accounts" ? <AccountControls policies={policies.data ?? []} /> : null}
-      {view === "activity" ? <ActivityTimeline events={activity.data ?? []} /> : null}
+      {view === "overview" && <Overview connections={connections.data ?? []} sources={sources.data ?? []} routes={routes.data ?? []} activity={activity.data ?? []} />}
+      {view === "routes" && <RoutesPanel routes={routes.data ?? []} sources={sources.data ?? []} />}
+      {view === "accounts" && <AccountControls policies={policies.data ?? []} />}
+      {view === "activity" && <ActivityTimeline events={activity.data ?? []} />}
+      <TelegramWizard open={connectOpen} onOpenChange={setConnectOpen} />
     </div>
   );
 }
 
-function Overview({ routeCount, activeCount, activity }: { routeCount: number; activeCount: number; activity: CopyActivityType[] }) {
-  return (
-    <div className="space-y-6 pt-6">
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Metric icon={Route} label="Configured routes" value={routeCount} />
-        <Metric icon={Radio} label="Active routes" value={activeCount} />
-        <Metric icon={Activity} label="Recent events" value={activity.length} />
-      </section>
-      <section className="overflow-hidden rounded-lg border border-border-primary bg-card-bg">
-        <div className="flex items-center justify-between border-b border-border-primary px-4 py-3">
-          <h2 className="font-semibold text-text-primary">Recent activity</h2>
-          <Link href="/copy-trading/activity" className="text-sm font-medium text-text-secondary hover:text-text-primary">View all</Link>
-        </div>
-        <ActivityTimeline events={activity.slice(0, 5)} embedded />
-      </section>
-    </div>
-  );
+function Overview({ connections, sources, routes, activity }: { connections: TelegramConnection[]; sources: TelegramSource[]; routes: NonNullable<ReturnType<typeof useCopyRoutes>["data"]>; activity: CopyActivityType[] }) {
+  return <div className="space-y-6 pt-6">
+    <section className="grid gap-3 sm:grid-cols-4"><Metric icon={Cable} label="Telegram accounts" value={connections.filter((item) => item.state === "ready").length} /><Metric icon={Bot} label="Learned channels" value={sources.filter((item) => item.profile).length} /><Metric icon={Radio} label="Active routes" value={routes.filter((item) => item.state === "active").length} /><Metric icon={Activity} label="Recent events" value={activity.length} /></section>
+    <Connections connections={connections} />
+    <Sources connections={connections} sources={sources} />
+    <section className="overflow-hidden rounded-lg border border-border-primary bg-card-bg"><div className="flex items-center justify-between border-b border-border-primary px-4 py-3"><h2 className="font-semibold text-text-primary">Recent activity</h2><Link href="/copy-trading/activity" className="text-sm font-medium text-text-secondary hover:text-text-primary">View all</Link></div><ActivityTimeline events={activity.slice(0, 5)} embedded /></section>
+  </div>;
 }
 
-function Metric({ icon: Icon, label, value }: { icon: typeof Route; label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-border-primary bg-card-bg p-4">
-      <div className="flex size-9 items-center justify-center rounded-md bg-bg-tertiary text-text-secondary"><Icon className="size-4" /></div>
-      <div><p className="text-xl font-bold tabular-nums text-text-primary">{value}</p><p className="text-xs text-text-secondary">{label}</p></div>
-    </div>
-  );
+function Connections({ connections }: { connections: TelegramConnection[] }) {
+  const actions = useCopyTradingActions();
+  return <section className="rounded-lg border border-border-primary bg-card-bg"><div className="border-b border-border-primary px-4 py-3"><h2 className="font-semibold text-text-primary">Telegram connections</h2></div>{connections.length ? connections.map((item) => <div key={item.id} className="flex items-center justify-between gap-4 border-b border-border-primary px-4 py-4 last:border-0"><div className="flex min-w-0 items-center gap-3"><div className="flex size-9 items-center justify-center rounded-md bg-bg-tertiary"><Smartphone className="size-4" /></div><div className="min-w-0"><p className="truncate font-medium text-text-primary">{item.display_name || item.username || item.phone_hint || "Telegram account"}</p><p className="text-xs text-text-secondary">{item.state.replaceAll("_", " ")}{item.reauthentication_reason ? ` - ${item.reauthentication_reason}` : ""}</p></div></div><Button variant="ghost" size="icon" onClick={() => actions.disconnect.mutate(item.id)} aria-label="Disconnect Telegram"><Trash2 className="size-4 text-danger" /></Button></div>) : <EmptyState icon={Cable} title="No Telegram account connected" body="Connect a read-only Telegram session to select signal channels." compact />}</section>;
 }
 
-function RoutesTable({ routes }: { routes: ReturnType<typeof useCopyRoutes>["data"] extends infer T ? NonNullable<T> : never }) {
-  if (!routes.length) {
-    return <EmptyState icon={Link2} title="No copy routes yet" body="Telegram connections will become available in the next rollout. Your MT5 accounts and safety controls can be prepared now." />;
-  }
-  return (
-    <div className="mt-6 overflow-x-auto rounded-lg border border-border-primary bg-card-bg">
-      <table className="w-full min-w-[760px] text-left text-sm">
-        <thead className="border-b border-border-primary bg-bg-tertiary text-xs uppercase text-text-tertiary"><tr><th className="px-4 py-3">Source</th><th className="px-4 py-3">Target</th><th className="px-4 py-3">Fixed lot</th><th className="px-4 py-3">TP mode</th><th className="px-4 py-3">State</th></tr></thead>
-        <tbody>{routes.map((route) => <tr key={route.id} className="border-b border-border-primary last:border-0"><td className="px-4 py-4 font-mono text-xs text-text-secondary">{route.source_id.slice(0, 8)}</td><td className="px-4 py-4 font-mono text-xs text-text-secondary">{route.target_account_id.slice(0, 8)}</td><td className="px-4 py-4 font-semibold text-text-primary">{route.fixed_lot}</td><td className="px-4 py-4 capitalize text-text-secondary">{route.take_profit_mode}</td><td className="px-4 py-4"><StateLabel state={route.state} /></td></tr>)}</tbody>
-      </table>
-    </div>
-  );
+function Sources({ connections, sources }: { connections: TelegramConnection[]; sources: TelegramSource[] }) {
+  const [open, setOpen] = useState(false);
+  return <section className="rounded-lg border border-border-primary bg-card-bg"><div className="flex items-center justify-between border-b border-border-primary px-4 py-3"><div><h2 className="font-semibold text-text-primary">Channel learning</h2><p className="text-xs text-text-secondary">Each channel is analyzed once and quickly revalidated for later users.</p></div><Button size="sm" onClick={() => setOpen(true)} disabled={!connections.some((item) => item.state === "ready")}><Plus className="size-4" />Add channel</Button></div>{sources.length ? <div className="grid gap-3 p-4 lg:grid-cols-2">{sources.map((source) => <div key={source.id} className="rounded-lg border border-border-primary p-4"><div className="flex items-center justify-between"><p className="font-semibold text-text-primary">{source.title}</p><StateLabel state={source.state} /></div>{source.profile ? <dl className="mt-4 grid grid-cols-2 gap-3 text-xs"><ProfileValue label="Signal style" value={source.profile.signal_style} /><ProfileValue label="Assembly window" value={`${source.profile.recommended_assembly_window_seconds}s`} /><ProfileValue label="Image signals" value={source.profile.image_primary ? "Unsupported" : `${Math.round(source.profile.image_frequency * 100)}%`} /><ProfileValue label="Automation confidence" value={source.profile.confidence} /></dl> : <p className="mt-3 text-sm text-text-secondary">Analyzing seven days of channel messages...</p>}{source.unsupported_reason && <p className="mt-3 text-sm text-danger">{source.unsupported_reason}</p>}</div>)}</div> : <EmptyState icon={Bot} title="No channels selected" body="Choose a channel or group and we will learn how it publishes signals." compact />}<SourceWizard open={open} onOpenChange={setOpen} connections={connections} /></section>;
 }
 
-function AccountControls({ policies }: { policies: CopyAccountPolicy[] }) {
-  const { data: accounts = [], isLoading } = useCopyTargetAccounts();
-  if (isLoading) return <AppLoader />;
-  if (!accounts.length) return <EmptyState icon={ShieldCheck} title="Connect an MT5 account first" body="Account safety limits become available after MT5 verification succeeds." />;
-  return <div className="mt-6 overflow-hidden rounded-lg border border-border-primary bg-card-bg">{accounts.map((account) => <AccountPolicyRow key={account.id} accountId={account.id} accountLabel={account.display_name?.trim() || `${account.broker_name} ${account.broker_login}`} policy={policies.find((item) => item.account_id === account.id)} />)}</div>;
+function SourceWizard({ open, onOpenChange, connections }: { open: boolean; onOpenChange: (value: boolean) => void; connections: TelegramConnection[] }) {
+  const ready = connections.filter((item) => item.state === "ready");
+  const [connectionId, setConnectionId] = useState(ready[0]?.id ?? "");
+  const dialogs = useTelegramDialogs(connectionId);
+  const actions = useCopyTradingActions();
+  const add = async (chatId: number) => { const dialog = dialogs.data?.find((item) => item.chat_id === chatId); if (!dialog) return; try { await actions.createSource.mutateAsync({ connection_id: connectionId, telegram_chat_id: dialog.chat_id, title: dialog.title, username: dialog.username, source_type: dialog.source_type }); toast.success("Channel learning started"); onOpenChange(false); } catch { toast.error("Could not add this channel"); } };
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>Select a Telegram channel</DialogTitle></DialogHeader><Select value={connectionId} onChange={setConnectionId}>{ready.map((item) => <option key={item.id} value={item.id}>{item.display_name || item.username || item.phone_hint}</option>)}</Select><div className="space-y-2">{dialogs.isLoading ? <AppLoader /> : dialogs.data?.map((dialog) => <button key={dialog.chat_id} onClick={() => add(dialog.chat_id)} className="flex w-full items-center justify-between rounded-lg border border-border-primary px-3 py-3 text-left hover:bg-bg-tertiary"><span><span className="block font-medium text-text-primary">{dialog.title}</span><span className="text-xs capitalize text-text-secondary">{dialog.source_type}{dialog.is_admin ? " - admin" : ""}</span></span><Plus className="size-4" /></button>)}</div></DialogContent></Dialog>;
 }
 
-function AccountPolicyRow({ accountId, accountLabel, policy }: { accountId: string; accountLabel: string; policy?: CopyAccountPolicy }) {
-  const [maxLot, setMaxLot] = useState(policy?.max_lot ?? "100.0000");
-  const mutation = useUpdateCopyAccountPolicy();
-  const save = async (payload: { max_lot?: string; is_paused?: boolean }) => {
-    try { await mutation.mutateAsync({ accountId, payload }); toast.success("Account controls updated"); }
-    catch { toast.error("Could not update account controls"); }
-  };
-  return (
-    <div className="grid gap-4 border-b border-border-primary p-4 last:border-0 sm:grid-cols-[1fr_180px_auto_auto] sm:items-center">
-      <div><p className="font-semibold text-text-primary">{accountLabel}</p><p className="mt-0.5 font-mono text-xs text-text-tertiary">{accountId.slice(0, 8)}</p></div>
-      <label className="space-y-1"><span className="text-xs font-medium text-text-secondary">Maximum lot</span><Input type="number" min="0.0001" step="0.01" value={maxLot} onChange={(event) => setMaxLot(event.target.value)} /></label>
-      <div className="flex items-center gap-2"><Switch checked={!policy?.is_paused} onCheckedChange={(enabled) => save({ is_paused: !enabled })} disabled={mutation.isPending} /><span className="text-sm text-text-secondary">{policy?.is_paused ? "Paused" : "Enabled"}</span></div>
-      <Button variant="outline" onClick={() => save({ max_lot: maxLot })} disabled={mutation.isPending || !maxLot}><Save className="size-4" />Save</Button>
-    </div>
-  );
+function RoutesPanel({ routes, sources }: { routes: NonNullable<ReturnType<typeof useCopyRoutes>["data"]>; sources: TelegramSource[] }) {
+  const [open, setOpen] = useState(false);
+  const actions = useCopyTradingActions();
+  return <div className="space-y-4 pt-6"><div className="flex justify-end"><Button onClick={() => setOpen(true)} disabled={!sources.some((item) => item.state === "ready" || item.state === "active")}><Plus className="size-4" />New route</Button></div>{routes.length ? <div className="overflow-x-auto rounded-lg border border-border-primary bg-card-bg"><table className="w-full min-w-[800px] text-left text-sm"><thead className="border-b border-border-primary bg-bg-tertiary text-xs uppercase text-text-tertiary"><tr><th className="px-4 py-3">Source</th><th className="px-4 py-3">Target</th><th className="px-4 py-3">Fixed lot</th><th className="px-4 py-3">Take profits</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Action</th></tr></thead><tbody>{routes.map((route) => <tr key={route.id} className="border-b border-border-primary last:border-0"><td className="px-4 py-4">{sources.find((item) => item.id === route.source_id)?.title || route.source_id.slice(0, 8)}</td><td className="px-4 py-4 font-mono text-xs text-text-secondary">{route.target_account_id.slice(0, 8)}</td><td className="px-4 py-4 font-semibold">{route.fixed_lot}</td><td className="px-4 py-4 capitalize">{route.take_profit_mode} - {route.lot_distribution.replaceAll("_", " ")}</td><td className="px-4 py-4"><StateLabel state={route.state} /></td><td className="px-4 py-4"><Button size="sm" variant="outline" onClick={() => actions.routeAction.mutate({ id: route.id, action: route.state === "active" ? "pause" : route.state === "paused" ? "resume" : "activate" })}>{route.state === "active" ? "Pause" : route.state === "paused" ? "Resume" : "Start"}</Button></td></tr>)}</tbody></table></div> : <EmptyState icon={Link2} title="No copy routes yet" body="Create a route after channel learning completes. Each route has independent sizing and management rules." />}<RouteWizard open={open} onOpenChange={setOpen} sources={sources} /></div>;
 }
 
-function ActivityTimeline({ events, embedded = false }: { events: CopyActivityType[]; embedded?: boolean }) {
-  if (!events.length) return <EmptyState icon={Activity} title="No activity yet" body="Copy-trading actions and safety changes will appear here." compact={embedded} />;
-  return <div className={cn("divide-y divide-border-primary", embedded ? "" : "mt-6 overflow-hidden rounded-lg border border-border-primary bg-card-bg")}>{events.map((event) => <div key={event.id} className="flex gap-3 px-4 py-4"><div className={cn("mt-1 size-2 shrink-0 rounded-full", event.level === "success" ? "bg-success" : event.level === "error" ? "bg-danger" : event.level === "warning" ? "bg-warning" : "bg-info")} /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><p className="font-medium text-text-primary">{event.title}</p><time className="text-xs text-text-tertiary">{new Date(event.created_at).toLocaleString()}</time></div>{event.body ? <p className="mt-1 text-sm text-text-secondary">{event.body}</p> : null}<p className="mt-1 text-xs text-text-tertiary">{event.action.replaceAll(".", " ")}</p></div></div>)}</div>;
+const defaultRoute: CopyRouteInput = { source_id: "", target_account_id: "", fixed_lot: "0.01", take_profit_mode: "all", lot_distribution: "split_total", pending_orders_enabled: true, minimum_fields: "direction_symbol_sl_tp", assembly_window_seconds: null, process_all_group_authors: false, notify_success: true, notify_failure: true, allow_sl_tp_updates: true, allow_break_even: true, allow_additional_tp: true, allow_partial_close: true, allow_full_close: true, allow_pending_cancel: true, unsafe_minimum_confirmed: false };
+
+function RouteWizard({ open, onOpenChange, sources }: { open: boolean; onOpenChange: (value: boolean) => void; sources: TelegramSource[] }) {
+  const accounts = useCopyTargetAccounts(); const actions = useCopyTradingActions(); const [form, setForm] = useState(defaultRoute);
+  const selected = sources.find((item) => item.id === form.source_id); const learnedWindow = selected?.profile?.recommended_assembly_window_seconds ?? 1; const unsafe = form.minimum_fields !== "direction_symbol_sl_tp";
+  const set = <K extends keyof CopyRouteInput>(key: K, value: CopyRouteInput[K]) => setForm((current) => ({ ...current, [key]: value }));
+  const submit = async () => { try { await actions.createRoute.mutateAsync({ ...form, assembly_window_seconds: Math.max(form.assembly_window_seconds ?? learnedWindow, learnedWindow), unsafe_minimum_confirmed: unsafe }); toast.success("Copy route created"); onOpenChange(false); } catch { toast.error("Could not create copy route"); } };
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Configure automatic copying</DialogTitle></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><Field label="Telegram source"><Select value={form.source_id} onChange={(value) => set("source_id", value)}><option value="">Select channel</option>{sources.filter((item) => ["ready", "active"].includes(item.state)).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</Select></Field><Field label="MT5 account"><Select value={form.target_account_id} onChange={(value) => set("target_account_id", value)}><option value="">Select account</option>{accounts.data?.map((item) => <option key={item.id} value={item.id}>{item.display_name || `${item.broker_name} ${item.broker_login}`}</option>)}</Select></Field><Field label="Fixed lot"><Input type="number" min="0.0001" step="0.01" value={form.fixed_lot} onChange={(event) => set("fixed_lot", event.target.value)} /></Field><Field label="Minimum fields"><Select value={form.minimum_fields} onChange={(value) => set("minimum_fields", value)}><option value="direction_symbol_sl_tp">Direction, symbol, SL and TP</option><option value="direction_symbol_tp">Direction, symbol and TP</option><option value="direction_symbol_sl">Direction, symbol and SL</option><option value="direction_symbol_entry">Direction, symbol and entry</option><option value="direction_symbol">Direction and symbol</option></Select></Field><Field label="Take-profit placement"><Select value={form.take_profit_mode} onChange={(value) => set("take_profit_mode", value as CopyRouteInput["take_profit_mode"])}><option value="all">Place every TP</option><option value="lowest">Lowest TP only</option><option value="highest">Highest TP only</option></Select></Field>{form.take_profit_mode === "all" && <Field label="Lot across TPs"><Select value={form.lot_distribution} onChange={(value) => set("lot_distribution", value as CopyRouteInput["lot_distribution"])}><option value="split_total">Split total fixed lot</option><option value="fixed_each">Fixed lot on every trade</option></Select></Field>}<Field label="Assembly window (seconds)"><Input type="number" min={learnedWindow} max={600} value={form.assembly_window_seconds ?? learnedWindow} onChange={(event) => set("assembly_window_seconds", Number(event.target.value))} /><span className="text-xs text-text-tertiary">Learned safe minimum: {learnedWindow}s</span></Field></div>{unsafe && <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-warning"><AlertTriangle className="mr-2 inline size-4" />This route can execute before full protective levels arrive.</div>}<div className="grid gap-2 sm:grid-cols-2">{([ ["pending_orders_enabled", "Place pending orders"], ["process_all_group_authors", "Process all group authors"], ["allow_sl_tp_updates", "Update stop loss and TP"], ["allow_break_even", "Apply break even"], ["allow_additional_tp", "Open additional TP legs"], ["allow_partial_close", "Allow partial close"], ["allow_full_close", "Allow full close"], ["allow_pending_cancel", "Cancel pending orders"], ["notify_success", "Email successful actions"], ["notify_failure", "Email failures"] ] as [keyof CopyRouteInput, string][]).map(([key, label]) => <Toggle key={key} label={label} checked={Boolean(form[key])} onChange={(value) => set(key, value as never)} />)}</div><Button onClick={submit} disabled={!form.source_id || !form.target_account_id || actions.createRoute.isPending}>Create route</Button></DialogContent></Dialog>;
 }
 
+function TelegramWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (value: boolean) => void }) {
+  const actions = useCopyTradingActions(); const [method, setMethod] = useState<"phone" | "qr">("phone"); const [phone, setPhone] = useState(""); const [code, setCode] = useState(""); const [password, setPassword] = useState(""); const [auth, setAuth] = useState<TelegramAuth | null>(null);
+  useEffect(() => { if (!auth || ["ready", "failed"].includes(auth.state)) return; const timer = setInterval(async () => { const next = await actions.getAuth(auth.auth_id); setAuth(next); if (next.state === "ready") { toast.success("Telegram connected"); onOpenChange(false); } if (next.state === "failed") toast.error(next.message); }, 1200); return () => clearInterval(timer); }, [auth, actions, onOpenChange]);
+  const start = async () => { try { setAuth(method === "phone" ? await actions.startPhone.mutateAsync(phone) : await actions.startQr.mutateAsync()); } catch { toast.error("Could not start Telegram sign-in"); } };
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Connect Telegram</DialogTitle></DialogHeader><div className="grid grid-cols-2 gap-2"><Button variant={method === "phone" ? "default" : "outline"} onClick={() => setMethod("phone")}>Phone code</Button><Button variant={method === "qr" ? "default" : "outline"} onClick={() => setMethod("qr")}>QR code</Button></div>{!auth && <>{method === "phone" && <Field label="Telegram phone number"><Input placeholder="+234..." value={phone} onChange={(event) => setPhone(event.target.value)} /></Field>}<Button onClick={start} disabled={method === "phone" && phone.length < 7}>Continue</Button></>}{auth && <div className="space-y-4"><div className="rounded-lg border border-border-primary bg-bg-tertiary p-3 text-sm text-text-secondary">{auth.message}</div>{auth.state === "qr_required" && auth.qr_url && <div className="flex justify-center rounded-lg bg-white p-5"><QRCodeSVG value={auth.qr_url} size={220} /></div>}{auth.state === "code_required" && <div className="flex gap-2"><Input placeholder="Telegram code" value={code} onChange={(event) => setCode(event.target.value)} /><Button onClick={async () => setAuth(await actions.submitCode(auth.auth_id, code))}>Verify</Button></div>}{auth.state === "password_required" && <div className="flex gap-2"><Input type="password" placeholder="Two-step password" value={password} onChange={(event) => setPassword(event.target.value)} /><Button onClick={async () => setAuth(await actions.submitPassword(auth.auth_id, password))}>Verify</Button></div>}</div>}<p className="text-xs leading-5 text-text-tertiary">TradePartna uses a read-only Telegram session. It does not send messages. Your two-step password is never stored.</p></DialogContent></Dialog>;
+}
+
+function AccountControls({ policies }: { policies: CopyAccountPolicy[] }) { const accounts = useCopyTargetAccounts(); if (accounts.isLoading) return <AppLoader />; return <div className="space-y-6 pt-6">{accounts.data?.length ? <div className="overflow-hidden rounded-lg border border-border-primary bg-card-bg">{accounts.data.map((account) => <AccountPolicyRow key={account.id} accountId={account.id} accountLabel={account.display_name?.trim() || `${account.broker_name} ${account.broker_login}`} policy={policies.find((item) => item.account_id === account.id)} />)}</div> : <EmptyState icon={ShieldCheck} title="Connect an MT5 account first" body="Account safety limits become available after MT5 verification succeeds." />}<EmergencyControls /></div>; }
+
+function EmergencyControls() { const actions = useCopyTradingActions(); const [confirmation, setConfirmation] = useState(""); const execute = async (action: string) => { try { await actions.emergency.mutateAsync({ action, scope: "global", confirmation }); toast.success("Emergency action is processing"); setConfirmation(""); } catch { toast.error("Emergency action could not start"); } }; return <section className="rounded-lg border border-danger/30 bg-card-bg p-4"><div className="flex items-center gap-2"><AlertTriangle className="size-5 text-danger" /><h2 className="font-semibold text-text-primary">Emergency controls</h2></div><p className="mt-1 text-sm text-text-secondary">These actions affect copied trades only. Type EMERGENCY to unlock them.</p><div className="mt-4 flex flex-col gap-2 sm:flex-row"><Input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Type EMERGENCY" /><Button variant="outline" disabled={confirmation !== "EMERGENCY"} onClick={() => execute("close_positions")}>Close copied positions</Button><Button variant="outline" disabled={confirmation !== "EMERGENCY"} onClick={() => execute("cancel_pending")}>Cancel pending orders</Button><Button disabled={confirmation !== "EMERGENCY"} onClick={() => execute("both")}>Do both</Button></div></section>; }
+
+function AccountPolicyRow({ accountId, accountLabel, policy }: { accountId: string; accountLabel: string; policy?: CopyAccountPolicy }) { const [maxLot, setMaxLot] = useState(policy?.max_lot ?? "100.0000"); const mutation = useUpdateCopyAccountPolicy(); const save = async (payload: { max_lot?: string; is_paused?: boolean }) => { try { await mutation.mutateAsync({ accountId, payload }); toast.success("Account controls updated"); } catch { toast.error("Could not update account controls"); } }; return <div className="grid gap-4 border-b border-border-primary p-4 last:border-0 sm:grid-cols-[1fr_180px_auto_auto] sm:items-center"><div><p className="font-semibold text-text-primary">{accountLabel}</p><p className="font-mono text-xs text-text-tertiary">{accountId.slice(0, 8)}</p></div><Field label="Maximum lot"><Input type="number" min="0.0001" step="0.01" value={maxLot} onChange={(event) => setMaxLot(event.target.value)} /></Field><Toggle label={policy?.is_paused ? "Paused" : "Enabled"} checked={!policy?.is_paused} onChange={(enabled) => save({ is_paused: !enabled })} /><Button variant="outline" onClick={() => save({ max_lot: maxLot })}><Save className="size-4" />Save</Button></div>; }
+
+function ActivityTimeline({ events, embedded = false }: { events: CopyActivityType[]; embedded?: boolean }) { const [status, setStatus] = useState("all"); const filtered = status === "all" ? events : events.filter((event) => event.level === status); if (!events.length) return <EmptyState icon={Activity} title="No activity yet" body="Signals and broker actions will appear here." compact={embedded} />; return <div className={cn(!embedded && "mt-6 space-y-3")}><div className={cn("flex gap-2", embedded && "hidden")}><Select value={status} onChange={setStatus}><option value="all">All statuses</option><option value="success">Successful</option><option value="error">Failed</option><option value="warning">Needs attention</option></Select></div><div className={cn("divide-y divide-border-primary", !embedded && "overflow-hidden rounded-lg border border-border-primary bg-card-bg")}>{filtered.map((event) => <div key={event.id} className="flex gap-3 px-4 py-4"><div className={cn("mt-1 size-2 shrink-0 rounded-full", event.level === "success" ? "bg-success" : event.level === "error" ? "bg-danger" : event.level === "warning" ? "bg-warning" : "bg-info")} /><div className="min-w-0 flex-1"><div className="flex flex-wrap justify-between gap-2"><p className="font-medium text-text-primary">{event.title}</p><time className="text-xs text-text-tertiary">{new Date(event.created_at).toLocaleString()}</time></div>{event.body && <p className="mt-1 text-sm text-text-secondary">{event.body}</p>}<p className="mt-1 text-xs text-text-tertiary">{event.action.replaceAll(".", " ")}</p></div></div>)}</div></div>; }
+
+function Metric({ icon: Icon, label, value }: { icon: typeof Route; label: string; value: number }) { return <div className="flex items-center gap-3 rounded-lg border border-border-primary bg-card-bg p-4"><div className="flex size-9 items-center justify-center rounded-md bg-bg-tertiary text-text-secondary"><Icon className="size-4" /></div><div><p className="text-xl font-bold tabular-nums text-text-primary">{value}</p><p className="text-xs text-text-secondary">{label}</p></div></div>; }
+function ProfileValue({ label, value }: { label: string; value: string }) { return <div><dt className="text-text-tertiary">{label}</dt><dd className="mt-0.5 font-medium capitalize text-text-primary">{value}</dd></div>; }
 function StateLabel({ state }: { state: string }) { return <span className="inline-flex rounded-md bg-bg-tertiary px-2 py-1 text-xs font-semibold capitalize text-text-secondary">{state.replaceAll("_", " ")}</span>; }
-
-function EmptyState({ icon: Icon, title, body, compact = false }: { icon: typeof Link2; title: string; body: string; compact?: boolean }) {
-  return <div className={cn("flex flex-col items-center justify-center text-center", compact ? "px-4 py-10" : "mt-6 min-h-72 rounded-lg border border-dashed border-border-secondary bg-card-bg px-6 py-12")}><div className="flex size-10 items-center justify-center rounded-lg bg-bg-tertiary text-text-secondary"><Icon className="size-5" /></div><h2 className="mt-3 font-semibold text-text-primary">{title}</h2><p className="mt-1 max-w-md text-sm leading-6 text-text-secondary">{body}</p></div>;
-}
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="space-y-1"><span className="text-xs font-medium text-text-secondary">{label}</span>{children}</label>; }
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) { return <label className="flex items-center justify-between gap-3 rounded-lg border border-border-primary px-3 py-2.5 text-sm text-text-primary"><span>{label}</span><Switch checked={checked} onCheckedChange={onChange} /></label>; }
+function Select({ value, onChange, children }: { value: string; onChange: (value: string) => void; children: React.ReactNode }) { return <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full rounded-md border border-border-primary bg-background px-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/30">{children}</select>; }
+function EmptyState({ icon: Icon, title, body, compact = false }: { icon: typeof Link2; title: string; body: string; compact?: boolean }) { return <div className={cn("flex flex-col items-center justify-center text-center", compact ? "px-4 py-10" : "min-h-72 rounded-lg border border-dashed border-border-secondary bg-card-bg px-6 py-12")}><div className="flex size-10 items-center justify-center rounded-lg bg-bg-tertiary text-text-secondary"><Icon className="size-5" /></div><h2 className="mt-3 font-semibold text-text-primary">{title}</h2><p className="mt-1 max-w-md text-sm leading-6 text-text-secondary">{body}</p></div>; }
+function QRCodeSVG({ value, size }: { value: string; size: number }) { return <Image src={value} width={size} height={size} unoptimized alt="Telegram sign-in QR code" />; }

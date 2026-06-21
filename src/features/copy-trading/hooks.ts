@@ -9,6 +9,9 @@ export const COPY_TRADING_KEYS = {
   policies: () => ["copy-trading", "account-policies"] as const,
   activity: () => ["copy-trading", "activity"] as const,
   targetAccounts: () => ["copy-trading", "target-accounts"] as const,
+  connections: () => ["copy-trading", "telegram-connections"] as const,
+  sources: () => ["copy-trading", "sources"] as const,
+  dialogs: (id: string) => ["copy-trading", "dialogs", id] as const,
 };
 
 function useCopyTradingAuth() {
@@ -63,6 +66,39 @@ export function useCopyActivity() {
     enabled,
     refetchInterval: 15_000,
   });
+}
+
+export function useTelegramConnections() {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({ queryKey: COPY_TRADING_KEYS.connections(), queryFn: () => copyTradingApi.listConnections(token), enabled, refetchInterval: 5000 });
+}
+
+export function useTelegramSources() {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({ queryKey: COPY_TRADING_KEYS.sources(), queryFn: () => copyTradingApi.listSources(token), enabled, refetchInterval: 5000 });
+}
+
+export function useTelegramDialogs(connectionId?: string) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({ queryKey: COPY_TRADING_KEYS.dialogs(connectionId ?? ""), queryFn: () => copyTradingApi.listDialogs(connectionId!, token), enabled: enabled && !!connectionId, refetchInterval: 10000 });
+}
+
+export function useCopyTradingActions() {
+  const { token } = useCopyTradingAuth();
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.all });
+  return {
+    startPhone: useMutation({ mutationFn: (phone: string) => copyTradingApi.startPhoneAuth(phone, token) }),
+    startQr: useMutation({ mutationFn: () => copyTradingApi.startQrAuth(token) }),
+    getAuth: (authId: string) => copyTradingApi.getAuth(authId, token),
+    submitCode: (authId: string, code: string) => copyTradingApi.submitCode(authId, code, token),
+    submitPassword: (authId: string, password: string) => copyTradingApi.submitPassword(authId, password, token),
+    disconnect: useMutation({ mutationFn: (id: string) => copyTradingApi.disconnect(id, token), onSuccess: refresh }),
+    createSource: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createSource>[0]) => copyTradingApi.createSource(payload, token), onSuccess: refresh }),
+    createRoute: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createRoute>[0]) => copyTradingApi.createRoute(payload, token), onSuccess: refresh }),
+    routeAction: useMutation({ mutationFn: ({ id, action }: { id: string; action: "activate" | "pause" | "resume" }) => action === "activate" ? copyTradingApi.activateRoute(id, token) : action === "pause" ? copyTradingApi.pauseRoute(id, token) : copyTradingApi.resumeRoute(id, token), onSuccess: refresh }),
+    emergency: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.emergency>[0]) => copyTradingApi.emergency(payload, token), onSuccess: refresh }),
+  };
 }
 
 export function useUpdateCopyTradingSettings() {
