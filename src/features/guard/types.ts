@@ -10,9 +10,12 @@ export type GuardStatus =
   | "CAUTION"
   | "WARNING"
   | "CRITICAL"
+  | "PAUSED"
   | "LOCKED";
 
 export type DrawdownType = "STATIC" | "TRAILING";
+/** Daily loss can be fixed-for-the-day (STATIC) or trail the day's peak equity. */
+export type DailyType = "STATIC" | "TRAILING";
 export type DailyBasis = "BALANCE" | "EQUITY";
 export type DailyAnchor = "DAY_START_BALANCE" | "HIGHER_OF_BALANCE_EQUITY";
 export type DrawdownAnchorRef = "INITIAL_BALANCE" | "PEAK_EQUITY" | "PEAK_BALANCE";
@@ -118,9 +121,15 @@ export interface GuardRuleSpecInput {
   daily_loss: {
     pct: number;
     basis: DailyBasis;
+    /** STATIC = floor fixed at reset; TRAILING = follows the day's peak equity. */
+    type: DailyType;
     anchor: DailyAnchor;
     reset_hour: number;
+    /** Firms reset at e.g. 16:59 EST, not just on the hour. */
+    reset_minute: number;
     reset_tz: string;
+    /** Soft-breach threshold as a fraction of the daily allowance (0 disables). */
+    soft_pct: number;
   };
   max_drawdown: {
     pct: number;

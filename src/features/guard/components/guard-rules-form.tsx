@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
 import {
   Form,
@@ -16,26 +19,38 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 import type {
   GuardRuleSpecInput,
   GuardPersonalInput,
+  DailyType,
   DrawdownType,
 } from "../types";
 
 /**
- * Firm-rules form. Percentages are entered as WHOLE NUMBERS (5 = 5%) and
- * converted to fractions (0.05) on submit — the BE engine works in fractions.
- * The FE never computes any buffer; this only captures the firm's published rules.
+ * Firm-rules form. The product is an alarm — so by default we ask for only the
+ * TWO numbers that define the lines: daily loss % and max drawdown %. Everything
+ * else (basis, anchor, trailing, reset time, soft-breach, consistency, min-days,
+ * personal limits) has a sensible default and lives under "Advanced settings".
+ *
+ * Percentages are entered as WHOLE NUMBERS (5 = 5%) and converted to fractions
+ * (0.05) on submit — the BE engine works in fractions. The FE never computes any
+ * buffer; this only captures the firm's published rules.
  */
 const schema = z.object({
   firm: z.string().max(80).optional(),
+  // Visible by default.
   daily_loss_pct: z.coerce.number().gt(0).lt(100),
+  max_dd_pct: z.coerce.number().gt(0).lt(100),
+  // Advanced.
   daily_basis: z.enum(["EQUITY", "BALANCE"]),
+  daily_type: z.enum(["STATIC", "TRAILING"]),
   daily_anchor: z.enum(["DAY_START_BALANCE", "HIGHER_OF_BALANCE_EQUITY"]),
   reset_hour: z.coerce.number().int().min(0).max(23),
+  reset_minute: z.coerce.number().int().min(0).max(59),
   reset_tz: z.string().min(1),
-  max_dd_pct: z.coerce.number().gt(0).lt(100),
+  soft_pct: z.coerce.number().min(0).max(99),
   max_dd_type: z.enum(["STATIC", "TRAILING"]),
   locks_at_initial: z.boolean(),
   profit_target_pct: z.coerce.number().gt(0).lt(100),
@@ -58,16 +73,19 @@ export interface RulesFormResult {
 const DEFAULTS: FormInput = {
   firm: "",
   daily_loss_pct: 5,
+  max_dd_pct: 10,
   daily_basis: "EQUITY",
+  daily_type: "STATIC",
   daily_anchor: "DAY_START_BALANCE",
   reset_hour: 0,
+  reset_minute: 0,
   reset_tz: "UTC",
-  max_dd_pct: 10,
+  soft_pct: 0,
   max_dd_type: "TRAILING",
   locks_at_initial: true,
   profit_target_pct: 8,
-  min_days: 4,
-  consistency_cap_pct: 45,
+  min_days: 0,
+  consistency_cap_pct: 0,
   personal_daily_pct: 100,
   personal_dd_pct: 100,
 };
@@ -87,6 +105,7 @@ export function GuardRulesForm({
     resolver: zodResolver(schema),
     defaultValues: { ...DEFAULTS, ...initial },
   });
+  const [advanced, setAdvanced] = useState(false);
 
   function handle(values: FormValues) {
     const rule_spec: GuardRuleSpecInput = {
@@ -94,9 +113,12 @@ export function GuardRulesForm({
       daily_loss: {
         pct: values.daily_loss_pct / 100,
         basis: values.daily_basis,
+        type: values.daily_type as DailyType,
         anchor: values.daily_anchor,
         reset_hour: values.reset_hour,
+        reset_minute: values.reset_minute,
         reset_tz: values.reset_tz,
+        soft_pct: values.soft_pct / 100,
       },
       max_drawdown: {
         pct: values.max_dd_pct / 100,
@@ -125,68 +147,124 @@ export function GuardRulesForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handle)} className="space-y-8">
-        <Section title="Firm rules" subtitle="Copy these exactly from your firm's dashboard.">
+      <form onSubmit={form.handleSubmit(handle)} className="space-y-6">
+        <Section
+          title="The two lines"
+          subtitle="Copy these straight from your firm's dashboard. That's all Guard needs to start watching."
+        >
           <NumberField form={form} name="daily_loss_pct" label="Daily loss limit %" />
-          <SelectField
-            form={form}
-            name="daily_basis"
-            label="Daily basis"
-            options={[
-              ["EQUITY", "Equity"],
-              ["BALANCE", "Balance"],
-            ]}
-          />
-          <SelectField
-            form={form}
-            name="daily_anchor"
-            label="Daily anchor"
-            options={[
-              ["DAY_START_BALANCE", "Day-start balance"],
-              ["HIGHER_OF_BALANCE_EQUITY", "Higher of balance/equity"],
-            ]}
-          />
-          <NumberField form={form} name="reset_hour" label="Daily reset hour (0–23)" />
-          <TextField form={form} name="reset_tz" label="Reset timezone (e.g. Europe/Prague)" />
           <NumberField form={form} name="max_dd_pct" label="Max drawdown %" />
-          <SelectField
-            form={form}
-            name="max_dd_type"
-            label="Drawdown type"
-            options={[
-              ["STATIC", "Static (from initial balance)"],
-              ["TRAILING", "Trailing (follows peak)"],
-            ]}
-          />
-          <SwitchField
-            form={form}
-            name="locks_at_initial"
-            label="Trailing locks at initial balance once +max DD%"
-          />
-          <NumberField form={form} name="profit_target_pct" label="Profit target %" />
-          <NumberField form={form} name="min_days" label="Min trading days (0 = none)" />
-          <NumberField
-            form={form}
-            name="consistency_cap_pct"
-            label="Consistency cap % (0 = none)"
-          />
         </Section>
 
-        <Section
-          title="Your stricter limits (amber line)"
-          subtitle="As a % of the firm allowance. 100% = sit exactly on the firm line; lower = trip earlier. Never looser than the firm."
-        >
-          <NumberField
-            form={form}
-            name="personal_daily_pct"
-            label="Personal daily limit (% of firm, 10–100)"
-          />
-          <NumberField
-            form={form}
-            name="personal_dd_pct"
-            label="Personal drawdown limit (% of firm, 10–100)"
-          />
-        </Section>
+        {/* Advanced settings — collapsed by default */}
+        <div className="rounded-lg border border-border-primary">
+          <button
+            type="button"
+            onClick={() => setAdvanced((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-text-primary"
+            aria-expanded={advanced}
+          >
+            <span>
+              Advanced settings
+              <span className="ml-2 text-xs font-normal text-text-tertiary">
+                basis, reset time, trailing, consistency, min-days, your limits
+              </span>
+            </span>
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              size={16}
+              className={cn(
+                "shrink-0 text-text-tertiary transition-transform",
+                advanced && "rotate-180",
+              )}
+            />
+          </button>
+
+          {advanced && (
+            <div className="space-y-6 border-t border-border-primary px-4 py-5">
+              <Section title="Daily loss details">
+                <SelectField
+                  form={form}
+                  name="daily_basis"
+                  label="Daily basis"
+                  options={[
+                    ["EQUITY", "Equity (counts floating P&L)"],
+                    ["BALANCE", "Balance (closed only)"],
+                  ]}
+                />
+                <SelectField
+                  form={form}
+                  name="daily_type"
+                  label="Daily type"
+                  options={[
+                    ["STATIC", "Static (fixed for the day)"],
+                    ["TRAILING", "Trailing (follows the day's peak)"],
+                  ]}
+                />
+                <SelectField
+                  form={form}
+                  name="daily_anchor"
+                  label="Daily anchor (static only)"
+                  options={[
+                    ["DAY_START_BALANCE", "Day-start balance"],
+                    ["HIGHER_OF_BALANCE_EQUITY", "Higher of balance/equity"],
+                  ]}
+                />
+                <NumberField form={form} name="reset_hour" label="Daily reset hour (0–23)" />
+                <NumberField form={form} name="reset_minute" label="Daily reset minute (0–59)" />
+                <TextField form={form} name="reset_tz" label="Reset timezone (e.g. Europe/Prague)" />
+                <NumberField
+                  form={form}
+                  name="soft_pct"
+                  label="Soft-breach % of daily allowance (0 = none)"
+                />
+              </Section>
+
+              <Section title="Max drawdown details">
+                <SelectField
+                  form={form}
+                  name="max_dd_type"
+                  label="Drawdown type"
+                  options={[
+                    ["STATIC", "Static (from initial balance)"],
+                    ["TRAILING", "Trailing (follows peak)"],
+                  ]}
+                />
+                <SwitchField
+                  form={form}
+                  name="locks_at_initial"
+                  label="Trailing locks at initial balance once +max DD%"
+                />
+              </Section>
+
+              <Section title="Pass conditions">
+                <NumberField form={form} name="profit_target_pct" label="Profit target %" />
+                <NumberField form={form} name="min_days" label="Min trading days (0 = none)" />
+                <NumberField
+                  form={form}
+                  name="consistency_cap_pct"
+                  label="Consistency cap % (0 = none)"
+                />
+              </Section>
+
+              <Section
+                title="Your stricter limits (amber line)"
+                subtitle="As a % of the firm allowance. 100% = sit exactly on the firm line; lower = trip earlier. Never looser than the firm."
+              >
+                <NumberField
+                  form={form}
+                  name="personal_daily_pct"
+                  label="Personal daily limit (% of firm, 10–100)"
+                />
+                <NumberField
+                  form={form}
+                  name="personal_dd_pct"
+                  label="Personal drawdown limit (% of firm, 10–100)"
+                />
+              </Section>
+            </div>
+          )}
+        </div>
 
         <Button type="submit" disabled={submitting}>
           {submitting ? "Saving…" : submitLabel}
@@ -209,9 +287,7 @@ function Section({
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
-        {subtitle && (
-          <p className="text-xs text-text-tertiary">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-text-tertiary">{subtitle}</p>}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>

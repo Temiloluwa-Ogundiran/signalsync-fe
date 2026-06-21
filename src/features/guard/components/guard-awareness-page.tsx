@@ -5,10 +5,14 @@ import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { useGuardAccounts, useGuardMonitor } from "../hooks";
 import { AwarenessDashboard } from "./awareness-dashboard";
+import { GuardPlanPanel } from "./guard-plan-panel";
 import { GuardAccountSwitcher } from "./guard-account-switcher";
+
+type GuardTab = "monitor" | "plan";
 
 /**
  * The /guard awareness surface: pick a Guard-enabled account and render its live
@@ -17,6 +21,7 @@ import { GuardAccountSwitcher } from "./guard-account-switcher";
 export function GuardAwarenessPage() {
   const { data: accounts, isLoading: loadingAccounts } = useGuardAccounts();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<GuardTab>("monitor");
 
   const activeId = selectedId ?? accounts?.[0]?.id ?? undefined;
   const { data: monitor, isLoading: loadingMonitor } = useGuardMonitor(activeId);
@@ -60,11 +65,48 @@ export function GuardAwarenessPage() {
         />
       </div>
 
+      {/* Monitor / Plan tabs */}
+      <div className="flex gap-1 border-b border-border-primary">
+        <TabButton active={tab === "monitor"} onClick={() => setTab("monitor")}>
+          Monitor
+        </TabButton>
+        <TabButton active={tab === "plan"} onClick={() => setTab("plan")}>
+          Plan
+        </TabButton>
+      </div>
+
       {loadingMonitor || !monitor ? (
         <p className="p-6 text-sm text-text-tertiary">Loading live monitor…</p>
-      ) : (
+      ) : tab === "monitor" ? (
         <AwarenessDashboard monitor={monitor} />
+      ) : (
+        <GuardPlanPanel monitor={monitor} />
       )}
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+        active
+          ? "border-brand text-text-primary"
+          : "border-transparent text-text-secondary hover:text-text-primary",
+      )}
+    >
+      {children}
+    </button>
   );
 }

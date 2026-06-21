@@ -9,35 +9,81 @@ export const STATUS_LABEL: Record<GuardStatus, string> = {
   CAUTION: "Tightening up",
   WARNING: "Close to the line",
   CRITICAL: "On the edge",
+  PAUSED: "Paused for the day",
   LOCKED: "Locked",
 };
 
-/** Tailwind text-color class per status. */
-export function statusText(status: GuardStatus): string {
+/**
+ * The three-state traffic light the alarm surfaces. SAFE / CAUTION / DANGER —
+ * derived from the engine's tier, not from numbers.
+ */
+export type GuardSignal = "SAFE" | "CAUTION" | "DANGER";
+
+export function statusSignal(status: GuardStatus, breached: boolean): GuardSignal {
+  if (breached) return "DANGER";
   switch (status) {
     case "HEALTHY":
-      return "text-success";
+      return "SAFE";
     case "CAUTION":
+    case "PAUSED":
+      return "CAUTION";
     case "WARNING":
-      return "text-warning-text";
     case "CRITICAL":
     case "LOCKED":
+      return "DANGER";
+  }
+}
+
+export const SIGNAL_WORD: Record<GuardSignal, string> = {
+  SAFE: "SAFE",
+  CAUTION: "CAUTION",
+  DANGER: "DANGER",
+};
+
+/** Tailwind text-color class per signal. */
+export function signalText(signal: GuardSignal): string {
+  switch (signal) {
+    case "SAFE":
+      return "text-success";
+    case "CAUTION":
+      return "text-warning-text";
+    case "DANGER":
       return "text-danger";
   }
 }
 
-/** Tailwind background tint per status (soft fills, ribbons). */
-export function statusTint(status: GuardStatus): string {
-  switch (status) {
-    case "HEALTHY":
+/** Tailwind background tint per signal (soft fills, hero). */
+export function signalTint(signal: GuardSignal): string {
+  switch (signal) {
+    case "SAFE":
       return "bg-success-light";
     case "CAUTION":
-    case "WARNING":
       return "bg-warning-light";
-    case "CRITICAL":
-    case "LOCKED":
+    case "DANGER":
       return "bg-danger-light";
   }
+}
+
+/** Dot color CSS var per signal. */
+export function signalDot(signal: GuardSignal): string {
+  switch (signal) {
+    case "SAFE":
+      return "var(--green)";
+    case "CAUTION":
+      return "var(--warning)";
+    case "DANGER":
+      return "var(--red)";
+  }
+}
+
+/** Tailwind text-color class per status. */
+export function statusText(status: GuardStatus): string {
+  return signalText(statusSignal(status, false));
+}
+
+/** Tailwind background tint per status (soft fills, ribbons). */
+export function statusTint(status: GuardStatus): string {
+  return signalTint(statusSignal(status, false));
 }
 
 /** A meter fill color from the consumed ratio (0..100). Mirrors the engine tiers. */
