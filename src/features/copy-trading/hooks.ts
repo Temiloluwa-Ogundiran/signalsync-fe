@@ -78,9 +78,16 @@ export function useTelegramSources() {
   return useQuery({ queryKey: COPY_TRADING_KEYS.sources(), queryFn: () => copyTradingApi.listSources(token), enabled, refetchInterval: 5000 });
 }
 
-export function useTelegramDialogs(connectionId?: string) {
+export function useTelegramDialogs(connectionId?: string, active = true) {
   const { token, enabled } = useCopyTradingAuth();
-  return useQuery({ queryKey: COPY_TRADING_KEYS.dialogs(connectionId ?? ""), queryFn: () => copyTradingApi.listDialogs(connectionId!, token), enabled: enabled && !!connectionId, refetchInterval: 10000 });
+  return useQuery({
+    queryKey: COPY_TRADING_KEYS.dialogs(connectionId ?? ""),
+    queryFn: () => copyTradingApi.listDialogs(connectionId!, token),
+    enabled: enabled && active && !!connectionId,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: active ? 15_000 : false,
+  });
 }
 
 export function useCopyTradingActions() {

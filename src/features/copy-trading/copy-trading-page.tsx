@@ -523,7 +523,7 @@ function SourceWizard({
   const [selectedId, setSelectedId] = useState("");
   const [search, setSearch] = useState("");
   const connectionId = selectedId || ready[0]?.id || "";
-  const dialogs = useTelegramDialogs(connectionId);
+  const dialogs = useTelegramDialogs(connectionId, open);
   const actions = useCopyTradingActions();
   const existingChats = new Set(sources.map((item) => `${item.connection_id}:${item.telegram_chat_id}`));
   const filtered = (dialogs.data ?? []).filter((dialog) => {
@@ -549,6 +549,15 @@ function SourceWizard({
     }
   };
 
+  const refreshDialogs = async () => {
+    const result = await dialogs.refetch();
+    if (result.error) {
+      toast.error("Could not refresh Telegram", {
+        description: apiError(result.error),
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-hidden p-0 sm:max-w-2xl">
@@ -566,18 +575,37 @@ function SourceWizard({
               </Select>
             </Field>
           )}
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-tertiary" />
-            <Input
-              placeholder="Search channels and groups"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="pl-9"
-            />
+          <div className="flex gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-tertiary" />
+              <Input
+                placeholder="Search channels and groups"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={refreshDialogs}
+              disabled={dialogs.isFetching}
+              aria-label="Refresh channels and groups"
+              title="Refresh channels and groups"
+            >
+              <RefreshCw className={cn("size-4", dialogs.isFetching && "animate-spin")} />
+            </Button>
           </div>
           <div className="max-h-[52vh] divide-y divide-border-primary overflow-y-auto rounded-lg border border-border-primary">
-            {dialogs.isLoading ? (
+            {dialogs.isLoading || (dialogs.isFetching && !dialogs.data) ? (
               <div className="py-12"><AppLoader /></div>
+            ) : dialogs.isError ? (
+              <div className="space-y-3 px-6 py-10 text-center">
+                <p className="text-sm text-danger">{apiError(dialogs.error)}</p>
+                <Button variant="outline" size="sm" onClick={refreshDialogs}>
+                  Try again
+                </Button>
+              </div>
             ) : filtered.length ? (
               filtered.map((dialog) => {
                 const added = existingChats.has(`${connectionId}:${dialog.chat_id}`);

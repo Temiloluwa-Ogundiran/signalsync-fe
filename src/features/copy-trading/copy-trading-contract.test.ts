@@ -52,3 +52,21 @@ test("complete copy trading workflows are exposed", () => {
   assert.match(api, /deleteRoute/);
   assert.match(page, /Channel learning/);
 });
+
+test("Telegram source search refreshes the live dialog list", () => {
+  const hooks = readFileSync(
+    join(ROOT, "src/features/copy-trading/hooks.ts"),
+    "utf8",
+  );
+  const page = readFileSync(
+    join(ROOT, "src/features/copy-trading/copy-trading-page.tsx"),
+    "utf8",
+  );
+
+  assert.match(hooks, /useTelegramDialogs\(connectionId\?: string, active = true\)/);
+  assert.match(hooks, /enabled: enabled && active && !!connectionId/);
+  assert.equal(hooks.includes("refetchInterval: 10000"), false);
+  assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
+  assert.match(page, /useTelegramDialogs\(connectionId, open\)/);
+  assert.match(page, /Refresh channels and groups/);
+});
