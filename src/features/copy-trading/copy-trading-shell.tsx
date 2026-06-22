@@ -6,6 +6,7 @@ import type {
   TelegramSource,
 } from "./types";
 import { CopySafetyBar } from "./copy-safety-bar";
+import { Tooltip } from "radix-ui";
 
 export function CopyTradingShell({
   children,
@@ -27,17 +28,19 @@ export function CopyTradingShell({
   onPauseChange: (paused: boolean) => Promise<void>;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-      <CopySafetyBar
-        health={health}
-        isPaused={isPaused}
-        isUpdating={isUpdating}
-        accounts={accounts}
-        routes={routes}
-        sources={sources}
-        onPauseChange={onPauseChange}
-      />
-      <main className="pt-6">{children}</main>
-    </div>
+    <Tooltip.Provider delayDuration={200}>
+      <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+        <CopySafetyBar
+          health={health}
+          isPaused={isPaused}
+          isUpdating={isUpdating}
+          accounts={accounts}
+          routes={routes}
+          sources={sources}
+          onPauseChange={onPauseChange}
+        />
+        <main className="pt-6">{children}</main>
+      </div>
+    </Tooltip.Provider>
   );
 }

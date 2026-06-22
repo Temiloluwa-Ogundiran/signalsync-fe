@@ -3,6 +3,7 @@ export type CopyRouteState =
   | "ready"
   | "active"
   | "paused"
+  | "needs_attention"
   | "reauthentication_required"
   | "unsupported"
   | "target_unavailable";
@@ -90,6 +91,48 @@ export interface CopyActivity {
   created_at: string;
 }
 
+export interface CopyActivityFilters {
+  search?: string;
+  level?: CopyActivity["level"];
+  source_id?: string;
+  account_id?: string;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface CopyActivityPage {
+  items: CopyActivity[];
+  next_cursor: string | null;
+}
+
+export interface CopyHealthComponent {
+  role: string;
+  status: "healthy" | "degraded" | "stale" | "missing" | string;
+  heartbeat_at: string | null;
+  stream_lag: number;
+  pending_count: number;
+  last_error: string | null;
+}
+
+export interface CopySystemHealth {
+  status: "ready" | "degraded" | "action_required";
+  ready: boolean;
+  components: CopyHealthComponent[];
+  issues: string[];
+}
+
+export interface CopyDeadLetter {
+  id: string;
+  source_stream: string;
+  event_type: string;
+  correlation_id: string;
+  attempts: number;
+  error_code: string;
+  error_message: string;
+  state: "pending" | "replayed" | string;
+  created_at: string;
+}
+
 export interface CopyTargetAccount {
   id: string;
   display_name: string | null;
@@ -150,7 +193,16 @@ export interface TelegramSource {
   title: string;
   username: string | null;
   source_type: "channel" | "group";
-  state: "draft" | "learning" | "ready" | "active" | "paused" | "unsupported";
+  state:
+    | "draft"
+    | "learning"
+    | "ready"
+    | "active"
+    | "paused"
+    | "advisory"
+    | "failed_retryable"
+    | "unsupported"
+    | "unsupported_image_primary";
   unsupported_reason: string | null;
   is_paused: boolean;
   profile: ChannelProfile | null;

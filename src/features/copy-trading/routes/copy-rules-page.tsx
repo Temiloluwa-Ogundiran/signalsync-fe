@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DropdownMenu } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import type {
   CopyActivity,
@@ -24,6 +25,7 @@ import { accountLabel, apiError, relativeTime } from "../utils";
 import { EmptyState } from "../shared/empty-state";
 import { StatusLabel } from "../shared/status-label";
 import { CopyRuleForm } from "./copy-rule-form";
+import { ConfirmActionDialog } from "../shared/confirm-action-dialog";
 
 export function CopyRulesPage({
   routes,
@@ -39,6 +41,7 @@ export function CopyRulesPage({
   const actions = useCopyTradingActions();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CopyRoute | undefined>();
+  const [deleting, setDeleting] = useState<CopyRoute | null>(null);
 
   const act = async (
     route: CopyRoute,
@@ -143,35 +146,43 @@ export function CopyRulesPage({
                     )}
                     {active ? "Pause" : "Start"}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditing(route);
-                      setFormOpen(true);
-                    }}
-                  >
-                    <Pencil className="size-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Delete copy rule"
-                    title={
-                      active
-                        ? "Pause this copy rule before deleting it"
-                        : "Delete copy rule"
-                    }
-                    disabled={active}
-                    onClick={() => remove(route)}
-                  >
-                    {active ? (
-                      <MoreHorizontal className="size-4" />
-                    ) : (
-                      <Trash2 className="size-4 text-danger" />
-                    )}
-                  </Button>
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Copy rule actions"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </Button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.Content
+                        align="end"
+                        sideOffset={6}
+                        className="z-popover min-w-44 rounded-md border border-border-primary bg-card-bg p-1 shadow-lg"
+                      >
+                        <DropdownMenu.Item
+                          className="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-sm text-text-primary outline-none data-highlighted:bg-bg-tertiary"
+                          onSelect={() => {
+                            setEditing(route);
+                            setFormOpen(true);
+                          }}
+                        >
+                          <Pencil className="size-4" />
+                          Edit copy rule
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          disabled={active}
+                          className="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-sm text-danger outline-none data-disabled:cursor-not-allowed data-disabled:opacity-40 data-highlighted:bg-danger/5"
+                          onSelect={() => setDeleting(route)}
+                        >
+                          <Trash2 className="size-4" />
+                          Delete copy rule
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Root>
                 </div>
               </div>
             );
@@ -197,6 +208,18 @@ export function CopyRulesPage({
         route={editing}
         sources={sources}
         accounts={accounts}
+      />
+      <ConfirmActionDialog
+        open={deleting !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        title="Delete this copy rule?"
+        description="New signals from this channel will no longer be sent to this trading account. Existing broker trades are not changed."
+        confirmLabel="Delete copy rule"
+        onConfirm={async () => {
+          if (deleting) await remove(deleting);
+        }}
       />
     </div>
   );

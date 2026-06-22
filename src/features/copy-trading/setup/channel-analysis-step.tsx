@@ -32,7 +32,7 @@ export function ChannelAnalysisStep({
     }
   };
 
-  if (source.state === "learning" || !source.profile) {
+  if (source.state === "learning") {
     return (
       <div className="flex min-h-36 items-center justify-center gap-2 text-sm text-text-secondary">
         <Loader2 className="size-4 animate-spin" />
@@ -41,7 +41,41 @@ export function ChannelAnalysisStep({
     );
   }
 
-  if (source.state === "unsupported") {
+  if (
+    source.state === "failed_retryable" ||
+    (!source.profile &&
+      source.state !== "unsupported" &&
+      source.state !== "unsupported_image_primary")
+  ) {
+    return (
+      <div className="flex gap-3 rounded-md border border-warning/25 bg-warning/5 px-4 py-3">
+        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-text" />
+        <div className="flex-1">
+          <p className="font-medium text-text-primary">
+            Analysis was interrupted
+          </p>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            No channel decision was made. Copy rules remain unchanged while you retry.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={analyzeAgain}
+            disabled={actions.relearnSource.isPending}
+          >
+            <RefreshCw className="size-4" />
+            Try analysis again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (
+    source.state === "unsupported" ||
+    source.state === "unsupported_image_primary"
+  ) {
     return (
       <div className="flex gap-3 rounded-md border border-danger/25 bg-danger-light px-4 py-3">
         <AlertTriangle className="mt-0.5 size-4 shrink-0 text-danger" />
@@ -50,14 +84,15 @@ export function ChannelAnalysisStep({
             This channel cannot be copied automatically
           </p>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            {source.unsupported_reason}
+            {source.unsupported_reason ??
+              "This channel primarily sends image signals, which are not supported."}
           </p>
         </div>
       </div>
     );
   }
 
-  const profile = source.profile;
+  const profile = source.profile!;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">

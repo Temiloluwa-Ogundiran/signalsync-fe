@@ -1,14 +1,17 @@
 import Link from "next/link";
 import type {
   CopyActivity,
+  CopyDeadLetter,
   CopyRoute,
   CopyTargetAccount,
   TelegramConnection,
   TelegramSource,
+  CopySystemHealth,
 } from "../types";
 import { ActivityFeed } from "../activity/activity-feed";
 import { AttentionList } from "./attention-list";
 import { HealthStrip } from "./health-strip";
+import { CopySystemStatus } from "../health/copy-system-status";
 
 export function MonitoringOverview({
   routes,
@@ -16,12 +19,16 @@ export function MonitoringOverview({
   sources,
   accounts,
   activity,
+  systemHealth,
+  deadLetters,
 }: {
   routes: CopyRoute[];
   connections: TelegramConnection[];
   sources: TelegramSource[];
   accounts: CopyTargetAccount[];
   activity: CopyActivity[];
+  systemHealth?: CopySystemHealth;
+  deadLetters: CopyDeadLetter[];
 }) {
   return (
     <div className="space-y-6">
@@ -37,6 +44,7 @@ export function MonitoringOverview({
         accounts={accounts}
         activity={activity}
       />
+      <CopySystemStatus health={systemHealth} deadLetters={deadLetters} />
       <AttentionList
         routes={routes}
         connections={connections}

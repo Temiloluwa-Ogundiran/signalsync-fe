@@ -1,21 +1,19 @@
 "use client";
 
 import { toast } from "sonner";
-import { AppLoader } from "@/components/app-loader";
 import {
   useCopyAccountPolicies,
   useCopyActivity,
+  useCopyDeadLetters,
   useCopyRoutes,
+  useCopySystemHealth,
   useCopyTargetAccounts,
   useCopyTradingSettings,
   useTelegramConnections,
   useTelegramSources,
   useUpdateCopyTradingSettings,
 } from "./hooks";
-import {
-  deriveAutomationHealth,
-  deriveCopyTradingMode,
-} from "./copy-trading-view-model";
+import { deriveCopyTradingMode, deriveSystemHealth } from "./copy-trading-view-model";
 import { apiError } from "./utils";
 import { CopyTradingShell } from "./copy-trading-shell";
 import { SetupWorkspace } from "./setup/setup-workspace";
@@ -23,6 +21,7 @@ import { MonitoringOverview } from "./overview/monitoring-overview";
 import { CopyRulesPage } from "./routes/copy-rules-page";
 import { CopyActivityPage } from "./activity/copy-activity-page";
 import { CopyTradingSettingsPage } from "./settings/copy-trading-settings-page";
+import { SectionError } from "./shared/section-error";
 
 export type CopyTradingView =
   | "overview"
@@ -34,50 +33,33 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const settings = useCopyTradingSettings();
   const routes = useCopyRoutes();
   const policies = useCopyAccountPolicies();
-  const activity = useCopyActivity();
+  const activity = useCopyActivity({}, view === "overview" || view === "routes");
+  const systemHealth = useCopySystemHealth(true);
+  const deadLetters = useCopyDeadLetters(view === "overview");
   const accounts = useCopyTargetAccounts();
   const connections = useTelegramConnections();
   const sources = useTelegramSources();
   const updateSettings = useUpdateCopyTradingSettings();
-  const queries = [
-    settings,
-    routes,
-    policies,
-    activity,
-    accounts,
-    connections,
-    sources,
-  ];
-
-  if (queries.some((query) => query.isLoading)) return <AppLoader />;
-  if (queries.some((query) => query.isError)) {
-    return (
-      <div className="mx-auto max-w-xl px-6 py-16 text-center">
-        <h1 className="text-xl font-semibold text-text-primary">
-          Copy Trading could not be loaded
-        </h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Refresh the page. Your existing copy rules continue running on the
-          server.
-        </p>
-      </div>
-    );
-  }
-
-  const settingsData = settings.data!;
+  const settingsData = settings.data;
   const routesData = routes.data ?? [];
   const policiesData = policies.data ?? [];
-  const activityData = activity.data ?? [];
+  const activityData = activity.data?.pages.flatMap((page) => page.items) ?? [];
   const accountsData = accounts.data ?? [];
   const connectionsData = connections.data ?? [];
   const sourcesData = sources.data ?? [];
   const mode = deriveCopyTradingMode(routesData);
-  const health = deriveAutomationHealth({
-    globallyPaused: settingsData.is_paused,
-    routes: routesData,
-    connections: connectionsData,
-    sources: sourcesData,
+  const health = deriveSystemHealth({
+    globallyPaused: settingsData?.is_paused ?? false,
+    system: systemHealth.data,
   });
+  const firstError = [
+    settings,
+    routes,
+    accounts,
+    connections,
+    sources,
+    systemHealth,
+  ].find((query) => query.isError);
 
   const changePause = async (currentlyPaused: boolean) => {
     try {
@@ -114,7 +96,6 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   } else if (view === "activity") {
     content = (
       <CopyActivityPage
-        events={activityData}
         sources={sourcesData}
         accounts={accountsData}
       />
@@ -137,6 +118,8 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         sources={sourcesData}
         accounts={accountsData}
         activity={activityData}
+        systemHealth={systemHealth.data}
+        deadLetters={deadLetters.data ?? []}
       />
     );
   }
@@ -144,13 +127,22 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   return (
     <CopyTradingShell
       health={health}
-      isPaused={settingsData.is_paused}
+      isPaused={settingsData?.is_paused ?? false}
       isUpdating={updateSettings.isPending}
       accounts={accountsData}
       routes={routesData}
       sources={sourcesData}
       onPauseChange={changePause}
     >
+      {firstError ? (
+        <div className="mb-5">
+          <SectionError
+            title="Some copy-trading data could not be refreshed"
+            description="Visible sections remain usable and automation continues on the server."
+            onRetry={() => firstError.refetch()}
+          />
+        </div>
+      ) : null}
       {content}
     </CopyTradingShell>
   );

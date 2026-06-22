@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   deriveAutomationHealth,
+  deriveSystemHealth,
   deriveCopyTradingMode,
   failureGuidance,
   groupActivity,
   humanizeActivity,
   summarizeCopyRule,
-} from "./copy-trading-view-model";
+} from "./copy-trading-view-model.ts";
 
 test("uses setup mode until a copy rule is active", () => {
   assert.equal(deriveCopyTradingMode([]), "setup");
@@ -109,4 +110,35 @@ test("failure guidance explains continuation and the next action", () => {
 
   assert.match(message, /Other copy rules will continue/);
   assert.match(message, /check that XAUUSD is available/i);
+});
+
+test("uses backend worker health instead of optimistic route state", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "degraded",
+      ready: false,
+      issues: ["copy-execution is stale."],
+      components: [],
+    },
+  });
+
+  assert.equal(health.tone, "warning");
+  assert.equal(health.label, "Copying is delayed");
+  assert.match(health.description, /execution worker/i);
+});
+
+test("missing runtime workers require action", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "action_required",
+      ready: false,
+      issues: ["copy-signal has not reported health."],
+      components: [],
+    },
+  });
+
+  assert.equal(health.tone, "danger");
+  assert.equal(health.label, "Copying needs attention");
 });

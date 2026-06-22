@@ -7,8 +7,7 @@ import { Tooltip } from "radix-ui";
 export function FieldHelp({ children }: { children: string }) {
   const tooltipId = useId();
   return (
-    <Tooltip.Provider delayDuration={200}>
-      <Tooltip.Root>
+    <Tooltip.Root>
         <Tooltip.Trigger asChild>
           <button
             type="button"
@@ -32,7 +31,6 @@ export function FieldHelp({ children }: { children: string }) {
             <Tooltip.Arrow className="fill-card-bg" />
           </Tooltip.Content>
         </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    </Tooltip.Root>
   );
 }

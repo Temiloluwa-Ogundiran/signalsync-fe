@@ -4,6 +4,7 @@ import type {
   CopyActivity,
   CopyRoute,
   CopyTradingMode,
+  CopySystemHealth,
   TelegramConnection,
   TelegramSource,
 } from "./types";
@@ -79,6 +80,56 @@ export function deriveAutomationHealth(input: {
     label: "Copying is active",
     description: "Signals can be read and sent to connected accounts.",
   };
+}
+
+export function deriveSystemHealth(input: {
+  globallyPaused: boolean;
+  system?: CopySystemHealth;
+}): AutomationHealth {
+  if (input.globallyPaused) {
+    return {
+      tone: "neutral",
+      label: "Copying is paused",
+      description: "New signals will not be sent to trading accounts.",
+    };
+  }
+  if (!input.system) {
+    return {
+      tone: "neutral",
+      label: "Checking automation",
+      description: "Worker status is being refreshed.",
+    };
+  }
+  if (input.system.status === "action_required") {
+    return {
+      tone: "danger",
+      label: "Copying needs attention",
+      description: humanizeHealthIssue(input.system.issues[0]),
+    };
+  }
+  if (input.system.status === "degraded") {
+    return {
+      tone: "warning",
+      label: "Copying is delayed",
+      description: `${humanizeHealthIssue(input.system.issues[0])} Healthy rules continue processing.`,
+    };
+  }
+  return {
+    tone: "success",
+    label: "Copying is operational",
+    description: "Telegram, signal analysis, and broker execution are responding.",
+  };
+}
+
+function humanizeHealthIssue(issue?: string): string {
+  if (!issue) return "One automation component is not responding.";
+  return issue
+    .replace("copy-execution", "The execution worker")
+    .replace("copy-signal", "The signal worker")
+    .replace("copy-learning", "The channel learning worker")
+    .replace("telegram-session", "The Telegram worker")
+    .replace(" has not reported health", " has not started")
+    .replace(" is stale", " has stopped reporting");
 }
 
 export function humanizeActivity(event: {

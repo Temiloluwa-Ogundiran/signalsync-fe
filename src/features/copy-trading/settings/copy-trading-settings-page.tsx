@@ -27,6 +27,7 @@ import { StatusLabel } from "../shared/status-label";
 import { ChannelPicker } from "../setup/channel-picker";
 import { ChannelAnalysisStep } from "../setup/channel-analysis-step";
 import { TelegramSignInDialog } from "../setup/telegram-sign-in-dialog";
+import { ConfirmActionDialog } from "../shared/confirm-action-dialog";
 
 export function CopyTradingSettingsPage({
   connections,
@@ -40,9 +41,13 @@ export function CopyTradingSettingsPage({
   policies: CopyAccountPolicy[];
 }) {
   const actions = useCopyTradingActions();
-  const updatePolicy = useUpdateCopyAccountPolicy();
   const [telegramOpen, setTelegramOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<
+    | { kind: "connection"; id: string; label: string }
+    | { kind: "source"; id: string; label: string }
+    | null
+  >(null);
 
   const run = async (
     action: () => Promise<unknown>,
@@ -128,11 +133,11 @@ export function CopyTradingSettingsPage({
                   aria-label={`Disconnect ${connectionName(connection)}`}
                   title="Disconnect Telegram"
                   onClick={() =>
-                    run(
-                      () => actions.disconnect.mutateAsync(connection.id),
-                      "Telegram disconnected",
-                      "Telegram could not be disconnected",
-                    )
+                    setConfirmation({
+                      kind: "connection",
+                      id: connection.id,
+                      label: connectionName(connection),
+                    })
                   }
                 >
                   <Trash2 className="size-4 text-danger" />
@@ -173,7 +178,7 @@ export function CopyTradingSettingsPage({
                   <p className="mt-1 text-xs capitalize text-text-secondary">
                     {source.source_type}
                     {source.profile
-                      ? ` · ${source.profile.signal_style} · ${source.profile.confidence} confidence`
+                      ? ` | ${source.profile.signal_style} | ${source.profile.confidence} confidence`
                       : ""}
                   </p>
                 </div>
@@ -214,11 +219,11 @@ export function CopyTradingSettingsPage({
                     aria-label={`Remove ${source.title}`}
                     title="Remove signal channel"
                     onClick={() =>
-                      run(
-                        () => actions.deleteSource.mutateAsync(source.id),
-                        "Signal channel removed",
-                        "Signal channel could not be removed",
-                      )
+                      setConfirmation({
+                        kind: "source",
+                        id: source.id,
+                        label: source.title,
+                      })
                     }
                   >
                     <Trash2 className="size-4 text-danger" />
@@ -231,7 +236,12 @@ export function CopyTradingSettingsPage({
                   review its activity more closely.
                 </p>
               ) : null}
-              {source.state === "learning" || source.state === "unsupported" ? (
+              {[
+                "learning",
+                "failed_retryable",
+                "unsupported",
+                "unsupported_image_primary",
+              ].includes(source.state) ? (
                 <div className="mt-3">
                   <ChannelAnalysisStep source={source} />
                 </div>
@@ -251,21 +261,9 @@ export function CopyTradingSettingsPage({
       >
         {accounts.map((account) => (
           <TradingAccountRow
-            key={account.id}
+            key={`${account.id}:${policies.find((item) => item.account_id === account.id)?.updated_at ?? "new"}`}
             account={account}
             policy={policies.find((item) => item.account_id === account.id)}
-            onSave={(maxLot, isPaused) =>
-              run(
-                () =>
-                  updatePolicy.mutateAsync({
-                    accountId: account.id,
-                    payload: { max_lot: maxLot, is_paused: isPaused },
-                  }),
-                "Trading account safeguards saved",
-                "Trading account safeguards could not be saved",
-              )
-            }
-            busy={updatePolicy.isPending}
           />
         ))}
       </SettingsSection>
@@ -279,6 +277,40 @@ export function CopyTradingSettingsPage({
         onOpenChange={setChannelOpen}
         connections={connections}
         sources={sources}
+      />
+      <ConfirmActionDialog
+        open={confirmation !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmation(null);
+        }}
+        title={
+          confirmation?.kind === "connection"
+            ? "Disconnect Telegram?"
+            : "Remove signal channel?"
+        }
+        description={
+          confirmation?.kind === "connection"
+            ? `TradePartna will stop reading every channel through ${confirmation.label}. Existing broker trades are not changed.`
+            : `${confirmation?.label ?? "This channel"} will stop feeding every copy rule that uses it. Existing broker trades are not changed.`
+        }
+        confirmLabel={
+          confirmation?.kind === "connection" ? "Disconnect" : "Remove channel"
+        }
+        onConfirm={async () => {
+          if (!confirmation) return;
+          await run(
+            () =>
+              confirmation.kind === "connection"
+                ? actions.disconnect.mutateAsync(confirmation.id)
+                : actions.deleteSource.mutateAsync(confirmation.id),
+            confirmation.kind === "connection"
+              ? "Telegram disconnected"
+              : "Signal channel removed",
+            confirmation.kind === "connection"
+              ? "Telegram could not be disconnected"
+              : "Signal channel could not be removed",
+          );
+        }}
       />
     </div>
   );
@@ -312,16 +344,26 @@ function SettingsSection({
 function TradingAccountRow({
   account,
   policy,
-  onSave,
-  busy,
 }: {
   account: CopyTargetAccount;
   policy?: CopyAccountPolicy;
-  onSave: (maxLot: string, isPaused: boolean) => void;
-  busy: boolean;
 }) {
+  const updatePolicy = useUpdateCopyAccountPolicy();
   const [maxLot, setMaxLot] = useState(policy?.max_lot ?? "100");
   const [enabled, setEnabled] = useState(!policy?.is_paused);
+  const save = async () => {
+    try {
+      await updatePolicy.mutateAsync({
+        accountId: account.id,
+        payload: { max_lot: maxLot, is_paused: !enabled },
+      });
+      toast.success("Trading account safeguards saved");
+    } catch (error) {
+      toast.error("Trading account safeguards could not be saved", {
+        description: apiError(error),
+      });
+    }
+  };
   return (
     <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end">
       <div className="min-w-0 flex-1">
@@ -355,10 +397,10 @@ function TradingAccountRow({
       </div>
       <Button
         variant="outline"
-        onClick={() => onSave(maxLot, !enabled)}
-        disabled={busy || Number(maxLot) <= 0}
+        onClick={save}
+        disabled={updatePolicy.isPending || Number(maxLot) <= 0}
       >
-        Save
+        {updatePolicy.isPending ? "Saving..." : "Save"}
       </Button>
     </div>
   );

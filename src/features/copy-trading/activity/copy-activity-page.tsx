@@ -1,50 +1,38 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type {
-  CopyActivity,
-  CopyTargetAccount,
-  TelegramSource,
-} from "../types";
-import { accountLabel } from "../utils";
-import { Select } from "../shared/form-controls";
+import type { CopyActivityFilters, CopyTargetAccount, TelegramSource } from "../types";
+import { useCopyActivity } from "../hooks";
+import { SectionError } from "../shared/section-error";
 import { ActivityFeed } from "./activity-feed";
+import { ActivityFiltersSheet, FilterSelects } from "./activity-filters-sheet";
 
 export function CopyActivityPage({
-  events,
   sources,
   accounts,
 }: {
-  events: CopyActivity[];
   sources: TelegramSource[];
   accounts: CopyTargetAccount[];
 }) {
   const [search, setSearch] = useState("");
-  const [level, setLevel] = useState("");
-  const [sourceId, setSourceId] = useState("");
-  const [accountId, setAccountId] = useState("");
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return events.filter(
-      (event) =>
-        (!term ||
-          `${event.title} ${event.body ?? ""} ${JSON.stringify(event.parsed_details)}`
-            .toLowerCase()
-            .includes(term)) &&
-        (!level || event.level === level) &&
-        (!sourceId || event.source_id === sourceId) &&
-        (!accountId || event.account_id === accountId),
-    );
-  }, [accountId, events, level, search, sourceId]);
-  const hasFilters = Boolean(search || level || sourceId || accountId);
+  const [filters, setFilters] = useState<
+    Omit<CopyActivityFilters, "cursor" | "limit">
+  >({});
+  const deferredSearch = useDeferredValue(search.trim());
+  const query = useCopyActivity(
+    { ...filters, search: deferredSearch || undefined },
+    true,
+  );
+  const events = query.data?.pages.flatMap((page) => page.items) ?? [];
+  const hasFilters = Boolean(
+    search || filters.level || filters.source_id || filters.account_id,
+  );
   const clear = () => {
     setSearch("");
-    setLevel("");
-    setSourceId("");
-    setAccountId("");
+    setFilters({});
   };
 
   return (
@@ -52,11 +40,11 @@ export function CopyActivityPage({
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Copy Activity</h1>
         <p className="mt-1 text-sm text-text-secondary">
-          A permanent history of signal decisions and broker outcomes.
+          Searchable signal decisions and broker outcomes retained by the server.
         </p>
       </div>
-      <div className="grid gap-2 lg:grid-cols-[minmax(220px,1fr)_180px_220px_220px_auto]">
-        <div className="relative">
+      <div className="flex gap-2 lg:grid lg:grid-cols-[minmax(220px,1fr)_180px_220px_220px_auto]">
+        <div className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-tertiary" />
           <Input
             value={search}
@@ -65,29 +53,21 @@ export function CopyActivityPage({
             className="pl-9"
           />
         </div>
-        <Select value={level} onChange={setLevel}>
-          <option value="">All outcomes</option>
-          <option value="success">Completed</option>
-          <option value="warning">Needs attention</option>
-          <option value="error">Failed</option>
-          <option value="info">Processing</option>
-        </Select>
-        <Select value={sourceId} onChange={setSourceId}>
-          <option value="">All signal channels</option>
-          {sources.map((source) => (
-            <option key={source.id} value={source.id}>
-              {source.title}
-            </option>
-          ))}
-        </Select>
-        <Select value={accountId} onChange={setAccountId}>
-          <option value="">All trading accounts</option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>
-              {accountLabel(account, account.id)}
-            </option>
-          ))}
-        </Select>
+        <div className="hidden lg:contents">
+          <FilterSelects
+            filters={filters}
+            sources={sources}
+            accounts={accounts}
+            onChange={setFilters}
+          />
+        </div>
+        <ActivityFiltersSheet
+          filters={filters}
+          sources={sources}
+          accounts={accounts}
+          onChange={setFilters}
+          onClear={clear}
+        />
         <Button
           variant="ghost"
           onClick={clear}
@@ -98,14 +78,40 @@ export function CopyActivityPage({
           Clear
         </Button>
       </div>
-      <ActivityFeed
-        events={filtered}
-        sources={sources}
-        accounts={accounts}
-        emptyTitle={
-          hasFilters ? "No activity matches these filters" : "No copy activity yet"
-        }
-      />
+      {query.isError ? (
+        <SectionError
+          title="Activity could not be loaded"
+          description="Your copy rules are still running. Retry this history request."
+          onRetry={() => query.refetch()}
+        />
+      ) : null}
+      {query.isPending ? (
+        <div className="rounded-lg border border-border-primary bg-card-bg px-4 py-12 text-center text-sm text-text-secondary">
+          Loading activity...
+        </div>
+      ) : (
+        <ActivityFeed
+          events={events}
+          sources={sources}
+          accounts={accounts}
+          emptyTitle={
+            hasFilters
+              ? "No activity matches these filters"
+              : "No copy activity yet"
+          }
+        />
+      )}
+      {query.hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            disabled={query.isFetchingNextPage}
+            onClick={() => query.fetchNextPage()}
+          >
+            {query.isFetchingNextPage ? "Loading..." : "Load more activity"}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

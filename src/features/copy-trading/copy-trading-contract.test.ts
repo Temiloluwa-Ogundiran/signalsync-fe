@@ -153,3 +153,62 @@ test("copy trading page is thin orchestration after decomposition", () => {
   assert.match(page, /view === "settings"/);
   assert.ok(page.split("\n").length < 220);
 });
+
+test("runtime health and recovery APIs are exposed", () => {
+  const api = feature("api.ts");
+  const hooks = feature("hooks.ts");
+
+  assert.match(api, /getHealth/);
+  assert.match(api, /\/copy-trading\/health/);
+  assert.match(api, /listDeadLetters/);
+  assert.match(api, /replayDeadLetter/);
+  assert.match(hooks, /useCopySystemHealth/);
+  assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
+});
+
+test("activity uses server filters and cursor pagination", () => {
+  const api = feature("api.ts");
+  const hooks = feature("hooks.ts");
+  const activity = feature("activity/copy-activity-page.tsx");
+
+  assert.match(api, /CopyActivityPage/);
+  assert.match(api, /params/);
+  assert.match(api, /cursor/);
+  assert.match(hooks, /useInfiniteQuery/);
+  assert.match(hooks, /getNextPageParam/);
+  assert.match(activity, /Load more activity/);
+  assert.doesNotMatch(activity, /events\.filter/);
+});
+
+test("one failed query does not blank the entire workspace", () => {
+  const page = feature("copy-trading-page.tsx");
+
+  assert.doesNotMatch(page, /queries\.some\(\(query\) => query\.isError\)/);
+  assert.doesNotMatch(page, /queries\.some\(\(query\) => query\.isLoading\)/);
+  assert.match(page, /SectionError/);
+});
+
+test("destructive operations require confirmation and routes have a real menu", () => {
+  const settings = feature("settings/copy-trading-settings-page.tsx");
+  const routes = feature("routes/copy-rules-page.tsx");
+  const dialog = feature("shared/confirm-action-dialog.tsx");
+
+  assert.match(settings, /ConfirmActionDialog/);
+  assert.match(routes, /DropdownMenu/);
+  assert.match(routes, /ConfirmActionDialog/);
+  assert.match(dialog, /confirmText/);
+});
+
+test("copy trading uses one feature-level tooltip provider", () => {
+  assert.match(feature("copy-trading-shell.tsx"), /Tooltip\.Provider/);
+  assert.doesNotMatch(feature("shared/field-help.tsx"), /Tooltip\.Provider/);
+});
+
+test("retryable channel learning failures do not spin forever", () => {
+  const analysis = feature("setup/channel-analysis-step.tsx");
+
+  assert.match(analysis, /failed_retryable/);
+  assert.match(analysis, /Analysis was interrupted/);
+  assert.match(analysis, /Try analysis again/);
+  assert.match(analysis, /unsupported_image_primary/);
+});

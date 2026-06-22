@@ -1,10 +1,13 @@
 import apiClient, { withAuth } from "@/lib/api/client";
 import type {
   CopyAccountPolicy,
-  CopyActivity,
+  CopyActivityFilters,
+  CopyActivityPage,
+  CopyDeadLetter,
   CopyRoute,
   CopyTradingSettings,
   CopyTargetAccount,
+  CopySystemHealth,
   CopyRouteInput,
   TelegramAuth,
   TelegramConnection,
@@ -70,13 +73,54 @@ export const copyTradingApi = {
     return data;
   },
 
-  listActivity: async (token?: string): Promise<CopyActivity[]> => {
-    const { data } = await apiClient.get<CopyActivity[]>(
+  listActivity: async (
+    params: CopyActivityFilters = {},
+    token?: string,
+  ): Promise<CopyActivityPage> => {
+    const { data } = await apiClient.get<CopyActivityPage>(
       "/copy-trading/activity",
-      { ...withAuth(token), params: { limit: 50 } },
+      {
+        ...withAuth(token),
+        params: {
+          limit: params.limit ?? 50,
+          cursor: params.cursor,
+          level: params.level,
+          source_id: params.source_id,
+          account_id: params.account_id,
+          search: params.search,
+        },
+      },
     );
     return data;
   },
+
+  getHealth: async (token?: string): Promise<CopySystemHealth> =>
+    (
+      await apiClient.get<CopySystemHealth>(
+        "/copy-trading/health",
+        withAuth(token),
+      )
+    ).data,
+
+  listDeadLetters: async (token?: string): Promise<CopyDeadLetter[]> =>
+    (
+      await apiClient.get<CopyDeadLetter[]>(
+        "/copy-trading/dead-letters",
+        withAuth(token),
+      )
+    ).data,
+
+  replayDeadLetter: async (
+    deadLetterId: string,
+    token?: string,
+  ): Promise<CopyDeadLetter> =>
+    (
+      await apiClient.post<CopyDeadLetter>(
+        `/copy-trading/dead-letters/${deadLetterId}/replay`,
+        {},
+        withAuth(token),
+      )
+    ).data,
 
   listConnections: async (token?: string): Promise<TelegramConnection[]> =>
     (await apiClient.get<TelegramConnection[]>("/copy-trading/telegram/connections", withAuth(token))).data,

@@ -1,13 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { copyTradingApi } from "./api";
+import type { CopyActivityFilters } from "./types";
 
 export const COPY_TRADING_KEYS = {
   all: ["copy-trading"] as const,
   settings: () => ["copy-trading", "settings"] as const,
   routes: () => ["copy-trading", "routes"] as const,
   policies: () => ["copy-trading", "account-policies"] as const,
-  activity: () => ["copy-trading", "activity"] as const,
+  activity: (filters: CopyActivityFilters = {}) =>
+    ["copy-trading", "activity", filters] as const,
+  health: () => ["copy-trading", "health"] as const,
+  deadLetters: () => ["copy-trading", "dead-letters"] as const,
   targetAccounts: () => ["copy-trading", "target-accounts"] as const,
   connections: () => ["copy-trading", "telegram-connections"] as const,
   sources: () => ["copy-trading", "sources"] as const,
@@ -58,13 +67,42 @@ export function useCopyAccountPolicies() {
   });
 }
 
-export function useCopyActivity() {
+export function useCopyActivity(
+  filters: Omit<CopyActivityFilters, "cursor"> = {},
+  active = true,
+) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useInfiniteQuery({
+    queryKey: COPY_TRADING_KEYS.activity(filters),
+    queryFn: ({ pageParam }) =>
+      copyTradingApi.listActivity(
+        { ...filters, cursor: pageParam || undefined },
+        token,
+      ),
+    initialPageParam: "",
+    getNextPageParam: (page) => page.next_cursor ?? undefined,
+    enabled: enabled && active,
+    refetchInterval: active ? 15_000 : false,
+  });
+}
+
+export function useCopySystemHealth(active = true) {
   const { token, enabled } = useCopyTradingAuth();
   return useQuery({
-    queryKey: COPY_TRADING_KEYS.activity(),
-    queryFn: () => copyTradingApi.listActivity(token),
-    enabled,
-    refetchInterval: 15_000,
+    queryKey: COPY_TRADING_KEYS.health(),
+    queryFn: () => copyTradingApi.getHealth(token),
+    enabled: enabled && active,
+    refetchInterval: active ? 15_000 : false,
+  });
+}
+
+export function useCopyDeadLetters(active = true) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({
+    queryKey: COPY_TRADING_KEYS.deadLetters(),
+    queryFn: () => copyTradingApi.listDeadLetters(token),
+    enabled: enabled && active,
+    refetchInterval: active ? 30_000 : false,
   });
 }
 
@@ -93,7 +131,8 @@ export function useTelegramDialogs(connectionId?: string, active = true) {
 export function useCopyTradingActions() {
   const { token } = useCopyTradingAuth();
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.all });
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.all });
   return {
     startPhone: useMutation({ mutationFn: (phone: string) => copyTradingApi.startPhoneAuth(phone, token) }),
     startQr: useMutation({ mutationFn: () => copyTradingApi.startQrAuth(token) }),
@@ -112,6 +151,13 @@ export function useCopyTradingActions() {
     routeAction: useMutation({ mutationFn: ({ id, action }: { id: string; action: "activate" | "pause" | "resume" }) => action === "activate" ? copyTradingApi.activateRoute(id, token) : action === "pause" ? copyTradingApi.pauseRoute(id, token) : copyTradingApi.resumeRoute(id, token), onSuccess: refresh }),
     deleteRoute: useMutation({ mutationFn: (id: string) => copyTradingApi.deleteRoute(id, token), onSuccess: refresh }),
     emergency: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.emergency>[0]) => copyTradingApi.emergency(payload, token), onSuccess: refresh }),
+    replayDeadLetter: useMutation({
+      mutationFn: (id: string) => copyTradingApi.replayDeadLetter(id, token),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.deadLetters() });
+        queryClient.invalidateQueries({ queryKey: ["copy-trading", "activity"] });
+      },
+    }),
   };
 }
 
@@ -123,7 +169,7 @@ export function useUpdateCopyTradingSettings() {
       copyTradingApi.updateSettings(isPaused, token),
     onSuccess: (settings) => {
       queryClient.setQueryData(COPY_TRADING_KEYS.settings(), settings);
-      queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.activity() });
+      queryClient.invalidateQueries({ queryKey: ["copy-trading", "activity"] });
     },
   });
 }
@@ -141,7 +187,7 @@ export function useUpdateCopyAccountPolicy() {
     }) => copyTradingApi.updateAccountPolicy(accountId, payload, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.policies() });
-      queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.activity() });
+      queryClient.invalidateQueries({ queryKey: ["copy-trading", "activity"] });
     },
   });
 }
