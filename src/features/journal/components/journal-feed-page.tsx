@@ -171,7 +171,7 @@ export function JournalFeedPage() {
   const calYear = monthAnchor.getFullYear();
 
   // Days that fall in the displayed calendar month, keyed by day-of-month.
-  const calendarStats = useMemo(() => {
+  const calendarStats = (() => {
     const map: Record<number, MonthCalendarDay> = {};
     for (const d of allDays) {
       const [y, m, day] = d.date.split("-").map(Number);
@@ -180,10 +180,10 @@ export function JournalFeedPage() {
       }
     }
     return map;
-  }, [allDays, calYear, calMonth]);
+  })();
 
   // Period summary over the displayed month's trading days.
-  const periodSummary = useMemo<PeriodSummary>(() => {
+  const periodSummary: PeriodSummary = (() => {
     const monthDays = allDays.filter((d) => {
       const [y, m] = d.date.split("-").map(Number);
       return y === calYear && m - 1 === calMonth && d.tradeCount > 0;
@@ -206,7 +206,7 @@ export function JournalFeedPage() {
       daysJournaled: monthDays.filter((d) => d.hasNote).length,
       tradingDays: monthDays.length,
     };
-  }, [allDays, calYear, calMonth, monthAnchor]);
+  })();
 
   const shiftMonth = (delta: number) => {
     setSelectedDay(null);
