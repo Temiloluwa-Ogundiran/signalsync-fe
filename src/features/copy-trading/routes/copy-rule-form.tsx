@@ -72,11 +72,10 @@ function CopyRuleFormBody({
   onSaved: () => void;
 }) {
   const actions = useCopyTradingActions();
-  const readySources = sources.filter(
-    (item) => item.profile && item.state !== "unsupported",
-  );
+  const readySources = sources.filter((item) => !item.is_paused);
   const readyAccounts = accounts.filter(
-    (item) => item.connection_state === "ready",
+    (item) =>
+      item.connection_state === "ready" && item.has_trader_access,
   );
   const [value, setValue] = useState<CopyRouteInput>(() =>
     route
@@ -85,9 +84,7 @@ function CopyRuleFormBody({
           ...defaultCopyPreferences,
           source_id: readySources[0]?.id ?? "",
           target_account_id: readyAccounts[0]?.id ?? "",
-          assembly_window_seconds:
-            readySources[0]?.profile?.recommended_assembly_window_seconds ??
-            90,
+          assembly_window_seconds: 90,
         },
   );
 
@@ -119,13 +116,9 @@ function CopyRuleFormBody({
               value={value.source_id}
               disabled={Boolean(route)}
               onChange={(sourceId) => {
-                const source = sources.find((item) => item.id === sourceId);
                 setValue((current) => ({
                   ...current,
                   source_id: sourceId,
-                  assembly_window_seconds:
-                    source?.profile?.recommended_assembly_window_seconds ??
-                    current.assembly_window_seconds,
                 }));
               }}
             >

@@ -117,7 +117,7 @@ export function deriveSystemHealth(input: {
   return {
     tone: "success",
     label: "Copying is operational",
-    description: "Telegram, signal analysis, and broker execution are responding.",
+    description: "Telegram, signal processing, and broker execution are responding.",
   };
 }
 
@@ -126,7 +126,6 @@ function humanizeHealthIssue(issue?: string): string {
   return issue
     .replace("copy-execution", "The execution worker")
     .replace("copy-signal", "The signal worker")
-    .replace("copy-learning", "The channel learning worker")
     .replace("telegram-session", "The Telegram worker")
     .replace(" has not reported health", " has not started")
     .replace(" is stale", " has stopped reporting");

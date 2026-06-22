@@ -142,6 +142,7 @@ export interface CopyTargetAccount {
   connection_state: string;
   broker_server?: string;
   account_balance?: string | number | null;
+  has_trader_access: boolean;
 }
 
 export interface TelegramConnection {
@@ -173,19 +174,6 @@ export interface TelegramDialog {
   is_admin: boolean;
 }
 
-export interface ChannelProfile {
-  id: string;
-  signal_style: string;
-  recommended_assembly_window_seconds: number;
-  confidence: "low" | "medium" | "high";
-  confidence_score: number;
-  image_frequency: number;
-  image_primary: boolean;
-  supported_actions: string[];
-  sample_count: number;
-  validated_at: string;
-}
-
 export interface TelegramSource {
   id: string;
   connection_id: string;
@@ -193,19 +181,8 @@ export interface TelegramSource {
   title: string;
   username: string | null;
   source_type: "channel" | "group";
-  state:
-    | "draft"
-    | "learning"
-    | "ready"
-    | "active"
-    | "paused"
-    | "advisory"
-    | "failed_retryable"
-    | "unsupported"
-    | "unsupported_image_primary";
-  unsupported_reason: string | null;
+  state: "ready" | "active" | "paused";
   is_paused: boolean;
-  profile: ChannelProfile | null;
 }
 
 export interface CopyRouteInput {

@@ -92,4 +92,17 @@ export const journalAccountApi = {
     );
     return data;
   },
+
+  enableTraderAccess: async (
+    accountId: string,
+    traderPassword: string,
+    token?: string,
+  ): Promise<JournalAccount> => {
+    const { data } = await apiClient.post<JournalAccount>(
+      `/accounts/${accountId}/trader-access`,
+      { trader_password: traderPassword },
+      withAuth(token),
+    );
+    return data;
+  },
 };

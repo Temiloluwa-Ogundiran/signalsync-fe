@@ -143,15 +143,15 @@ export const copyTradingApi = {
     (await apiClient.get<TelegramDialog[]>(`/copy-trading/telegram/connections/${connectionId}/dialogs`, withAuth(token))).data,
   listSources: async (token?: string): Promise<TelegramSource[]> =>
     (await apiClient.get<TelegramSource[]>("/copy-trading/sources", withAuth(token))).data,
-  createSource: async (payload: Omit<TelegramSource, "id" | "state" | "unsupported_reason" | "is_paused" | "profile">, token?: string): Promise<TelegramSource> =>
+  createSource: async (payload: Omit<TelegramSource, "id" | "state" | "is_paused">, token?: string): Promise<TelegramSource> =>
     (await apiClient.post<TelegramSource>("/copy-trading/sources", payload, withAuth(token))).data,
   pauseSource: async (sourceId: string, isPaused: boolean, token?: string): Promise<TelegramSource> =>
     (await apiClient.patch<TelegramSource>(`/copy-trading/sources/${sourceId}/pause`, { is_paused: isPaused }, withAuth(token))).data,
   deleteSource: async (sourceId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/copy-trading/sources/${sourceId}`, withAuth(token));
   },
-  relearnSource: async (sourceId: string, token?: string): Promise<TelegramSource> =>
-    (await apiClient.post<TelegramSource>(`/copy-trading/sources/${sourceId}/learn`, {}, withAuth(token))).data,
+  enableTraderAccess: async (accountId: string, traderPassword: string, token?: string): Promise<CopyTargetAccount> =>
+    (await apiClient.post<CopyTargetAccount>(`/accounts/${accountId}/trader-access`, { trader_password: traderPassword }, withAuth(token))).data,
   revealActivityRaw: async (eventId: string, token?: string): Promise<{ raw_message: string | null }> =>
     (await apiClient.get<{ raw_message: string | null }>(`/copy-trading/activity/${eventId}/raw`, withAuth(token))).data,
   createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>

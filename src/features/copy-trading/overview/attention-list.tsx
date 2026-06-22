@@ -39,11 +39,10 @@ export function AttentionList({
       action: "Open settings",
     });
   }
-  if (sources.some((item) => item.state === "unsupported")) {
+  if (sources.some((item) => item.is_paused)) {
     items.push({
-      title: "A signal channel is not supported",
-      detail:
-        "Image-primary channels cannot be copied. Other channels remain active.",
+      title: "A signal channel is paused",
+      detail: "Resume it when you want TradePartna to process new messages.",
       href: "/copy-trading/settings",
       action: "Review channels",
     });

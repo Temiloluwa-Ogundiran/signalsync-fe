@@ -60,6 +60,7 @@ export interface JournalAccount {
   latest_equity: number | null;
   is_archived: boolean;
   import_method?: string;
+  has_trader_access: boolean;
   created_at: string;
   /** True for the seeded demo account (drives the demo banner + badge). */
   is_demo?: boolean;

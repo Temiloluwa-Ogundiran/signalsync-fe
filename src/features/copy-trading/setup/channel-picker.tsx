@@ -68,8 +68,8 @@ export function ChannelPicker({
         username: dialog.username,
         source_type: dialog.source_type,
       });
-      toast.info("Channel analysis started", {
-        description: "Reviewing recent channel messages.",
+      toast.success("Signal channel added", {
+        description: "New messages from this channel can now be processed.",
       });
       onOpenChange(false);
     } catch (error) {

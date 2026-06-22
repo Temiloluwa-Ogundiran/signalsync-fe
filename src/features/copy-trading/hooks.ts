@@ -124,7 +124,7 @@ export function useTelegramDialogs(connectionId?: string, active = true) {
     enabled: enabled && active && !!connectionId,
     staleTime: 0,
     refetchOnMount: "always",
-    refetchInterval: active ? 15_000 : false,
+    refetchInterval: active ? 3_000 : false,
   });
 }
 
@@ -144,7 +144,11 @@ export function useCopyTradingActions() {
     createSource: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createSource>[0]) => copyTradingApi.createSource(payload, token), onSuccess: refresh }),
     pauseSource: useMutation({ mutationFn: ({ id, paused }: { id: string; paused: boolean }) => copyTradingApi.pauseSource(id, paused, token), onSuccess: refresh }),
     deleteSource: useMutation({ mutationFn: (id: string) => copyTradingApi.deleteSource(id, token), onSuccess: refresh }),
-    relearnSource: useMutation({ mutationFn: (id: string) => copyTradingApi.relearnSource(id, token), onSuccess: refresh }),
+    enableTraderAccess: useMutation({
+      mutationFn: ({ accountId, traderPassword }: { accountId: string; traderPassword: string }) =>
+        copyTradingApi.enableTraderAccess(accountId, traderPassword, token),
+      onSuccess: refresh,
+    }),
     revealRaw: (eventId: string) => copyTradingApi.revealActivityRaw(eventId, token),
     createRoute: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createRoute>[0]) => copyTradingApi.createRoute(payload, token), onSuccess: refresh }),
     updateRoute: useMutation({ mutationFn: ({ id, payload }: { id: string; payload: Partial<Parameters<typeof copyTradingApi.createRoute>[0]> }) => copyTradingApi.updateRoute(id, payload, token), onSuccess: refresh }),

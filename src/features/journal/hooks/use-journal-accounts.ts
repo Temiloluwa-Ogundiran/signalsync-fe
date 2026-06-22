@@ -185,3 +185,31 @@ export function useUpdateJournalAccount() {
     },
   });
 }
+
+export function useEnableTraderAccess() {
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      accountId,
+      traderPassword,
+    }: {
+      accountId: string;
+      traderPassword: string;
+    }) =>
+      journalAccountApi.enableTraderAccess(
+        accountId,
+        traderPassword,
+        session?.accessToken as string,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: JOURNAL_ACCOUNT_KEYS.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["copy-trading", "target-accounts"],
+      });
+    },
+  });
+}

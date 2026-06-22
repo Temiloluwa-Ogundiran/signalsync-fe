@@ -9,7 +9,6 @@ import { apiError, relativeTime } from "../utils";
 
 const roleLabels: Record<string, string> = {
   "telegram-session": "Telegram listener",
-  "copy-learning": "Channel learning",
   "copy-signal": "Signal analysis",
   "copy-execution": "Broker execution",
 };

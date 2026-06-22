@@ -2,13 +2,14 @@
 
 import {
   Plus,
-  RefreshCw,
   Smartphone,
   Trash2,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { TraderAccessDialog } from "@/components/trader-access-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -25,7 +26,6 @@ import {
 import { accountLabel, apiError, connectionName, relativeTime } from "../utils";
 import { StatusLabel } from "../shared/status-label";
 import { ChannelPicker } from "../setup/channel-picker";
-import { ChannelAnalysisStep } from "../setup/channel-analysis-step";
 import { TelegramSignInDialog } from "../setup/telegram-sign-in-dialog";
 import { ConfirmActionDialog } from "../shared/confirm-action-dialog";
 
@@ -177,26 +177,9 @@ export function CopyTradingSettingsPage({
                   </div>
                   <p className="mt-1 text-xs capitalize text-text-secondary">
                     {source.source_type}
-                    {source.profile
-                      ? ` | ${source.profile.signal_style} | ${source.profile.confidence} confidence`
-                      : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      run(
-                        () => actions.relearnSource.mutateAsync(source.id),
-                        "Channel analysis started",
-                        "Channel analysis could not start",
-                      )
-                    }
-                  >
-                    <RefreshCw className="size-4" />
-                    Analyze again
-                  </Button>
                   <Switch
                     checked={!source.is_paused}
                     onCheckedChange={(enabled) =>
@@ -230,22 +213,6 @@ export function CopyTradingSettingsPage({
                   </Button>
                 </div>
               </div>
-              {source.profile?.confidence === "low" ? (
-                <p className="mt-3 rounded-md bg-warning/5 px-3 py-2 text-sm text-warning-text">
-                  This channel changes format often. Copying remains available;
-                  review its activity more closely.
-                </p>
-              ) : null}
-              {[
-                "learning",
-                "failed_retryable",
-                "unsupported",
-                "unsupported_image_primary",
-              ].includes(source.state) ? (
-                <div className="mt-3">
-                  <ChannelAnalysisStep source={source} />
-                </div>
-              ) : null}
             </div>
           ))
         ) : (
@@ -349,8 +316,13 @@ function TradingAccountRow({
   policy?: CopyAccountPolicy;
 }) {
   const updatePolicy = useUpdateCopyAccountPolicy();
+  const actions = useCopyTradingActions();
   const [maxLot, setMaxLot] = useState(policy?.max_lot ?? "100");
   const [enabled, setEnabled] = useState(!policy?.is_paused);
+  const [traderAccessOpen, setTraderAccessOpen] = useState(false);
+  const [traderAccessError, setTraderAccessError] = useState<string | null>(
+    null,
+  );
   const save = async () => {
     try {
       await updatePolicy.mutateAsync({
@@ -372,6 +344,9 @@ function TradingAccountRow({
             {accountLabel(account, account.id)}
           </p>
           <StatusLabel state={account.connection_state} />
+          <Badge variant={account.has_trader_access ? "win" : "neutral"}>
+            {account.has_trader_access ? "Full access" : "Import only"}
+          </Badge>
         </div>
         <p className="mt-1 text-xs text-text-secondary">
           {account.broker_server || account.broker_name}
@@ -387,21 +362,56 @@ function TradingAccountRow({
           step="0.01"
           value={maxLot}
           onChange={(event) => setMaxLot(event.target.value)}
+          disabled={!account.has_trader_access}
         />
       </label>
-      <div className="flex h-9 items-center gap-2">
-        <Switch checked={enabled} onCheckedChange={setEnabled} />
-        <span className="text-sm text-text-secondary">
-          {enabled ? "Copying enabled" : "Copying paused"}
-        </span>
-      </div>
-      <Button
-        variant="outline"
-        onClick={save}
-        disabled={updatePolicy.isPending || Number(maxLot) <= 0}
-      >
-        {updatePolicy.isPending ? "Saving..." : "Save"}
-      </Button>
+      {account.has_trader_access ? (
+        <>
+          <div className="flex h-9 items-center gap-2">
+            <Switch checked={enabled} onCheckedChange={setEnabled} />
+            <span className="text-sm text-text-secondary">
+              {enabled ? "Copying enabled" : "Copying paused"}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            onClick={save}
+            disabled={updatePolicy.isPending || Number(maxLot) <= 0}
+          >
+            {updatePolicy.isPending ? "Saving..." : "Save"}
+          </Button>
+        </>
+      ) : (
+        <Button
+          variant="outline"
+          onClick={() => {
+            setTraderAccessError(null);
+            setTraderAccessOpen(true);
+          }}
+        >
+          Enable full access
+        </Button>
+      )}
+      <TraderAccessDialog
+        open={traderAccessOpen}
+        accountLabel={accountLabel(account, account.id)}
+        busy={actions.enableTraderAccess.isPending}
+        error={traderAccessError}
+        onOpenChange={setTraderAccessOpen}
+        onSubmit={async (password) => {
+          try {
+            await actions.enableTraderAccess.mutateAsync({
+              accountId: account.id,
+              traderPassword: password,
+            });
+            setTraderAccessOpen(false);
+            setTraderAccessError(null);
+            toast.success("Full account access enabled");
+          } catch (error) {
+            setTraderAccessError(apiError(error));
+          }
+        }}
+      />
     </div>
   );
 }

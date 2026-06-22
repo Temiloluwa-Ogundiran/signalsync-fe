@@ -11,7 +11,6 @@ test("copy trading API and complete workflows remain exposed", () => {
   const api = feature("api.ts");
   const ui = [
     "setup/setup-workspace.tsx",
-    "setup/channel-analysis-step.tsx",
     "routes/copy-rule-form.tsx",
     "activity/activity-item.tsx",
     "emergency-actions-dialog.tsx",
@@ -33,14 +32,13 @@ test("copy trading API and complete workflows remain exposed", () => {
   }
   for (const wording of [
     "Connect Telegram",
-    "Analyze again",
     "Edit copy rule",
     "Reveal source message",
     "Emergency actions",
   ]) {
     assert.match(ui, new RegExp(wording));
   }
-  assert.match(api, /relearnSource/);
+  assert.doesNotMatch(api, /relearnSource/);
   assert.match(api, /updateRoute/);
   assert.match(api, /deleteRoute/);
   assert.equal(api.includes("accessToken,"), false);
@@ -54,7 +52,7 @@ test("Telegram source search refreshes the live dialog list", () => {
     /useTelegramDialogs\(connectionId\?: string, active = true\)/,
   );
   assert.match(hooks, /enabled: enabled && active && !!connectionId/);
-  assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
+  assert.match(hooks, /refetchInterval: active \? 3_000 : false/);
   assert.match(picker, /useTelegramDialogs\(connectionId, open\)/);
   assert.match(picker, /Refresh channels and groups/);
 });
@@ -96,11 +94,9 @@ test("safety and help components use impact-focused wording", () => {
 test("guided setup exposes the approved journey and progressive controls", () => {
   const workspace = feature("setup/setup-workspace.tsx");
   const preferences = feature("setup/preferences-step.tsx");
-  const analysis = feature("setup/channel-analysis-step.tsx");
   for (const heading of [
     "Connect Telegram",
     "Choose a signal channel",
-    "Review how this channel sends signals",
     "Choose where trades should be copied",
     "Set your copying preferences",
     "Start copying",
@@ -114,10 +110,7 @@ test("guided setup exposes the approved journey and progressive controls", () =>
   assert.match(preferences, /signal is marked as missed/);
   assert.match(preferences, /Advanced settings/);
   assert.match(preferences, /take_profit_mode === "all"/);
-  assert.match(
-    analysis,
-    /Copying is available, but review activity closely/,
-  );
+  assert.doesNotMatch(workspace, /channel analysis|confidence|unsupported/i);
 });
 
 test("copy rule minimum details match the backend enum contract", () => {
@@ -204,11 +197,30 @@ test("copy trading uses one feature-level tooltip provider", () => {
   assert.doesNotMatch(feature("shared/field-help.tsx"), /Tooltip\.Provider/);
 });
 
-test("retryable channel learning failures do not spin forever", () => {
-  const analysis = feature("setup/channel-analysis-step.tsx");
+test("signal channels are never gated by historical analysis", () => {
+  const settings = feature("settings/copy-trading-settings-page.tsx");
+  const workspace = feature("setup/setup-workspace.tsx");
+  const picker = feature("setup/channel-picker.tsx");
 
-  assert.match(analysis, /failed_retryable/);
-  assert.match(analysis, /Analysis was interrupted/);
-  assert.match(analysis, /Try analysis again/);
-  assert.match(analysis, /unsupported_image_primary/);
+  for (const ui of [settings, workspace, picker]) {
+    assert.doesNotMatch(ui, /Analyze again|analysis started|unsupported|confidence/i);
+  }
+});
+
+test("trading accounts expose import-only and full-access states", () => {
+  const settings = feature("settings/copy-trading-settings-page.tsx");
+  const journal = readFileSync(
+    join(ROOT, "src/features/journal/components/journal-accounts-page.tsx"),
+    "utf8",
+  );
+  const api = readFileSync(
+    join(ROOT, "src/features/journal/api/journal-account.api.ts"),
+    "utf8",
+  );
+
+  assert.match(settings, /Full access/);
+  assert.match(settings, /Import only/);
+  assert.match(journal, /Full access/);
+  assert.match(journal, /Import only/);
+  assert.match(api, /enableTraderAccess/);
 });

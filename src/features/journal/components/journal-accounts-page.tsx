@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -12,6 +13,7 @@ import {
   Pencil,
   Upload,
   PlugZap,
+  KeyRound,
 } from "lucide-react";
 import {
   useJournalAccounts,
@@ -19,8 +21,10 @@ import {
   useDisconnectJournalAccount,
   useDeleteJournalAccount,
   useUnarchiveJournalAccount,
-  useUpdateJournalAccount
+  useUpdateJournalAccount,
+  useEnableTraderAccess,
 } from "@/features/journal/hooks/use-journal-accounts";
+import { TraderAccessDialog } from "@/components/trader-access-dialog";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -96,6 +100,7 @@ export function JournalAccountsPage() {
   const deleteAccount = useDeleteJournalAccount();
   const unarchiveAccount = useUnarchiveJournalAccount();
   const updateAccount = useUpdateJournalAccount();
+  const enableTraderAccess = useEnableTraderAccess();
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openCSVReimportModal = useJournalUiStore((s) => s.openCSVReimportModal);
 
@@ -111,6 +116,13 @@ export function JournalAccountsPage() {
     null,
   );
   const [renameValue, setRenameValue] = useState("");
+  const [traderAccessAccount, setTraderAccessAccount] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [traderAccessError, setTraderAccessError] = useState<string | null>(
+    null,
+  );
 
   const closeAccountAction = () => setAccountAction(null);
 
@@ -358,6 +370,20 @@ export function JournalAccountsPage() {
                           <p className="truncate text-xs font-medium text-text-tertiary">
                             {account.broker_server}
                           </p>
+                          {!isCsv ? (
+                            <span
+                              className={cn(
+                                "mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                                account.has_trader_access
+                                  ? "bg-success/10 text-success"
+                                  : "bg-bg-tertiary text-text-secondary",
+                              )}
+                            >
+                              {account.has_trader_access
+                                ? "Full access"
+                                : "Import only"}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                       <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
@@ -459,6 +485,20 @@ export function JournalAccountsPage() {
                           onClick={() => openRenameDialog(account.id, accountLabel)}
                         />
 
+                        {!isCsv && !account.has_trader_access ? (
+                          <IconAction
+                            icon={KeyRound}
+                            label="Enable full access for copy trading"
+                            onClick={() => {
+                              setTraderAccessError(null);
+                              setTraderAccessAccount({
+                                id: account.id,
+                                label: accountLabel,
+                              });
+                            }}
+                          />
+                        ) : null}
+
                         {!isArchived && (
                           <IconAction
                             icon={Archive}
@@ -498,6 +538,35 @@ export function JournalAccountsPage() {
         deleting={deleteAccount.isPending}
         renaming={updateAccount.isPending}
         reconnecting={unarchiveAccount.isPending}
+      />
+      <TraderAccessDialog
+        open={traderAccessAccount !== null}
+        accountLabel={traderAccessAccount?.label ?? "this account"}
+        busy={enableTraderAccess.isPending}
+        error={traderAccessError}
+        onOpenChange={(open) => {
+          if (!open) setTraderAccessAccount(null);
+        }}
+        onSubmit={async (password) => {
+          if (!traderAccessAccount) return;
+          try {
+            await enableTraderAccess.mutateAsync({
+              accountId: traderAccessAccount.id,
+              traderPassword: password,
+            });
+            toast.success("Full account access enabled");
+            setTraderAccessAccount(null);
+            setTraderAccessError(null);
+          } catch (error) {
+            setTraderAccessError(
+              axios.isAxiosError(error)
+                ? String(error.response?.data?.detail ?? error.message)
+                : error instanceof Error
+                  ? error.message
+                  : "The trading password could not be verified.",
+            );
+          }
+        }}
       />
     </div>
   );

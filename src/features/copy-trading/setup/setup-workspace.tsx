@@ -3,6 +3,8 @@
 import { Plus, Radio, ShieldCheck, Smartphone } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { TraderAccessDialog } from "@/components/trader-access-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
   CopyAccountPolicy,
@@ -16,7 +18,6 @@ import { useCopyTradingActions } from "../hooks";
 import { accountLabel, apiError, connectionName, routeInput } from "../utils";
 import { EmptyState } from "../shared/empty-state";
 import { StatusLabel } from "../shared/status-label";
-import { ChannelAnalysisStep } from "./channel-analysis-step";
 import { ChannelPicker } from "./channel-picker";
 import {
   defaultCopyPreferences,
@@ -41,6 +42,10 @@ export function SetupWorkspace({
   const actions = useCopyTradingActions();
   const [telegramOpen, setTelegramOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
+  const [traderAccessOpen, setTraderAccessOpen] = useState(false);
+  const [traderAccessError, setTraderAccessError] = useState<string | null>(
+    null,
+  );
   const readyConnection = connections.find(
     (item) => item.state === "ready" && !item.is_paused,
   );
@@ -68,8 +73,7 @@ export function SetupWorkspace({
           ...defaultCopyPreferences,
           source_id: source?.id ?? "",
           target_account_id: accountId,
-          assembly_window_seconds:
-            source?.profile?.recommended_assembly_window_seconds ?? 90,
+          assembly_window_seconds: 90,
         },
   );
   const [savedRoute, setSavedRoute] = useState<CopyRoute | null>(
@@ -80,13 +84,11 @@ export function SetupWorkspace({
     ? 1
     : !source
       ? 2
-      : source.state === "learning" || !source.profile
+      : !account
         ? 3
-        : !account
+        : !savedRoute
           ? 4
-          : !savedRoute
-            ? 5
-            : 6;
+          : 5;
 
   const stepState = (step: number) =>
     step < currentStep
@@ -97,6 +99,11 @@ export function SetupWorkspace({
 
   const savePreferences = async () => {
     if (!source || !account) return;
+    if (!account.has_trader_access) {
+      setTraderAccessError(null);
+      setTraderAccessOpen(true);
+      return;
+    }
     const payload = {
       ...preferences,
       source_id: source.id,
@@ -240,10 +247,6 @@ export function SetupWorkspace({
                       setPreferences((current) => ({
                         ...current,
                         source_id: item.id,
-                        assembly_window_seconds:
-                          item.profile
-                            ?.recommended_assembly_window_seconds ??
-                          current.assembly_window_seconds,
                       }));
                     }}
                     className={`flex items-center justify-between rounded-md border px-3 py-3 text-left ${
@@ -286,23 +289,9 @@ export function SetupWorkspace({
 
         <SetupStep
           number={3}
-          title="Review how this channel sends signals"
-          description="TradePartna reviews recent messages so it can understand single-message and multi-message trade instructions."
-          state={stepState(3)}
-          summary={
-            source?.profile
-              ? `${source.profile.signal_style} · ${source.profile.confidence} confidence`
-              : undefined
-          }
-        >
-          {source ? <ChannelAnalysisStep source={source} /> : null}
-        </SetupStep>
-
-        <SetupStep
-          number={4}
           title="Choose where trades should be copied"
-          description="Select a connected MT5 account."
-          state={stepState(4)}
+          description="Select a connected MT5 account. Full trading access is required to place copied trades."
+          state={stepState(3)}
           summary={account ? accountLabel(account, account.id) : undefined}
         >
           <div className="grid gap-2">
@@ -342,20 +331,47 @@ export function SetupWorkspace({
                         : ""}
                     </span>
                   </span>
-                  <StatusLabel
-                    state={available ? "ready" : item.connection_state}
-                  />
+                  <span className="flex shrink-0 items-center gap-2">
+                    <StatusLabel
+                      state={available ? "ready" : item.connection_state}
+                    />
+                    <Badge variant={item.has_trader_access ? "win" : "neutral"}>
+                      {item.has_trader_access ? "Full access" : "Import only"}
+                    </Badge>
+                  </span>
                 </button>
               );
             })}
+            {account && !account.has_trader_access ? (
+              <div className="flex flex-col gap-3 rounded-md border border-border-primary bg-bg-tertiary px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    Full access is needed for copy trading
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-text-secondary">
+                    Enter this account&apos;s trading password. The investor
+                    password continues to handle journal imports.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setTraderAccessError(null);
+                    setTraderAccessOpen(true);
+                  }}
+                >
+                  Enable full access
+                </Button>
+              </div>
+            ) : null}
           </div>
         </SetupStep>
 
         <SetupStep
-          number={5}
+          number={4}
           title="Set your copying preferences"
           description="Choose trade size, take-profit behavior and trade-management permissions."
-          state={stepState(5)}
+          state={stepState(4)}
           summary={`${Number(preferences.fixed_lot).toFixed(2)} lots`}
         >
           <PreferencesStep
@@ -369,10 +385,10 @@ export function SetupWorkspace({
         </SetupStep>
 
         <SetupStep
-          number={6}
+          number={5}
           title="Start copying"
           description="Review your choices, then activate this copy rule."
-          state={stepState(6)}
+          state={stepState(5)}
         >
           <div className="space-y-5">
             <div>
@@ -422,6 +438,29 @@ export function SetupWorkspace({
         onOpenChange={setChannelOpen}
         connections={connections}
         sources={sources}
+      />
+      <TraderAccessDialog
+        open={traderAccessOpen}
+        accountLabel={
+          account ? accountLabel(account, account.id) : "this account"
+        }
+        busy={actions.enableTraderAccess.isPending}
+        error={traderAccessError}
+        onOpenChange={setTraderAccessOpen}
+        onSubmit={async (password) => {
+          if (!account) return;
+          try {
+            await actions.enableTraderAccess.mutateAsync({
+              accountId: account.id,
+              traderPassword: password,
+            });
+            setTraderAccessOpen(false);
+            setTraderAccessError(null);
+            toast.success("Full account access enabled");
+          } catch (error) {
+            setTraderAccessError(apiError(error));
+          }
+        }}
       />
     </>
   );
