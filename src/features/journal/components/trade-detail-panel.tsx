@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format/money";
 import {
@@ -12,6 +12,7 @@ import {
   SheetBody,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { JournalTrade, Tag } from "../types";
 import {
   useJournalTagsConfig,
@@ -59,11 +60,29 @@ function fmtDuration(seconds?: number): string {
 
 function StatRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-1.5 text-sm">
+    <div className="flex items-center justify-between py-2 text-sm">
       <span className="text-text-secondary">{label}</span>
       <span className="font-semibold tabular-nums text-text-primary">
         {value}
       </span>
+    </div>
+  );
+}
+
+/** Boxed group of StatRows with hairline dividers between rows. */
+function StatGroup({
+  title,
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      {title && <SectionLabel>{title}</SectionLabel>}
+      <div className="rounded-xl bg-card-bg px-4 ring-1 ring-hairline [&>*+*]:border-t [&>*+*]:border-hairline">
+        {children}
+      </div>
     </div>
   );
 }
@@ -73,6 +92,80 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <p className="mb-2 text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
       {children}
     </p>
+  );
+}
+
+type Outcome = "win" | "loss" | "be";
+
+function outcomeOf(net: number): Outcome {
+  if (net > 0) return "win";
+  if (net < 0) return "loss";
+  return "be";
+}
+
+const OUTCOME_LABEL: Record<Outcome, string> = {
+  win: "Win",
+  loss: "Loss",
+  be: "Break-even",
+};
+
+/** Hero P&L card — outcome-colored left rail, large net P&L, ROI + gross chips. */
+function PnlHero({
+  net,
+  gross,
+  roiPercent,
+  currency,
+}: {
+  net: number;
+  gross: number;
+  roiPercent: number | null;
+  currency: string;
+}) {
+  const outcome = outcomeOf(net);
+  const tone =
+    outcome === "win"
+      ? "text-kpi-metric-positive"
+      : outcome === "loss"
+        ? "text-danger"
+        : "text-text-primary";
+  const rail =
+    outcome === "win"
+      ? "before:bg-kpi-metric-positive"
+      : outcome === "loss"
+        ? "before:bg-danger"
+        : "before:bg-border-secondary";
+
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl bg-card-bg px-4 py-3 ring-1 ring-hairline",
+        "before:absolute before:inset-y-0 before:left-0 before:w-1",
+        rail,
+      )}
+    >
+      <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+        Net P&amp;L
+      </p>
+      <p className={cn("mt-0.5 text-2xl font-bold tabular-nums", tone)}>
+        {formatMoney(net, { currency })}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {roiPercent != null && (
+          <span className="inline-flex items-center gap-1 rounded-md bg-surface-subtle px-2 py-0.5 text-xs text-text-secondary">
+            ROI
+            <span className={cn("font-semibold tabular-nums", tone)}>
+              {roiPercent.toFixed(2)}%
+            </span>
+          </span>
+        )}
+        <span className="inline-flex items-center gap-1 rounded-md bg-surface-subtle px-2 py-0.5 text-xs text-text-secondary">
+          Gross
+          <span className="font-semibold tabular-nums text-text-primary">
+            {formatMoney(gross, { currency })}
+          </span>
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -146,11 +239,14 @@ export function TradeDetailPanel({
   accountId,
   open,
   onClose,
+  onShare,
 }: {
   trade: JournalTrade | null;
   accountId: string;
   open: boolean;
   onClose: () => void;
+  /** Optional — when provided, a "Share Trade" action shows in the footer. */
+  onShare?: (trade: JournalTrade) => void;
 }) {
   const currency = useActiveAccountCurrency();
   const tradeId = trade?.id;
@@ -168,12 +264,13 @@ export function TradeDetailPanel({
   if (!trade) return null;
 
   const net = num(trade.net_profit);
-  const pnlTone =
-    net > 0
-      ? "text-kpi-metric-positive"
-      : net < 0
-        ? "text-danger"
-        : "text-text-tertiary";
+  const commission = num(trade.commission);
+  const swap = num(trade.swap);
+  // Gross is not stored — net is after costs, so add them back.
+  const gross = net + commission + swap;
+  const roiPercent =
+    trade.net_roi_percent != null ? num(trade.net_roi_percent) : null;
+  const outcome = outcomeOf(net);
 
   const groupColor = new Map(config.map((g) => [g.id, g.color || "#64748b"]));
 
@@ -183,45 +280,75 @@ export function TradeDetailPanel({
         <SheetHeader>
           <div className="flex items-center gap-2 pr-8">
             <SheetTitle>{trade.symbol}</SheetTitle>
-            <Badge variant="neutral">{trade.direction}</Badge>
+            <Badge variant={trade.direction === "buy" ? "info" : "warn"}>
+              {trade.direction}
+            </Badge>
+            <Badge variant={outcome}>{OUTCOME_LABEL[outcome]}</Badge>
           </div>
           <SheetDescription>
-            <span className={cn("font-semibold", pnlTone)}>
-              {formatMoney(net, { currency })}
-            </span>
-            {trade.net_roi_percent != null && (
-              <span className="ml-2 text-text-tertiary">
-                {num(trade.net_roi_percent).toFixed(2)}% ROI
-              </span>
-            )}
+            {fmtDateTime(trade.opened_at)} → {fmtDateTime(trade.closed_at)}
+            <span className="mx-1.5 text-text-tertiary">·</span>
+            Held {fmtDuration(trade.duration_seconds)}
           </SheetDescription>
         </SheetHeader>
 
         <SheetBody className="space-y-6">
-          {/* Stats */}
-          <section>
-            <SectionLabel>Stats</SectionLabel>
-            <div className="rounded-xl bg-card-bg px-4 py-2 ring-1 ring-hairline">
-              <StatRow
-                label="Entry → Exit"
-                value={`${num(trade.open_price)} → ${num(trade.close_price)}`}
-              />
-              <StatRow label="Volume" value={num(trade.volume)} />
-              <StatRow
-                label="SL / TP"
-                value={`${trade.sl ?? "—"} / ${trade.tp ?? "—"}`}
-              />
-              {trade.r_multiple != null && (
-                <StatRow label="R-multiple" value={`${trade.r_multiple.toFixed(2)}R`} />
+          {/* Hero P&L */}
+          <PnlHero
+            net={net}
+            gross={gross}
+            roiPercent={roiPercent}
+            currency={currency}
+          />
+
+          {/* Execution */}
+          <StatGroup title="Execution">
+            <StatRow
+              label="Entry → Exit"
+              value={`${num(trade.open_price)} → ${num(trade.close_price)}`}
+            />
+            <StatRow label="Volume" value={num(trade.volume)} />
+            <StatRow
+              label="SL / TP"
+              value={`${trade.sl ?? "—"} / ${trade.tp ?? "—"}`}
+            />
+            {trade.r_multiple != null && (
+              <StatRow label="R-multiple" value={`${trade.r_multiple.toFixed(2)}R`} />
+            )}
+            {trade.session && <StatRow label="Session" value={trade.session} />}
+          </StatGroup>
+
+          {/* Excursion — only when MFE/MAE available */}
+          {(trade.mfe != null || trade.mae != null) && (
+            <StatGroup title="Excursion">
+              {trade.mfe != null && (
+                <StatRow
+                  label="Max favorable (MFE)"
+                  value={formatMoney(num(trade.mfe), { currency })}
+                />
               )}
-              <StatRow label="Opened" value={fmtDateTime(trade.opened_at)} />
-              <StatRow label="Closed" value={fmtDateTime(trade.closed_at)} />
-              <StatRow label="Duration" value={fmtDuration(trade.duration_seconds)} />
-              {trade.session && (
-                <StatRow label="Session" value={trade.session} />
+              {trade.mae != null && (
+                <StatRow
+                  label="Max adverse (MAE)"
+                  value={formatMoney(num(trade.mae), { currency })}
+                />
               )}
-            </div>
-          </section>
+            </StatGroup>
+          )}
+
+          {/* Costs */}
+          <StatGroup title="Costs">
+            <StatRow
+              label="Commission"
+              value={formatMoney(commission, { currency })}
+            />
+            <StatRow label="Swap" value={formatMoney(swap, { currency })} />
+            <StatRow
+              label="Gross P&L"
+              value={formatMoney(gross, { currency })}
+            />
+            <StatRow label="Net P&L" value={formatMoney(net, { currency })} />
+          </StatGroup>
 
           {/* Rating */}
           <section>
@@ -311,6 +438,15 @@ export function TradeDetailPanel({
             />
           </section>
         </SheetBody>
+
+        {onShare && (
+          <div className="flex items-center justify-end gap-2 border-t border-hairline px-5 py-3">
+            <Button variant="outline" onClick={() => onShare(trade)}>
+              <Share2 className="size-4" />
+              Share Trade
+            </Button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
