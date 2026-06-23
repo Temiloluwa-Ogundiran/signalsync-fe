@@ -15,6 +15,13 @@ interface AiChatCoreProps {
   initialMessages?: AiMessage[];
   context?: AiContext | null;
   /**
+   * A first message to auto-send once the (context-scoped) session is loaded
+   * and empty — used by "Continue with coach" to start the conversation.
+   */
+  seedMessage?: string | null;
+  /** Called after the seed message has been sent, so it isn't re-sent. */
+  onSeedConsumed?: () => void;
+  /**
    * Lazily create (and activate) a session on first send, returning its id.
    * Lets us avoid spawning empty sessions just from opening the panel.
    */
@@ -30,6 +37,8 @@ export function AiChatCore({
   sessionId,
   initialMessages,
   context,
+  seedMessage,
+  onSeedConsumed,
   onEnsureSession,
   onExpand,
 }: AiChatCoreProps) {
@@ -98,6 +107,27 @@ export function AiChatCore({
   // not the empty greeting (which made selecting a chat look like a new chat).
   const isLoadingSession =
     !!sessionId && isEmpty && !isStreaming && !initialMessages;
+
+  // Auto-send the seed message once the context-scoped session is loaded and
+  // empty. The ref keys on the seed text so re-renders (and a seed for a
+  // different day/trade) each send exactly once.
+  const seededFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!seedMessage) return;
+    if (seededFor.current === seedMessage) return;
+    // Wait until the resolved session's messages have settled. If the session
+    // already has messages, the day/trade was discussed before — don't re-seed.
+    if (!sessionId || isLoadingSession || isStreaming) return;
+    if (!isEmpty) {
+      seededFor.current = seedMessage;
+      onSeedConsumed?.();
+      return;
+    }
+    seededFor.current = seedMessage;
+    handleSend(seedMessage);
+    onSeedConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seedMessage, sessionId, isLoadingSession, isStreaming, isEmpty]);
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-x-hidden">

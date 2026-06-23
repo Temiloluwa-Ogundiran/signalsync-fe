@@ -9,6 +9,7 @@ import { AiChatCore } from "./ai-chat-core";
 import { AiSessionSidebar } from "./ai-session-sidebar";
 import { useAiDockStore } from "../store/ai-dock-store";
 import { useAiSession, useAiSessions, useCreateAiSession, useDeleteAiSession } from "../hooks/use-ai-sessions";
+import { aiApi } from "../api/ai.api";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { buildAccountLabel } from "@/features/journal/lib/account-label";
@@ -90,7 +91,40 @@ export function AiDock() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.accessToken, accountId, activeSessionId]);
 
+  // Context-scoped open (e.g. "Continue with coach"): resolve the reuse-or-create
+  // session pinned to this (contextType, contextRef) and activate it, so the
+  // day/trade always maps to one persistent chat. The seedMessage (if any) is
+  // handed to AiChatCore, which auto-sends it once the session is empty.
+  const resolvedContextRef = useRef<string | null>(null);
+  const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isOpen || !session?.accessToken) return;
+    const ctxType = context?.contextType;
+    const ctxRef = context?.contextRef;
+    if (!ctxType || !ctxRef) {
+      resolvedContextRef.current = null;
+      return;
+    }
+    const key = `${ctxType}:${ctxRef}`;
+    if (resolvedContextRef.current === key) return;
+    resolvedContextRef.current = key;
+    setSeedMessage(context?.seedMessage ?? null);
+    aiApi
+      .getContextSession(ctxType, ctxRef, session.accessToken)
+      .then((s) => {
+        setActiveSessionId(s.id);
+        sessionScopedTo.current = s.account_id ?? null;
+      })
+      .catch((err) => {
+        resolvedContextRef.current = null;
+        console.error("Failed to resolve context session", err);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, context?.contextType, context?.contextRef, session?.accessToken]);
+
   const handleNewChat = async () => {
+    setSeedMessage(null);
+    resolvedContextRef.current = null;
     try {
       await startNewSession(accountId);
       setShowHistory(false);
@@ -101,6 +135,8 @@ export function AiDock() {
   };
 
   const handleSelectSession = (id: string) => {
+    setSeedMessage(null);
+    resolvedContextRef.current = null;
     setActiveSessionId(id);
     setShowHistory(false);
   };
@@ -252,6 +288,8 @@ export function AiDock() {
                 sessionId={activeSessionId}
                 initialMessages={activeSessionData?.messages}
                 context={context}
+                seedMessage={seedMessage}
+                onSeedConsumed={() => setSeedMessage(null)}
                 onEnsureSession={ensureSession}
                 onExpand={handleExpand}
               />

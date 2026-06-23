@@ -5,6 +5,7 @@ import type {
   AiSessionWithMessages,
   AiUsage,
   CoachRead,
+  TradeReview,
 } from "../types";
 
 export const aiApi = {
@@ -70,6 +71,31 @@ export const aiApi = {
     const { data } = await apiClient.get<CoachRead>("/ai/coach-read", {
       ...withAuth(token),
       params: { account_id: accountId, date, refresh: options?.refresh },
+    });
+    return data;
+  },
+
+  getTradeReview: async (
+    tradeId: string,
+    options?: { refresh?: boolean },
+    token?: string,
+  ): Promise<TradeReview> => {
+    const { data } = await apiClient.get<TradeReview>("/ai/trade-review", {
+      ...withAuth(token),
+      params: { trade_id: tradeId, refresh: options?.refresh },
+    });
+    return data;
+  },
+
+  /** Reuse-or-create the session pinned to a (context_type, context_ref). */
+  getContextSession: async (
+    contextType: string,
+    contextRef: string,
+    token?: string,
+  ): Promise<AiSession> => {
+    const { data } = await apiClient.get<AiSession>("/ai/sessions/by-context", {
+      ...withAuth(token),
+      params: { context_type: contextType, context_ref: contextRef },
     });
     return data;
   },

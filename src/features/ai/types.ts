@@ -35,8 +35,28 @@ export interface StreamingMessage extends AiMessage {
 }
 
 export interface AiContext {
+  /** Human-readable breadcrumb shown in the greeting, e.g. "Day Journal · 2026-06-23". */
   source: string;
   accountId?: string;
+  /**
+   * Server-side context scope. When set, the dock resolves a reuse-or-create
+   * session for this (contextType, contextRef) instead of a generic chat, so
+   * the coach's analysis is scoped to that day/trade.
+   */
+  contextType?: string;
+  contextRef?: string;
+  /**
+   * When set, the dock auto-sends this as the first user message once the
+   * scoped session is empty — so the coach starts the conversation.
+   */
+  seedMessage?: string;
+}
+
+export interface TradeReview {
+  trade_id: string;
+  review: string;
+  insight: string;
+  cached: boolean;
 }
 
 export type SSEEvent =

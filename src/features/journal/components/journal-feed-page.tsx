@@ -261,9 +261,16 @@ export function JournalFeedPage() {
 
   // "Write" expands the day's card and focuses the inline session note.
   const openDayNote = (date: string) => requestFocus(date);
-  // "Continue with coach" opens the Partna AI dock scoped to this day.
+  // "Continue with coach" opens the Partna AI dock in a day-scoped session and
+  // drops a seed message so the coach starts reviewing that day right away.
   const openCoach = (date: string) =>
-    openAi({ source: `Day Journal · ${date}`, accountId: activeAccountId });
+    openAi({
+      source: `Day Journal · ${date}`,
+      accountId: activeAccountId,
+      contextType: "journal_day",
+      contextRef: date,
+      seedMessage: `Review my trading day on ${date}. Walk me through what happened, what I did well, and where I can improve.`,
+    });
 
   if (!activeAccountId) {
     return (

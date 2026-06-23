@@ -1,6 +1,7 @@
 "use client";
 
-import { Share2, Star } from "lucide-react";
+import { useState } from "react";
+import { Share2, Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format/money";
 import {
@@ -29,6 +30,7 @@ import {
 import { JournalTagSelector } from "./journal-tag-selector";
 import { JournalSessionNote } from "./journal-session-note";
 import { TradeSetupPicker } from "./trade-setup-picker";
+import { TradeAiReview } from "./trade-ai-review";
 import { useActiveAccountCurrency } from "../hooks/use-active-account-currency";
 
 function num(v: number | string | null | undefined): number {
@@ -251,6 +253,16 @@ export function TradeDetailPanel({
   const currency = useActiveAccountCurrency();
   const tradeId = trade?.id;
 
+  const [tab, setTab] = useState<"details" | "ai">("details");
+  // Reset to Details whenever a different trade is opened (the panel is reused
+  // across trades). Adjust during render via a tracked previous id rather than
+  // an effect, to avoid a cascading re-render.
+  const [seenTradeId, setSeenTradeId] = useState(tradeId);
+  if (tradeId !== seenTradeId) {
+    setSeenTradeId(tradeId);
+    setTab("details");
+  }
+
   const { data: config = [] } = useJournalTagsConfig();
   const { data: tradeTags = [] } = useTradeTags(tradeId, open && !!tradeId);
   const { data: note } = useTradeNote(tradeId, open && !!tradeId);
@@ -292,6 +304,47 @@ export function TradeDetailPanel({
           </SheetDescription>
         </SheetHeader>
 
+        {/* Tab bar */}
+        <div className="flex items-center gap-1 border-b border-hairline px-5">
+          {(
+            [
+              { key: "details", label: "Details", icon: null },
+              { key: "ai", label: "AI Review", icon: Sparkles },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "-mb-px flex items-center gap-1.5 border-b-2 px-2 py-2.5 text-sm font-semibold transition-colors",
+                tab === t.key
+                  ? "border-ai-accent text-text-primary"
+                  : "border-transparent text-text-tertiary hover:text-text-secondary",
+              )}
+            >
+              {t.icon && (
+                <t.icon
+                  className={cn(
+                    "size-3.5",
+                    tab === t.key ? "text-ai-accent" : undefined,
+                  )}
+                />
+              )}
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "ai" ? (
+          <SheetBody>
+            <TradeAiReview
+              trade={trade}
+              accountId={accountId}
+              enabled={open && tab === "ai"}
+            />
+          </SheetBody>
+        ) : (
         <SheetBody className="space-y-6">
           {/* Hero P&L */}
           <PnlHero
@@ -438,6 +491,7 @@ export function TradeDetailPanel({
             />
           </section>
         </SheetBody>
+        )}
 
         {onShare && (
           <div className="flex items-center justify-end gap-2 border-t border-hairline px-5 py-3">
