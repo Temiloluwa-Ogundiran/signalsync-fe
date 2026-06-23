@@ -3,21 +3,27 @@
 import { AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import type { CopyDeadLetter, CopySystemHealth } from "../types";
+import type {
+  CopyDeadLetter,
+  CopyLaunchReadiness,
+  CopySystemHealth,
+} from "../types";
 import { useCopyTradingActions } from "../hooks";
 import { apiError, relativeTime } from "../utils";
 
 const roleLabels: Record<string, string> = {
   "telegram-session": "Telegram listener",
-  "copy-signal": "Signal analysis",
+  "copy-signal": "Signal processing",
   "copy-execution": "Broker execution",
 };
 
 export function CopySystemStatus({
   health,
+  launchReadiness,
   deadLetters,
 }: {
   health?: CopySystemHealth;
+  launchReadiness?: CopyLaunchReadiness;
   deadLetters: CopyDeadLetter[];
 }) {
   const actions = useCopyTradingActions();
@@ -39,6 +45,20 @@ export function CopySystemStatus({
           </p>
         </div>
       </div>
+      {launchReadiness && !launchReadiness.ready ? (
+        <div className="border-b border-danger/30 bg-danger/5 px-4 py-3">
+          <p className="text-sm font-semibold text-danger">
+            Live copying is blocked
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
+            {launchReadiness.blockers.includes("uncertain_intents")
+              ? "A broker confirmation is unresolved."
+              : launchReadiness.blockers.includes("dead_letters")
+                ? "A failed automation event needs recovery."
+                : "One or more automation services are not ready."}
+          </p>
+        </div>
+      ) : null}
       <div className="grid divide-y divide-border-primary md:grid-cols-2 md:divide-y-0">
         {health.components.map((component) => (
           <div

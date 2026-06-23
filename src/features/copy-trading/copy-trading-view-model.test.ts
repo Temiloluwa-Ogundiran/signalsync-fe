@@ -56,8 +56,16 @@ test("translates internal activity into trader-friendly status", () => {
     }),
     {
       actionLabel: "Buy XAUUSD",
-      statusLabel: "Confirming broker result",
+      statusLabel: "Confirming with broker",
     },
+  );
+  assert.equal(
+    humanizeActivity({
+      action: "signal.waiting",
+      title: "Signal is waiting for required trade details.",
+      parsed_details: { symbol: "XAUUSD" },
+    }).statusLabel,
+    "Waiting for trade details",
   );
 });
 
@@ -141,4 +149,31 @@ test("missing runtime workers require action", () => {
 
   assert.equal(health.tone, "danger");
   assert.equal(health.label, "Copying needs attention");
+});
+
+test("launch blockers are never presented as ready", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "ready",
+      ready: true,
+      issues: [],
+      components: [],
+    },
+    launch: {
+      ready: false,
+      blockers: ["uncertain_intents"],
+      warnings: [],
+      components: [],
+      stream_lag: 0,
+      pending_events: 0,
+      dead_letters: 0,
+      oldest_uncertain_seconds: 121,
+      global_paused: false,
+    },
+  });
+
+  assert.equal(health.tone, "danger");
+  assert.equal(health.label, "Live copying is blocked");
+  assert.match(health.description, /broker confirmation/i);
 });

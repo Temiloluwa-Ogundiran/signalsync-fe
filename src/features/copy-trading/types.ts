@@ -5,7 +5,6 @@ export type CopyRouteState =
   | "paused"
   | "needs_attention"
   | "reauthentication_required"
-  | "unsupported"
   | "target_unavailable";
 
 export type CopyTradingMode = "setup" | "monitoring";
@@ -119,6 +118,18 @@ export interface CopySystemHealth {
   ready: boolean;
   components: CopyHealthComponent[];
   issues: string[];
+}
+
+export interface CopyLaunchReadiness {
+  ready: boolean;
+  blockers: string[];
+  warnings: string[];
+  components: CopyHealthComponent[];
+  stream_lag: number;
+  pending_events: number;
+  dead_letters: number;
+  oldest_uncertain_seconds: number;
+  global_paused: boolean;
 }
 
 export interface CopyDeadLetter {

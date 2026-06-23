@@ -153,10 +153,12 @@ test("runtime health and recovery APIs are exposed", () => {
 
   assert.match(api, /getHealth/);
   assert.match(api, /\/copy-trading\/health/);
+  assert.match(api, /\/copy-trading\/launch-readiness/);
   assert.match(api, /listDeadLetters/);
   assert.match(api, /replayDeadLetter/);
   assert.match(hooks, /useCopySystemHealth/);
   assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
+  assert.match(hooks, /useCopyLaunchReadiness/);
 });
 
 test("activity uses server filters and cursor pagination", () => {

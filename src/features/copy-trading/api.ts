@@ -4,6 +4,7 @@ import type {
   CopyActivityFilters,
   CopyActivityPage,
   CopyDeadLetter,
+  CopyLaunchReadiness,
   CopyRoute,
   CopyTradingSettings,
   CopyTargetAccount,
@@ -98,6 +99,14 @@ export const copyTradingApi = {
     (
       await apiClient.get<CopySystemHealth>(
         "/copy-trading/health",
+        withAuth(token),
+      )
+    ).data,
+
+  getLaunchReadiness: async (token?: string): Promise<CopyLaunchReadiness> =>
+    (
+      await apiClient.get<CopyLaunchReadiness>(
+        "/copy-trading/launch-readiness",
         withAuth(token),
       )
     ).data,

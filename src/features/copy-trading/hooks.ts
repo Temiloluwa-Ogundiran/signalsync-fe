@@ -16,6 +16,7 @@ export const COPY_TRADING_KEYS = {
   activity: (filters: CopyActivityFilters = {}) =>
     ["copy-trading", "activity", filters] as const,
   health: () => ["copy-trading", "health"] as const,
+  readiness: () => ["copy-trading", "launch-readiness"] as const,
   deadLetters: () => ["copy-trading", "dead-letters"] as const,
   targetAccounts: () => ["copy-trading", "target-accounts"] as const,
   connections: () => ["copy-trading", "telegram-connections"] as const,
@@ -91,6 +92,16 @@ export function useCopySystemHealth(active = true) {
   return useQuery({
     queryKey: COPY_TRADING_KEYS.health(),
     queryFn: () => copyTradingApi.getHealth(token),
+    enabled: enabled && active,
+    refetchInterval: active ? 15_000 : false,
+  });
+}
+
+export function useCopyLaunchReadiness(active = true) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({
+    queryKey: COPY_TRADING_KEYS.readiness(),
+    queryFn: () => copyTradingApi.getLaunchReadiness(token),
     enabled: enabled && active,
     refetchInterval: active ? 15_000 : false,
   });

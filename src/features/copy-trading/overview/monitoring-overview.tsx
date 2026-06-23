@@ -7,6 +7,7 @@ import type {
   TelegramConnection,
   TelegramSource,
   CopySystemHealth,
+  CopyLaunchReadiness,
 } from "../types";
 import { ActivityFeed } from "../activity/activity-feed";
 import { AttentionList } from "./attention-list";
@@ -20,6 +21,7 @@ export function MonitoringOverview({
   accounts,
   activity,
   systemHealth,
+  launchReadiness,
   deadLetters,
 }: {
   routes: CopyRoute[];
@@ -28,6 +30,7 @@ export function MonitoringOverview({
   accounts: CopyTargetAccount[];
   activity: CopyActivity[];
   systemHealth?: CopySystemHealth;
+  launchReadiness?: CopyLaunchReadiness;
   deadLetters: CopyDeadLetter[];
 }) {
   return (
@@ -44,7 +47,11 @@ export function MonitoringOverview({
         accounts={accounts}
         activity={activity}
       />
-      <CopySystemStatus health={systemHealth} deadLetters={deadLetters} />
+      <CopySystemStatus
+        health={systemHealth}
+        launchReadiness={launchReadiness}
+        deadLetters={deadLetters}
+      />
       <AttentionList
         routes={routes}
         connections={connections}

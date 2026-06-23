@@ -5,6 +5,7 @@ import {
   useCopyAccountPolicies,
   useCopyActivity,
   useCopyDeadLetters,
+  useCopyLaunchReadiness,
   useCopyRoutes,
   useCopySystemHealth,
   useCopyTargetAccounts,
@@ -35,6 +36,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const policies = useCopyAccountPolicies();
   const activity = useCopyActivity({}, view === "overview" || view === "routes");
   const systemHealth = useCopySystemHealth(true);
+  const launchReadiness = useCopyLaunchReadiness(true);
   const deadLetters = useCopyDeadLetters(view === "overview");
   const accounts = useCopyTargetAccounts();
   const connections = useTelegramConnections();
@@ -51,6 +53,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const health = deriveSystemHealth({
     globallyPaused: settingsData?.is_paused ?? false,
     system: systemHealth.data,
+    launch: launchReadiness.data,
   });
   const firstError = [
     settings,
@@ -59,6 +62,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
     connections,
     sources,
     systemHealth,
+    launchReadiness,
   ].find((query) => query.isError);
 
   const changePause = async (currentlyPaused: boolean) => {
@@ -119,6 +123,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         accounts={accountsData}
         activity={activityData}
         systemHealth={systemHealth.data}
+        launchReadiness={launchReadiness.data}
         deadLetters={deadLetters.data ?? []}
       />
     );

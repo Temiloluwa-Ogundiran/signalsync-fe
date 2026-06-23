@@ -5,6 +5,7 @@ import type {
   CopyRoute,
   CopyTradingMode,
   CopySystemHealth,
+  CopyLaunchReadiness,
   TelegramConnection,
   TelegramSource,
 } from "./types";
@@ -45,7 +46,6 @@ export function deriveAutomationHealth(input: {
   const blockedRoutes = input.routes.filter((route) =>
     [
       "reauthentication_required",
-      "unsupported",
       "target_unavailable",
     ].includes(route.state),
   );
@@ -85,6 +85,7 @@ export function deriveAutomationHealth(input: {
 export function deriveSystemHealth(input: {
   globallyPaused: boolean;
   system?: CopySystemHealth;
+  launch?: CopyLaunchReadiness;
 }): AutomationHealth {
   if (input.globallyPaused) {
     return {
@@ -98,6 +99,13 @@ export function deriveSystemHealth(input: {
       tone: "neutral",
       label: "Checking automation",
       description: "Worker status is being refreshed.",
+    };
+  }
+  if (input.launch && !input.launch.ready) {
+    return {
+      tone: "danger",
+      label: "Live copying is blocked",
+      description: humanizeLaunchBlocker(input.launch.blockers[0]),
     };
   }
   if (input.system.status === "action_required") {
@@ -131,6 +139,18 @@ function humanizeHealthIssue(issue?: string): string {
     .replace(" is stale", " has stopped reporting");
 }
 
+function humanizeLaunchBlocker(blocker?: string): string {
+  const messages: Record<string, string> = {
+    uncertain_intents:
+      "A broker confirmation is unresolved. New live copying should remain paused.",
+    dead_letters:
+      "A failed automation event needs recovery before live copying resumes.",
+    runtime_health:
+      "One or more automation services are not ready for live copying.",
+  };
+  return messages[blocker ?? ""] ?? "A launch safety check needs attention.";
+}
+
 export function humanizeActivity(event: {
   action: string;
   title: string;
@@ -144,11 +164,11 @@ export function humanizeActivity(event: {
       : event.title;
   const statusMap: Record<string, string> = {
     "signal.validated": "Signal understood",
-    "signal.waiting": "Waiting for details",
+    "signal.waiting": "Waiting for trade details",
     "signal.skipped": "Signal skipped",
     "signal.failed": "Signal could not be read",
     "signal.expired": "Incomplete signal expired",
-    "broker.uncertain": "Confirming broker result",
+    "broker.uncertain": "Confirming with broker",
     "broker.reconciled": "Broker result confirmed",
     "broker.succeeded": "Trade completed",
     "broker.failed": "Trade failed",
