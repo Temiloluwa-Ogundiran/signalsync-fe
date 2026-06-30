@@ -21,6 +21,7 @@ test("copy trading API and complete workflows remain exposed", () => {
   for (const contract of [
     "/copy-trading/settings",
     "/copy-trading/routes",
+    "/copy-trading/connections",
     "/copy-trading/activity",
     "/copy-trading/telegram/connections",
     "/copy-trading/telegram/auth/phone",
@@ -209,20 +210,16 @@ test("signal channels are never gated by historical analysis", () => {
   }
 });
 
-test("trading accounts expose import-only and full-access states", () => {
+test("copy trading uses independent MetaApi connections", () => {
   const settings = feature("settings/copy-trading-settings-page.tsx");
-  const journal = readFileSync(
-    join(ROOT, "src/features/journal/components/journal-accounts-page.tsx"),
-    "utf8",
-  );
-  const api = readFileSync(
-    join(ROOT, "src/features/journal/api/journal-account.api.ts"),
-    "utf8",
-  );
+  const api = feature("api.ts");
+  const types = feature("types.ts");
 
-  assert.match(settings, /Full access/);
-  assert.match(settings, /Import only/);
-  assert.match(journal, /Full access/);
-  assert.match(journal, /Import only/);
-  assert.match(api, /enableTraderAccess/);
+  assert.match(settings, /Connect copy account/);
+  assert.match(api, /createCopyConnection/);
+  assert.match(api, /retryCopyConnection/);
+  assert.match(api, /deleteCopyConnection/);
+  assert.match(types, /target_connection_id/);
+  assert.doesNotMatch(api, /enableTraderAccess/);
+  assert.doesNotMatch(api, /listTargetAccounts/);
 });

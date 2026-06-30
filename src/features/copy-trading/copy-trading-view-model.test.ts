@@ -23,12 +23,12 @@ test("reports degraded health without claiming all copying stopped", () => {
       {
         state: "active",
         source_id: "source-1",
-        target_account_id: "account-1",
+        target_connection_id: "connection-1",
       },
       {
         state: "target_unavailable",
         source_id: "source-2",
-        target_account_id: "account-2",
+        target_connection_id: "connection-2",
       },
     ],
     connections: [{ state: "ready", is_paused: false }],

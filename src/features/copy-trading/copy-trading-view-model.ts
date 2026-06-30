@@ -28,7 +28,7 @@ export function deriveCopyTradingMode(
 
 export function deriveAutomationHealth(input: {
   globallyPaused: boolean;
-  routes: Pick<CopyRoute, "state" | "source_id" | "target_account_id">[];
+  routes: Pick<CopyRoute, "state" | "source_id" | "target_connection_id">[];
   connections: Pick<TelegramConnection, "state" | "is_paused">[];
   sources: Pick<TelegramSource, "id" | "state" | "is_paused">[];
 }): AutomationHealth {

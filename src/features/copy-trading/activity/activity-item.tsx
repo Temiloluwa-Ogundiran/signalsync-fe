@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type {
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "../types";
 import type { ActivityGroup } from "../copy-trading-view-model";
@@ -24,7 +24,7 @@ export function ActivityItem({
 }: {
   group: ActivityGroup;
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
 }) {
   const [open, setOpen] = useState(false);
   const [raw, setRaw] = useState<string | null | undefined>();
@@ -32,7 +32,7 @@ export function ActivityItem({
   const event = group.latest;
   const presentation = humanizeActivity(event);
   const source = sources.find((item) => item.id === event.source_id);
-  const account = accounts.find((item) => item.id === event.account_id);
+  const account = accounts.find((item) => item.id === event.connection_id);
   const Icon =
     event.level === "error"
       ? AlertCircle

@@ -3,7 +3,7 @@ import type {
   CopyActivity,
   CopyDeadLetter,
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramConnection,
   TelegramSource,
   CopySystemHealth,
@@ -27,7 +27,7 @@ export function MonitoringOverview({
   routes: CopyRoute[];
   connections: TelegramConnection[];
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   activity: CopyActivity[];
   systemHealth?: CopySystemHealth;
   launchReadiness?: CopyLaunchReadiness;

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type {
   AutomationHealth,
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "./types";
 import { CopySafetyBar } from "./copy-safety-bar";
@@ -22,7 +22,7 @@ export function CopyTradingShell({
   health: AutomationHealth;
   isPaused: boolean;
   isUpdating: boolean;
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   routes: CopyRoute[];
   sources: TelegramSource[];
   onPauseChange: (paused: boolean) => Promise<void>;

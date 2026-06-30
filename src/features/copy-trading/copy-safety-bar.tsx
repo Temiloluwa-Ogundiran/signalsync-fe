@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import type {
   AutomationHealth,
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "./types";
 import { EmergencyActionsDialog } from "./emergency-actions-dialog";
@@ -42,7 +42,7 @@ export function CopySafetyBar({
   health: AutomationHealth;
   isPaused: boolean;
   isUpdating: boolean;
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   routes: CopyRoute[];
   sources: TelegramSource[];
   onPauseChange: (enabled: boolean) => Promise<void>;

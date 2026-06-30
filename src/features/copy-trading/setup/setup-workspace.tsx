@@ -3,14 +3,12 @@
 import { Plus, Radio, ShieldCheck, Smartphone } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { TraderAccessDialog } from "@/components/trader-access-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
   CopyAccountPolicy,
   CopyRoute,
   CopyRouteInput,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramConnection,
   TelegramSource,
 } from "../types";
@@ -25,6 +23,7 @@ import {
 } from "./preferences-step";
 import { SetupStep } from "./setup-step";
 import { TelegramSignInDialog } from "./telegram-sign-in-dialog";
+import { MetaApiAccountForm } from "../accounts/metaapi-account-form";
 
 export function SetupWorkspace({
   connections,
@@ -35,17 +34,14 @@ export function SetupWorkspace({
 }: {
   connections: TelegramConnection[];
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   policies: CopyAccountPolicy[];
   routes: CopyRoute[];
 }) {
   const actions = useCopyTradingActions();
   const [telegramOpen, setTelegramOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
-  const [traderAccessOpen, setTraderAccessOpen] = useState(false);
-  const [traderAccessError, setTraderAccessError] = useState<string | null>(
-    null,
-  );
+  const [copyAccountOpen, setCopyAccountOpen] = useState(false);
   const readyConnection = connections.find(
     (item) => item.state === "ready" && !item.is_paused,
   );
@@ -53,17 +49,15 @@ export function SetupWorkspace({
     routes[0]?.source_id ?? sources[0]?.id ?? "",
   );
   const source = sources.find((item) => item.id === sourceId) ?? sources[0];
-  const readyAccounts = accounts.filter(
-    (item) => item.connection_state === "ready",
-  );
+  const readyAccounts = accounts.filter((item) => item.state === "ready");
   const [accountId, setAccountId] = useState(
-    routes[0]?.target_account_id ?? readyAccounts[0]?.id ?? "",
+    routes[0]?.target_connection_id ?? readyAccounts[0]?.id ?? "",
   );
   const account = accounts.find((item) => item.id === accountId);
   const existingRoute = routes.find(
     (item) =>
       item.source_id === source?.id &&
-      item.target_account_id === accountId &&
+      item.target_connection_id === accountId &&
       item.state !== "active",
   );
   const [preferences, setPreferences] = useState<CopyRouteInput>(() =>
@@ -72,7 +66,7 @@ export function SetupWorkspace({
       : {
           ...defaultCopyPreferences,
           source_id: source?.id ?? "",
-          target_account_id: accountId,
+          target_connection_id: accountId,
           assembly_window_seconds: 90,
         },
   );
@@ -99,15 +93,10 @@ export function SetupWorkspace({
 
   const savePreferences = async () => {
     if (!source || !account) return;
-    if (!account.has_trader_access) {
-      setTraderAccessError(null);
-      setTraderAccessOpen(true);
-      return;
-    }
     const payload = {
       ...preferences,
       source_id: source.id,
-      target_account_id: account.id,
+      target_connection_id: account.id,
     };
     try {
       const route = existingRoute
@@ -141,7 +130,7 @@ export function SetupWorkspace({
   };
 
   const selectedPolicy = policies.find(
-    (item) => item.account_id === account?.id,
+    (item) => item.connection_id === account?.id,
   );
   const review = useMemo(
     () => [
@@ -290,17 +279,16 @@ export function SetupWorkspace({
         <SetupStep
           number={3}
           title="Choose where trades should be copied"
-          description="Select a connected MT5 account. Full trading access is required to place copied trades."
+          description="Select an independent MT5 connection used for copy execution."
           state={stepState(3)}
           summary={account ? accountLabel(account, account.id) : undefined}
         >
           <div className="grid gap-2">
             {accounts.map((item) => {
               const policy = policies.find(
-                (candidate) => candidate.account_id === item.id,
+                (candidate) => candidate.connection_id === item.id,
               );
-              const available =
-                item.connection_state === "ready" && !policy?.is_paused;
+              const available = item.state === "ready" && !policy?.is_paused;
               return (
                 <button
                   key={item.id}
@@ -311,7 +299,7 @@ export function SetupWorkspace({
                     setSavedRoute(null);
                     setPreferences((current) => ({
                       ...current,
-                      target_account_id: item.id,
+                      target_connection_id: item.id,
                     }));
                   }}
                   className={`flex items-center justify-between gap-4 rounded-md border px-3 py-3 text-left disabled:opacity-50 ${
@@ -325,45 +313,19 @@ export function SetupWorkspace({
                       {accountLabel(item, item.id)}
                     </span>
                     <span className="text-xs text-text-secondary">
-                      {item.broker_server || item.broker_name}
-                      {item.account_balance
-                        ? ` · ${item.account_balance} balance`
-                        : ""}
+                      {item.broker_login} · {item.broker_server}
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <StatusLabel
-                      state={available ? "ready" : item.connection_state}
-                    />
-                    <Badge variant={item.has_trader_access ? "win" : "neutral"}>
-                      {item.has_trader_access ? "Full access" : "Import only"}
-                    </Badge>
+                    <StatusLabel state={available ? "ready" : item.state} />
                   </span>
                 </button>
               );
             })}
-            {account && !account.has_trader_access ? (
-              <div className="flex flex-col gap-3 rounded-md border border-border-primary bg-bg-tertiary px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    Full access is needed for copy trading
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    Enter this account&apos;s trading password. The investor
-                    password continues to handle journal imports.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setTraderAccessError(null);
-                    setTraderAccessOpen(true);
-                  }}
-                >
-                  Enable full access
-                </Button>
-              </div>
-            ) : null}
+            <Button variant="outline" onClick={() => setCopyAccountOpen(true)}>
+              <Plus className="size-4" />
+              Connect copy account
+            </Button>
           </div>
         </SetupStep>
 
@@ -439,29 +401,7 @@ export function SetupWorkspace({
         connections={connections}
         sources={sources}
       />
-      <TraderAccessDialog
-        open={traderAccessOpen}
-        accountLabel={
-          account ? accountLabel(account, account.id) : "this account"
-        }
-        busy={actions.enableTraderAccess.isPending}
-        error={traderAccessError}
-        onOpenChange={setTraderAccessOpen}
-        onSubmit={async (password) => {
-          if (!account) return;
-          try {
-            await actions.enableTraderAccess.mutateAsync({
-              accountId: account.id,
-              traderPassword: password,
-            });
-            setTraderAccessOpen(false);
-            setTraderAccessError(null);
-            toast.success("Full account access enabled");
-          } catch (error) {
-            setTraderAccessError(apiError(error));
-          }
-        }}
-      />
+      <MetaApiAccountForm open={copyAccountOpen} onOpenChange={setCopyAccountOpen} />
     </>
   );
 }

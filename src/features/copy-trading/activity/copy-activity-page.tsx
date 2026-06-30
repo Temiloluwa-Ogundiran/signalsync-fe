@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import { useDeferredValue, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CopyActivityFilters, CopyTargetAccount, TelegramSource } from "../types";
+import type { CopyActivityFilters, CopyTradingConnection, TelegramSource } from "../types";
 import { useCopyActivity } from "../hooks";
 import { SectionError } from "../shared/section-error";
 import { ActivityFeed } from "./activity-feed";
@@ -15,7 +15,7 @@ export function CopyActivityPage({
   accounts,
 }: {
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
 }) {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<
@@ -28,7 +28,7 @@ export function CopyActivityPage({
   );
   const events = query.data?.pages.flatMap((page) => page.items) ?? [];
   const hasFilters = Boolean(
-    search || filters.level || filters.source_id || filters.account_id,
+    search || filters.level || filters.source_id || filters.connection_id,
   );
   const clear = () => {
     setSearch("");

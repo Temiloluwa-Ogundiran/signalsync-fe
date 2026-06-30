@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import type {
   CopyActivity,
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "../types";
 import { summarizeCopyRule } from "../copy-trading-view-model";
@@ -35,7 +35,7 @@ export function CopyRulesPage({
 }: {
   routes: CopyRoute[];
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   activity: CopyActivity[];
 }) {
   const actions = useCopyTradingActions();
@@ -103,7 +103,7 @@ export function CopyRulesPage({
           {routes.map((route) => {
             const source = sources.find((item) => item.id === route.source_id);
             const account = accounts.find(
-              (item) => item.id === route.target_account_id,
+              (item) => item.id === route.target_connection_id,
             );
             const latest = activity.find(
               (item) => item.route_id === route.id,
@@ -118,7 +118,7 @@ export function CopyRulesPage({
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-text-primary">
                       {source?.title ?? "Signal channel"} to{" "}
-                      {accountLabel(account, route.target_account_id)}
+                      {accountLabel(account, route.target_connection_id ?? route.id)}
                     </p>
                     <StatusLabel state={route.state} />
                   </div>

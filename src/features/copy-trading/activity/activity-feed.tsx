@@ -1,7 +1,7 @@
 import { Activity } from "lucide-react";
 import type {
   CopyActivity,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "../types";
 import { groupActivity } from "../copy-trading-view-model";
@@ -16,7 +16,7 @@ export function ActivityFeed({
 }: {
   events: CopyActivity[];
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   emptyTitle?: string;
 }) {
   const groups = groupActivity(events);

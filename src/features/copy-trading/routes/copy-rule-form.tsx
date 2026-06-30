@@ -12,7 +12,7 @@ import {
 import type {
   CopyRoute,
   CopyRouteInput,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "../types";
 import { useCopyTradingActions } from "../hooks";
@@ -34,7 +34,7 @@ export function CopyRuleForm({
   onOpenChange: (open: boolean) => void;
   route?: CopyRoute;
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,22 +68,19 @@ function CopyRuleFormBody({
 }: {
   route?: CopyRoute;
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   onSaved: () => void;
 }) {
   const actions = useCopyTradingActions();
   const readySources = sources.filter((item) => !item.is_paused);
-  const readyAccounts = accounts.filter(
-    (item) =>
-      item.connection_state === "ready" && item.has_trader_access,
-  );
+  const readyAccounts = accounts.filter((item) => item.state === "ready");
   const [value, setValue] = useState<CopyRouteInput>(() =>
     route
       ? routeInput(route)
       : {
           ...defaultCopyPreferences,
           source_id: readySources[0]?.id ?? "",
-          target_account_id: readyAccounts[0]?.id ?? "",
+          target_connection_id: readyAccounts[0]?.id ?? "",
           assembly_window_seconds: 90,
         },
   );
@@ -132,12 +129,12 @@ function CopyRuleFormBody({
           </Field>
           <Field label="Trading account">
             <Select
-              value={value.target_account_id}
+              value={value.target_connection_id}
               disabled={Boolean(route)}
               onChange={(targetAccountId) =>
                 setValue((current) => ({
                   ...current,
-                  target_account_id: targetAccountId,
+                  target_connection_id: targetAccountId,
                 }))
               }
             >

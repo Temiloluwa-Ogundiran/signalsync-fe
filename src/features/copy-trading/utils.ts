@@ -1,6 +1,6 @@
 import type {
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramConnection,
 } from "./types";
 
@@ -31,17 +31,17 @@ export function connectionName(connection: TelegramConnection): string {
 }
 
 export function accountLabel(
-  account: CopyTargetAccount | undefined,
+  account: CopyTradingConnection | undefined,
   fallback: string,
 ): string {
   if (!account) return `Account ${fallback.slice(0, 8)}`;
-  return account.display_name || `${account.broker_name} ${account.broker_login}`;
+  return account.display_name || `${account.broker_server} ${account.broker_login}`;
 }
 
 export function routeInput(route: CopyRoute) {
   return {
     source_id: route.source_id,
-    target_account_id: route.target_account_id,
+    target_connection_id: route.target_connection_id ?? "",
     fixed_lot: route.fixed_lot,
     take_profit_mode: route.take_profit_mode,
     lot_distribution: route.lot_distribution,

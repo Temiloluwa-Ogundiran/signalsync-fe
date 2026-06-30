@@ -8,7 +8,7 @@ import {
   useCopyLaunchReadiness,
   useCopyRoutes,
   useCopySystemHealth,
-  useCopyTargetAccounts,
+  useCopyConnections,
   useCopyTradingSettings,
   useTelegramConnections,
   useTelegramSources,
@@ -38,7 +38,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const systemHealth = useCopySystemHealth(true);
   const launchReadiness = useCopyLaunchReadiness(true);
   const deadLetters = useCopyDeadLetters(view === "overview");
-  const accounts = useCopyTargetAccounts();
+  const accounts = useCopyConnections();
   const connections = useTelegramConnections();
   const sources = useTelegramSources();
   const updateSettings = useUpdateCopyTradingSettings();

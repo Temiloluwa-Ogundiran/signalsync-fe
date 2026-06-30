@@ -9,7 +9,7 @@ import { Field, FormSection, Select, Toggle } from "../shared/form-controls";
 
 export const defaultCopyPreferences: CopyRouteInput = {
   source_id: "",
-  target_account_id: "",
+  target_connection_id: "",
   fixed_lot: "0.10",
   take_profit_mode: "all",
   lot_distribution: "split_total",

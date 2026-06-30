@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import type {
   CopyActivityFilters,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "../types";
 import { accountLabel } from "../utils";
@@ -28,7 +28,7 @@ export function ActivityFiltersSheet({
 }: {
   filters: Omit<CopyActivityFilters, "cursor" | "limit">;
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   onChange: (filters: Omit<CopyActivityFilters, "cursor" | "limit">) => void;
   onClear: () => void;
 }) {
@@ -71,7 +71,7 @@ export function FilterSelects({
 }: {
   filters: Omit<CopyActivityFilters, "cursor" | "limit">;
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   onChange: (filters: Omit<CopyActivityFilters, "cursor" | "limit">) => void;
 }) {
   return (
@@ -105,9 +105,9 @@ export function FilterSelects({
         ))}
       </Select>
       <Select
-        value={filters.account_id ?? ""}
+        value={filters.connection_id ?? ""}
         onChange={(accountId) =>
-          onChange({ ...filters, account_id: accountId || undefined })
+          onChange({ ...filters, connection_id: accountId || undefined })
         }
       >
         <option value="">All trading accounts</option>

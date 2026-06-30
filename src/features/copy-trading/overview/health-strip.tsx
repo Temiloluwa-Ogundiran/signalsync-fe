@@ -2,7 +2,7 @@ import Link from "next/link";
 import type {
   CopyActivity,
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramConnection,
 } from "../types";
 import { relativeTime } from "../utils";
@@ -15,7 +15,7 @@ export function HealthStrip({
 }: {
   routes: CopyRoute[];
   connections: TelegramConnection[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   activity: CopyActivity[];
 }) {
   const latestSuccess = activity.find((event) => event.level === "success");
@@ -37,7 +37,7 @@ export function HealthStrip({
     {
       label: "Trading accounts ready",
       value: String(
-        accounts.filter((item) => item.connection_state === "ready").length,
+        accounts.filter((item) => item.state === "ready").length,
       ),
       href: "/copy-trading/settings",
     },

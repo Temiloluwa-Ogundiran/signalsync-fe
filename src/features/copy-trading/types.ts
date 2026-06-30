@@ -42,7 +42,7 @@ export interface CopyTradingSettings {
 
 export interface CopyAccountPolicy {
   id: string;
-  account_id: string;
+  connection_id: string;
   max_lot: string;
   is_paused: boolean;
   created_at: string;
@@ -52,7 +52,7 @@ export interface CopyAccountPolicy {
 export interface CopyRoute {
   id: string;
   source_id: string;
-  target_account_id: string;
+  target_connection_id: string | null;
   magic_number: number;
   state: CopyRouteState;
   fixed_lot: string;
@@ -79,7 +79,7 @@ export interface CopyActivity {
   id: string;
   route_id: string | null;
   source_id: string | null;
-  account_id: string | null;
+  connection_id: string | null;
   correlation_id: string;
   action: string;
   level: "info" | "success" | "warning" | "error";
@@ -94,7 +94,7 @@ export interface CopyActivityFilters {
   search?: string;
   level?: CopyActivity["level"];
   source_id?: string;
-  account_id?: string;
+  connection_id?: string;
   cursor?: string;
   limit?: number;
 }
@@ -144,16 +144,45 @@ export interface CopyDeadLetter {
   created_at: string;
 }
 
-export interface CopyTargetAccount {
+export type CopyTradingConnectionState =
+  | "submitted"
+  | "provisioning"
+  | "deploying"
+  | "connecting"
+  | "synchronizing"
+  | "ready"
+  | "invalid_credentials"
+  | "server_not_found"
+  | "provisioning_failed"
+  | "broker_disconnected"
+  | "synchronization_failed"
+  | "trading_disabled"
+  | "deleting"
+  | "deleted";
+
+export interface CopyTradingConnection {
   id: string;
-  display_name: string | null;
-  broker_name: string;
+  user_id: string;
+  display_name: string;
   broker_login: string;
-  is_archived: boolean;
-  connection_state: string;
-  broker_server?: string;
-  account_balance?: string | number | null;
-  has_trader_access: boolean;
+  broker_server: string;
+  platform: "mt5";
+  metaapi_account_id: string | null;
+  state: CopyTradingConnectionState;
+  last_error_code: string | null;
+  last_error_message: string | null;
+  symbol_catalog_refreshed_at: string | null;
+  last_health_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CopyTradingConnectionInput {
+  display_name: string;
+  broker_login: string;
+  broker_server: string;
+  trader_password: string;
+  platform: "mt5";
 }
 
 export interface TelegramConnection {
@@ -198,7 +227,7 @@ export interface TelegramSource {
 
 export interface CopyRouteInput {
   source_id: string;
-  target_account_id: string;
+  target_connection_id: string;
   fixed_lot: string;
   take_profit_mode: "all" | "lowest" | "highest";
   lot_distribution: "split_total" | "fixed_each";

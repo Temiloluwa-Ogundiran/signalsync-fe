@@ -8,26 +8,22 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { TraderAccessDialog } from "@/components/trader-access-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import type {
   CopyAccountPolicy,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramConnection,
   TelegramSource,
 } from "../types";
-import {
-  useCopyTradingActions,
-  useUpdateCopyAccountPolicy,
-} from "../hooks";
-import { accountLabel, apiError, connectionName, relativeTime } from "../utils";
+import { useCopyTradingActions } from "../hooks";
+import { apiError, connectionName, relativeTime } from "../utils";
 import { StatusLabel } from "../shared/status-label";
 import { ChannelPicker } from "../setup/channel-picker";
 import { TelegramSignInDialog } from "../setup/telegram-sign-in-dialog";
 import { ConfirmActionDialog } from "../shared/confirm-action-dialog";
+import { MetaApiAccountForm } from "../accounts/metaapi-account-form";
+import { MetaApiAccountList } from "../accounts/metaapi-account-list";
 
 export function CopyTradingSettingsPage({
   connections,
@@ -37,12 +33,13 @@ export function CopyTradingSettingsPage({
 }: {
   connections: TelegramConnection[];
   sources: TelegramSource[];
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   policies: CopyAccountPolicy[];
 }) {
   const actions = useCopyTradingActions();
   const [telegramOpen, setTelegramOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
+  const [copyAccountOpen, setCopyAccountOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<
     | { kind: "connection"; id: string; label: string }
     | { kind: "source"; id: string; label: string }
@@ -224,16 +221,18 @@ export function CopyTradingSettingsPage({
 
       <SettingsSection
         title="Trading accounts"
-        description="Maximum trade size and account-level copy pauses."
+        description="Independent MT5 connections used only for copy execution."
+        action={
+          <Button variant="outline" onClick={() => setCopyAccountOpen(true)}>
+            <Plus className="size-4" />
+            Connect copy account
+          </Button>
+        }
       >
-        {accounts.map((account) => (
-          <TradingAccountRow
-            key={`${account.id}:${policies.find((item) => item.account_id === account.id)?.updated_at ?? "new"}`}
-            account={account}
-            policy={policies.find((item) => item.account_id === account.id)}
-          />
-        ))}
+        <MetaApiAccountList accounts={accounts} policies={policies} />
       </SettingsSection>
+
+      <MetaApiAccountForm open={copyAccountOpen} onOpenChange={setCopyAccountOpen} />
 
       <TelegramSignInDialog
         open={telegramOpen}
@@ -305,113 +304,5 @@ function SettingsSection({
       </div>
       <div className="divide-y divide-border-primary">{children}</div>
     </section>
-  );
-}
-
-function TradingAccountRow({
-  account,
-  policy,
-}: {
-  account: CopyTargetAccount;
-  policy?: CopyAccountPolicy;
-}) {
-  const updatePolicy = useUpdateCopyAccountPolicy();
-  const actions = useCopyTradingActions();
-  const [maxLot, setMaxLot] = useState(policy?.max_lot ?? "100");
-  const [enabled, setEnabled] = useState(!policy?.is_paused);
-  const [traderAccessOpen, setTraderAccessOpen] = useState(false);
-  const [traderAccessError, setTraderAccessError] = useState<string | null>(
-    null,
-  );
-  const save = async () => {
-    try {
-      await updatePolicy.mutateAsync({
-        accountId: account.id,
-        payload: { max_lot: maxLot, is_paused: !enabled },
-      });
-      toast.success("Trading account safeguards saved");
-    } catch (error) {
-      toast.error("Trading account safeguards could not be saved", {
-        description: apiError(error),
-      });
-    }
-  };
-  return (
-    <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-end">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="font-medium text-text-primary">
-            {accountLabel(account, account.id)}
-          </p>
-          <StatusLabel state={account.connection_state} />
-          <Badge variant={account.has_trader_access ? "win" : "neutral"}>
-            {account.has_trader_access ? "Full access" : "Import only"}
-          </Badge>
-        </div>
-        <p className="mt-1 text-xs text-text-secondary">
-          {account.broker_server || account.broker_name}
-        </p>
-      </div>
-      <label className="grid gap-1.5 text-sm lg:w-48">
-        <span className="font-medium text-text-primary">
-          Maximum trade size
-        </span>
-        <Input
-          type="number"
-          min="0.01"
-          step="0.01"
-          value={maxLot}
-          onChange={(event) => setMaxLot(event.target.value)}
-          disabled={!account.has_trader_access}
-        />
-      </label>
-      {account.has_trader_access ? (
-        <>
-          <div className="flex h-9 items-center gap-2">
-            <Switch checked={enabled} onCheckedChange={setEnabled} />
-            <span className="text-sm text-text-secondary">
-              {enabled ? "Copying enabled" : "Copying paused"}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            onClick={save}
-            disabled={updatePolicy.isPending || Number(maxLot) <= 0}
-          >
-            {updatePolicy.isPending ? "Saving..." : "Save"}
-          </Button>
-        </>
-      ) : (
-        <Button
-          variant="outline"
-          onClick={() => {
-            setTraderAccessError(null);
-            setTraderAccessOpen(true);
-          }}
-        >
-          Enable full access
-        </Button>
-      )}
-      <TraderAccessDialog
-        open={traderAccessOpen}
-        accountLabel={accountLabel(account, account.id)}
-        busy={actions.enableTraderAccess.isPending}
-        error={traderAccessError}
-        onOpenChange={setTraderAccessOpen}
-        onSubmit={async (password) => {
-          try {
-            await actions.enableTraderAccess.mutateAsync({
-              accountId: account.id,
-              traderPassword: password,
-            });
-            setTraderAccessOpen(false);
-            setTraderAccessError(null);
-            toast.success("Full account access enabled");
-          } catch (error) {
-            setTraderAccessError(apiError(error));
-          }
-        }}
-      />
-    </div>
   );
 }

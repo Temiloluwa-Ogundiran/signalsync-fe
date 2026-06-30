@@ -18,7 +18,7 @@ export const COPY_TRADING_KEYS = {
   health: () => ["copy-trading", "health"] as const,
   readiness: () => ["copy-trading", "launch-readiness"] as const,
   deadLetters: () => ["copy-trading", "dead-letters"] as const,
-  targetAccounts: () => ["copy-trading", "target-accounts"] as const,
+  copyConnections: () => ["copy-trading", "copy-connections"] as const,
   connections: () => ["copy-trading", "telegram-connections"] as const,
   sources: () => ["copy-trading", "sources"] as const,
   dialogs: (id: string) => ["copy-trading", "dialogs", id] as const,
@@ -41,12 +41,18 @@ export function useCopyTradingSettings() {
   });
 }
 
-export function useCopyTargetAccounts() {
+export function useCopyConnections() {
   const { token, enabled } = useCopyTradingAuth();
   return useQuery({
-    queryKey: COPY_TRADING_KEYS.targetAccounts(),
-    queryFn: () => copyTradingApi.listTargetAccounts(token),
+    queryKey: COPY_TRADING_KEYS.copyConnections(),
+    queryFn: () => copyTradingApi.listCopyConnections(token),
     enabled,
+    refetchInterval: (query) =>
+      query.state.data?.some((item) =>
+        ["submitted", "provisioning", "deploying", "connecting", "synchronizing", "deleting"].includes(item.state),
+      )
+        ? 2_000
+        : false,
   });
 }
 
@@ -155,9 +161,17 @@ export function useCopyTradingActions() {
     createSource: useMutation({ mutationFn: (payload: Parameters<typeof copyTradingApi.createSource>[0]) => copyTradingApi.createSource(payload, token), onSuccess: refresh }),
     pauseSource: useMutation({ mutationFn: ({ id, paused }: { id: string; paused: boolean }) => copyTradingApi.pauseSource(id, paused, token), onSuccess: refresh }),
     deleteSource: useMutation({ mutationFn: (id: string) => copyTradingApi.deleteSource(id, token), onSuccess: refresh }),
-    enableTraderAccess: useMutation({
-      mutationFn: ({ accountId, traderPassword }: { accountId: string; traderPassword: string }) =>
-        copyTradingApi.enableTraderAccess(accountId, traderPassword, token),
+    createCopyConnection: useMutation({
+      mutationFn: (payload: Parameters<typeof copyTradingApi.createCopyConnection>[0]) =>
+        copyTradingApi.createCopyConnection(payload, token),
+      onSuccess: refresh,
+    }),
+    retryCopyConnection: useMutation({
+      mutationFn: (id: string) => copyTradingApi.retryCopyConnection(id, token),
+      onSuccess: refresh,
+    }),
+    deleteCopyConnection: useMutation({
+      mutationFn: (id: string) => copyTradingApi.deleteCopyConnection(id, token),
       onSuccess: refresh,
     }),
     revealRaw: (eventId: string) => copyTradingApi.revealActivityRaw(eventId, token),
@@ -194,12 +208,12 @@ export function useUpdateCopyAccountPolicy() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      accountId,
+      connectionId,
       payload,
     }: {
-      accountId: string;
+      connectionId: string;
       payload: { max_lot?: string; is_paused?: boolean };
-    }) => copyTradingApi.updateAccountPolicy(accountId, payload, token),
+    }) => copyTradingApi.updateAccountPolicy(connectionId, payload, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.policies() });
       queryClient.invalidateQueries({ queryKey: ["copy-trading", "activity"] });

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useCopyTradingActions } from "./hooks";
 import type {
   CopyRoute,
-  CopyTargetAccount,
+  CopyTradingConnection,
   TelegramSource,
 } from "./types";
 import { apiError } from "./utils";
@@ -31,7 +31,7 @@ export function EmergencyActionsDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  accounts: CopyTargetAccount[];
+  accounts: CopyTradingConnection[];
   routes: CopyRoute[];
   sources: TelegramSource[];
 }) {
@@ -122,8 +122,8 @@ export function EmergencyActionsDialog({
                   <option key={item.id} value={item.id}>
                     {"title" in item
                       ? item.title
-                      : "broker_name" in item
-                        ? item.display_name || `${item.broker_name} ${item.broker_login}`
+                      : "broker_login" in item
+                        ? item.display_name || `${item.broker_server} ${item.broker_login}`
                         : `Copy rule ${item.id.slice(0, 8)}`}
                   </option>
                 ))}

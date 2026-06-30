@@ -7,7 +7,8 @@ import type {
   CopyLaunchReadiness,
   CopyRoute,
   CopyTradingSettings,
-  CopyTargetAccount,
+  CopyTradingConnection,
+  CopyTradingConnectionInput,
   CopySystemHealth,
   CopyRouteInput,
   TelegramAuth,
@@ -17,13 +18,17 @@ import type {
 } from "./types";
 
 export const copyTradingApi = {
-  listTargetAccounts: async (token?: string): Promise<CopyTargetAccount[]> => {
-    const { data } = await apiClient.get<CopyTargetAccount[]>(
-      "/accounts",
-      withAuth(token),
-    );
-    return data.filter((account) => !account.is_archived);
-  },
+  listCopyConnections: async (token?: string): Promise<CopyTradingConnection[]> =>
+    (await apiClient.get<CopyTradingConnection[]>("/copy-trading/connections", withAuth(token))).data,
+
+  createCopyConnection: async (payload: CopyTradingConnectionInput, token?: string): Promise<CopyTradingConnection> =>
+    (await apiClient.post<CopyTradingConnection>("/copy-trading/connections", payload, withAuth(token))).data,
+
+  retryCopyConnection: async (connectionId: string, token?: string): Promise<CopyTradingConnection> =>
+    (await apiClient.post<CopyTradingConnection>(`/copy-trading/connections/${connectionId}/retry`, {}, withAuth(token))).data,
+
+  deleteCopyConnection: async (connectionId: string, token?: string): Promise<CopyTradingConnection> =>
+    (await apiClient.delete<CopyTradingConnection>(`/copy-trading/connections/${connectionId}`, withAuth(token))).data,
 
   getSettings: async (token?: string): Promise<CopyTradingSettings> => {
     const { data } = await apiClient.get<CopyTradingSettings>(
@@ -62,12 +67,12 @@ export const copyTradingApi = {
   },
 
   updateAccountPolicy: async (
-    accountId: string,
+    connectionId: string,
     payload: { max_lot?: string; is_paused?: boolean },
     token?: string,
   ): Promise<CopyAccountPolicy> => {
     const { data } = await apiClient.patch<CopyAccountPolicy>(
-      `/copy-trading/account-policies/${accountId}`,
+      `/copy-trading/account-policies/${connectionId}`,
       payload,
       withAuth(token),
     );
@@ -87,7 +92,7 @@ export const copyTradingApi = {
           cursor: params.cursor,
           level: params.level,
           source_id: params.source_id,
-          account_id: params.account_id,
+          connection_id: params.connection_id,
           search: params.search,
         },
       },
@@ -159,8 +164,6 @@ export const copyTradingApi = {
   deleteSource: async (sourceId: string, token?: string): Promise<void> => {
     await apiClient.delete(`/copy-trading/sources/${sourceId}`, withAuth(token));
   },
-  enableTraderAccess: async (accountId: string, traderPassword: string, token?: string): Promise<CopyTargetAccount> =>
-    (await apiClient.post<CopyTargetAccount>(`/accounts/${accountId}/trader-access`, { trader_password: traderPassword }, withAuth(token))).data,
   revealActivityRaw: async (eventId: string, token?: string): Promise<{ raw_message: string | null }> =>
     (await apiClient.get<{ raw_message: string | null }>(`/copy-trading/activity/${eventId}/raw`, withAuth(token))).data,
   createRoute: async (payload: CopyRouteInput, token?: string): Promise<CopyRoute> =>
