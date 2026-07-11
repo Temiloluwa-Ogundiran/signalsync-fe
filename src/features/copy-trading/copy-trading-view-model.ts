@@ -86,6 +86,7 @@ export function deriveSystemHealth(input: {
   globallyPaused: boolean;
   system?: CopySystemHealth;
   launch?: CopyLaunchReadiness;
+  connections?: Pick<TelegramConnection, "state" | "is_paused" | "last_heartbeat_at">[];
 }): AutomationHealth {
   if (input.globallyPaused) {
     return {
@@ -120,6 +121,20 @@ export function deriveSystemHealth(input: {
       tone: "warning",
       label: "Copying is delayed",
       description: `${humanizeHealthIssue(input.system.issues[0])} Healthy rules continue processing.`,
+    };
+  }
+  const staleConnection = input.connections?.some((connection) => {
+    if (connection.state !== "ready" || connection.is_paused || !connection.last_heartbeat_at) {
+      return false;
+    }
+    const heartbeatTime = new Date(connection.last_heartbeat_at).getTime();
+    return Number.isFinite(heartbeatTime) && Date.now() - heartbeatTime > 5 * 60 * 1000;
+  });
+  if (staleConnection) {
+    return {
+      tone: "warning",
+      label: "Telegram connection is stale",
+      description: "No Telegram heartbeat was received recently. Reconnect Telegram before relying on new signals.",
     };
   }
   return {

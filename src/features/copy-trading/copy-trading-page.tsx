@@ -54,6 +54,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
     globallyPaused: settingsData?.is_paused ?? false,
     system: systemHealth.data,
     launch: launchReadiness.data,
+    connections: connectionsData,
   });
   const firstError = [
     settings,

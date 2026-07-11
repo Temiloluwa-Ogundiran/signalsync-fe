@@ -151,6 +151,26 @@ test("missing runtime workers require action", () => {
   assert.equal(health.label, "Copying needs attention");
 });
 
+test("stale Telegram heartbeat is not presented as operational", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "ready",
+      ready: true,
+      issues: [],
+      components: [],
+    },
+    connections: [{
+      state: "ready",
+      is_paused: false,
+      last_heartbeat_at: "2020-01-01T00:00:00.000Z",
+    }],
+  });
+
+  assert.equal(health.tone, "warning");
+  assert.equal(health.label, "Telegram connection is stale");
+});
+
 test("launch blockers are never presented as ready", () => {
   const health = deriveSystemHealth({
     globallyPaused: false,
