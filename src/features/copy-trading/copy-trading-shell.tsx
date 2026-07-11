@@ -39,7 +39,7 @@ export function CopyTradingShell({
           sources={sources}
           onPauseChange={onPauseChange}
         />
-        <main className="pt-6">{children}</main>
+        <div className="pt-6">{children}</div>
       </div>
     </Tooltip.Provider>
   );

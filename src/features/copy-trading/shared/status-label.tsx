@@ -14,6 +14,8 @@ const labels: Record<string, string> = {
   error: "Failed",
   warning: "Needs attention",
   info: "Processing",
+  processing: "Processing",
+  skipped: "No action",
 };
 
 export function StatusLabel({ state }: { state: string }) {
@@ -24,7 +26,7 @@ export function StatusLabel({ state }: { state: string }) {
             "paused",
             "pending",
             "warning",
-            "needs_attention",
+            "needs_attention", "processing",
           ].includes(state)
         ? "warn"
         : ["failed", "error", "target_unavailable"].includes(state)

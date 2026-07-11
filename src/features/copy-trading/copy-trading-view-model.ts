@@ -182,6 +182,21 @@ export function humanizeActivity(event: {
   };
 }
 
+export function activityStatusState(event: {
+  action: string;
+  level: "info" | "success" | "warning" | "error";
+}): string {
+  if (["signal.expired", "signal.skipped"].includes(event.action)) return "skipped";
+  if (event.action.endsWith(".failed")) return "failed";
+  if (["broker.uncertain", "signal.waiting", "emergency.requested"].includes(event.action)) {
+    return "processing";
+  }
+  if (["signal.validated", "broker.reconciled", "broker.succeeded", "emergency.succeeded"].includes(event.action)) {
+    return "success";
+  }
+  return event.level;
+}
+
 export function summarizeCopyRule(
   route: Pick<
     CopyRoute,

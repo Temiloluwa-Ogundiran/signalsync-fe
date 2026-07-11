@@ -39,13 +39,13 @@ export function JournalKpiCard({
     >
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate text-sm font-medium leading-tight text-kpi-label">
+          <span className="text-sm font-medium leading-tight text-kpi-label">
             {label}
           </span>
           {info}
           {labelTrailing}
         </div>
-        <p className="font-heading text-2xl font-semibold leading-none tracking-tight tabular-nums text-text-primary">
+        <p className="font-heading text-2xl font-semibold leading-none tabular-nums text-text-primary">
           {value}
         </p>
       </div>

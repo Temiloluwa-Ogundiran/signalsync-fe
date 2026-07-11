@@ -219,19 +219,14 @@ export function JournalDayCard({
       onMouseEnter={hasTrades ? prefetch : undefined}
     >
       {/* Collapsed row — click anywhere to toggle expand */}
-      <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        onClick={() => onExpandedChange(!expanded)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onExpandedChange(!expanded);
-          }
-        }}
-        className="flex cursor-pointer items-center gap-3 px-4 py-3.5 transition-colors hover:bg-card-bg-hover md:px-5"
-      >
+      <div className="flex items-center gap-2 px-4 py-3.5 transition-colors hover:bg-card-bg-hover md:px-5">
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-label={`${expanded ? "Collapse" : "Expand"} trades for ${monthDay}`}
+          onClick={() => onExpandedChange(!expanded)}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
         <span
           aria-hidden
           className={cn(
@@ -243,7 +238,7 @@ export function JournalDayCard({
         </span>
 
         {/* Date — fixed width so the columns after it line up */}
-        <div className="flex w-[9.25rem] shrink-0 items-baseline gap-1.5">
+        <div className="flex w-28 shrink-0 items-baseline gap-1.5 sm:w-[9.25rem]">
           <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
             {weekday}
           </span>
@@ -253,7 +248,7 @@ export function JournalDayCard({
         </div>
 
         {/* Net P&L — label + value, fixed width */}
-        <span className="flex w-44 shrink-0 items-baseline gap-1.5">
+        <span className="hidden w-44 shrink-0 items-baseline gap-1.5 md:flex">
           <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
             Net P&amp;L
           </span>
@@ -280,7 +275,9 @@ export function JournalDayCard({
         )}
 
         {/* Write / Journaled — pushed right */}
-        <div className="ml-auto shrink-0">
+        </button>
+
+        <div className="shrink-0">
           {hasNote ? (
             <button
               type="button"

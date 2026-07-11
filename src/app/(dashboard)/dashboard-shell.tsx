@@ -23,6 +23,12 @@ export default function DashboardShell({
 
   return (
     <AiDockProvider>
+      <a
+        href="#main-content"
+        className="fixed left-4 top-4 z-[9999] -translate-y-20 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-lg transition-transform focus:translate-y-0"
+      >
+        Skip to main content
+      </a>
       {/* Column layout: a full-width header on top (logo + global actions), then
           a row of nav + content below. The header owns the logo so its size is
           independent of the nav column width. */}
@@ -43,6 +49,8 @@ export default function DashboardShell({
           <AppNav />
 
           <main
+            id="main-content"
+            tabIndex={-1}
             className={cn(
               "scrollbar-thin min-w-0 flex-1 overflow-x-hidden bg-bg-canvas dark:bg-bg-primary",
               mobileNavOpen ? "overflow-y-hidden" : "overflow-y-auto",

@@ -76,7 +76,7 @@ export function CopyTradingSettingsPage({
         action={
           <Button variant="outline" onClick={() => setTelegramOpen(true)}>
             <Plus className="size-4" />
-            Connect Telegram
+            {connections.length ? "Connect another Telegram" : "Connect Telegram"}
           </Button>
         }
       >
@@ -109,6 +109,7 @@ export function CopyTradingSettingsPage({
                   {connection.is_paused ? "Resume reading" : "Pause reading"}
                 </span>
                 <Switch
+                  aria-label={`${connection.is_paused ? "Resume" : "Pause"} Telegram reading for ${connectionName(connection)}`}
                   checked={!connection.is_paused}
                   onCheckedChange={(enabled) =>
                     run(
@@ -178,6 +179,7 @@ export function CopyTradingSettingsPage({
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
+                    aria-label={`${source.is_paused ? "Resume" : "Pause"} signal channel ${source.title}`}
                     checked={!source.is_paused}
                     onCheckedChange={(enabled) =>
                       run(

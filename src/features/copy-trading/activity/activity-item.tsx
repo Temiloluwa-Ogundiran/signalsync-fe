@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ChevronDown, Clock3 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, CircleMinus, Clock3 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import type {
 } from "../types";
 import type { ActivityGroup } from "../copy-trading-view-model";
 import {
+  activityStatusState,
   failureGuidance,
   humanizeActivity,
 } from "../copy-trading-view-model";
@@ -31,13 +32,16 @@ export function ActivityItem({
   const actions = useCopyTradingActions();
   const event = group.latest;
   const presentation = humanizeActivity(event);
+  const statusState = activityStatusState(event);
   const source = sources.find((item) => item.id === event.source_id);
   const account = accounts.find((item) => item.id === event.connection_id);
   const Icon =
-    event.level === "error"
+    statusState === "failed" || statusState === "error"
       ? AlertCircle
-      : event.level === "success"
+      : statusState === "success"
         ? CheckCircle2
+        : statusState === "skipped"
+          ? CircleMinus
         : Clock3;
 
   const reveal = async () => {
@@ -61,9 +65,9 @@ export function ActivityItem({
       >
         <Icon
           className={`mt-0.5 size-4 shrink-0 ${
-            event.level === "error"
+            statusState === "failed" || statusState === "error"
               ? "text-danger"
-              : event.level === "success"
+              : statusState === "success"
                 ? "text-success"
                 : "text-text-secondary"
           }`}
@@ -73,7 +77,7 @@ export function ActivityItem({
             <span className="font-semibold text-text-primary">
               {presentation.actionLabel}
             </span>
-            <StatusLabel state={event.level} />
+            <StatusLabel state={statusState} />
           </span>
           <span className="mt-1 block text-sm text-text-secondary">
             {presentation.statusLabel}

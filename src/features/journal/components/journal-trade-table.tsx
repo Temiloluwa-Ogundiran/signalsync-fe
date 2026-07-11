@@ -169,6 +169,21 @@ export function JournalTradeTable({
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [headerDragId, setHeaderDragId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [direction, setDirection] = useState<"all" | "buy" | "sell">("all");
+  const [outcome, setOutcome] = useState<"all" | "win" | "loss">("all");
+
+  const filteredRows = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return rows.filter((row) => {
+      const profit = asNumber(row.net_profit);
+      return (
+        (!normalizedQuery || row.symbol.toLowerCase().includes(normalizedQuery)) &&
+        (direction === "all" || row.direction === direction) &&
+        (outcome === "all" || (outcome === "win" ? profit > 0 : profit < 0))
+      );
+    });
+  }, [rows, query, direction, outcome]);
 
   // Reorder a data column relative to another (used by header drag + menu).
   const reorderColumn = (from: string, to: string) => {
@@ -217,7 +232,7 @@ export function JournalTradeTable({
   }, [columnOrder]);
 
   const table = useReactTable({
-    data: rows,
+    data: filteredRows,
     columns,
     state: { sorting, columnVisibility, rowSelection, columnOrder: effectiveOrder },
     onSortingChange: setSorting,
@@ -235,7 +250,7 @@ export function JournalTradeTable({
 
   /* summary across loaded rows */
   const summary = useMemo(() => {
-    const real = rows;
+    const real = filteredRows;
     const net = real.reduce((a, r) => a + asNumber(r.net_profit), 0);
     const wins = real.filter((r) => asNumber(r.net_profit) > 0).length;
     const winRate = real.length ? (wins / real.length) * 100 : 0;
@@ -243,8 +258,8 @@ export function JournalTradeTable({
       ? real.reduce((a, r) => a + asNumber(r.net_roi_percent ?? 0), 0) /
         real.length
       : 0;
-    return { count: rows.length, net, winRate, avgRoi };
-  }, [rows]);
+    return { count: real.length, net, winRate, avgRoi };
+  }, [filteredRows]);
 
   const exportCsv = (which: TradeHistoryRow[]) => {
     const header = [
@@ -290,6 +305,31 @@ export function JournalTradeTable({
 
   return (
     <section className="overflow-hidden rounded-2xl border border-hairline bg-nav-sidebar-bg">
+      <div className="flex flex-col gap-3 border-b border-hairline px-4 py-3 sm:flex-row sm:items-center">
+        <label className="relative min-w-0 flex-1 sm:max-w-sm">
+          <span className="sr-only">Search trades by instrument</span>
+          <Search aria-hidden className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-tertiary" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search instrument"
+            className="h-9 w-full rounded-md border border-hairline bg-bg-input pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-accent"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-text-secondary">
+          <span>Direction</span>
+          <select value={direction} onChange={(event) => setDirection(event.target.value as typeof direction)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <option value="all">All</option><option value="buy">Buy</option><option value="sell">Sell</option>
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-text-secondary">
+          <span>Outcome</span>
+          <select value={outcome} onChange={(event) => setOutcome(event.target.value as typeof outcome)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <option value="all">All</option><option value="win">Wins</option><option value="loss">Losses</option>
+          </select>
+        </label>
+      </div>
       {/* Summary strip + columns control */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
@@ -345,7 +385,7 @@ export function JournalTradeTable({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] border-separate border-spacing-0 text-sm">
+        <table aria-label="Trade history" className="w-full min-w-[980px] border-separate border-spacing-0 text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
@@ -496,7 +536,7 @@ export function JournalTradeTable({
       {/* Footer */}
       <div className="flex min-h-[3.25rem] items-center justify-between gap-3 border-t border-hairline px-4 py-3">
         <p className="text-[13px] text-text-tertiary">
-          Showing {rows.length} loaded trade{rows.length === 1 ? "" : "s"}
+          Showing {filteredRows.length} of {rows.length} loaded trade{rows.length === 1 ? "" : "s"}
         </p>
         {canLoadMore ? (
           <button
