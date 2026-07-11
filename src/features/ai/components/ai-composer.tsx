@@ -62,6 +62,7 @@ export function AiComposer({
         {/* Typing is ALWAYS allowed — even mid-response — so users can line up
             their next question. Only sending is gated (see canSend). */}
         <textarea
+          aria-label="Message Partna AI"
           ref={textareaRef}
           rows={1}
           value={value}

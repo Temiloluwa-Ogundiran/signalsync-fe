@@ -101,6 +101,7 @@ export function AiChatPage() {
 
   return (
     <div className="flex h-full min-w-0">
+      <h1 className="sr-only">Partna AI</h1>
       {/* Desktop history pane — persistent left column, hidden on mobile. */}
       <aside className="hidden w-[280px] shrink-0 flex-col border-r border-border-secondary/40 bg-bg-secondary lg:flex">
         {historyPane}

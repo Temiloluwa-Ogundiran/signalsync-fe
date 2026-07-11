@@ -184,9 +184,9 @@ export function SetupWorkspace({
           <p className="text-xs font-semibold uppercase text-text-tertiary">
             Guided setup
           </p>
-          <h2 className="mt-1 text-xl font-bold text-text-primary">
+          <h1 className="mt-1 text-xl font-bold text-text-primary">
             Start copying Telegram signals
-          </h2>
+          </h1>
           <p className="mt-1 text-sm text-text-secondary">
             Complete each step once. You can return and change the copy rule
             later.
