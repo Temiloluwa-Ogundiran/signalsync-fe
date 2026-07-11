@@ -207,7 +207,7 @@ function ConnectAccountFlow() {
               <button
                 type="button"
                 onClick={() => setStep("form")}
-                className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#6C4DF2] px-5 py-3 text-[14.5px] font-semibold text-white transition-all hover:-translate-y-px hover:bg-[#5A3CE0] focus-visible:outline-none dark:bg-[#8E72FF] dark:hover:bg-[#7E61F5]"
+                className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#6C4DF2] px-5 py-3 text-[14.5px] font-semibold text-white transition-[background-color,transform] hover:-translate-y-px hover:bg-[#5A3CE0] focus-visible:outline-none dark:bg-[#8E72FF] dark:hover:bg-[#7E61F5]"
               >
                 Continue
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -278,7 +278,7 @@ function MethodSelector({
             disabled={method.disabled}
             onClick={() => !method.disabled && onSelect(method.id)}
             className={cn(
-              "group relative grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-[#FFFFFF] p-4 pl-5 text-left shadow-[0_1px_2px_rgba(20,20,40,0.04),0_6px_20px_rgba(20,20,40,0.04)] transition-all duration-150 focus-visible:border-[#6C4DF2] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(108,77,242,0.16)] dark:bg-[#141419] dark:shadow-none dark:focus-visible:border-[#8E72FF] dark:focus-visible:ring-[rgba(142,114,255,0.26)]",
+              "group relative grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-[#FFFFFF] p-4 pl-5 text-left shadow-[0_1px_2px_rgba(20,20,40,0.04),0_6px_20px_rgba(20,20,40,0.04)] transition-[background-color,border-color,box-shadow] duration-150 focus-visible:border-[#6C4DF2] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(108,77,242,0.16)] dark:bg-[#141419] dark:shadow-none dark:focus-visible:border-[#8E72FF] dark:focus-visible:ring-[rgba(142,114,255,0.26)]",
               !method.disabled && "cursor-pointer",
               isSelected
                 ? "border-[#6C4DF2]/55 bg-[#FFFFFF] shadow-[0_2px_4px_rgba(108,77,242,0.10),0_12px_32px_rgba(108,77,242,0.12)] dark:border-[#8E72FF]/55 dark:bg-[#17151F] dark:shadow-[0_0_0_1px_rgba(142,114,255,0.35),0_10px_34px_rgba(108,90,230,0.20)]"
@@ -290,7 +290,7 @@ function MethodSelector({
             {/* Left accent bar */}
             <span
               className={cn(
-                "absolute inset-y-3.5 left-0 w-[3px] rounded-full bg-[#6C4DF2] transition-all duration-200 dark:bg-[#8E72FF]",
+                "absolute inset-y-3.5 left-0 w-[3px] rounded-full bg-[#6C4DF2] transition-opacity duration-200 dark:bg-[#8E72FF]",
                 isSelected ? "scale-y-100 opacity-100" : "scale-y-50 opacity-0",
               )}
             />

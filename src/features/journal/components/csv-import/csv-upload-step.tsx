@@ -152,7 +152,7 @@ export function CSVUploadStep({
           onDragLeave={handleDrag}
           onDrop={handleDrop}
           onClick={isPending ? undefined : onButtonClick}
-          className={`flex flex-col items-center justify-center min-h-[220px] rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all duration-200 ${
+          className={`flex flex-col items-center justify-center min-h-[220px] rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-[background-color,border-color] duration-200 ${
             dragActive
               ? "border-accent bg-accent/5 scale-[0.99]"
               : "border-border-primary bg-bg-secondary/20 hover:border-accent/40 hover:bg-bg-secondary/40"

@@ -31,7 +31,7 @@ export function AiSessionSidebar({
         <button
           type="button"
           onClick={onNew}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-2.5 text-sm font-semibold text-brand-foreground shadow-sm transition-all hover:bg-brand-hover hover:shadow active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-2.5 text-sm font-semibold text-brand-foreground shadow-sm transition-[background-color,box-shadow,transform] hover:bg-brand-hover hover:shadow active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           New chat
@@ -76,7 +76,7 @@ export function AiSessionSidebar({
                   e.stopPropagation();
                   onDelete(s.id);
                 }}
-                className="shrink-0 p-1 rounded text-text-tertiary opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
+                className="shrink-0 p-1 rounded text-text-tertiary opacity-0 group-hover:opacity-100 hover:text-red-500 transition-[color,opacity]"
               >
                 <Trash2 className="h-3 w-3" />
               </button>

@@ -200,7 +200,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               <button
                 type="button"
                 onClick={next}
-                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-ai-accent-bright active:scale-[0.98]"
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-ai-accent-bright active:scale-[0.98]"
               >
                 Let&apos;s go
                 <ArrowRight className="h-4 w-4" />
@@ -249,7 +249,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         <div className="mx-auto mb-3 max-w-xl">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-secondary/50">
             <div
-              className="h-full rounded-full bg-ai-accent transition-all duration-300"
+              className="h-full rounded-full bg-ai-accent transition-[width] duration-300"
               style={{ width: `${Math.max(progress, 4)}%` }}
             />
           </div>
@@ -278,7 +278,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
             onClick={next}
             disabled={!canContinue || submitting}
             className={cn(
-              "inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all active:scale-[0.98]",
+              "inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-[color,background-color,transform] active:scale-[0.98]",
               canContinue && !submitting
                 ? "bg-ai-accent text-white hover:bg-ai-accent-bright"
                 : "cursor-not-allowed bg-bg-tertiary text-text-tertiary",
@@ -341,7 +341,7 @@ function Question(props: QuestionProps) {
               type="button"
               onClick={() => handle(opt.id)}
               className={cn(
-                "flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-all active:scale-[0.99]",
+                "flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-[color,background-color,border-color,transform] active:scale-[0.99]",
                 isSelected
                   ? "border-ai-accent bg-ai-soft-bg ring-1 ring-ai-accent"
                   : "border-border-secondary/70 bg-card-bg hover:border-ai-border hover:bg-ai-glow",

@@ -84,7 +84,7 @@ export function AiChip({
         "border border-ai-soft-border bg-ai-soft-bg px-1.5 py-0.5",
         "text-[0.8em] font-medium leading-tight text-ai-accent",
         "transition-colors hover:border-ai-accent hover:bg-ai-glow",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ai-accent/40",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ai-accent/40",
       )}
     >
       <Icon className="h-3 w-3 shrink-0" />

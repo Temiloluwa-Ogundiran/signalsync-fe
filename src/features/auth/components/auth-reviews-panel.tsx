@@ -133,7 +133,7 @@ export function AuthReviewsPanel() {
       <div className="mt-6 min-h-[18rem] overflow-hidden">
         <div
           className={
-            "space-y-3 transition-all duration-300 ease-out " +
+            "space-y-3 transition-[opacity,transform] duration-300 ease-out " +
             (phase === "out"
               ? "-translate-x-4 opacity-0"
               : "translate-x-0 opacity-100")
@@ -154,7 +154,7 @@ export function AuthReviewsPanel() {
             aria-label={`Reviews page ${i + 1}`}
             onClick={() => goTo(i)}
             className={
-              "h-1.5 rounded-full transition-all " +
+              "h-1.5 rounded-full transition-[background-color,width] " +
               (i === page ? "w-5 bg-white/80" : "w-1.5 bg-white/30")
             }
           />

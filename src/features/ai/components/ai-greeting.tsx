@@ -45,7 +45,7 @@ export function AiGreeting({ firstName, onPromptClick }: AiGreetingProps) {
             key={prompt}
             type="button"
             onClick={() => onPromptClick(prompt)}
-            className="group flex items-center gap-3 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-3 text-left text-sm text-text-primary transition-all hover:border-ai-border hover:bg-ai-glow"
+            className="group flex items-center gap-3 rounded-xl border border-border-secondary/60 bg-card-bg px-3.5 py-3 text-left text-sm text-text-primary transition-[background-color,border-color] hover:border-ai-border hover:bg-ai-glow"
           >
             <Sparkles className="h-4 w-4 shrink-0 text-ai-accent" />
             <span className="flex-1 leading-snug">{prompt}</span>

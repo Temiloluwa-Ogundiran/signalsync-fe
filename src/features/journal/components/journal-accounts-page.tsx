@@ -296,7 +296,7 @@ export function JournalAccountsPage() {
               </div>
               <Button
                 onClick={openConnectModal}
-                className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-6 rounded-full shadow-lg hover:shadow-brand/20 transition-all"
+                className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-6 rounded-full shadow-lg hover:shadow-brand/20 transition-[background-color,box-shadow]"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Connect MT5 Account

@@ -126,7 +126,7 @@ export function JournalMonthCalendar({
               onClick={() => onSelectDay(day)}
               style={stats ? heatStyle(stats.pnl, maxAbs) : undefined}
               className={cn(
-                "flex aspect-square items-center justify-center rounded-lg text-sm font-medium transition-all",
+                "flex aspect-square items-center justify-center rounded-lg text-sm font-medium transition-[color,background-color,box-shadow]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--calendar-selected-ring)",
                 stats
                   ? tone === "win"

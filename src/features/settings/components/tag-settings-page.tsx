@@ -74,7 +74,7 @@ function ColorSwatches({
           type="button"
           onClick={() => onChange(c)}
           title={c}
-          className="flex h-5 w-5 items-center justify-center rounded-full ring-offset-2 ring-offset-card-bg transition-transform hover:scale-110 focus:outline-none"
+          className="flex h-5 w-5 items-center justify-center rounded-full ring-offset-2 ring-offset-card-bg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           style={{ backgroundColor: c }}
         >
           {value === c && <Check className="h-3 w-3 text-white" />}

@@ -88,7 +88,7 @@ export function CopyActivityPage({
       ) : null}
       {query.isPending ? (
         <div className="rounded-lg border border-border-primary bg-card-bg px-4 py-12 text-center text-sm text-text-secondary">
-          Loading activity...
+          Loading activity…
         </div>
       ) : (
         <ActivityFeed
@@ -109,7 +109,7 @@ export function CopyActivityPage({
             disabled={query.isFetchingNextPage}
             onClick={() => query.fetchNextPage()}
           >
-            {query.isFetchingNextPage ? "Loading..." : "Load more activity"}
+            {query.isFetchingNextPage ? "Loading…" : "Load more activity"}
           </Button>
         </div>
       ) : null}

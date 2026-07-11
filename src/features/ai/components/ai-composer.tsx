@@ -71,7 +71,7 @@ export function AiComposer({
           onInput={handleInput}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 resize-none self-center bg-transparent text-sm leading-relaxed text-text-primary placeholder-text-tertiary focus:outline-none disabled:opacity-50 min-h-[24px] max-h-[140px]"
+          className="flex-1 resize-none self-center bg-transparent text-sm leading-relaxed text-text-primary placeholder-text-tertiary focus-visible:outline-none disabled:opacity-50 min-h-[24px] max-h-[140px]"
         />
 
         {isStreaming ? (
