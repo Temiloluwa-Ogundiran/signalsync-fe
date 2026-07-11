@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppLoader } from "@/components/app-loader";
 import { toast } from "sonner";
 import type { DateRange } from "react-day-picker";
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useInfiniteTradeHistory } from "@/features/journal/hooks/use-infinite-trade-history";
@@ -80,6 +81,24 @@ export function JournalTradeHistoryPage() {
   // the user can apply via the date picker.
   const fromDate = hasCustomRange ? formatDateParam(queryFromDate) : undefined;
   const toDate = hasCustomRange ? formatDateParam(queryToDate) : undefined;
+  const [tradeQuery, setTradeQuery] = useQueryState("q", {
+    defaultValue: "",
+    history: "replace",
+    shallow: true,
+    clearOnDefault: true,
+  });
+  const [direction, setDirection] = useQueryState(
+    "direction",
+    parseAsStringEnum(["all", "buy", "sell"] as const)
+      .withDefault("all")
+      .withOptions({ history: "replace", shallow: true, clearOnDefault: true }),
+  );
+  const [outcome, setOutcome] = useQueryState(
+    "outcome",
+    parseAsStringEnum(["all", "win", "loss"] as const)
+      .withDefault("all")
+      .withOptions({ history: "replace", shallow: true, clearOnDefault: true }),
+  );
 
   const parsedDateRange = useMemo<DateRange | undefined>(() => {
     const from = parseDateParam(searchParams.get("fromDate"));
@@ -226,6 +245,17 @@ export function JournalTradeHistoryPage() {
       ) : (
         <JournalTradeTable
           rows={rows}
+          query={tradeQuery}
+          direction={direction}
+          outcome={outcome}
+          onQueryChange={(value) => void setTradeQuery(value)}
+          onDirectionChange={(value) => void setDirection(value)}
+          onOutcomeChange={(value) => void setOutcome(value)}
+          onClearFilters={() => {
+            void setTradeQuery(null);
+            void setDirection(null);
+            void setOutcome(null);
+          }}
           onOpenJournal={onOpenJournal}
           onRowClick={(row) => setSelectedTradeId(row.id)}
           onRateTrade={handleRateTrade}

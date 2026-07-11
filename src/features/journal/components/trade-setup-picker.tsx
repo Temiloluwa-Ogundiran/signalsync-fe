@@ -61,7 +61,7 @@ export function TradeSetupPicker({ value, onChange }: TradeSetupPickerProps) {
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg border border-hairline bg-bg-primary px-3 py-2 text-left text-sm transition-colors hover:border-border-secondary focus:outline-none"
+            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg border border-hairline bg-bg-primary px-3 py-2 text-left text-sm transition-colors hover:border-border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <span
               className={
@@ -89,7 +89,7 @@ export function TradeSetupPicker({ value, onChange }: TradeSetupPickerProps) {
                 key={s.id}
                 type="button"
                 onClick={() => pick(s.name)}
-                className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-bg-primary focus:outline-none"
+                className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <span className="truncate">{s.name}</span>
                 {value === s.name && (
@@ -103,7 +103,7 @@ export function TradeSetupPicker({ value, onChange }: TradeSetupPickerProps) {
                 type="button"
                 onClick={createAndPick}
                 disabled={createSetup.isPending}
-                className="mt-1 flex w-full items-center gap-2 rounded-md border border-dashed border-brand/20 px-2.5 py-1.5 text-left text-xs font-bold text-brand transition-colors hover:bg-brand/10 focus:outline-none disabled:opacity-60"
+                className="mt-1 flex w-full items-center gap-2 rounded-md border border-dashed border-brand/20 px-2.5 py-1.5 text-left text-xs font-bold text-brand transition-colors hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-60"
               >
                 {createSetup.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />

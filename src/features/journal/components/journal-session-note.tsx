@@ -89,7 +89,7 @@ export function JournalSessionNote({
         onChange={(e) => handleChange(e.target.value)}
         rows={3}
         placeholder="How did today feel? What would you repeat, and what would you change next time?"
-        className="w-full resize-none bg-transparent text-[0.95rem] leading-relaxed text-text-primary placeholder:text-text-tertiary focus:outline-none"
+        className="w-full resize-none rounded-md bg-transparent text-[0.95rem] leading-relaxed text-text-primary placeholder:text-text-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       />
     </section>
   );

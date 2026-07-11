@@ -46,6 +46,13 @@ declare module "@tanstack/react-table" {
 
 interface JournalTradeTableProps {
   rows: TradeHistoryRow[];
+  query: string;
+  direction: "all" | "buy" | "sell";
+  outcome: "all" | "win" | "loss";
+  onQueryChange: (value: string) => void;
+  onDirectionChange: (value: "all" | "buy" | "sell") => void;
+  onOutcomeChange: (value: "all" | "win" | "loss") => void;
+  onClearFilters: () => void;
   onOpenJournal: (row: TradeHistoryRow) => void;
   /** Open the trade-detail side panel (fired by clicking a data cell). */
   onRowClick?: (row: TradeHistoryRow) => void;
@@ -149,6 +156,13 @@ const NON_PANEL_COLUMNS = new Set(["select", "favorite", "expand"]);
 
 export function JournalTradeTable({
   rows,
+  query,
+  direction,
+  outcome,
+  onQueryChange,
+  onDirectionChange,
+  onOutcomeChange,
+  onClearFilters,
   onOpenJournal,
   onRowClick,
   onRateTrade,
@@ -169,10 +183,6 @@ export function JournalTradeTable({
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [headerDragId, setHeaderDragId] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [direction, setDirection] = useState<"all" | "buy" | "sell">("all");
-  const [outcome, setOutcome] = useState<"all" | "win" | "loss">("all");
-
   const filteredRows = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return rows.filter((row) => {
@@ -312,23 +322,28 @@ export function JournalTradeTable({
           <input
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search instrument"
             className="h-9 w-full rounded-md border border-hairline bg-bg-input pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-accent"
           />
         </label>
         <label className="flex items-center gap-2 text-sm text-text-secondary">
           <span>Direction</span>
-          <select value={direction} onChange={(event) => setDirection(event.target.value as typeof direction)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <select value={direction} onChange={(event) => onDirectionChange(event.target.value as typeof direction)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <option value="all">All</option><option value="buy">Buy</option><option value="sell">Sell</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-text-secondary">
           <span>Outcome</span>
-          <select value={outcome} onChange={(event) => setOutcome(event.target.value as typeof outcome)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <select value={outcome} onChange={(event) => onOutcomeChange(event.target.value as typeof outcome)} className="h-9 rounded-md border border-hairline bg-bg-input px-3 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <option value="all">All</option><option value="win">Wins</option><option value="loss">Losses</option>
           </select>
         </label>
+        {query || direction !== "all" || outcome !== "all" ? (
+          <button type="button" onClick={onClearFilters} className="h-9 rounded-md px-3 text-sm font-semibold text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            Clear filters
+          </button>
+        ) : null}
       </div>
       {/* Summary strip + columns control */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3">
@@ -347,20 +362,18 @@ export function JournalTradeTable({
           />
         </div>
 
-        <ColumnsMenu
-          table={table}
-          order={
-            columnOrder.length > 0
-              ? columnOrder.filter((id) => MANAGEABLE_COLUMN_IDS.includes(id))
-              : MANAGEABLE_COLUMN_IDS
-          }
-          setOrder={(next) => setColumnOrder(next)}
-        />
+        <div className="hidden md:block">
+          <ColumnsMenu
+            table={table}
+            order={columnOrder.length > 0 ? columnOrder.filter((id) => MANAGEABLE_COLUMN_IDS.includes(id)) : MANAGEABLE_COLUMN_IDS}
+            setOrder={(next) => setColumnOrder(next)}
+          />
+        </div>
       </div>
 
       {/* Bulk action bar */}
       {selectedCount > 0 ? (
-        <div className="flex items-center gap-2 border-b border-hairline bg-ai-soft-bg px-4 py-2">
+        <div className="hidden items-center gap-2 border-b border-hairline bg-ai-soft-bg px-4 py-2 md:flex">
           <span className="text-sm font-semibold text-text-primary">
             {selectedCount} selected
           </span>
@@ -383,8 +396,35 @@ export function JournalTradeTable({
         </div>
       ) : null}
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="divide-y divide-hairline md:hidden" aria-label="Trade history">
+        {filteredRows.length ? filteredRows.map((row) => (
+          <article key={row.id} className="px-4 py-4">
+            <button type="button" onClick={() => onRowClick?.(row)} className="w-full rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+              <span className="flex items-start justify-between gap-3">
+                <span>
+                  <span className="block text-base font-semibold text-text-primary">{row.symbol}</span>
+                  <span className="mt-1 block"><DirectionPill direction={row.direction} /></span>
+                </span>
+                <span className={cn("text-base font-semibold tabular-nums", pnlClass(asNumber(row.net_profit)))}>{signedCurrency(asNumber(row.net_profit))}</span>
+              </span>
+              <span className="mt-3 grid grid-cols-2 gap-3 text-xs text-text-secondary">
+                <span><span className="block text-text-tertiary">Opened</span>{row.openedDateLabel}</span>
+                <span><span className="block text-text-tertiary">Closed</span>{row.closedDateLabel}</span>
+              </span>
+            </button>
+            <div className="mt-3 flex items-center justify-between border-t border-hairline pt-3">
+              <span className="text-xs text-text-secondary">{row.volume} lots</span>
+              <button type="button" onClick={() => onOpenJournal(row)} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-accent transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <NotebookPen className="size-3.5" /> Journal
+              </button>
+            </div>
+          </article>
+        )) : (
+          <p className="px-6 py-12 text-center text-sm text-text-secondary">No trades match the selected filters.</p>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <table aria-label="Trade history" className="w-full min-w-[980px] border-separate border-spacing-0 text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (

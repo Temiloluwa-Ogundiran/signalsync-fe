@@ -64,7 +64,7 @@ export function JournalTagSelector({
             placeholder="Search tags…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 border-0 bg-transparent p-0 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
+            className="h-8 border-0 bg-transparent p-0 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           />
         </div>
 
@@ -89,7 +89,7 @@ export function JournalTagSelector({
                         key={tag.id}
                         type="button"
                         onClick={() => handleToggle(tag.id)}
-                        className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs font-semibold transition-all hover:bg-bg-primary focus:outline-none"
+                        className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs font-semibold transition-colors hover:bg-bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         <div className="flex items-center gap-2">
                           <span
@@ -118,7 +118,7 @@ export function JournalTagSelector({
             asChild
             size="sm"
             variant="ghost"
-            className="flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-center text-xs font-semibold text-text-secondary hover:bg-border-secondary focus:outline-none"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-center text-xs font-semibold text-text-secondary hover:bg-border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Link href="/settings/tags" onClick={() => setIsOpen(false)}>
               <Settings className="h-3.5 w-3.5" />

@@ -52,7 +52,7 @@ function SheetContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="sheet-close"
-            className="absolute right-4 top-4 rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary focus:outline-none"
+            className="absolute right-4 top-4 rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <XIcon className="size-4" />
             <span className="sr-only">Close</span>
