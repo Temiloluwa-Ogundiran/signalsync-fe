@@ -78,7 +78,7 @@ export function JournalTagSelector({
           ) : (
             filteredGroups.map((group) => (
               <div key={group.id} className="mb-1.5 last:mb-0">
-                <div className="px-2.5 pb-1 pt-1.5 text-[0.6rem] font-bold uppercase tracking-wide text-text-tertiary">
+                <div className="px-2.5 pb-1 pt-1.5 text-[0.6rem] font-bold uppercase text-text-tertiary">
                   {group.name}
                 </div>
                 <div className="space-y-0.5">

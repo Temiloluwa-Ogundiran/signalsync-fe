@@ -38,7 +38,7 @@ export default async function LoginPage({
           priority
           className="h-12 w-auto"
         />
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-2xl font-bold text-text-primary">
           Sign in to TradePartna
         </h1>
       </div>

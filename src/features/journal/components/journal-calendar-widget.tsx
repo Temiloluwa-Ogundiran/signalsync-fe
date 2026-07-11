@@ -69,6 +69,7 @@ export function JournalCalendarWidget({
         <JournalCalendarGrid
           dayStats={dayStats}
           daysInMonth={daysInMonth}
+          selectedDay={selectedDay}
           monthStartOffset={monthStartOffset}
           onSelectDay={onSelectDay}
           currentMonth={currentMonth}

@@ -48,7 +48,7 @@ export function CSVPreviewStep({
       {/* Account Info Name Input */}
       {!hasBlockingErrors && (
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+          <label className="text-xs font-bold text-text-secondary uppercaser">
             Account Display Name
           </label>
           <Input
@@ -68,7 +68,7 @@ export function CSVPreviewStep({
         <div className="rounded-xl border border-danger/20 bg-danger-light p-4 text-danger flex items-start gap-3">
           <ShieldAlert className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <div className="space-y-1.5">
-            <h3 className="text-sm font-bold uppercase tracking-wider">
+            <h3 className="text-sm font-bold uppercaser">
               Import Blocked
             </h3>
             <p className="text-xs leading-relaxed text-text-primary">
@@ -92,7 +92,7 @@ export function CSVPreviewStep({
         <div className="rounded-xl border border-warning/20 bg-warning-light p-3 text-warning-text flex items-start gap-2.5">
           <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <h4 className="text-xs font-bold uppercase tracking-wider">
+            <h4 className="text-xs font-bold uppercaser">
               Import Warnings
             </h4>
             <ul className="list-disc pl-4 text-[11px] space-y-0.5 text-text-primary leading-normal">
@@ -109,10 +109,10 @@ export function CSVPreviewStep({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {/* Trades Count */}
           <div className="rounded-xl border border-border-primary bg-bg-secondary/40 p-3 shadow-sm flex flex-col justify-between min-h-[5.5rem]">
-            <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-text-tertiary uppercaser">
               Total Trades
             </span>
-            <span className="font-heading text-xl font-bold tracking-tight text-text-primary mt-1.5 tabular-nums">
+            <span className="font-heading text-xl font-bold text-text-primary mt-1.5 tabular-nums">
               {trade_count}
             </span>
             <span className="text-[10px] text-text-secondary font-medium">
@@ -122,7 +122,7 @@ export function CSVPreviewStep({
 
           {/* Date Range */}
           <div className="rounded-xl border border-border-primary bg-bg-secondary/40 p-3 shadow-sm flex flex-col justify-between min-h-[5.5rem] col-span-1 md:col-span-1">
-            <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-text-tertiary uppercaser">
               Date Range
             </span>
             <div className="text-sm font-bold text-text-primary mt-1.5 leading-snug">
@@ -140,11 +140,11 @@ export function CSVPreviewStep({
 
           {/* Net Profit */}
           <div className="rounded-xl border border-border-primary bg-bg-secondary/40 p-3 shadow-sm flex flex-col justify-between min-h-[5.5rem]">
-            <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-text-tertiary uppercaser">
               Net profit
             </span>
             <span
-              className={`font-heading text-xl font-bold tracking-tight mt-1.5 tabular-nums flex items-center gap-0.5 ${
+              className={`font-heading text-xl font-bold mt-1.5 tabular-nums flex items-center gap-0.5 ${
                 summary.total_profit >= 0 ? "text-success" : "text-danger"
               }`}
             >
@@ -166,7 +166,7 @@ export function CSVPreviewStep({
       <div className="rounded-xl border border-border-primary bg-bg-secondary/30 overflow-hidden">
         <div className="border-b border-border-primary bg-bg-secondary/60 px-4 py-2 flex items-center gap-2">
           <Server className="h-3.5 w-3.5 text-accent" />
-          <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
+          <span className="text-[11px] font-bold uppercaser text-text-secondary">
             Account Specifications
           </span>
         </div>
@@ -174,7 +174,7 @@ export function CSVPreviewStep({
         <div className="grid grid-cols-2 border-collapse">
           {/* Account Number */}
           <div className="border-r border-b border-border-primary p-3 space-y-1">
-            <span className="text-[10px] text-text-tertiary uppercase tracking-wider">Account ID</span>
+            <span className="text-[10px] text-text-tertiary uppercaser">Account ID</span>
             <div className="text-sm font-semibold text-text-primary tabular-nums">
               {account_meta.account_number || "Unknown"}
             </div>
@@ -183,7 +183,7 @@ export function CSVPreviewStep({
           {/* Currency */}
           <div className="border-b border-border-primary p-3 space-y-1 flex items-start justify-between">
             <div>
-              <span className="text-[10px] text-text-tertiary uppercase tracking-wider">Base Currency</span>
+              <span className="text-[10px] text-text-tertiary uppercaser">Base Currency</span>
               <div className="text-sm font-semibold text-text-primary">
                 {account_meta.currency || "USD"}
               </div>
@@ -193,7 +193,7 @@ export function CSVPreviewStep({
 
           {/* Broker Server */}
           <div className="border-r border-border-primary p-3 space-y-1">
-            <span className="text-[10px] text-text-tertiary uppercase tracking-wider">Server Name</span>
+            <span className="text-[10px] text-text-tertiary uppercaser">Server Name</span>
             <div className="text-sm font-semibold text-text-primary truncate">
               {account_meta.broker_server || "Unknown"}
             </div>
@@ -201,14 +201,14 @@ export function CSVPreviewStep({
 
           {/* Account Class */}
           <div className="p-3 space-y-1">
-            <span className="text-[10px] text-text-tertiary uppercase tracking-wider">Account Type</span>
+            <span className="text-[10px] text-text-tertiary uppercaser">Account Type</span>
             <div>
               {account_meta.account_type === "live" ? (
-                <span className="inline-flex rounded bg-badge-info-bg px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-badge-info-fg">
+                <span className="inline-flex rounded bg-badge-info-bg px-2 py-0.5 text-[9px] font-extrabold uppercaser text-badge-info-fg">
                   Live
                 </span>
               ) : (
-                <span className="inline-flex rounded bg-badge-warn-bg px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-badge-warn-fg">
+                <span className="inline-flex rounded bg-badge-warn-bg px-2 py-0.5 text-[9px] font-extrabold uppercaser text-badge-warn-fg">
                   Demo
                 </span>
               )}
@@ -221,7 +221,7 @@ export function CSVPreviewStep({
       {!hasBlockingErrors && trades.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+            <label className="text-xs font-bold text-text-secondary uppercaser">
               Parsed Trades Preview
             </label>
             <span className="text-[10px] text-text-tertiary font-medium">
@@ -233,7 +233,7 @@ export function CSVPreviewStep({
             <div className="max-h-[220px] overflow-y-auto overflow-x-auto scrollbar-thin">
               <table className="w-full min-w-[600px] text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-border-primary bg-bg-secondary/40 text-text-tertiary text-[10px] uppercase font-bold tracking-wider sticky top-0 z-10">
+                  <tr className="border-b border-border-primary bg-bg-secondary/40 text-text-tertiary text-[10px] uppercase font-boldr sticky top-0 z-10">
                     <th className="px-3 py-2">Symbol</th>
                     <th className="px-3 py-2">Type</th>
                     <th className="px-3 py-2">Lots</th>

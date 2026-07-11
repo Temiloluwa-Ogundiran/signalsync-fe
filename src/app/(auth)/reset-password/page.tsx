@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-auth-accent/10 text-auth-accent">
           <KeyRound className="h-7 w-7" />
         </span>
-        <h1 className="text-xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-xl font-bold text-text-primary">
           Reset Your Password
         </h1>
       </div>

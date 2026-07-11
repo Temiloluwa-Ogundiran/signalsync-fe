@@ -77,7 +77,7 @@ function VerifyEmailContent() {
         <div className="mb-5 flex justify-center">
           <XCircle className="h-12 w-12 text-danger" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-2xl font-bold text-text-primary">
           Invalid link
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
@@ -101,7 +101,7 @@ function VerifyEmailContent() {
           <CheckCircle2 className="h-12 w-12 text-success" />
         )}
       </div>
-      <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+      <h1 className="text-2xl font-bold text-text-primary">
         {isLoading
           ? "Verifying email…"
           : error
@@ -147,7 +147,7 @@ export default function VerifyEmailPage() {
             <div className="mb-5 flex justify-center">
               <Loader2 className="h-12 w-12 animate-spin text-ai-accent" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+            <h1 className="text-2xl font-bold text-text-primary">
               Loading…
             </h1>
           </div>

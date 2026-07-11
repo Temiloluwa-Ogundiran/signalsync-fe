@@ -263,7 +263,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
             height={40}
             className="h-10 w-10 object-contain mix-blend-multiply dark:mix-blend-screen"
           />
-          <h3 className="text-2xl font-bold tracking-tight text-text-primary">
+          <h3 className="text-2xl font-bold text-text-primary">
             MetaTrader 5
           </h3>
         </div>

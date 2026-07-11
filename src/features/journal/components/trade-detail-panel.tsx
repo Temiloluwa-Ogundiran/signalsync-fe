@@ -91,7 +91,7 @@ function StatGroup({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-2 text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+    <p className="mb-2 text-[0.7rem] font-semibold uppercase text-text-tertiary">
       {children}
     </p>
   );
@@ -145,7 +145,7 @@ function PnlHero({
         rail,
       )}
     >
-      <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+      <p className="text-[0.7rem] font-semibold uppercase text-text-tertiary">
         Net P&amp;L
       </p>
       <p className={cn("mt-0.5 text-2xl font-bold tabular-nums", tone)}>

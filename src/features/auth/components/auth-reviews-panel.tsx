@@ -104,23 +104,24 @@ export function AuthReviewsPanel() {
   };
 
   useEffect(() => {
+    const activeTimers = timers.current;
     const id = setInterval(() => {
       setPhase("out");
       const t = setTimeout(() => {
         setPage((p) => (p + 1) % PAGES);
         setPhase("in");
       }, OUT_MS);
-      timers.current.push(t);
+      activeTimers.push(t);
     }, ROTATE_MS);
     return () => {
       clearInterval(id);
-      timers.current.forEach(clearTimeout);
+      activeTimers.forEach(clearTimeout);
     };
   }, []);
 
   return (
     <div className="relative z-10 mx-auto w-full max-w-sm">
-      <h2 className="text-2xl font-bold leading-tight tracking-tight">
+      <h2 className="text-2xl font-bold leading-tight">
         Activate Your Personal AI Analyst
       </h2>
       <p className="mt-2 text-[0.85rem] leading-relaxed text-white/70">

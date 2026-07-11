@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * (info/warn), AI tag, and neutral chips.
  */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide whitespace-nowrap",
+  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[0.65rem] font-bold uppercase whitespace-nowrap",
   {
     variants: {
       variant: {

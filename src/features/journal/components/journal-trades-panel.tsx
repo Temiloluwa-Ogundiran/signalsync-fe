@@ -38,7 +38,7 @@ function JournalTradesPanelImpl({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-5 pt-2 pb-4">
-        <div className="grid grid-cols-[1fr_1fr_auto] gap-3 pb-2 text-[11px] font-medium tracking-wide text-text-secondary uppercase">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-3 pb-2 text-[11px] font-medium text-text-secondary uppercase">
           <span>Close Date</span>
           <span>Symbol</span>
           <span className="text-right">Net P&amp;L</span>

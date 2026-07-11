@@ -76,7 +76,7 @@ export function JournalMonthCalendar({
   return (
     <div className="rounded-2xl bg-card-bg p-4 ring-1 ring-hairline">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm font-semibold tracking-wide text-text-secondary">
+        <span className="text-sm font-semibold text-text-secondary">
           {monthLabel}
         </span>
         <div className="flex items-center gap-1">

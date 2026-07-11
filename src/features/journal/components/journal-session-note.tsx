@@ -75,7 +75,7 @@ export function JournalSessionNote({
             strokeWidth={2}
             className="text-text-secondary"
           />
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
+          <span className="text-[0.7rem] font-semibold uppercase text-text-secondary">
             Day note
           </span>
         </div>

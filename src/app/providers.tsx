@@ -18,12 +18,14 @@ import { hasUsableSession } from "@/lib/auth/auth-session";
 function SessionQuerySync() {
   const { data: session, status } = useSession();
   const queryClient = useQueryClient();
+  const hasSession = hasUsableSession(session);
+  const accessToken = session?.accessToken ?? null;
   const lastTokenRef = useRef<string | null>(null);
   const lastAuthStateRef = useRef<"authenticated" | "anonymous">("anonymous");
 
   useEffect(() => {
     const isAuthenticated =
-      status === "authenticated" && hasUsableSession(session);
+      status === "authenticated" && hasSession;
 
     if (!isAuthenticated) {
       if (lastAuthStateRef.current !== "anonymous") {
@@ -34,7 +36,7 @@ function SessionQuerySync() {
       return;
     }
 
-    const token = session.accessToken;
+    const token = accessToken;
     const authStateChanged = lastAuthStateRef.current !== "authenticated";
     const tokenChanged = token !== lastTokenRef.current;
 
@@ -45,7 +47,7 @@ function SessionQuerySync() {
     refreshAuthSensitiveQueries(queryClient);
     lastAuthStateRef.current = "authenticated";
     lastTokenRef.current = token;
-  }, [status, session?.accessToken, session?.error, queryClient]);
+  }, [status, hasSession, accessToken, queryClient]);
 
   return null;
 }

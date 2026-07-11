@@ -44,7 +44,7 @@ function NavItemRow({
       </span>
       <span className="flex-1 truncate">{item.label}</span>
       {item.comingSoon ? (
-        <span className="shrink-0 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-text-tertiary">
+        <span className="shrink-0 rounded-full bg-surface-subtle px-1.5 py-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
           Soon
         </span>
       ) : typeof item.count === "number" ? (
@@ -126,7 +126,7 @@ function NavGroupBlock({
               type="button"
               onClick={() => toggleGroup(groupKey)}
               aria-expanded={!collapsed}
-              className="group/hdr flex flex-1 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer"
+              className="group/hdr flex flex-1 items-center gap-1.5 text-xs font-semibold uppercaser text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer"
             >
               <ChevronDown
                 className={cn(
@@ -137,7 +137,7 @@ function NavGroupBlock({
               <span className="truncate">{group.header}</span>
             </button>
           ) : (
-            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercaser text-text-tertiary">
               {group.headerIcon ? (
                 <HugeiconsIcon
                   icon={group.headerIcon}
@@ -297,7 +297,7 @@ export function AppSwitcher({
         sideOffset={6}
         className="w-[200px] border-chrome-control-border bg-card-bg p-1"
       >
-        <p className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+        <p className="px-2 py-1.5 text-[11px] font-semibold uppercaser text-text-tertiary">
           Switch app
         </p>
         {apps.map((entry) => {

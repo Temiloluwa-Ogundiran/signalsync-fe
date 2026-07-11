@@ -54,7 +54,7 @@ export function JournalCoachsRead({
             strokeWidth={2}
             className="text-ai-accent"
           />
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-secondary">
+          <span className="text-[0.7rem] font-semibold uppercase text-text-secondary">
             Coach&apos;s Read
           </span>
         </div>

@@ -263,7 +263,7 @@ export function JournalAccountsPage() {
         {/* Page header — title + add-account action (when accounts exist;
             the empty state has its own primary CTA). */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-bold tracking-tight">Accounts</h1>
+          <h1 className="text-xl font-bold">Accounts</h1>
           {!isLoading && accounts.length > 0 ? (
             <Button
               type="button"
@@ -287,7 +287,7 @@ export function JournalAccountsPage() {
                 <Server className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-xl font-bold tracking-tight">
+                <h2 className="text-xl font-bold">
                   Connect your trading account
                 </h2>
                 <p className="text-sm text-text-tertiary leading-relaxed">
@@ -324,7 +324,6 @@ export function JournalAccountsPage() {
               const isCsv = account.import_method === "csv_upload";
               const isArchived = account.is_archived;
 
-              const isLive = account.account_type === "live";
               const statusTone = needsAttention
                 ? "danger"
                 : syncStatus.severity === "pending"
@@ -388,7 +387,7 @@ export function JournalAccountsPage() {
                           ) : null}
                         </div>
                       </div>
-                      <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                      <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercaser text-text-secondary">
                         <span
                           className={cn(
                             "h-1.5 w-1.5 rounded-full",
@@ -401,13 +400,13 @@ export function JournalAccountsPage() {
                                   : "bg-danger",
                           )}
                         />
-                        {isArchived ? "Archived" : isCsv ? "Imported" : isLive ? "Live" : "Demo"}
+                        {isArchived ? "Archived" : isCsv ? "Imported" : "MT5"}
                       </span>
                     </div>
 
                     {/* Balance — the hero metric */}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                      <p className="text-[10px] font-bold uppercaser text-text-tertiary">
                         Balance
                       </p>
                       <p className="mt-1 text-[28px] font-semibold leading-none text-text-primary tabular-nums">

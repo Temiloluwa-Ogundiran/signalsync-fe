@@ -42,7 +42,7 @@
   /* Text */
   --text-primary: #14181d; /* text-1 — primary */
   --text-secondary: #586271; /* text-2 — secondary (>=4.5:1 on white) */
-  --text-tertiary: #8b95a2; /* text-3 — decorative only */
+  --text-tertiary: #667180; /* text-3 — readable metadata */
   --text-muted: #b4bcc7;
   --footnote-online: #586271;
 
@@ -236,8 +236,8 @@
 
   /* Text: primary / secondary / tertiary per spec */
   --text-primary: #f4f4f5; /* number / primary */
-  --text-secondary: #71717a; /* label / secondary */
-  --text-tertiary: #52525b; /* meta / tertiary */
+  --text-secondary: #a1a1aa; /* label / secondary */
+  --text-tertiary: #8b95a2; /* readable metadata */
   --text-muted: #3f3f46;
 
   /* Accent: monochrome — primary actions are subtle-surface, not colored.

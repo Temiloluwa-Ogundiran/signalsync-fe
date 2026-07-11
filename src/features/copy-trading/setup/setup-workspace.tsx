@@ -181,7 +181,7 @@ export function SetupWorkspace({
     <>
       <div className="mx-auto max-w-3xl space-y-3">
         <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+          <p className="text-xs font-semibold uppercase text-text-tertiary">
             Guided setup
           </p>
           <h2 className="mt-1 text-xl font-bold text-text-primary">

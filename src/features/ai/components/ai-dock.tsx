@@ -182,7 +182,7 @@ export function AiDock() {
             <span className="font-heading text-sm font-bold text-ai-accent">
               Partna AI
             </span>
-            <span className="rounded-full bg-ai-soft-bg px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ai-accent">
+            <span className="rounded-full bg-ai-soft-bg px-1.5 py-0.5 text-[9px] font-bold uppercase text-ai-accent">
               Beta
             </span>
           </div>
@@ -253,7 +253,7 @@ export function AiDock() {
         {/* Account scope chip */}
         {!showHistory && accountLabel && (
           <div className="flex items-center gap-1.5 border-b border-border-secondary/40 px-4 py-2">
-            <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wide">
+            <span className="text-[10px] font-medium text-text-secondary uppercase">
               Scoped to
             </span>
             <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">

@@ -18,7 +18,7 @@ export function SettingsPageShell({
     <div className="p-4 pb-20 font-sans text-text-primary md:p-8 md:pb-8">
       <div className="mx-auto max-w-3xl space-y-6">
         <header className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+          <h1 className="text-xl font-bold">{title}</h1>
           {description && (
             <p className="text-sm text-text-secondary">{description}</p>
           )}

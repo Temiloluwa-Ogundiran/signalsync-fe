@@ -218,7 +218,7 @@ export function JournalTradeHistoryPage() {
       <JournalPageHeader
         showSyncMeta={false}
         leftContent={
-          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+          <h1 className="text-xl font-semibold text-text-primary">
             Trade View
           </h1>
         }

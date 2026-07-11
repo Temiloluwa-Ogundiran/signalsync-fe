@@ -109,7 +109,7 @@ export function ActivityItem({
             </Button>
           ) : (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+              <p className="text-xs font-semibold uppercase text-text-tertiary">
                 Source message
               </p>
               <p className="mt-2 whitespace-pre-wrap rounded-md border border-border-primary bg-card-bg p-3 text-sm leading-6 text-text-secondary">
@@ -151,7 +151,7 @@ function Detail({
   if (!entries.length) return null;
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+      <p className="text-xs font-semibold uppercase text-text-tertiary">
         {title}
       </p>
       <dl className="mt-2 space-y-1.5 text-sm">

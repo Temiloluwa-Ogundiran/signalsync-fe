@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useMemo } from "react";
 import { Upload, FileCode, AlertCircle, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCSVPlatforms } from "../../hooks/use-csv-import";
 import { toast } from "sonner";
 
@@ -32,7 +31,7 @@ export function CSVUploadStep({
   onFileSelect,
   isPending,
 }: CSVUploadStepProps) {
-  const { data: platforms = [], isLoading: isLoadingPlatforms } = useCSVPlatforms();
+  const { data: platforms = [] } = useCSVPlatforms();
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,7 +113,7 @@ export function CSVUploadStep({
         </p>
         
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+          <label className="text-xs font-bold text-text-secondary uppercaser">
             Timezone
           </label>
           <select
@@ -134,7 +133,7 @@ export function CSVUploadStep({
 
       {/* Drag & Drop Area */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+        <label className="text-xs font-bold text-text-secondary uppercaser">
           Upload Report
         </label>
         
@@ -170,7 +169,7 @@ export function CSVUploadStep({
             or click to browse your files
           </p>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-border-primary bg-bg-secondary px-3 py-1 text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border-primary bg-bg-secondary px-3 py-1 text-[10px] font-bold text-text-secondary uppercaser">
             <FileCode className="h-3 w-3 text-accent" />
             MetaTrader 5 (.xlsx) • Max 10MB
           </div>

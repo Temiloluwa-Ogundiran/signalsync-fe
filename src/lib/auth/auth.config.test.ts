@@ -33,6 +33,7 @@ test("authorized callback rejects protected routes when auth state is broken", (
     auth: {
       user: {
         id: "user-1",
+        onboardingCompleted: true,
       },
       accessToken: undefined,
       error: "RefreshAccessTokenError",
@@ -50,6 +51,7 @@ test("authorized callback redirects authenticated users away from login", () => 
     auth: {
       user: {
         id: "user-1",
+        onboardingCompleted: true,
       },
       accessToken: "access-token",
     } as never,

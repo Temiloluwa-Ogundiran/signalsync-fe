@@ -21,7 +21,7 @@ export function JournalSyncProgressBanner({
       role="status"
       aria-live="polite"
     >
-      {/* <p className="mb-2 text-xs font-medium text-text-secondary">{message}</p> */}
+      <p className="mb-2 text-xs font-medium text-text-secondary">{message}</p>
       <div
         className="relative h-1.5 w-full overflow-hidden rounded-full bg-bg-tertiary"
         aria-hidden

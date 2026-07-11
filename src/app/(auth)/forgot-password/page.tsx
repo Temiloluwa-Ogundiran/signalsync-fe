@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
           className="h-12 w-auto"
         />
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+          <h1 className="text-2xl font-bold text-text-primary">
             Forgot your password?
           </h1>
           <p className="text-sm text-text-secondary">

@@ -29,7 +29,7 @@ export function JournalWeekSummaryColumn({
             // as a distinct summary sidebar — not another column of days.
             className="flex flex-col justify-center rounded-lg bg-card-bg px-2.5 py-2 lg:min-h-0 lg:flex-1"
           >
-            <p className="text-[0.6rem] font-medium uppercase tracking-wide text-text-secondary">
+            <p className="text-[0.6rem] font-medium uppercase text-text-secondary">
               Week {index + 1}
             </p>
             <p

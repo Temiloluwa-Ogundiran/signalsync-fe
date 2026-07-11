@@ -23,7 +23,7 @@ export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
   const currency = useActiveAccountCurrency();
   return (
     <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-hairline">
-      <h3 className="mb-4 text-sm font-semibold tracking-wide text-text-secondary">
+      <h3 className="mb-4 text-sm font-semibold text-text-secondary">
         {summary.title}
       </h3>
 

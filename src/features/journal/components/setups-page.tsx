@@ -143,7 +143,7 @@ export function SetupsPage() {
     <div className="min-w-0 p-4 pb-20 font-sans text-text-primary md:p-8 md:pb-8">
       <div className="mx-auto max-w-2xl space-y-6">
         <header className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">Strategies</h1>
+          <h1 className="text-xl font-bold">Strategies</h1>
           <p className="text-sm text-text-secondary">
             Your playbook setups. Create the named strategies you trade, then
             tag each trade with one from the trade panel.

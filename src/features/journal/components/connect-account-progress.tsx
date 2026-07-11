@@ -17,7 +17,7 @@ export function ConnectAccountProgress() {
       </div>
 
       <div className="space-y-1.5">
-        <h3 className="text-lg font-semibold tracking-tight text-text-primary">
+        <h3 className="text-lg font-semibold text-text-primary">
           Verifying your MT5 account
         </h3>
         <p className="mx-auto max-w-xs text-sm text-text-secondary">

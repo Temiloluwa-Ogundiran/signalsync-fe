@@ -9,6 +9,7 @@ const JOURNAL_CELL_ICON_SRC = "/icons/journal/modal/journal.svg";
 interface JournalCalendarGridProps {
   dayStats: Record<number, JournalCalendarDayStat>;
   daysInMonth: number;
+  selectedDay: number;
   monthStartOffset: number;
   onSelectDay: (day: number) => void;
   currentMonth: Date;
@@ -32,6 +33,7 @@ function heatStyle(value: number) {
 export function JournalCalendarGrid({
   dayStats,
   daysInMonth,
+  selectedDay,
   monthStartOffset,
   onSelectDay,
   currentMonth,
@@ -70,7 +72,7 @@ export function JournalCalendarGrid({
         {DAY_NAMES.map((dayName) => (
           <div
             key={dayName}
-            className="py-1 text-center text-[0.6rem] sm:text-[0.68rem] font-medium uppercase tracking-wide text-text-secondary"
+            className="py-1 text-center text-[0.6rem] sm:text-[0.68rem] font-medium uppercase text-text-secondary"
           >
             {dayName}
           </div>
@@ -100,12 +102,16 @@ export function JournalCalendarGrid({
           return (
             <button
               key={`day-${day}`}
+              type="button"
+              aria-pressed={day === selectedDay}
               onClick={() => onSelectDay(day)}
               style={pnl !== 0 ? heatStyle(pnl) : undefined}
               className={cn(
                 "group relative flex min-h-[4.4rem] sm:min-h-[5rem] cursor-pointer flex-col rounded-lg border border-border-primary bg-(--calendar-cell-neutral) p-2 text-right transition-all hover:border-border-secondary active:scale-[0.97]",
                 day === todayDay &&
                   "ring-2 ring-(--calendar-selected-ring) ring-offset-0",
+                day === selectedDay && day !== todayDay &&
+                  "border-accent ring-2 ring-accent/40",
               )}
             >
               <div className="flex items-center justify-between w-full">
@@ -134,7 +140,7 @@ export function JournalCalendarGrid({
                 <div className="flex w-full flex-1 flex-col items-center justify-center text-center">
                   <p
                     className={cn(
-                      "text-[0.68rem] sm:text-xs md:text-sm font-bold tracking-tight tabular-nums",
+                      "text-[0.68rem] sm:text-xs md:text-sm font-bold tabular-nums",
                       pnl > 0 && "text-success",
                       pnl < 0 && "text-danger",
                       pnl === 0 && "text-text-secondary",

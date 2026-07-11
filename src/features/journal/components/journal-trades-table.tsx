@@ -55,7 +55,7 @@ export function JournalTradesTable({
   return (
     <table className="w-full table-fixed border-collapse text-sm">
       <thead>
-        <tr className="border-b border-hairline text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary [&>th]:whitespace-nowrap">
+        <tr className="border-b border-hairline text-[0.7rem] font-semibold uppercase text-text-tertiary [&>th]:whitespace-nowrap">
           <th className="w-[18%] py-2 pl-3 pr-4 text-left font-semibold">
             Time
           </th>

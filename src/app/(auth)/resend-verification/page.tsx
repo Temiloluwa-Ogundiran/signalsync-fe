@@ -19,7 +19,7 @@ export default async function ResendVerificationPage({
     <AuthCardShell>
     <div className="w-full">
       <div className="space-y-2 pb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-3xl font-bold text-text-primary">
           Resend verification email
         </h1>
         <p className="text-sm text-text-secondary">

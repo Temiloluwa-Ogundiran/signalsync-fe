@@ -37,7 +37,7 @@ export function AiGreeting({ firstName, onPromptClick }: AiGreetingProps) {
 
       {/* Starter prompts — one clean tappable list */}
       <div className="flex flex-col gap-2">
-        <p className="px-0.5 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
+        <p className="px-0.5 text-[11px] font-semibold uppercase text-text-tertiary">
           Try asking
         </p>
         {STARTER_PROMPTS.map((prompt) => (

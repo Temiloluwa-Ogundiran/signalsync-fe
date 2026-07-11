@@ -122,7 +122,7 @@ export function AiChatPage() {
               History
             </button>
             <span className="ml-auto inline-flex items-center gap-1.5">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-text-secondary">
+              <span className="text-[10px] font-medium uppercase text-text-secondary">
                 Scoped to
               </span>
               <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">
@@ -163,7 +163,7 @@ export function AiChatPage() {
         onClick={() => setHistoryOpen(false)}
         tabIndex={historyOpen ? 0 : -1}
         className={cn(
-          "fixed inset-0 z-nav-backdrop touch-none bg-black/60 transition-opacity duration-200 lg:hidden",
+          "fixed inset-0 z-nav-backdrop touch-none bg-overlay transition-opacity duration-200 lg:hidden",
           historyOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />

@@ -131,7 +131,7 @@ export function AppNav() {
           type="button"
           aria-label="Close menu"
           onClick={closeMobileNav}
-          className="fixed inset-x-0 bottom-0 top-header z-nav-backdrop touch-none bg-black/60 lg:hidden"
+          className="fixed inset-x-0 bottom-0 top-header z-nav-backdrop touch-none bg-overlay lg:hidden"
         />
       ) : null}
 

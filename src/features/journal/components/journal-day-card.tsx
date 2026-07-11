@@ -239,7 +239,7 @@ export function JournalDayCard({
 
         {/* Date — fixed width so the columns after it line up */}
         <div className="flex w-28 shrink-0 items-baseline gap-1.5 sm:w-[9.25rem]">
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+          <span className="text-[0.7rem] font-semibold uppercase text-text-tertiary">
             {weekday}
           </span>
           <span className="text-base font-bold text-text-primary">
@@ -249,7 +249,7 @@ export function JournalDayCard({
 
         {/* Net P&L — label + value, fixed width */}
         <span className="hidden w-44 shrink-0 items-baseline gap-1.5 md:flex">
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-text-tertiary">
+          <span className="text-[0.7rem] font-semibold uppercase text-text-tertiary">
             Net P&amp;L
           </span>
           <span

@@ -160,14 +160,14 @@ function ConnectAccountFlow() {
       <div className="overflow-y-auto scrollbar-thin">
         {step === "method" ? (
           <div className="mx-auto flex w-full max-w-[548px] flex-col px-6 pb-16 pt-6">
-            <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8E8E9A] dark:text-[#67677A]">
+            <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-[#8E8E9A] dark:text-[#67677A]">
               <span>Step 1 of 2</span>
             </div>
 
-            <DialogTitle className="text-[27px] font-semibold leading-[1.15] tracking-tight text-[#15151C] dark:text-[#ECECF1]">
+            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-[#15151C] dark:text-[#ECECF1]">
               Add trades
             </DialogTitle>
-            <p className="mt-1.5 text-[15px] tracking-tight text-[#5A5A67] dark:text-[#9C9CAB]">
+            <p className="mt-1.5 text-[15px] text-[#5A5A67] dark:text-[#9C9CAB]">
               Choose how you&apos;d like to bring your trades into the app.
             </p>
 
@@ -186,10 +186,10 @@ function ConnectAccountFlow() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold tracking-tight text-[#15151C] dark:text-[#ECECF1]">
+                  <span className="text-[13px] font-semibold text-[#15151C] dark:text-[#ECECF1]">
                     MetaTrader 5
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#6C4DF2] dark:text-[#8E72FF]">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercaser text-[#6C4DF2] dark:text-[#8E72FF]">
                     <BadgeCheck className="h-3 w-3" />
                     Supported
                   </span>
@@ -222,12 +222,12 @@ function ConnectAccountFlow() {
             )}
           >
             {!csvReimportAccountId && (
-              <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8E8E9A] dark:text-[#67677A]">
+              <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-[#8E8E9A] dark:text-[#67677A]">
                 <span>Step 2 of 2</span>
               </div>
             )}
 
-            <DialogTitle className="text-[27px] font-semibold leading-[1.15] tracking-tight text-[#15151C] dark:text-[#ECECF1]">
+            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-[#15151C] dark:text-[#ECECF1]">
               {selected === "api"
                 ? "Connect account"
                 : csvReimportAccountId
@@ -310,16 +310,16 @@ function MethodSelector({
             {/* Text */}
             <span className="min-w-0">
               <span className="flex flex-wrap items-center gap-2">
-                <span className="text-[15.5px] font-semibold tracking-tight text-[#15151C] dark:text-[#ECECF1]">
+                <span className="text-[15.5px] font-semibold text-[#15151C] dark:text-[#ECECF1]">
                   {method.title}
                 </span>
                 {method.recommended && (
-                  <span className="rounded-md bg-[#2E7CF6] px-2 py-0.5 text-[11px] font-semibold tracking-tight text-white">
+                  <span className="rounded-md bg-[#2E7CF6] px-2 py-0.5 text-[11px] font-semibold text-white">
                     Recommended
                   </span>
                 )}
                 {method.disabled && (
-                  <span className="rounded-full border border-[#DCDCE5] bg-[#F6F6F9] px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-[#8E8E9A] dark:border-[#30303C] dark:bg-[#1E1E27] dark:text-[#67677A]">
+                  <span className="rounded-full border border-[#DCDCE5] bg-[#F6F6F9] px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercaser text-[#8E8E9A] dark:border-[#30303C] dark:bg-[#1E1E27] dark:text-[#67677A]">
                     Soon
                   </span>
                 )}

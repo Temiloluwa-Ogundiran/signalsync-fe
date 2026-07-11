@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Database, ShieldCheck, RefreshCw } from "lucide-react";
+import { Database, ShieldCheck, RefreshCw } from "lucide-react";
 import type { CSVPreviewResponse } from "../../types";
 
 interface CSVConfirmStepProps {
@@ -17,7 +17,7 @@ export function CSVConfirmStep({
   isPending,
   reimportAccountName,
 }: CSVConfirmStepProps) {
-  const { trade_count, account_meta } = preview;
+  const { trade_count } = preview;
 
   return (
     <div className="space-y-6">
@@ -38,7 +38,7 @@ export function CSVConfirmStep({
 
         <div className="border-t border-border-primary/60 pt-4 flex justify-around text-left">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-text-tertiary uppercase tracking-wider block font-bold">
+            <span className="text-[10px] text-text-tertiary uppercaser block font-bold">
               Account Name
             </span>
             <span className="text-sm font-bold text-text-primary">
@@ -47,7 +47,7 @@ export function CSVConfirmStep({
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-[10px] text-text-tertiary uppercase tracking-wider block font-bold">
+            <span className="text-[10px] text-text-tertiary uppercaser block font-bold">
               Trades To Scan
             </span>
             <span className="text-sm font-bold text-text-primary tabular-nums">
@@ -59,7 +59,7 @@ export function CSVConfirmStep({
 
       {/* Rules list */}
       <div className="space-y-4 rounded-xl border border-border-primary bg-bg-secondary/20 p-4">
-        <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+        <h4 className="text-xs font-bold text-text-secondary uppercaser">
           Import Guidelines
         </h4>
         

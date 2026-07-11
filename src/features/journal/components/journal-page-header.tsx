@@ -151,7 +151,7 @@ export function JournalPageHeader({
       {/* Left: muted sync metadata (dashboard) or custom content (other pages) */}
       <div className="flex min-w-0 flex-col gap-1">
         {title ? (
-          <h1 className="text-xl font-semibold tracking-tight text-text-primary">
+          <h1 className="text-xl font-semibold text-text-primary">
             {title}
           </h1>
         ) : null}
@@ -273,7 +273,7 @@ function AccountSelector({
       >
         {accounts.length ? (
           <>
-            <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+            <p className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercaser text-text-secondary">
               My accounts
             </p>
             <div className="max-h-64 overflow-y-auto">

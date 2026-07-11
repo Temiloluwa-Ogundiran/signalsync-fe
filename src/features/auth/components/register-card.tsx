@@ -39,7 +39,7 @@ export function RegisterCard() {
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-auth-accent/10 text-auth-accent">
           <MailCheck className="h-7 w-7" />
         </div>
-        <h1 className="text-xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-xl font-bold text-text-primary">
           Check your email
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -84,7 +84,7 @@ export function RegisterCard() {
           className="h-12 w-auto"
         />
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+          <h1 className="text-2xl font-bold text-text-primary">
             Create your account
           </h1>
           <p className="text-sm text-text-secondary">
