@@ -41,7 +41,7 @@ export default function RootLayout({
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname;var AUTH=/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=AUTH?m:(t==='dark'||(t==='system'&&m));document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`,
+            __html: `(function(){try{var p=location.pathname;var AUTH=/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=AUTH?m:(p==='/'?false:(t==='dark'||(t==='system'&&m)));document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`,
           }}
         />
       </head>
