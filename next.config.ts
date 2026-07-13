@@ -19,7 +19,7 @@ const securityHeaders = [
   {
     // Report-only for the first deployment week — switch key to
     // "Content-Security-Policy" once logs show no violations.
-    key: "Content-Security-Policy-Report-Only",
+    key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",

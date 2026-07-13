@@ -29,16 +29,6 @@ export interface VerifyEmailResponse {
   // Present on a fresh verification — the backend auto-logs the user in so the
   // frontend can seed a session without a second manual login. Absent when the
   // email was already verified.
-  access_token?: string | null;
-  access_token_expiry_minutes?: number | null;
-  refresh_token?: string | null;
-  user?: {
-    id: string;
-    email: string;
-    display_name: string | null;
-    avatar_url?: string | null;
-    is_email_verified: boolean;
-  } | null;
 }
 
 export interface ResendVerificationResponse {

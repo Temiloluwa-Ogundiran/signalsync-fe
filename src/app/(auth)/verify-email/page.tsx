@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ function VerifyEmailContent() {
   const [error, setError] = useState<string | null>(null);
   // True once we've started auto-logging the user in (so we show "Signing you
   // in…" and don't flash the manual "Continue to Login" button).
-  const [autoLogin, setAutoLogin] = useState(false);
+  const autoLogin = false;
   // True once verified + session seeded — show a brief "Email verified!" beat
   // before navigating into the app.
   const [verified, setVerified] = useState(false);
@@ -31,35 +30,11 @@ function VerifyEmailContent() {
     verifiedRef.current = true;
 
     verifyEmail(token)
-      .then(async (data) => {
+      .then((data) => {
         setMessage(data.message || "Your email has been successfully verified.");
+        setVerified(true);
+        setTimeout(() => router.replace("/login?verified=1"), 1500);
 
-        // Fresh verification returns a session — log the user straight in.
-        if (data.access_token && data.user) {
-          setAutoLogin(true);
-          const result = await signIn("credentials", {
-            prelogin: JSON.stringify({
-              accessToken: data.access_token,
-              refreshToken: data.refresh_token ?? "",
-              accessTokenExpiryMinutes: data.access_token_expiry_minutes ?? 30,
-              user: data.user,
-            }),
-            redirect: false,
-          });
-          if (result?.ok) {
-            // Show a brief "Email verified!" confirmation, then go to the app.
-            setIsLoading(false);
-            setAutoLogin(false);
-            setVerified(true);
-            setTimeout(() => {
-              router.replace("/dashboard");
-              router.refresh();
-            }, 1500);
-            return;
-          }
-          // Seeding the session failed — fall back to the manual login button.
-          setAutoLogin(false);
-        }
       })
       .catch((err) => {
         setError(
