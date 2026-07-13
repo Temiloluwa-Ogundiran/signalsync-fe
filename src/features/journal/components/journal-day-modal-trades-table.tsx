@@ -152,6 +152,8 @@ export function JournalDayModalTradesTable({
     [onOpenTradeJournal, currency],
   );
 
+  // TanStack Table intentionally returns non-memoizable functions.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: rows,
     columns,

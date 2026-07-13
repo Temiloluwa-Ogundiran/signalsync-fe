@@ -26,6 +26,7 @@ const eslintConfig = defineConfig([
       "boundaries/elements": [
         { type: "app", pattern: "src/app/**" },
         { type: "features", pattern: "src/features/*", capture: ["feature"] },
+        { type: "shell", pattern: "src/components/layout/**" },
         {
           type: "shared",
           pattern: [
@@ -39,15 +40,35 @@ const eslintConfig = defineConfig([
     },
     rules: {
       "boundaries/dependencies": [
-        "warn",
+        "error",
         {
           default: "disallow",
           rules: [
             {
               from: { type: "app" },
-              allow: { to: { type: ["app", "features", "shared"] } },
+              allow: { to: { type: ["app", "shell", "features", "shared"] } },
             },
             { from: { type: "features" }, allow: { to: { type: "shared" } } },
+            {
+              from: { type: "shell" },
+              allow: { to: { type: ["shell", "features", "shared"] } },
+            },
+            {
+              from: { type: "features", captured: { feature: "ai" } },
+              allow: { to: { type: "features", captured: { feature: "journal" } } },
+            },
+            {
+              from: { type: "features", captured: { feature: "journal" } },
+              allow: { to: { type: "features", captured: { feature: "ai" } } },
+            },
+            {
+              from: { type: "features", captured: { feature: "onboarding" } },
+              allow: { to: { type: "features", captured: { feature: "settings" } } },
+            },
+            {
+              from: { type: "features", captured: { feature: "settings" } },
+              allow: { to: { type: "features", captured: { feature: "journal" } } },
+            },
             {
               // a feature may import its own slice
               from: { type: "features" },

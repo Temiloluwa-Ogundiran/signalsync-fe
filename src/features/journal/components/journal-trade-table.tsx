@@ -241,6 +241,8 @@ export function JournalTradeTable({
     return [...PINNED_COLUMN_IDS, ...dataOrder, ...missing];
   }, [columnOrder]);
 
+  // TanStack Table intentionally returns non-memoizable functions.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: filteredRows,
     columns,
