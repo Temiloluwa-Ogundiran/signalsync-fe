@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { journalTagsApi } from "../api/journal-tags.api";
 import { invalidateJournalAnalyticsForAccount } from "./use-journal-analytics";
 
-export const JOURNAL_TAGS_KEYS = {
+const JOURNAL_TAGS_KEYS = {
   config: () => ["journal-tags", "config"] as const,
   tradeTags: (tradeId: string) => ["journal-tags", "trade", tradeId] as const,
 };
@@ -47,7 +47,12 @@ export function useUpdateTagGroup() {
       groupId: string;
       name?: string;
       color?: string;
-    }) => journalTagsApi.updateGroup(groupId, { name, color }, session?.accessToken),
+    }) =>
+      journalTagsApi.updateGroup(
+        groupId,
+        { name, color },
+        session?.accessToken,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
@@ -89,19 +94,6 @@ export function useCreateTag() {
   return useMutation({
     mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
       journalTagsApi.createTag(groupId, name, session?.accessToken),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
-    },
-  });
-}
-
-export function useUpdateTag() {
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ tagId, name }: { tagId: string; name: string }) =>
-      journalTagsApi.updateTag(tagId, name, session?.accessToken),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: JOURNAL_TAGS_KEYS.config() });
     },
@@ -227,7 +219,7 @@ export function useUpdateTradeAssessment(accountId?: string) {
       journalTagsApi.updateTradeAssessment(
         tradeId,
         { execution_quality, setup_quality, discipline_score },
-        session?.accessToken
+        session?.accessToken,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({

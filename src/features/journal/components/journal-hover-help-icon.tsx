@@ -6,7 +6,7 @@ import { CircleHelp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-export type JournalHoverHelpSide = "above" | "below";
+type JournalHoverHelpSide = "above" | "below";
 
 export interface JournalHoverHelpIconProps {
   ariaLabel: string;

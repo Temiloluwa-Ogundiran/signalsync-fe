@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { csvImportApi } from "../api/csv-import.api";
 import { JOURNAL_ACCOUNT_KEYS } from "./use-journal-accounts";
 
-export const CSV_IMPORT_KEYS = {
+const CSV_IMPORT_KEYS = {
   all: ["csv-import"] as const,
   platforms: () => ["csv-import", "platforms"] as const,
 };
@@ -22,7 +22,11 @@ export function useCSVPreview() {
   const { data: session } = useSession();
 
   return useMutation({
-    mutationFn: (payload: { file: File; platformId: string; timezone: string }) =>
+    mutationFn: (payload: {
+      file: File;
+      platformId: string;
+      timezone: string;
+    }) =>
       csvImportApi.previewImport(
         payload.file,
         payload.platformId,
@@ -43,8 +47,7 @@ export function useCSVConfirm() {
       timezone: string;
       displayName: string;
       accountId?: string;
-    }) =>
-      csvImportApi.confirmImport(payload, session?.accessToken as string),
+    }) => csvImportApi.confirmImport(payload, session?.accessToken as string),
     onSuccess: () => {
       // Invalidate journal accounts queries to refresh listing
       queryClient.invalidateQueries({

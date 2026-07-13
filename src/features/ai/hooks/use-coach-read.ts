@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { aiApi } from "../api/ai.api";
 import type { CoachRead } from "../types";
 
-export const COACH_READ_KEYS = {
+const COACH_READ_KEYS = {
   all: ["ai-coach-read"] as const,
   day: (accountId: string, date: string) =>
     ["ai-coach-read", accountId, date] as const,
@@ -23,7 +23,12 @@ export function useCoachRead(
   return useQuery<CoachRead>({
     queryKey: COACH_READ_KEYS.day(accountId ?? "", date ?? ""),
     queryFn: () =>
-      aiApi.getCoachRead(accountId as string, date as string, undefined, session?.accessToken),
+      aiApi.getCoachRead(
+        accountId as string,
+        date as string,
+        undefined,
+        session?.accessToken,
+      ),
     enabled: status === "authenticated" && !!accountId && !!date && enabled,
     staleTime: 5 * 60_000,
   });
@@ -35,7 +40,12 @@ export function useRefreshCoachRead(accountId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation<CoachRead, Error, string>({
     mutationFn: (date: string) =>
-      aiApi.getCoachRead(accountId as string, date, { refresh: true }, session?.accessToken),
+      aiApi.getCoachRead(
+        accountId as string,
+        date,
+        { refresh: true },
+        session?.accessToken,
+      ),
     onSuccess: (data) => {
       if (accountId) {
         queryClient.setQueryData(

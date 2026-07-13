@@ -44,7 +44,7 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-export interface NavGroupAction {
+interface NavGroupAction {
   icon: IconSvgElement;
   label: string;
   onClick: () => void;
@@ -153,9 +153,21 @@ export function buildNavRegistry(actionFns: {
         {
           items: [
             { icon: Home04Icon, label: "Overview", route: "/copy-trading" },
-            { icon: StrategyIcon, label: "Routes", route: "/copy-trading/routes" },
-            { icon: Clock01Icon, label: "Activity", route: "/copy-trading/activity" },
-            { icon: Settings01Icon, label: "Settings", route: "/copy-trading/settings" },
+            {
+              icon: StrategyIcon,
+              label: "Routes",
+              route: "/copy-trading/routes",
+            },
+            {
+              icon: Clock01Icon,
+              label: "Activity",
+              route: "/copy-trading/activity",
+            },
+            {
+              icon: Settings01Icon,
+              label: "Settings",
+              route: "/copy-trading/settings",
+            },
           ],
         },
       ],

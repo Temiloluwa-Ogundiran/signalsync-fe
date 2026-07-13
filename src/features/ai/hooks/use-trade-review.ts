@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { aiApi } from "../api/ai.api";
 import type { TradeReview } from "../types";
 
-export const TRADE_REVIEW_KEYS = {
+const TRADE_REVIEW_KEYS = {
   all: ["ai-trade-review"] as const,
   trade: (tradeId: string) => ["ai-trade-review", tradeId] as const,
 };

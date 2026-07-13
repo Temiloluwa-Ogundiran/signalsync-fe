@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getPasswordStrength,
   PASSWORD_POLICY_MESSAGE,
   isStrongPassword,
   registerPasswordSchema,
-} from "./password-policy.ts";
-import { getPasswordStrength } from "../../../lib/validation/password-policy.ts";
+} from "../../../lib/validation/password-policy.ts";
 
 test("isStrongPassword rejects weak passwords", () => {
   assert.equal(isStrongPassword("password"), false);

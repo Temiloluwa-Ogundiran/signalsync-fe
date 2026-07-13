@@ -18,7 +18,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { resetPassword } from "../api/auth.api";
-import { PASSWORD_POLICY_MESSAGE, registerPasswordSchema } from "../lib/password-policy";
+import {
+  PASSWORD_POLICY_MESSAGE,
+  registerPasswordSchema,
+} from "@/lib/validation/password-policy";
 
 const schema = z
   .object({
@@ -43,7 +46,9 @@ export function ResetPasswordForm() {
 
   async function onSubmit(values: z.infer<typeof schema>) {
     if (!token) {
-      form.setError("root", { message: "Reset token is missing. Please use the link from your email." });
+      form.setError("root", {
+        message: "Reset token is missing. Please use the link from your email.",
+      });
       return;
     }
     setIsLoading(true);
@@ -68,7 +73,9 @@ export function ResetPasswordForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {form.formState.errors.root && (
-          <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
+          <p className="text-sm text-destructive">
+            {form.formState.errors.root.message}
+          </p>
         )}
         <FormField
           control={form.control}
@@ -101,7 +108,9 @@ export function ResetPasswordForm() {
                     ))}
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-secondary">Password strength:</span>
+                    <span className="text-text-secondary">
+                      Password strength:
+                    </span>
                     <span className={strength.textClass}>{strength.label}</span>
                   </div>
                 </div>
@@ -164,8 +173,16 @@ function passwordStrength(pw: string): {
     { label: "Too short", barClass: "bg-danger", textClass: "text-danger" },
     { label: "Weak", barClass: "bg-danger", textClass: "text-danger" },
     { label: "Fair", barClass: "bg-warning", textClass: "text-warning" },
-    { label: "Good", barClass: "bg-kpi-metric-positive", textClass: "text-kpi-metric-positive" },
-    { label: "Strong", barClass: "bg-kpi-metric-positive", textClass: "text-kpi-metric-positive" },
+    {
+      label: "Good",
+      barClass: "bg-kpi-metric-positive",
+      textClass: "text-kpi-metric-positive",
+    },
+    {
+      label: "Strong",
+      barClass: "bg-kpi-metric-positive",
+      textClass: "text-kpi-metric-positive",
+    },
   ][score];
   return { score, ...meta };
 }

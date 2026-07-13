@@ -9,7 +9,7 @@ import { useState } from "react";
 import {
   PASSWORD_POLICY_MESSAGE,
   registerPasswordSchema,
-} from "../lib/password-policy";
+} from "@/lib/validation/password-policy";
 import { PasswordStrength } from "./password-strength";
 
 import {

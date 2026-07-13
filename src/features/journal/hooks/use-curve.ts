@@ -2,9 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
 
-export const CURVE_KEYS = {
-  curve: (accountId?: string, fromDate?: string, toDate?: string, granularity?: string) =>
-    ["journal-curve", accountId, fromDate, toDate, granularity] as const,
+const CURVE_KEYS = {
+  curve: (
+    accountId?: string,
+    fromDate?: string,
+    toDate?: string,
+    granularity?: string,
+  ) => ["journal-curve", accountId, fromDate, toDate, granularity] as const,
 };
 
 interface UseCurveParams {

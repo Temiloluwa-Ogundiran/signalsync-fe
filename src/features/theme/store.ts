@@ -31,7 +31,7 @@ function applyResolved(resolved: ResolvedTheme) {
   else root.classList.remove("dark");
 }
 
-export function applyTheme(theme: ThemePreference) {
+function applyTheme(theme: ThemePreference) {
   applyResolved(resolveTheme(theme));
 }
 

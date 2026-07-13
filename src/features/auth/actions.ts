@@ -1,39 +1,7 @@
 "use server";
 
-import { signIn, signOut } from "@/lib/auth/auth";
-import { AuthError } from "next-auth";
 import { registerUser } from "@/features/auth/api/auth.api";
 import { ApiException, extractValidationFieldErrors } from "@/lib/api/types";
-
-function getCredentialsErrorMessage(error: AuthError) {
-  const cause = error.cause;
-  if (
-    cause &&
-    typeof cause === "object" &&
-    "err" in cause &&
-    cause.err instanceof Error
-  ) {
-    return cause.err.message;
-  }
-
-  return "Invalid credentials.";
-}
-
-export async function loginAction(formData: FormData) {
-  try {
-    await signIn("credentials", formData);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: getCredentialsErrorMessage(error) };
-        default:
-          return { error: "Something went wrong." };
-      }
-    }
-    throw error;
-  }
-}
 
 export async function registerAction(data: {
   display_name: string;
@@ -53,8 +21,4 @@ export async function registerAction(data: {
     }
     return { error: "An unexpected error occurred" };
   }
-}
-
-export async function logoutAction() {
-  await signOut();
 }

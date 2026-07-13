@@ -14,7 +14,7 @@ import {
 import { JournalTagSelector } from "./journal-tag-selector";
 import { Badge } from "@/components/ui/badge";
 
-export type TradeOutcome = "win" | "loss" | "be";
+type TradeOutcome = "win" | "loss" | "be";
 
 export interface TradeLineData {
   id: string;
@@ -115,7 +115,9 @@ function TradeRow({
       <td className="py-2.5 pr-4 font-mono text-text-secondary tabular-nums">
         {trade.time}
       </td>
-      <td className="py-2.5 pr-4 font-bold text-text-primary">{trade.symbol}</td>
+      <td className="py-2.5 pr-4 font-bold text-text-primary">
+        {trade.symbol}
+      </td>
       <td className="py-2.5 pr-4">
         <Badge variant="neutral">{trade.direction}</Badge>
       </td>
@@ -160,7 +162,11 @@ function TradeRow({
                     title="Add tag"
                     className="inline-flex items-center gap-1 rounded border border-dashed border-hairline px-1.5 py-0.5 text-[0.65rem] font-semibold text-text-tertiary transition-colors hover:border-border-secondary hover:text-text-secondary"
                   >
-                    <HugeiconsIcon icon={Add01Icon} size={11} strokeWidth={2.5} />
+                    <HugeiconsIcon
+                      icon={Add01Icon}
+                      size={11}
+                      strokeWidth={2.5}
+                    />
                     Tag
                   </button>
                 }

@@ -24,11 +24,7 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
-import {
-  ApiException,
-  FastAPIErrorResponse,
-  normalizeError,
-} from "./types";
+import { ApiException, FastAPIErrorResponse, normalizeError } from "./types";
 import { resolveAuthBackendUrl } from "@/lib/auth/auth-backend-url";
 
 const API_BASE_URL =
@@ -38,10 +34,11 @@ const API_BASE_URL =
 
 const REQUEST_TIMEOUT = 30_000;
 
-let pendingSessionRefresh: Promise<{ accessToken?: string } | null> | null = null;
+let pendingSessionRefresh: Promise<{ accessToken?: string } | null> | null =
+  null;
 
 function getAuthorizationToken(
-  config?: InternalAxiosRequestConfig
+  config?: InternalAxiosRequestConfig,
 ): string | null {
   const authorization = config?.headers?.Authorization;
   if (typeof authorization !== "string") {
@@ -106,7 +103,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 apiClient.interceptors.response.use(
@@ -142,8 +139,8 @@ apiClient.interceptors.response.use(
         message: isTimeout
           ? "The request is still taking longer than expected. Please check your accounts list in a moment."
           : msg.includes("ECONNREFUSED") || msg.includes("Failed to fetch")
-          ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
-          : "Network error. Please check your internet connection.",
+            ? `Cannot connect to backend at ${API_BASE_URL}. Is the server running?`
+            : "Network error. Please check your internet connection.",
       });
     }
 
@@ -181,7 +178,7 @@ apiClient.interceptors.response.use(
     }
 
     throw new ApiException(normalizeError(status, data));
-  }
+  },
 );
 
 /**
@@ -197,5 +194,4 @@ export function withAuth(accessToken?: string | null) {
   };
 }
 
-export { apiClient };
 export default apiClient;

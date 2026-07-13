@@ -7,7 +7,7 @@ export interface JournalCalendarDayStat {
   hasJournalActivity: boolean;
 }
 
-export type TradingPlatform = "MT5";
+type TradingPlatform = "MT5";
 
 export interface JournalAccountConnectFormValues {
   broker_login: string;
@@ -74,12 +74,12 @@ export interface JournalAccountSyncStatus {
   action: string | null;
 }
 
-export interface JournalAccountSyncImmediateResult {
+interface JournalAccountSyncImmediateResult {
   inserted_trades: number;
   touched_trading_dates: number;
 }
 
-export interface JournalAccountSyncQueuedResult {
+interface JournalAccountSyncQueuedResult {
   status: string;
   task_id?: string | null;
   mode?: "verify" | "sync";
@@ -101,7 +101,7 @@ export interface JournalAnalyticsCalendarDay {
   has_journal_activity?: boolean;
 }
 
-export interface JournalAnalyticsCalendarResponse {
+interface JournalAnalyticsCalendarResponse {
   month: string;
   days: JournalAnalyticsCalendarDay[];
 }
@@ -152,7 +152,7 @@ export interface JournalAnalyticsInstrumentItem {
   avg_mae?: number | null;
 }
 
-export interface JournalAnalyticsInstrumentsResponse {
+interface JournalAnalyticsInstrumentsResponse {
   instruments: JournalAnalyticsInstrumentItem[];
 }
 
@@ -167,13 +167,6 @@ export interface JournalAnalyticsTimePerformancePoint {
 export interface JournalAnalyticsTimePerformanceResponse {
   hourly: JournalAnalyticsTimePerformancePoint[];
   daily: JournalAnalyticsTimePerformancePoint[];
-}
-
-export interface JournalMonthHeaderStats {
-  trades: number;
-  wins: number;
-  profits: number;
-  percent: number;
 }
 
 export type JournalWidgetId =
@@ -198,7 +191,7 @@ export interface JournalTradesPanelRow {
   holdTime: string;
 }
 
-export interface JournalOpenPosition {
+interface JournalOpenPosition {
   position_id: string;
   symbol: string;
   side: "buy" | "sell";
@@ -218,14 +211,7 @@ export interface JournalOpenPositionListResponse {
   items: JournalOpenPosition[];
 }
 
-export interface JournalOpenPositionsPanelRow {
-  id: string;
-  openDate: string;
-  symbol: string;
-  floatingPnl: number;
-}
-
-export type JournalMessageType =
+type JournalMessageType =
   | "text"
   | "voice"
   | "image"
@@ -233,7 +219,7 @@ export type JournalMessageType =
   | "prompt"
   | "ai_response";
 
-export interface JournalAttachment {
+interface JournalAttachment {
   id: string;
   storage_path: string;
   media_type: string;
@@ -270,7 +256,7 @@ export interface JournalCreateMessagePayload {
   messageType?: JournalMessageType;
 }
 
-export interface JournalDailyTradeChip {
+interface JournalDailyTradeChip {
   trade_id: string;
   symbol: string;
   direction: "buy" | "sell";
@@ -375,7 +361,7 @@ export interface TagGroup {
   tags: Tag[];
 }
 
-export interface CSVPreviewAccountMeta {
+interface CSVPreviewAccountMeta {
   account_number: string | null;
   currency: string | null;
   broker_server: string | null;
@@ -385,7 +371,7 @@ export interface CSVPreviewAccountMeta {
   current_balance: number | null;
 }
 
-export interface CSVPreviewTrade {
+interface CSVPreviewTrade {
   broker_trade_id: string;
   symbol: string;
   direction: "buy" | "sell";
@@ -401,7 +387,7 @@ export interface CSVPreviewTrade {
   tp: number | null;
 }
 
-export interface CSVParseError {
+interface CSVParseError {
   row_number: number;
   column: string | null;
   message: string;
@@ -438,8 +424,6 @@ export interface PlatformInfo {
   max_file_size_mb: number;
 }
 
-
-
 // ============================================================================
 // Unified Curve Types (Phase 2)
 // ============================================================================
@@ -451,11 +435,11 @@ export interface CurveDailyPoint {
   is_baseline?: boolean; // true for the synthetic $0 baseline (first day - 1)
 }
 
-export interface CurveDailyResponse {
+interface CurveDailyResponse {
   points: CurveDailyPoint[];
 }
 
-export interface CurveIntradayPoint {
+interface CurveIntradayPoint {
   i: number; // sequence index (0, 1, 2, ...)
   t: string; // account-local close time (ISO) — for plotting by real time
   symbol?: string | null; // closing trade's symbol (null at the baseline)
@@ -476,7 +460,7 @@ export interface CurveIntradayDay {
   points: CurveIntradayPoint[]; // zero-baselined (i=0, cumulative_pnl=0.0 prepended)
 }
 
-export interface CurveIntradayResponse {
+interface CurveIntradayResponse {
   days: CurveIntradayDay[];
 }
 

@@ -6,7 +6,7 @@ export const journalTagsApi = {
   getConfig: async (token?: string): Promise<TagGroup[]> => {
     const { data } = await apiClient.get<TagGroup[]>(
       "/journal/tags/config",
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -15,12 +15,12 @@ export const journalTagsApi = {
   createGroup: async (
     name: string,
     color?: string,
-    token?: string
+    token?: string,
   ): Promise<TagGroup> => {
     const { data } = await apiClient.post<TagGroup>(
       "/journal/tags/groups",
       { name, color: color || undefined },
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -28,12 +28,12 @@ export const journalTagsApi = {
   updateGroup: async (
     groupId: string,
     payload: { name?: string; color?: string },
-    token?: string
+    token?: string,
   ): Promise<TagGroup> => {
     const { data } = await apiClient.put<TagGroup>(
       `/journal/tags/groups/${groupId}`,
       payload,
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -46,7 +46,7 @@ export const journalTagsApi = {
     await apiClient.put(
       "/journal/tags/groups/reorder",
       { ids },
-      withAuth(token)
+      withAuth(token),
     );
   },
 
@@ -54,25 +54,12 @@ export const journalTagsApi = {
   createTag: async (
     groupId: string,
     name: string,
-    token?: string
+    token?: string,
   ): Promise<Tag> => {
     const { data } = await apiClient.post<Tag>(
       `/journal/tags/groups/${groupId}/tags`,
       { name },
-      withAuth(token)
-    );
-    return data;
-  },
-
-  updateTag: async (
-    tagId: string,
-    name: string,
-    token?: string
-  ): Promise<Tag> => {
-    const { data } = await apiClient.put<Tag>(
-      `/journal/tags/${tagId}`,
-      { name },
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -89,7 +76,7 @@ export const journalTagsApi = {
   getTradeTags: async (tradeId: string, token?: string): Promise<Tag[]> => {
     const { data } = await apiClient.get<Tag[]>(
       `/journal/trades/${tradeId}/tags`,
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -97,12 +84,12 @@ export const journalTagsApi = {
   updateTradeTags: async (
     tradeId: string,
     tagIds: string[],
-    token?: string
+    token?: string,
   ): Promise<Tag[]> => {
     const { data } = await apiClient.put<Tag[]>(
       `/journal/trades/${tradeId}/tags`,
       { tag_ids: tagIds },
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -111,12 +98,12 @@ export const journalTagsApi = {
   updateTradeRating: async (
     tradeId: string,
     rating: number,
-    token?: string
+    token?: string,
   ): Promise<{ rating: number }> => {
     const { data } = await apiClient.put<{ rating: number }>(
       `/journal/trades/${tradeId}/rating`,
       { rating },
-      withAuth(token)
+      withAuth(token),
     );
     return data;
   },
@@ -128,7 +115,7 @@ export const journalTagsApi = {
       setup_quality?: number;
       discipline_score?: number;
     },
-    token?: string
+    token?: string,
   ): Promise<{
     execution_quality?: number;
     setup_quality?: number;

@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Check, ChevronLeft } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
-import { isItemActive, type NavApp, type NavGroup, type NavItem } from "./nav-registry";
+import {
+  isItemActive,
+  type NavApp,
+  type NavGroup,
+  type NavItem,
+} from "./nav-registry";
 import { useNavUiStore } from "./nav-ui-store";
 import {
   Popover,
@@ -157,7 +162,11 @@ function NavGroupBlock({
               title={group.action.label}
               className="flex size-5 shrink-0 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
             >
-              <HugeiconsIcon icon={group.action.icon} size={14} strokeWidth={2} />
+              <HugeiconsIcon
+                icon={group.action.icon}
+                size={14}
+                strokeWidth={2}
+              />
             </button>
           ) : null}
         </div>
@@ -264,7 +273,7 @@ function BackHeader({
   );
 }
 
-export function AppSwitcher({
+function AppSwitcher({
   app,
   apps,
   onNavigate,

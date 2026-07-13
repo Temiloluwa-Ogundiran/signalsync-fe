@@ -29,10 +29,10 @@ import { useChartColors } from "@/lib/use-chart-colors";
  * split, …) without us hard-coding each case.
  */
 
-export type ChartType = "line" | "area" | "bar" | "pie";
+type ChartType = "line" | "area" | "bar" | "pie";
 export type ChartFormat = "currency" | "percent" | "number";
 
-export interface ChartPoint {
+interface ChartPoint {
   /** Category / x label (e.g. "2025-05-01", "EURUSD", "Monday"). */
   label: string;
   /** The plotted value. */
@@ -119,11 +119,15 @@ function ChartTooltip({
   return (
     <div className="rounded-lg border border-border-primary bg-bg-secondary px-3 py-2 text-xs shadow-lg">
       {head !== "" && (
-        <p className="mb-0.5 font-semibold tabular-nums text-text-primary">{String(head)}</p>
+        <p className="mb-0.5 font-semibold tabular-nums text-text-primary">
+          {String(head)}
+        </p>
       )}
       <p
         className={
-          value < 0 ? "tabular-nums text-danger" : "tabular-nums text-text-secondary"
+          value < 0
+            ? "tabular-nums text-danger"
+            : "tabular-nums text-text-secondary"
         }
       >
         {fmt(value)}
@@ -134,12 +138,21 @@ function ChartTooltip({
 
 export function AiChart({ spec }: { spec: ChartSpec }) {
   const colors = useChartColors();
-  const fmt = useMemo(() => makeFormatter(spec.format ?? "number"), [spec.format]);
+  const fmt = useMemo(
+    () => makeFormatter(spec.format ?? "number"),
+    [spec.format],
+  );
   const { type, points } = spec;
 
   // Color: positive→win, negative→loss for diverging data; AI violet otherwise.
   const hasNegative = points.some((p) => p.value < 0);
-  const pieColors = [colors.ai, colors.win, colors.loss, colors.aiBright, colors.axisTick];
+  const pieColors = [
+    colors.ai,
+    colors.win,
+    colors.loss,
+    colors.aiBright,
+    colors.axisTick,
+  ];
 
   const body = (
     <ResponsiveContainer width="100%" height="100%">
@@ -161,8 +174,15 @@ export function AiChart({ spec }: { spec: ChartSpec }) {
           <Tooltip content={<ChartTooltip fmt={fmt} />} />
         </PieChart>
       ) : type === "bar" ? (
-        <BarChart data={points} margin={{ top: 10, right: 8, bottom: 6, left: 8 }}>
-          <CartesianGrid vertical={false} stroke={colors.grid} strokeDasharray="3 3" />
+        <BarChart
+          data={points}
+          margin={{ top: 10, right: 8, bottom: 6, left: 8 }}
+        >
+          <CartesianGrid
+            vertical={false}
+            stroke={colors.grid}
+            strokeDasharray="3 3"
+          />
           <XAxis
             dataKey="label"
             tick={{ fill: colors.axisTick, fontSize: 11 }}
@@ -178,12 +198,21 @@ export function AiChart({ spec }: { spec: ChartSpec }) {
             width={52}
           />
           {hasNegative && <ReferenceLine y={0} stroke={colors.grid} />}
-          <Tooltip content={<ChartTooltip fmt={fmt} />} cursor={{ fill: colors.grid }} />
+          <Tooltip
+            content={<ChartTooltip fmt={fmt} />}
+            cursor={{ fill: colors.grid }}
+          />
           <Bar dataKey="value" radius={[3, 3, 0, 0]} isAnimationActive={false}>
             {points.map((p, i) => (
               <Cell
                 key={i}
-                fill={hasNegative ? (p.value < 0 ? colors.loss : colors.win) : colors.ai}
+                fill={
+                  hasNegative
+                    ? p.value < 0
+                      ? colors.loss
+                      : colors.win
+                    : colors.ai
+                }
               />
             ))}
           </Bar>
@@ -191,14 +220,21 @@ export function AiChart({ spec }: { spec: ChartSpec }) {
       ) : (
         // line / area
         ((Chart, fillArea) => (
-          <Chart data={points} margin={{ top: 10, right: 10, bottom: 6, left: 8 }}>
+          <Chart
+            data={points}
+            margin={{ top: 10, right: 10, bottom: 6, left: 8 }}
+          >
             <defs>
               <linearGradient id="ai-chart-fill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={colors.ai} stopOpacity={0.3} />
                 <stop offset="100%" stopColor={colors.ai} stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} stroke={colors.grid} strokeDasharray="3 3" />
+            <CartesianGrid
+              vertical={false}
+              stroke={colors.grid}
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey="label"
               tick={{ fill: colors.axisTick, fontSize: 11 }}
@@ -213,7 +249,9 @@ export function AiChart({ spec }: { spec: ChartSpec }) {
               tickLine={false}
               width={52}
             />
-            {hasNegative && <ReferenceLine y={0} stroke={colors.grid} strokeDasharray="4 4" />}
+            {hasNegative && (
+              <ReferenceLine y={0} stroke={colors.grid} strokeDasharray="4 4" />
+            )}
             <Tooltip content={<ChartTooltip fmt={fmt} />} />
             {fillArea ? (
               <Area
@@ -236,10 +274,7 @@ export function AiChart({ spec }: { spec: ChartSpec }) {
               />
             )}
           </Chart>
-        ))(
-          type === "area" ? AreaChart : LineChart,
-          type === "area",
-        )
+        ))(type === "area" ? AreaChart : LineChart, type === "area")
       )}
     </ResponsiveContainer>
   );

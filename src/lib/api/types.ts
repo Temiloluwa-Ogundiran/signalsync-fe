@@ -127,7 +127,7 @@ export class ApiException extends Error {
  */
 export function normalizeError(
   status: number,
-  data?: FastAPIErrorResponse | null
+  data?: FastAPIErrorResponse | null,
 ): ApiError {
   if (!data || !data.detail) {
     return {
@@ -156,13 +156,14 @@ export function normalizeError(
   }
 
   return {
-      status,
-      code: data.detail.error_code || data.detail.code || ErrorCodes.UNKNOWN_ERROR,
-      message: data.detail.message,
-      suggestion: data.detail.suggestion,
-      retryAfterSeconds: data.detail.retry_after_seconds,
-      raw: data,
-    };
+    status,
+    code:
+      data.detail.error_code || data.detail.code || ErrorCodes.UNKNOWN_ERROR,
+    message: data.detail.message,
+    suggestion: data.detail.suggestion,
+    retryAfterSeconds: data.detail.retry_after_seconds,
+    raw: data,
+  };
 }
 
 export function extractValidationFieldErrors(raw?: unknown) {
@@ -183,9 +184,10 @@ export function extractValidationFieldErrors(raw?: unknown) {
     const loc = Array.isArray((issue as { loc?: unknown }).loc)
       ? (issue as { loc: Array<string | number> }).loc
       : [];
-    const message = typeof (issue as { msg?: unknown }).msg === "string"
-      ? (issue as { msg: string }).msg
-      : null;
+    const message =
+      typeof (issue as { msg?: unknown }).msg === "string"
+        ? (issue as { msg: string }).msg
+        : null;
     let field: string | null = null;
 
     for (let index = loc.length - 1; index >= 0; index -= 1) {
@@ -242,12 +244,4 @@ function getDefaultMessageForStatus(status: number): string {
     default:
       return "Something went wrong. Please try again.";
   }
-}
-
-/**
- * Standard API response wrapper for successful responses.
- */
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
 }

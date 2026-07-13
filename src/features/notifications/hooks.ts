@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { notificationsApi } from "./api";
 
-export const NOTIFICATION_KEYS = {
+const NOTIFICATION_KEYS = {
   list: () => ["notifications", "list"] as const,
   unread: () => ["notifications", "unread"] as const,
 };

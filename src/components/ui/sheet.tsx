@@ -16,13 +16,9 @@ function Sheet(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
 }
 
 function SheetTrigger(
-  props: React.ComponentProps<typeof DialogPrimitive.Trigger>
+  props: React.ComponentProps<typeof DialogPrimitive.Trigger>,
 ) {
   return <DialogPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
-}
-
-function SheetClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
-  return <DialogPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
 function SheetContent({
@@ -44,7 +40,7 @@ function SheetContent({
         className={cn(
           "fixed inset-y-0 right-0 z-modal flex h-full w-full max-w-md flex-col bg-bg-secondary shadow-2xl outline-none",
           "duration-200 data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right",
-          className
+          className,
         )}
         {...props}
       >
@@ -69,7 +65,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sheet-header"
       className={cn(
         "flex flex-col gap-1 border-b border-hairline px-5 py-4",
-        className
+        className,
       )}
       {...props}
     />
@@ -108,7 +104,7 @@ function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sheet-body"
       className={cn(
         "scrollbar-thin flex-1 overflow-y-auto px-5 py-4",
-        className
+        className,
       )}
       {...props}
     />
@@ -118,7 +114,6 @@ function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
 export {
   Sheet,
   SheetTrigger,
-  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,

@@ -13,7 +13,7 @@ class BackendCredentialsSigninError extends CredentialsSignin {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth } = NextAuth({
   ...authConfig,
   logger: {
     error(error) {
@@ -105,11 +105,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           // Send request as required by OAuth2PasswordRequestForm
           const formData = new URLSearchParams();
-          formData.append('username', credentials.email as string);
-          formData.append('password', credentials.password as string);
-          
+          formData.append("username", credentials.email as string);
+          formData.append("password", credentials.password as string);
+
           const backendUrl = resolveAuthBackendUrl();
-          
+
           const res = await fetch(`${backendUrl}/auth/login`, {
             method: "POST",
             headers: {
@@ -121,15 +121,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!res.ok) {
             // Read backend error message to surface to frontend
             const errorData = await res.json().catch(() => null);
-            let errorMessage = "Authentication failed. Please check your credentials.";
-            
+            let errorMessage =
+              "Authentication failed. Please check your credentials.";
+
             if (errorData?.detail) {
               // FastAPI typically sends string details or objects
-              errorMessage = typeof errorData.detail === "string" 
-                ? errorData.detail 
-                : (errorData.detail.message || errorMessage);
+              errorMessage =
+                typeof errorData.detail === "string"
+                  ? errorData.detail
+                  : errorData.detail.message || errorMessage;
             }
-            
+
             // Throw a credentials error so `signIn(..., { redirect: false })` returns
             // the backend message in `result.code`.
             throw new BackendCredentialsSigninError(errorMessage);
@@ -137,9 +139,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const data = await res.json();
           const { access_token, user, access_token_expiry_minutes } = data;
-          
+
           const refreshToken = extractRefreshToken(res) ?? "";
-          
+
           // NextAuth expects 'id', 'email', 'name' by default in user object
           // but we can pass whatever we need defined in our types.ts
           return {
@@ -152,7 +154,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             onboardingCompleted: user.onboarding_completed ?? false,
             accessToken: access_token,
             refreshToken: refreshToken,
-            expiresAt: Date.now() + (access_token_expiry_minutes * 60 * 1000),
+            expiresAt: Date.now() + access_token_expiry_minutes * 60 * 1000,
           };
         } catch (error) {
           if (!isExpectedAuthFlowError(error)) {

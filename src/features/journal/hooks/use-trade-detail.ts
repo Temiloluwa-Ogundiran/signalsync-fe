@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { journalTradeDetailApi } from "../api/journal-trade-detail.api";
 import { invalidateJournalAnalyticsForAccount } from "./use-journal-analytics";
 
-export const TRADE_DETAIL_KEYS = {
+const TRADE_DETAIL_KEYS = {
   note: (tradeId: string) => ["trade-detail", "note", tradeId] as const,
   setups: () => ["trade-detail", "setups"] as const,
 };
@@ -18,7 +18,7 @@ export function useTradeNote(tradeId: string | undefined, enabled = true) {
     queryFn: () =>
       journalTradeDetailApi.getTradeNote(
         tradeId as string,
-        session?.accessToken
+        session?.accessToken,
       ),
     enabled:
       enabled &&
@@ -38,7 +38,7 @@ export function useSaveTradeNote(tradeId?: string) {
       journalTradeDetailApi.saveTradeNote(
         tradeId as string,
         noteHtml,
-        session?.accessToken
+        session?.accessToken,
       ),
     onSuccess: (data) => {
       queryClient.setQueryData(TRADE_DETAIL_KEYS.note(tradeId as string), data);
@@ -115,7 +115,7 @@ export function useUpdateTradeSetup(accountId?: string) {
       journalTradeDetailApi.updateTradeSetup(
         tradeId,
         setup,
-        session?.accessToken
+        session?.accessToken,
       ),
     onSuccess: () => {
       // A new setup name may have been added to the list; refresh it.

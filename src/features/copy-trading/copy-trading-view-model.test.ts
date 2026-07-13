@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  deriveAutomationHealth,
   deriveSystemHealth,
   deriveCopyTradingMode,
   failureGuidance,
@@ -14,33 +13,6 @@ test("uses setup mode until a copy rule is active", () => {
   assert.equal(deriveCopyTradingMode([]), "setup");
   assert.equal(deriveCopyTradingMode([{ state: "ready" }]), "setup");
   assert.equal(deriveCopyTradingMode([{ state: "active" }]), "monitoring");
-});
-
-test("reports degraded health without claiming all copying stopped", () => {
-  const health = deriveAutomationHealth({
-    globallyPaused: false,
-    routes: [
-      {
-        state: "active",
-        source_id: "source-1",
-        target_connection_id: "connection-1",
-      },
-      {
-        state: "target_unavailable",
-        source_id: "source-2",
-        target_connection_id: "connection-2",
-      },
-    ],
-    connections: [{ state: "ready", is_paused: false }],
-    sources: [
-      { id: "source-1", state: "active", is_paused: false },
-      { id: "source-2", state: "ready", is_paused: false },
-    ],
-  });
-
-  assert.equal(health.tone, "warning");
-  assert.equal(health.label, "Some copy rules need attention");
-  assert.match(health.description, /Healthy rules will continue/);
 });
 
 test("translates internal activity into trader-friendly status", () => {
@@ -160,11 +132,13 @@ test("stale Telegram heartbeat is not presented as operational", () => {
       issues: [],
       components: [],
     },
-    connections: [{
-      state: "ready",
-      is_paused: false,
-      last_heartbeat_at: "2020-01-01T00:00:00.000Z",
-    }],
+    connections: [
+      {
+        state: "ready",
+        is_paused: false,
+        last_heartbeat_at: "2020-01-01T00:00:00.000Z",
+      },
+    ],
   });
 
   assert.equal(health.tone, "warning");

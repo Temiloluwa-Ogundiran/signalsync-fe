@@ -10,7 +10,7 @@
  * Any legacy `display_name` the user previously set still wins.
  */
 
-export function brokerPrefix(brokerServer: string | null | undefined): string {
+function brokerPrefix(brokerServer: string | null | undefined): string {
   const server = (brokerServer ?? "").trim();
   if (!server) return "Account";
   // The broker name is the segment before the first dash (all real MT5 servers

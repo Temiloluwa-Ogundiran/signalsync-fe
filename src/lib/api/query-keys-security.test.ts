@@ -6,10 +6,7 @@ import { join } from "node:path";
 const ROOT = process.cwd();
 
 test("journal and AI query keys do not include access tokens", () => {
-  const files = [
-    "src/features/journal/hooks/use-journal-open-positions.ts",
-    "src/features/journal/hooks/use-infinite-trade-history.ts",
-  ];
+  const files = ["src/features/journal/hooks/use-infinite-trade-history.ts"];
 
   for (const file of files) {
     const source = readFileSync(join(ROOT, file), "utf8");

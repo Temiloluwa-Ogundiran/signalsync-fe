@@ -7,7 +7,6 @@ import type {
   CopySystemHealth,
   CopyLaunchReadiness,
   TelegramConnection,
-  TelegramSource,
 } from "./types";
 
 type RouteStateOnly = Pick<CopyRoute, "state">;
@@ -26,67 +25,14 @@ export function deriveCopyTradingMode(
     : "setup";
 }
 
-export function deriveAutomationHealth(input: {
-  globallyPaused: boolean;
-  routes: Pick<CopyRoute, "state" | "source_id" | "target_connection_id">[];
-  connections: Pick<TelegramConnection, "state" | "is_paused">[];
-  sources: Pick<TelegramSource, "id" | "state" | "is_paused">[];
-}): AutomationHealth {
-  if (input.globallyPaused) {
-    return {
-      tone: "neutral",
-      label: "Copying is paused",
-      description: "New signals will not be sent to trading accounts.",
-    };
-  }
-
-  const activeCount = input.routes.filter(
-    (route) => route.state === "active",
-  ).length;
-  const blockedRoutes = input.routes.filter((route) =>
-    [
-      "reauthentication_required",
-      "target_unavailable",
-    ].includes(route.state),
-  );
-  const hasConnectionIssue = input.connections.some(
-    (connection) => connection.state !== "ready" || connection.is_paused,
-  );
-
-  if (activeCount === 0 && (blockedRoutes.length > 0 || hasConnectionIssue)) {
-    return {
-      tone: "danger",
-      label: "Copying has stopped",
-      description:
-        "Fix the affected Telegram or trading account connection.",
-    };
-  }
-  if (blockedRoutes.length > 0 || hasConnectionIssue) {
-    return {
-      tone: "warning",
-      label: "Some copy rules need attention",
-      description: "Healthy rules will continue copying.",
-    };
-  }
-  if (activeCount === 0) {
-    return {
-      tone: "neutral",
-      label: "Copying is not set up yet",
-      description: "Complete the setup steps to start copying signals.",
-    };
-  }
-  return {
-    tone: "success",
-    label: "Copying is active",
-    description: "Signals can be read and sent to connected accounts.",
-  };
-}
-
 export function deriveSystemHealth(input: {
   globallyPaused: boolean;
   system?: CopySystemHealth;
   launch?: CopyLaunchReadiness;
-  connections?: Pick<TelegramConnection, "state" | "is_paused" | "last_heartbeat_at">[];
+  connections?: Pick<
+    TelegramConnection,
+    "state" | "is_paused" | "last_heartbeat_at"
+  >[];
 }): AutomationHealth {
   if (input.globallyPaused) {
     return {
@@ -124,23 +70,32 @@ export function deriveSystemHealth(input: {
     };
   }
   const staleConnection = input.connections?.some((connection) => {
-    if (connection.state !== "ready" || connection.is_paused || !connection.last_heartbeat_at) {
+    if (
+      connection.state !== "ready" ||
+      connection.is_paused ||
+      !connection.last_heartbeat_at
+    ) {
       return false;
     }
     const heartbeatTime = new Date(connection.last_heartbeat_at).getTime();
-    return Number.isFinite(heartbeatTime) && Date.now() - heartbeatTime > 5 * 60 * 1000;
+    return (
+      Number.isFinite(heartbeatTime) &&
+      Date.now() - heartbeatTime > 5 * 60 * 1000
+    );
   });
   if (staleConnection) {
     return {
       tone: "warning",
       label: "Telegram connection is stale",
-      description: "No Telegram heartbeat was received recently. Reconnect Telegram before relying on new signals.",
+      description:
+        "No Telegram heartbeat was received recently. Reconnect Telegram before relying on new signals.",
     };
   }
   return {
     tone: "success",
     label: "Copying is operational",
-    description: "Telegram, signal processing, and broker execution are responding.",
+    description:
+      "Telegram, signal processing, and broker execution are responding.",
   };
 }
 
@@ -201,12 +156,24 @@ export function activityStatusState(event: {
   action: string;
   level: "info" | "success" | "warning" | "error";
 }): string {
-  if (["signal.expired", "signal.skipped"].includes(event.action)) return "skipped";
+  if (["signal.expired", "signal.skipped"].includes(event.action))
+    return "skipped";
   if (event.action.endsWith(".failed")) return "failed";
-  if (["broker.uncertain", "signal.waiting", "emergency.requested"].includes(event.action)) {
+  if (
+    ["broker.uncertain", "signal.waiting", "emergency.requested"].includes(
+      event.action,
+    )
+  ) {
     return "processing";
   }
-  if (["signal.validated", "broker.reconciled", "broker.succeeded", "emergency.succeeded"].includes(event.action)) {
+  if (
+    [
+      "signal.validated",
+      "broker.reconciled",
+      "broker.succeeded",
+      "emergency.succeeded",
+    ].includes(event.action)
+  ) {
     return "success";
   }
   return event.level;
@@ -248,10 +215,7 @@ export function summarizeCopyRule(
 export function groupActivity(
   events: Array<
     Partial<CopyActivity> &
-      Pick<
-        CopyActivity,
-        "id" | "correlation_id" | "created_at" | "level"
-      >
+      Pick<CopyActivity, "id" | "correlation_id" | "created_at" | "level">
   >,
 ): ActivityGroup[] {
   const groups = new Map<string, CopyActivity[]>();
@@ -264,8 +228,7 @@ export function groupActivity(
     .map(([correlationId, groupedEvents]) => {
       const sorted = groupedEvents.toSorted(
         (a, b) =>
-          new Date(a.created_at).getTime() -
-          new Date(b.created_at).getTime(),
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
       return {
         correlationId,
@@ -285,10 +248,7 @@ export function failureGuidance(event: {
   parsed_details: Record<string, unknown>;
 }): string {
   const symbol = String(event.parsed_details.symbol ?? "");
-  if (
-    symbol &&
-    /symbol|tradable|available|match/i.test(event.title)
-  ) {
+  if (symbol && /symbol|tradable|available|match/i.test(event.title)) {
     return `${event.title}. Other copy rules will continue. Check that ${symbol} is available on the selected trading account, then try again.`;
   }
   return `${event.title}. Other copy rules will continue. Review the copy rule and trading account, then try again.`;

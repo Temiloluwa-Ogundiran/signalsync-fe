@@ -1,4 +1,4 @@
-export type CopyRouteState =
+type CopyRouteState =
   | "draft"
   | "ready"
   | "active"
@@ -9,18 +9,14 @@ export type CopyRouteState =
 
 export type CopyTradingMode = "setup" | "monitoring";
 
-export type MinimumFields =
+type MinimumFields =
   | "direction_symbol"
   | "direction_symbol_entry"
   | "direction_symbol_sl"
   | "direction_symbol_tp"
   | "direction_symbol_sl_tp";
 
-export type AutomationHealthTone =
-  | "success"
-  | "warning"
-  | "neutral"
-  | "danger";
+type AutomationHealthTone = "success" | "warning" | "neutral" | "danger";
 
 export interface AutomationHealth {
   tone: AutomationHealthTone;
@@ -104,7 +100,7 @@ export interface CopyActivityPage {
   next_cursor: string | null;
 }
 
-export interface CopyHealthComponent {
+interface CopyHealthComponent {
   role: string;
   status: "healthy" | "degraded" | "stale" | "missing" | string;
   heartbeat_at: string | null;
@@ -144,7 +140,7 @@ export interface CopyDeadLetter {
   created_at: string;
 }
 
-export type CopyTradingConnectionState =
+type CopyTradingConnectionState =
   | "submitted"
   | "provisioning"
   | "deploying"

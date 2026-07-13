@@ -53,7 +53,7 @@ function normalizeApiBalance(
  * Resolve start/end of day balances: coerce API decimals, then apply the same
  * fill-forward rules as the backend / day chat metrics (start+PnL=end, etc.).
  */
-export function resolveDayBookends(
+function resolveDayBookends(
   trades: JournalTrade[],
   apiDayStart?: number | string | null,
   apiDayEnd?: number | string | null,
@@ -91,7 +91,7 @@ export function resolveDayBookends(
   return { dayStartBalance: start, dayEndBalance: end };
 }
 
-export function formatHoldTime(ms: number): string {
+function formatHoldTime(ms: number): string {
   if (ms < 0) ms = 0;
   const totalSeconds = Math.round(ms / 1000);
   const totalMinutes = Math.round(totalSeconds / 60);
@@ -109,7 +109,7 @@ export function formatHoldTime(ms: number): string {
   return `${hours}h ${mins}m`;
 }
 
-export function calculateAverageHoldTime(trades: JournalTrade[]): string {
+function calculateAverageHoldTime(trades: JournalTrade[]): string {
   if (trades.length === 0) return "--";
 
   let totalMs = 0;

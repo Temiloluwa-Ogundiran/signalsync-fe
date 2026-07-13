@@ -12,7 +12,7 @@ import type { AxiosResponse } from "axios";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type AuthProvider = "email" | "google";
+type AuthProvider = "email" | "google";
 
 export interface CurrentUser {
   id: string;
@@ -71,31 +71,31 @@ export interface AvatarUploadResponse {
 export async function getCurrentUser(token?: string): Promise<CurrentUser> {
   const res: AxiosResponse<CurrentUser> = await apiClient.get(
     "/users/me",
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function updatePreferences(
   payload: UpdatePreferencesPayload,
-  token?: string
+  token?: string,
 ): Promise<CurrentUser> {
   const res: AxiosResponse<CurrentUser> = await apiClient.patch(
     "/users/me/preferences",
     payload,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function updateProfile(
   payload: UpdateProfilePayload,
-  token?: string
+  token?: string,
 ): Promise<CurrentUser> {
   const res: AxiosResponse<CurrentUser> = await apiClient.patch(
     "/users/me",
     payload,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
@@ -108,19 +108,19 @@ export interface CompleteOnboardingPayload {
 
 export async function completeOnboarding(
   payload: CompleteOnboardingPayload,
-  token?: string
+  token?: string,
 ): Promise<CurrentUser> {
   const res: AxiosResponse<CurrentUser> = await apiClient.patch(
     "/users/me/onboarding",
     payload,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function uploadAvatar(
   file: File,
-  token?: string
+  token?: string,
 ): Promise<AvatarUploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
@@ -133,7 +133,7 @@ export async function uploadAvatar(
         ...withAuth(token).headers,
         "Content-Type": "multipart/form-data",
       },
-    }
+    },
   );
   return res.data;
 }
@@ -142,24 +142,24 @@ export async function uploadAvatar(
 
 export async function changePassword(
   payload: ChangePasswordPayload,
-  token?: string
+  token?: string,
 ): Promise<MessageResponse> {
   const res: AxiosResponse<MessageResponse> = await apiClient.post(
     "/users/me/change-password",
     payload,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function changeEmail(
   payload: ChangeEmailPayload,
-  token?: string
+  token?: string,
 ): Promise<MessageResponse> {
   const res: AxiosResponse<MessageResponse> = await apiClient.post(
     "/users/me/change-email",
     payload,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
@@ -167,30 +167,30 @@ export async function changeEmail(
 export async function listSessions(token?: string): Promise<SessionItem[]> {
   const res: AxiosResponse<SessionItem[]> = await apiClient.get(
     "/users/me/sessions",
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function revokeSession(
   sessionId: string,
-  token?: string
+  token?: string,
 ): Promise<MessageResponse> {
   const res: AxiosResponse<MessageResponse> = await apiClient.delete(
     `/users/me/sessions/${sessionId}`,
-    withAuth(token)
+    withAuth(token),
   );
   return res.data;
 }
 
 export async function deleteAccount(
   payload: DeleteAccountPayload,
-  token?: string
+  token?: string,
 ): Promise<MessageResponse> {
   // DELETE with a body — axios sends it via `data`.
   const res: AxiosResponse<MessageResponse> = await apiClient.delete(
     "/users/me",
-    { ...withAuth(token), data: payload }
+    { ...withAuth(token), data: payload },
   );
   return res.data;
 }

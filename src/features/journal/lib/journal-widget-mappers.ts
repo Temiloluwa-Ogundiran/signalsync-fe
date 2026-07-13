@@ -1,9 +1,4 @@
-import type {
-  JournalOpenPosition,
-  JournalOpenPositionsPanelRow,
-  JournalTradesPanelRow,
-  JournalTrade,
-} from "../types";
+import type { JournalTradesPanelRow, JournalTrade } from "../types";
 
 function formatMoney(value: number) {
   return `$${Math.abs(value).toLocaleString(undefined, {
@@ -28,7 +23,10 @@ export function formatCompactMoney(value: number): string {
   return `$${abs.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
 
-export function formatAvgWinLossRatioDisplay(avgWin: number, avgLoss: number): string {
+export function formatAvgWinLossRatioDisplay(
+  avgWin: number,
+  avgLoss: number,
+): string {
   const loss = Math.abs(avgLoss);
   if (loss === 0) {
     return avgWin > 0 ? "∞" : "0.00";
@@ -46,7 +44,7 @@ export function winLossShare(avgWin: number, avgLoss: number): number {
 }
 
 /** Compact hold-time label from open→close (e.g. `45s`, `12m`, `3h 20m`, `2d 4h`). */
-export function formatHoldTime(openedAt: string, closedAt: string): string {
+function formatHoldTime(openedAt: string, closedAt: string): string {
   const start = new Date(openedAt).getTime();
   const end = new Date(closedAt).getTime();
   if (!Number.isFinite(start) || !Number.isFinite(end)) return "—";
@@ -64,7 +62,9 @@ export function formatHoldTime(openedAt: string, closedAt: string): string {
   return remHrs ? `${days}d ${remHrs}h` : `${days}d`;
 }
 
-export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow[] {
+export function toTradesPanelRows(
+  trades: JournalTrade[],
+): JournalTradesPanelRow[] {
   return trades.slice(0, 10).map((trade) => ({
     id: trade.id,
     closeDate: new Date(trade.closed_at).toLocaleDateString("en-GB"),
@@ -73,17 +73,3 @@ export function toTradesPanelRows(trades: JournalTrade[]): JournalTradesPanelRow
     holdTime: formatHoldTime(trade.opened_at, trade.closed_at),
   }));
 }
-
-export function toOpenPositionsPanelRows(
-  positions: JournalOpenPosition[],
-): JournalOpenPositionsPanelRow[] {
-  return positions.slice(0, 10).map((position) => ({
-    id: position.position_id,
-    openDate: position.opened_at
-      ? new Date(position.opened_at).toLocaleDateString("en-GB")
-      : "Live",
-    symbol: position.symbol,
-    floatingPnl: Number(position.floating_profit) || 0,
-  }));
-}
-

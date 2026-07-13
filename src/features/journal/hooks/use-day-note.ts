@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalDailyApi } from "../api/journal-daily.api";
 
-export const DAY_NOTE_KEYS = {
+const DAY_NOTE_KEYS = {
   dayNote: (accountId?: string, tradingDate?: string) =>
     ["journal-day-note", accountId, tradingDate] as const,
 };
@@ -39,10 +39,7 @@ export function useDayNote(
 /**
  * Save the day note for a given account and trading date.
  */
-export function useSaveDayNote(
-  accountId?: string,
-  tradingDate?: string,
-) {
+export function useSaveDayNote(accountId?: string, tradingDate?: string) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 

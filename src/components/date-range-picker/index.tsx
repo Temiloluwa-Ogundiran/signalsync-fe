@@ -30,8 +30,7 @@ import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { ChevronDown } from "lucide-react";
 import { DEFAULT_PRESETS, type DateRange, type Preset } from "./presets";
 
-export { DEFAULT_PRESETS } from "./presets";
-export type { DateRange, Preset } from "./presets";
+export type { Preset } from "./presets";
 
 interface DateRangePickerProps {
   value?: DateRange;

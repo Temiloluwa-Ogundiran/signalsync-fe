@@ -87,10 +87,6 @@ export function getAccountSyncStatus(
   };
 }
 
-export function isAccountSyncHealthy(status: JournalAccountSyncStatus) {
-  return status.severity === "success" || status.severity === "info";
-}
-
 export function isAccountSyncBusy(status: JournalAccountSyncStatus) {
   return status.severity === "pending";
 }

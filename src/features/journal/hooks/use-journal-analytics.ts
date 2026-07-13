@@ -1,4 +1,8 @@
-import { type QueryClient, useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useQuery,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { journalAnalyticsApi } from "../api/journal-analytics.api";
 
@@ -17,19 +21,21 @@ export function invalidateJournalAnalyticsForAccount(
     predicate: (q) => {
       const k = q.queryKey;
       return (
-        Array.isArray(k) &&
-        k[0] === "journal-analytics" &&
-        k[2] === accountId
+        Array.isArray(k) && k[0] === "journal-analytics" && k[2] === accountId
       );
     },
   });
 }
 
-export const JOURNAL_ANALYTICS_KEYS = {
-  summary: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "summary", accountId, fromDate, toDate] as const,
+const JOURNAL_ANALYTICS_KEYS = {
   timePerformance: (accountId?: string, fromDate?: string, toDate?: string) =>
-    ["journal-analytics", "time-performance", accountId, fromDate, toDate] as const,
+    [
+      "journal-analytics",
+      "time-performance",
+      accountId,
+      fromDate,
+      toDate,
+    ] as const,
   evaluation: (accountId?: string, fromDate?: string, toDate?: string) =>
     ["journal-analytics", "evaluation", accountId, fromDate, toDate] as const,
   dashboard: (accountId?: string, fromDate?: string, toDate?: string) =>
@@ -88,20 +94,6 @@ function useAnalyticsQuery<T>(opts: {
   });
 }
 
-export function useJournalSummaryAnalytics({ accountId, fromDate, toDate }: AnalyticsQueryInput) {
-  return useAnalyticsQuery({
-    accountId,
-    fromDate,
-    toDate,
-    buildKey: () => JOURNAL_ANALYTICS_KEYS.summary(accountId, fromDate, toDate),
-    fetcher: (i, t) =>
-      journalAnalyticsApi.getSummary(
-        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate },
-        t,
-      ),
-  });
-}
-
 export function useJournalTimePerformanceAnalytics({
   accountId,
   fromDate,
@@ -115,7 +107,10 @@ export function useJournalTimePerformanceAnalytics({
     toDate,
     timeBasis,
     enabled,
-    buildKey: () => [...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate), timeBasis],
+    buildKey: () => [
+      ...JOURNAL_ANALYTICS_KEYS.timePerformance(accountId, fromDate, toDate),
+      timeBasis,
+    ],
     fetcher: (i, t) =>
       journalAnalyticsApi.getTimePerformance(
         {
@@ -139,10 +134,15 @@ export function useJournalEvaluationAnalytics({
     fromDate,
     toDate,
     usePlaceholder: true,
-    buildKey: () => JOURNAL_ANALYTICS_KEYS.evaluation(accountId, fromDate, toDate),
+    buildKey: () =>
+      JOURNAL_ANALYTICS_KEYS.evaluation(accountId, fromDate, toDate),
     fetcher: (i, t) =>
       journalAnalyticsApi.getEvaluation(
-        { accountId: i.accountId as string, fromDate: i.fromDate, toDate: i.toDate },
+        {
+          accountId: i.accountId as string,
+          fromDate: i.fromDate,
+          toDate: i.toDate,
+        },
         t,
       ),
   });
@@ -161,7 +161,10 @@ export function useJournalDashboardAnalytics({
     timeBasis,
     // Dashboard intentionally enables for multi-account (no accountId required).
     requireAccountId: false,
-    buildKey: () => [...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate), timeBasis],
+    buildKey: () => [
+      ...JOURNAL_ANALYTICS_KEYS.dashboard(accountId, fromDate, toDate),
+      timeBasis,
+    ],
     fetcher: (i, t) =>
       journalAnalyticsApi.getDashboard(
         {
