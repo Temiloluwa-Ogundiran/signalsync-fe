@@ -40,6 +40,13 @@ export interface CopyAccountPolicy {
   id: string;
   connection_id: string;
   max_lot: string;
+  max_lot_per_trade: string;
+  max_open_positions: number;
+  daily_loss_limit: string | null;
+  max_drawdown_percent: string | null;
+  allowed_symbols: string[];
+  blocked_symbols: string[];
+  market_signal_max_age_seconds: number;
   is_paused: boolean;
   created_at: string;
   updated_at: string;

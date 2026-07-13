@@ -40,10 +40,12 @@ export function CopyRuleForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{route ? "Edit copy rule" : "New copy rule"}</DialogTitle>
+          <DialogTitle>
+            {route ? "Edit Copy Route" : "New Copy Route"}
+          </DialogTitle>
           <DialogDescription>
-            Choose where signals come from, where trades go, and how they are
-            managed.
+            Choose the Telegram source, destination account, and copying
+            behavior.
           </DialogDescription>
         </DialogHeader>
         {open ? (
@@ -92,14 +94,14 @@ function CopyRuleFormBody({
           id: route.id,
           payload: value,
         });
-        toast.success("Copy rule updated");
+        toast.success("Copy route updated");
       } else {
         await actions.createRoute.mutateAsync(value);
-        toast.success("Copy rule created");
+        toast.success("Copy route created");
       }
       onSaved();
     } catch (error) {
-      toast.error("Copy rule could not be saved", {
+      toast.error("Copy route could not be saved", {
         description: apiError(error),
       });
     }
@@ -107,53 +109,53 @@ function CopyRuleFormBody({
 
   return (
     <>
-        <div className="grid gap-4 border-b border-border-primary pb-5 sm:grid-cols-2">
-          <Field label="Signal channel">
-            <Select
-              value={value.source_id}
-              disabled={Boolean(route)}
-              onChange={(sourceId) => {
-                setValue((current) => ({
-                  ...current,
-                  source_id: sourceId,
-                }));
-              }}
-            >
-              <option value="">Choose a channel</option>
-              {readySources.map((source) => (
-                <option key={source.id} value={source.id}>
-                  {source.title}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Trading account">
-            <Select
-              value={value.target_connection_id}
-              disabled={Boolean(route)}
-              onChange={(targetAccountId) =>
-                setValue((current) => ({
-                  ...current,
-                  target_connection_id: targetAccountId,
-                }))
-              }
-            >
-              <option value="">Choose an account</option>
-              {readyAccounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {accountLabel(account, account.id)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-        <PreferencesStep
-          value={value}
-          onChange={setValue}
-          onContinue={save}
-          busy={actions.createRoute.isPending || actions.updateRoute.isPending}
-          submitLabel="Save copy rule"
-        />
+      <div className="grid gap-4 border-b border-border-primary pb-5 sm:grid-cols-2">
+        <Field label="Signal channel">
+          <Select
+            value={value.source_id}
+            disabled={Boolean(route)}
+            onChange={(sourceId) => {
+              setValue((current) => ({
+                ...current,
+                source_id: sourceId,
+              }));
+            }}
+          >
+            <option value="">Choose a channel</option>
+            {readySources.map((source) => (
+              <option key={source.id} value={source.id}>
+                {source.title}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Trading account">
+          <Select
+            value={value.target_connection_id}
+            disabled={Boolean(route)}
+            onChange={(targetAccountId) =>
+              setValue((current) => ({
+                ...current,
+                target_connection_id: targetAccountId,
+              }))
+            }
+          >
+            <option value="">Choose an account</option>
+            {readyAccounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {accountLabel(account, account.id)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+      <PreferencesStep
+        value={value}
+        onChange={setValue}
+        onContinue={save}
+        busy={actions.createRoute.isPending || actions.updateRoute.isPending}
+        submitLabel="Save Copy Route"
+      />
     </>
   );
 }

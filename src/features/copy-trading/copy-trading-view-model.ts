@@ -128,8 +128,12 @@ export function humanizeActivity(event: {
 }): ActivityPresentation {
   const direction = String(event.parsed_details.direction ?? "");
   const symbol = String(event.parsed_details.symbol ?? "");
+  const openingAction = String(event.parsed_details.action ?? "");
+  const isOpeningAction = ["open_market", "place_pending"].includes(
+    openingAction,
+  );
   const actionLabel =
-    direction && symbol
+    isOpeningAction && direction && symbol
       ? `${direction.toLowerCase() === "buy" ? "Buy" : "Sell"} ${symbol}`
       : event.title;
   const statusMap: Record<string, string> = {
@@ -142,6 +146,10 @@ export function humanizeActivity(event: {
     "broker.reconciled": "Broker result confirmed",
     "broker.succeeded": "Trade completed",
     "broker.failed": "Trade failed",
+    "broker.confirmed": event.title,
+    "risk.blocked": "Blocked by account safety settings",
+    "reconciliation.drift": "Broker change synchronized",
+    "dead_letter.replayed": "Failed action retried",
     "emergency.requested": "Emergency action processing",
     "emergency.succeeded": "Emergency action completed",
     "emergency.failed": "Emergency action failed",
@@ -209,7 +217,7 @@ export function summarizeCopyRule(
       : "Market orders only",
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join(" | ");
 }
 
 export function groupActivity(

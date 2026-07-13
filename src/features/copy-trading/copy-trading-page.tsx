@@ -14,7 +14,10 @@ import {
   useTelegramSources,
   useUpdateCopyTradingSettings,
 } from "./hooks";
-import { deriveCopyTradingMode, deriveSystemHealth } from "./copy-trading-view-model";
+import {
+  deriveCopyTradingMode,
+  deriveSystemHealth,
+} from "./copy-trading-view-model";
 import { apiError } from "./utils";
 import { CopyTradingShell } from "./copy-trading-shell";
 import { SetupWorkspace } from "./setup/setup-workspace";
@@ -24,20 +27,21 @@ import { CopyActivityPage } from "./activity/copy-activity-page";
 import { CopyTradingSettingsPage } from "./settings/copy-trading-settings-page";
 import { SectionError } from "./shared/section-error";
 
-export type CopyTradingView =
-  | "overview"
-  | "routes"
-  | "activity"
-  | "settings";
+export type CopyTradingView = "overview" | "routes" | "activity" | "settings";
 
 export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const settings = useCopyTradingSettings();
   const routes = useCopyRoutes();
   const policies = useCopyAccountPolicies();
-  const activity = useCopyActivity({}, view === "overview" || view === "routes");
+  const activity = useCopyActivity(
+    {},
+    view === "overview" || view === "routes",
+  );
   const systemHealth = useCopySystemHealth(true);
   const launchReadiness = useCopyLaunchReadiness(true);
-  const deadLetters = useCopyDeadLetters(view === "overview");
+  const deadLetters = useCopyDeadLetters(
+    view === "overview" || view === "activity",
+  );
   const accounts = useCopyConnections();
   const connections = useTelegramConnections();
   const sources = useTelegramSources();
@@ -49,6 +53,12 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const accountsData = accounts.data ?? [];
   const connectionsData = connections.data ?? [];
   const sourcesData = sources.data ?? [];
+  const coreDataLoading =
+    routes.isLoading ||
+    policies.isLoading ||
+    accounts.isLoading ||
+    connections.isLoading ||
+    sources.isLoading;
   const mode = deriveCopyTradingMode(routesData);
   const health = deriveSystemHealth({
     globallyPaused: settingsData?.is_paused ?? false,
@@ -69,9 +79,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const changePause = async (currentlyPaused: boolean) => {
     try {
       await updateSettings.mutateAsync(!currentlyPaused);
-      toast.success(
-        currentlyPaused ? "Copying resumed" : "Copying paused",
-      );
+      toast.success(currentlyPaused ? "Copying resumed" : "Copying paused");
     } catch (error) {
       toast.error("Copying status could not be changed", {
         description: apiError(error),
@@ -80,7 +88,9 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   };
 
   let content;
-  if (view === "settings") {
+  if (view === "settings" && coreDataLoading) {
+    content = <CopySurfaceLoading label="Loading copy trading settings..." />;
+  } else if (view === "settings") {
     content = (
       <CopyTradingSettingsPage
         connections={connectionsData}
@@ -96,6 +106,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         sources={sourcesData}
         accounts={accountsData}
         activity={activityData}
+        loading={routes.isLoading || sources.isLoading || accounts.isLoading}
       />
     );
   } else if (view === "activity") {
@@ -103,8 +114,11 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
       <CopyActivityPage
         sources={sourcesData}
         accounts={accountsData}
+        deadLetters={deadLetters.data ?? []}
       />
     );
+  } else if (coreDataLoading) {
+    content = <CopySurfaceLoading label="Loading copy trading..." />;
   } else if (mode === "setup") {
     content = (
       <SetupWorkspace
@@ -151,5 +165,16 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
       ) : null}
       {content}
     </CopyTradingShell>
+  );
+}
+
+function CopySurfaceLoading({ label }: { label: string }) {
+  return (
+    <div className="space-y-5" role="status" aria-live="polite">
+      <p className="sr-only">{label}</p>
+      <div className="h-16 animate-pulse rounded-md bg-bg-tertiary motion-reduce:animate-none" />
+      <div className="h-52 animate-pulse rounded-lg border border-border-primary bg-card-bg motion-reduce:animate-none" />
+      <div className="h-36 animate-pulse rounded-lg border border-border-primary bg-card-bg motion-reduce:animate-none" />
+    </div>
   );
 }

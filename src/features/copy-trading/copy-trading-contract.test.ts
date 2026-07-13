@@ -33,7 +33,7 @@ test("copy trading API and complete workflows remain exposed", () => {
   }
   for (const wording of [
     "Connect Telegram",
-    "Edit copy rule",
+    "Edit Copy Route",
     "Reveal source message",
     "Emergency actions",
   ]) {
@@ -132,13 +132,43 @@ test("copy rule minimum details match the backend enum contract", () => {
 test("monitoring, rules, activity, and settings use the approved hierarchy", () => {
   assert.match(feature("overview/monitoring-overview.tsx"), /Live activity/);
   assert.match(feature("overview/monitoring-overview.tsx"), /HealthStrip/);
-  assert.match(feature("routes/copy-rules-page.tsx"), /Copy Rules/);
-  assert.match(feature("routes/copy-rules-page.tsx"), /New copy rule/);
+  assert.match(feature("routes/copy-rules-page.tsx"), /Copy Routes/);
+  assert.match(feature("routes/copy-rules-page.tsx"), /New Copy Route/);
+  assert.match(feature("routes/copy-rules-page.tsx"), /CopyRouteMap/);
   assert.match(feature("activity/copy-activity-page.tsx"), /Copy Activity/);
   const settings = feature("settings/copy-trading-settings-page.tsx");
-  assert.match(settings, /Telegram accounts/);
-  assert.match(settings, /Signal channels/);
-  assert.match(settings, /Trading accounts/);
+  assert.match(settings, /Telegram Connections/);
+  assert.match(settings, /Signal Channels/);
+  assert.match(settings, /Trading Accounts & Risk Limits/);
+});
+
+test("copy routes are graphical and account safety is configurable", () => {
+  const routeMap = feature("routes/copy-route-map.tsx");
+  const safety = feature("accounts/account-safety-form.tsx");
+  const types = feature("types.ts");
+
+  assert.match(routeMap, /Signal source/);
+  assert.match(routeMap, /Trading account/);
+  assert.match(routeMap, /How it copies/);
+  assert.match(
+    routeMap,
+    /aria-label="Copy routes from Telegram to trading accounts"/,
+  );
+  assert.match(safety, /Maximum Size for 1 Trade/);
+  assert.match(safety, /Stop After Today's Loss/);
+  assert.match(safety, /Maximum Equity Drawdown/);
+  assert.match(safety, /Newest Signal Age/);
+  assert.match(types, /market_signal_max_age_seconds/);
+});
+
+test("failed copy events expose a controlled single retry", () => {
+  const recovery = feature("activity/failed-event-recovery.tsx");
+  const activity = feature("activity/copy-activity-page.tsx");
+
+  assert.match(activity, /FailedEventRecovery/);
+  assert.match(recovery, /Review & Retry/);
+  assert.match(recovery, /1 automatic retry/i);
+  assert.match(recovery, /ConfirmActionDialog/);
 });
 
 test("copy trading page is thin orchestration after decomposition", () => {
@@ -172,7 +202,7 @@ test("activity uses server filters and cursor pagination", () => {
   assert.match(api, /cursor/);
   assert.match(hooks, /useInfiniteQuery/);
   assert.match(hooks, /getNextPageParam/);
-  assert.match(activity, /Load more activity/);
+  assert.match(activity, /Load More Activity/);
   assert.doesNotMatch(activity, /events\.filter/);
 });
 
@@ -187,10 +217,11 @@ test("one failed query does not blank the entire workspace", () => {
 test("destructive operations require confirmation and routes have a real menu", () => {
   const settings = feature("settings/copy-trading-settings-page.tsx");
   const routes = feature("routes/copy-rules-page.tsx");
+  const routeMap = feature("routes/copy-route-map.tsx");
   const dialog = feature("shared/confirm-action-dialog.tsx");
 
   assert.match(settings, /ConfirmActionDialog/);
-  assert.match(routes, /DropdownMenu/);
+  assert.match(routeMap, /DropdownMenu/);
   assert.match(routes, /ConfirmActionDialog/);
   assert.match(dialog, /confirmText/);
 });
@@ -206,7 +237,10 @@ test("signal channels are never gated by historical analysis", () => {
   const picker = feature("setup/channel-picker.tsx");
 
   for (const ui of [settings, workspace, picker]) {
-    assert.doesNotMatch(ui, /Analyze again|analysis started|unsupported|confidence/i);
+    assert.doesNotMatch(
+      ui,
+      /Analyze again|analysis started|unsupported|confidence/i,
+    );
   }
 });
 

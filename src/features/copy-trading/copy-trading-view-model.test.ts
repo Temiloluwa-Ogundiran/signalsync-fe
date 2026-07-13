@@ -49,7 +49,7 @@ test("summarizes a copy rule in plain language", () => {
       lot_distribution: "split_total",
       pending_orders_enabled: true,
     }),
-    "0.10 lots · Every take profit · Total size split · Pending orders allowed",
+    "0.10 lots | Every take profit | Total size split | Pending orders allowed",
   );
 });
 

@@ -4,18 +4,26 @@ import { Search, X } from "lucide-react";
 import { useDeferredValue, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { CopyActivityFilters, CopyTradingConnection, TelegramSource } from "../types";
+import type {
+  CopyActivityFilters,
+  CopyDeadLetter,
+  CopyTradingConnection,
+  TelegramSource,
+} from "../types";
 import { useCopyActivity } from "../hooks";
 import { SectionError } from "../shared/section-error";
 import { ActivityFeed } from "./activity-feed";
 import { ActivityFiltersSheet, FilterSelects } from "./activity-filters-sheet";
+import { FailedEventRecovery } from "./failed-event-recovery";
 
 export function CopyActivityPage({
   sources,
   accounts,
+  deadLetters,
 }: {
   sources: TelegramSource[];
   accounts: CopyTradingConnection[];
+  deadLetters: CopyDeadLetter[];
 }) {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<
@@ -38,19 +46,28 @@ export function CopyActivityPage({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Copy Activity</h1>
+        <h1 className="text-pretty text-2xl font-bold text-text-primary">
+          Copy Activity
+        </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Searchable signal decisions and broker outcomes retained by the server.
+          See what each signal did, what the broker returned, and what needs
+          your attention.
         </p>
       </div>
+      <FailedEventRecovery items={deadLetters} />
       <div className="flex gap-2 lg:grid lg:grid-cols-[minmax(220px,1fr)_180px_220px_220px_auto]">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-tertiary" />
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-tertiary"
+          />
           <Input
             aria-label="Search copy activity"
+            name="copy-activity-search"
+            autoComplete="off"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search symbols and outcomes"
+            placeholder="Search symbols and outcomes..."
             className="pl-9"
           />
         </div>
@@ -75,7 +92,7 @@ export function CopyActivityPage({
           disabled={!hasFilters}
           aria-label="Clear activity filters"
         >
-          <X className="size-4" />
+          <X aria-hidden="true" className="size-4" />
           Clear
         </Button>
       </div>
@@ -87,8 +104,12 @@ export function CopyActivityPage({
         />
       ) : null}
       {query.isPending ? (
-        <div className="rounded-lg border border-border-primary bg-card-bg px-4 py-12 text-center text-sm text-text-secondary">
-          Loading activity…
+        <div
+          className="rounded-lg border border-border-primary bg-card-bg px-4 py-12 text-center text-sm text-text-secondary"
+          role="status"
+          aria-live="polite"
+        >
+          Loading activity...
         </div>
       ) : (
         <ActivityFeed
@@ -109,7 +130,7 @@ export function CopyActivityPage({
             disabled={query.isFetchingNextPage}
             onClick={() => query.fetchNextPage()}
           >
-            {query.isFetchingNextPage ? "Loading…" : "Load more activity"}
+            {query.isFetchingNextPage ? "Loading..." : "Load More Activity"}
           </Button>
         </div>
       ) : null}

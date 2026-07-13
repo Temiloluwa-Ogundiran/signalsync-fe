@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Smartphone,
-  Trash2,
-} from "lucide-react";
+import { Plus, Smartphone, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -63,20 +59,23 @@ export function CopyTradingSettingsPage({
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">
-          Copy Trading Settings
+          Connections & Safety
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Manage signal access and account-level safeguards.
+          Connect Telegram and trading accounts, then choose how much risk each
+          account can take.
         </p>
       </div>
 
       <SettingsSection
-        title="Telegram accounts"
-        description="Read-only sessions used to receive channel messages."
+        title="Telegram Connections"
+        description="TradePartna reads signals from these Telegram accounts. It never sends messages."
         action={
           <Button variant="outline" onClick={() => setTelegramOpen(true)}>
             <Plus className="size-4" />
-            {connections.length ? "Connect another Telegram" : "Connect Telegram"}
+            {connections.length
+              ? "Connect another Telegram"
+              : "Connect Telegram"}
           </Button>
         }
       >
@@ -93,9 +92,7 @@ export function CopyTradingSettingsPage({
                     {connectionName(connection)}
                   </p>
                   <StatusLabel
-                    state={
-                      connection.is_paused ? "paused" : connection.state
-                    }
+                    state={connection.is_paused ? "paused" : connection.state}
                   />
                 </div>
                 <p className="mt-1 text-xs text-text-secondary">
@@ -151,8 +148,8 @@ export function CopyTradingSettingsPage({
       </SettingsSection>
 
       <SettingsSection
-        title="Signal channels"
-        description="Channels and groups that TradePartna can read for trade instructions."
+        title="Signal Channels"
+        description="Only messages from these channels and groups can become copy instructions."
         action={
           <Button variant="outline" onClick={() => setChannelOpen(true)}>
             <Plus className="size-4" />
@@ -222,8 +219,8 @@ export function CopyTradingSettingsPage({
       </SettingsSection>
 
       <SettingsSection
-        title="Trading accounts"
-        description="Independent MT5 connections used only for copy execution."
+        title="Trading Accounts & Risk Limits"
+        description="Trades are placed through MetaApi. Each account has its own independent safety limits."
         action={
           <Button variant="outline" onClick={() => setCopyAccountOpen(true)}>
             <Plus className="size-4" />
@@ -234,7 +231,10 @@ export function CopyTradingSettingsPage({
         <MetaApiAccountList accounts={accounts} policies={policies} />
       </SettingsSection>
 
-      <MetaApiAccountForm open={copyAccountOpen} onOpenChange={setCopyAccountOpen} />
+      <MetaApiAccountForm
+        open={copyAccountOpen}
+        onOpenChange={setCopyAccountOpen}
+      />
 
       <TelegramSignInDialog
         open={telegramOpen}

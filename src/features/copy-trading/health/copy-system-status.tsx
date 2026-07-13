@@ -1,20 +1,21 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type {
   CopyDeadLetter,
   CopyLaunchReadiness,
   CopySystemHealth,
 } from "../types";
-import { useCopyTradingActions } from "../hooks";
-import { apiError, relativeTime } from "../utils";
+import { relativeTime } from "../utils";
 
 const roleLabels: Record<string, string> = {
   "telegram-session": "Telegram listener",
   "copy-signal": "Signal processing",
   "copy-execution": "Broker execution",
+  "copy-provisioning": "Account setup",
+  metaapi: "MetaApi connection",
 };
 
 export function CopySystemStatus({
@@ -26,7 +27,6 @@ export function CopySystemStatus({
   launchReadiness?: CopyLaunchReadiness;
   deadLetters: CopyDeadLetter[];
 }) {
-  const actions = useCopyTradingActions();
   const pending = deadLetters.filter((item) => item.state === "pending");
 
   if (!health) return null;
@@ -39,23 +39,26 @@ export function CopySystemStatus({
           <AlertTriangle className="mt-0.5 size-4 text-warning-text" />
         )}
         <div>
-          <h2 className="font-semibold text-text-primary">Automation services</h2>
+          <h2 className="font-semibold text-text-primary">
+            Automation services
+          </h2>
           <p className="mt-0.5 text-sm text-text-secondary">
-            Live status from the workers that read, interpret, and execute signals.
+            Live status from the workers that read, interpret, and execute
+            signals.
           </p>
         </div>
       </div>
       {launchReadiness && !launchReadiness.ready ? (
         <div className="border-b border-danger/30 bg-danger/5 px-4 py-3">
           <p className="text-sm font-semibold text-danger">
-            Live copying is blocked
+            Automation Needs Attention
           </p>
           <p className="mt-1 text-xs text-text-secondary">
             {launchReadiness.blockers.includes("uncertain_intents")
               ? "A broker confirmation is unresolved."
               : launchReadiness.blockers.includes("dead_letters")
-                ? "A failed automation event needs recovery."
-                : "One or more automation services are not ready."}
+                ? "A failed action needs review. Other healthy copy rules continue running."
+                : "One or more automation services are not ready for new signals."}
           </p>
         </div>
       ) : null}
@@ -72,7 +75,9 @@ export function CopySystemStatus({
               <p className="mt-0.5 text-xs text-text-secondary">
                 {component.heartbeat_at
                   ? `Last response ${relativeTime(component.heartbeat_at)}`
-                  : "No response received"}
+                  : component.status === "healthy"
+                    ? "Connected"
+                    : "Waiting for a response"}
               </p>
             </div>
             <span
@@ -92,29 +97,18 @@ export function CopySystemStatus({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-text-primary">
-                {pending.length} failed event{pending.length === 1 ? "" : "s"} available for recovery
+                {pending.length} failed event{pending.length === 1 ? "" : "s"}{" "}
+                available for recovery
               </p>
               <p className="mt-0.5 text-xs text-text-secondary">
                 Replay only after the service issue has been resolved.
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={actions.replayDeadLetter.isPending}
-              onClick={async () => {
-                try {
-                  await actions.replayDeadLetter.mutateAsync(pending[0].id);
-                  toast.success("Failed event sent for processing");
-                } catch (error) {
-                  toast.error("Failed event could not be replayed", {
-                    description: apiError(error),
-                  });
-                }
-              }}
-            >
-              <RotateCcw className="size-4" />
-              Replay latest
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/copy-trading/activity">
+                Review Failed Actions
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
             </Button>
           </div>
         </div>

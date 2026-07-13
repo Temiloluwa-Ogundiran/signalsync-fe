@@ -84,9 +84,9 @@ export function Toggle({
   compact?: boolean;
 }) {
   return (
-    <div
+    <label
       className={cn(
-        "flex items-center justify-between gap-4",
+        "flex cursor-pointer items-center justify-between gap-4",
         !compact && "rounded-md border border-border-primary px-3 py-3",
       )}
     >
@@ -99,6 +99,6 @@ export function Toggle({
         ) : null}
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />
-    </div>
+    </label>
   );
 }
