@@ -18,6 +18,8 @@ export async function refreshJournalQueriesAfterManualSync(
     "journal-trade-history",
     "journal-open-positions",
     "journal-day",
+    "journal-curve",
+    "journal-feed",
   ] as const;
 
   await Promise.all(

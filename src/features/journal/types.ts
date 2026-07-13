@@ -76,6 +76,8 @@ export interface JournalAccountSyncStatus {
 
 interface JournalAccountSyncImmediateResult {
   inserted_trades: number;
+  updated_trades?: number;
+  deleted_trades?: number;
   touched_trading_dates: number;
 }
 
