@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ForceLight } from "@/features/theme/force-light";
+import { FollowSystemTheme } from "@/features/theme/follow-system-theme";
 
 /**
  * Auth chrome: wordmark top-left, the page's content centered, and a
@@ -15,7 +15,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative flex min-h-screen flex-col bg-auth-bg">
-      <ForceLight />
+      <FollowSystemTheme />
 
       {/* Wordmark — top-left */}
       <div className="relative z-10 px-6 py-6 sm:px-10">
@@ -26,7 +26,15 @@ export default function AuthLayout({
             width={184}
             height={24}
             priority
-            className="h-7 w-auto"
+            className="h-7 w-auto dark:hidden"
+          />
+          <Image
+            src="/brand/tradepartna-logo-full.svg"
+            alt="TradePartna"
+            width={184}
+            height={24}
+            priority
+            className="hidden h-7 w-auto dark:block"
           />
         </Link>
       </div>

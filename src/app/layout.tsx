@@ -36,13 +36,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/*
-         * Blocking script: applies the persisted theme before hydration (no
-         * flash). Public/auth routes (login, signup, landing, etc.) are ALWAYS
-         * light — dark mode only applies inside the dashboard. Defaults to light.
+         * Blocking script: resolves the theme before hydration (no flash).
+         * Auth routes follow the OS; signed-in routes use the saved preference.
          */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname;var PUB=['/','/login','/register','/verify-email','/forgot-password','/reset-password','/resend-verification'];var isPub=PUB.indexOf(p)>-1||/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark&&!isPub)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}})();`,
+            __html: `(function(){try{var p=location.pathname;var AUTH=/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=AUTH?m:(t==='dark'||(t==='system'&&m));document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`,
           }}
         />
       </head>

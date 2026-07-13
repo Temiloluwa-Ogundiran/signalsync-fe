@@ -27,6 +27,7 @@
 
 /* ===== Light Theme (default) ===== */
 :root {
+  color-scheme: light;
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
   --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
   --bg-canvas: #f7f8fa; /* tier 1 — content canvas (neutral grey) */
@@ -221,6 +222,7 @@
    Flat & dark: near-black canvas, barely-lifted cards, near-invisible borders,
    slightly cool neutrals, mint/coral accents. */
 .dark {
+  color-scheme: dark;
   /* Premium-restrained spec (RECESSED model): canvas is a lighter charcoal,
      cards are DARKER and inset (wells, not tiles). Borders almost invisible. */
   --bg-primary: #141518; /* canvas — lighter charcoal */
@@ -303,6 +305,11 @@
   --ai-accent-bright: #c4b5fd;
   --ai-soft-bg: rgba(139, 92, 246, 0.14);
   --ai-soft-border: rgba(139, 92, 246, 0.32);
+
+  /* Auth screens follow the OS theme before a user session exists. */
+  --auth-bg: #141518;
+  --auth-accent: #8b7cf6;
+  --auth-accent-hover: #9f91ff;
 
   --badge-warn-bg: rgba(245, 158, 11, 0.14);
   --badge-warn-fg: #f59e0b;
