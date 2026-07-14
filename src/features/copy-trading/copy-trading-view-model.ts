@@ -69,6 +69,14 @@ export function deriveSystemHealth(input: {
       description: `${humanizeHealthIssue(input.system.issues[0])} Healthy rules continue processing.`,
     };
   }
+  if (input.launch?.warnings.includes("dead_letters_need_review")) {
+    return {
+      tone: "warning",
+      label: "Some actions need review",
+      description:
+        "A failed action is waiting in Copy Activity. Healthy copy rules continue processing.",
+    };
+  }
   const staleConnection = input.connections?.some((connection) => {
     if (
       connection.state !== "ready" ||
@@ -113,8 +121,6 @@ function humanizeLaunchBlocker(blocker?: string): string {
   const messages: Record<string, string> = {
     uncertain_intents:
       "A broker confirmation is unresolved. New live copying should remain paused.",
-    dead_letters:
-      "A failed automation event needs recovery before live copying resumes.",
     runtime_health:
       "One or more automation services are not ready for live copying.",
   };

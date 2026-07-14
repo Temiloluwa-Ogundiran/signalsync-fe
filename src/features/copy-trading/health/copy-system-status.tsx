@@ -62,6 +62,18 @@ export function CopySystemStatus({
           </p>
         </div>
       ) : null}
+      {launchReadiness?.ready &&
+      launchReadiness.warnings.includes("dead_letters_need_review") ? (
+        <div className="border-b border-warning-text/30 bg-warning-text/5 px-4 py-3">
+          <p className="text-sm font-semibold text-warning-text">
+            Some Actions Need Review
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
+            Healthy copy rules are still running. Review the failed action in
+            Copy Activity before retrying it.
+          </p>
+        </div>
+      ) : null}
       <div className="grid divide-y divide-border-primary md:grid-cols-2 md:divide-y-0">
         {health.components.map((component) => (
           <div

@@ -171,3 +171,30 @@ test("launch blockers are never presented as ready", () => {
   assert.equal(health.label, "Live copying is blocked");
   assert.match(health.description, /broker confirmation/i);
 });
+
+test("a pending recovery action warns without blocking healthy copying", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "ready",
+      ready: true,
+      issues: [],
+      components: [],
+    },
+    launch: {
+      ready: true,
+      blockers: [],
+      warnings: ["dead_letters_need_review"],
+      components: [],
+      stream_lag: 0,
+      pending_events: 0,
+      dead_letters: 1,
+      oldest_uncertain_seconds: 0,
+      global_paused: false,
+    },
+  });
+
+  assert.equal(health.tone, "warning");
+  assert.equal(health.label, "Some actions need review");
+  assert.match(health.description, /continue processing/i);
+});
