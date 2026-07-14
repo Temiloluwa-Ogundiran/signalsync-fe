@@ -192,6 +192,19 @@ test("runtime health and recovery APIs are exposed", () => {
   assert.match(hooks, /useCopyLaunchReadiness/);
 });
 
+test("copy trading refreshes live and activity remains active on its own page", () => {
+  const hooks = feature("hooks.ts");
+  const page = feature("copy-trading-page.tsx");
+
+  assert.match(hooks, /new EventSource\("\/api\/proxy\/copy-trading\/live"\)/);
+  assert.match(hooks, /invalidateQueries\(\{ queryKey: COPY_TRADING_KEYS\.all \}\)/);
+  assert.match(page, /useCopyTradingLiveUpdates\(true\)/);
+  assert.match(
+    page,
+    /view === "overview" \|\| view === "routes" \|\| view === "activity"/,
+  );
+});
+
 test("activity uses server filters and cursor pagination", () => {
   const api = feature("api.ts");
   const hooks = feature("hooks.ts");

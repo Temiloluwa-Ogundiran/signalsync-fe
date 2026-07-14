@@ -10,6 +10,7 @@ import {
   useCopySystemHealth,
   useCopyConnections,
   useCopyTradingSettings,
+  useCopyTradingLiveUpdates,
   useTelegramConnections,
   useTelegramSources,
   useUpdateCopyTradingSettings,
@@ -30,12 +31,13 @@ import { SectionError } from "./shared/section-error";
 export type CopyTradingView = "overview" | "routes" | "activity" | "settings";
 
 export function CopyTradingPage({ view }: { view: CopyTradingView }) {
+  useCopyTradingLiveUpdates(true);
   const settings = useCopyTradingSettings();
   const routes = useCopyRoutes();
   const policies = useCopyAccountPolicies();
   const activity = useCopyActivity(
     {},
-    view === "overview" || view === "routes",
+    view === "overview" || view === "routes" || view === "activity",
   );
   const systemHealth = useCopySystemHealth(true);
   const launchReadiness = useCopyLaunchReadiness(true);

@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import { copyTradingApi } from "./api";
 import type { CopyActivityFilters } from "./types";
 
@@ -30,6 +31,22 @@ function useCopyTradingAuth() {
     token: session?.accessToken as string | undefined,
     enabled: status === "authenticated" && !!session?.accessToken,
   };
+}
+
+export function useCopyTradingLiveUpdates(active = true) {
+  const { enabled } = useCopyTradingAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!enabled || !active) return;
+
+    const events = new EventSource("/api/proxy/copy-trading/live");
+    events.onmessage = () => {
+      void queryClient.invalidateQueries({ queryKey: COPY_TRADING_KEYS.all });
+    };
+
+    return () => events.close();
+  }, [active, enabled, queryClient]);
 }
 
 export function useCopyTradingSettings() {
@@ -96,7 +113,7 @@ export function useCopyActivity(
     initialPageParam: "",
     getNextPageParam: (page) => page.next_cursor ?? undefined,
     enabled: enabled && active,
-    refetchInterval: active ? 15_000 : false,
+    refetchInterval: active ? 60_000 : false,
   });
 }
 
@@ -126,7 +143,7 @@ export function useCopyDeadLetters(active = true) {
     queryKey: COPY_TRADING_KEYS.deadLetters(),
     queryFn: () => copyTradingApi.listDeadLetters(token),
     enabled: enabled && active,
-    refetchInterval: active ? 30_000 : false,
+    refetchInterval: active ? 60_000 : false,
   });
 }
 

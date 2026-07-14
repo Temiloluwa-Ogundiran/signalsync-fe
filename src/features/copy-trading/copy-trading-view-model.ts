@@ -183,6 +183,9 @@ export function activityStatusState(event: {
   if (
     [
       "signal.validated",
+      "route.created",
+      "route.updated",
+      "route.resumed",
       "broker.reconciled",
       "broker.succeeded",
       "emergency.succeeded",
