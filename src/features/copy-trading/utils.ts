@@ -51,6 +51,7 @@ export function routeInput(route: CopyRoute) {
     process_all_group_authors: route.process_all_group_authors,
     notify_success: route.notify_success,
     notify_failure: route.notify_failure,
+    semantic_duplicate_window_seconds: route.semantic_duplicate_window_seconds,
     allow_sl_tp_updates: route.allow_sl_tp_updates,
     allow_break_even: route.allow_break_even,
     allow_additional_tp: route.allow_additional_tp,

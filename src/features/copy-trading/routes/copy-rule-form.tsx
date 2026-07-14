@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -18,6 +19,9 @@ import type {
 import { useCopyTradingActions } from "../hooks";
 import { accountLabel, apiError, routeInput } from "../utils";
 import { Field, Select } from "../shared/form-controls";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { CopyRoutePreview } from "../types";
 import {
   defaultCopyPreferences,
   PreferencesStep,
@@ -86,6 +90,21 @@ function CopyRuleFormBody({
           assembly_window_seconds: 90,
         },
   );
+  const [sample, setSample] = useState("");
+  const [preview, setPreview] = useState<CopyRoutePreview>();
+  const [previewing, setPreviewing] = useState(false);
+
+  const testSignal = async () => {
+    if (!route || !sample.trim()) return;
+    setPreviewing(true);
+    try {
+      setPreview(await actions.previewRoute(route.id, sample.trim()));
+    } catch (error) {
+      toast.error("Signal test could not be completed", { description: apiError(error) });
+    } finally {
+      setPreviewing(false);
+    }
+  };
 
   const save = async () => {
     try {
@@ -156,6 +175,33 @@ function CopyRuleFormBody({
         busy={actions.createRoute.isPending || actions.updateRoute.isPending}
         submitLabel="Save Copy Route"
       />
+      {route ? (
+        <section className="mt-5 border-t border-border-primary pt-5" aria-labelledby="route-test-title">
+          <div className="flex items-start gap-2">
+            <FlaskConical aria-hidden="true" className="mt-0.5 size-4 text-text-secondary" />
+            <div>
+              <h3 id="route-test-title" className="text-sm font-semibold text-text-primary">Test a channel message</h3>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">See how this route interprets a message. This never places a trade.</p>
+            </div>
+          </div>
+          <Textarea className="mt-3 min-h-28" value={sample} onChange={(event) => setSample(event.target.value)} placeholder={"SELL EURUSD\nSL 1.14500\nTP 1.1300"} aria-label="Signal message to test" />
+          <div className="mt-3 flex justify-end">
+            <Button type="button" variant="outline" disabled={!sample.trim() || previewing} onClick={testSignal}>
+              <FlaskConical aria-hidden="true" className="size-4" />
+              {previewing ? "Testing..." : "Test Message"}
+            </Button>
+          </div>
+          {preview ? (
+            <div className={`mt-3 border-l-2 px-3 py-2 text-sm ${preview.accepted ? "border-success" : "border-warning"}`} role="status">
+              <p className="font-semibold text-text-primary">{preview.accepted ? "Ready for broker checks" : "Would not place a trade"}</p>
+              <p className="mt-1 text-text-secondary">
+                {preview.reason ?? `${preview.direction?.toUpperCase() ?? "Action"} ${preview.broker_symbol ?? preview.signal_symbol ?? "trade"}${preview.volume ? ` at ${preview.volume} lots` : ""}`}
+              </p>
+              {preview.warnings.map((warning) => <p key={warning} className="mt-1 text-xs text-text-tertiary">{warning}</p>)}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
     </>
   );
 }

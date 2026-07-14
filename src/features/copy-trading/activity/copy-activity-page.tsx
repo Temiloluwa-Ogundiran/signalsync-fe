@@ -9,21 +9,25 @@ import type {
   CopyDeadLetter,
   CopyTradingConnection,
   TelegramSource,
+  CopySignalReview,
 } from "../types";
 import { useCopyActivity } from "../hooks";
 import { SectionError } from "../shared/section-error";
 import { ActivityFeed } from "./activity-feed";
 import { ActivityFiltersSheet, FilterSelects } from "./activity-filters-sheet";
 import { FailedEventRecovery } from "./failed-event-recovery";
+import { SignalReviewList } from "./signal-review-list";
 
 export function CopyActivityPage({
   sources,
   accounts,
   deadLetters,
+  reviews,
 }: {
   sources: TelegramSource[];
   accounts: CopyTradingConnection[];
   deadLetters: CopyDeadLetter[];
+  reviews: CopySignalReview[];
 }) {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<
@@ -55,6 +59,7 @@ export function CopyActivityPage({
         </p>
       </div>
       <FailedEventRecovery items={deadLetters} />
+      <SignalReviewList items={reviews} sources={sources} />
       <div className="flex gap-2 lg:grid lg:grid-cols-[minmax(220px,1fr)_180px_220px_220px_auto]">
         <div className="relative flex-1">
           <Search

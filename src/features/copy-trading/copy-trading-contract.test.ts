@@ -219,6 +219,21 @@ test("activity uses server filters and cursor pagination", () => {
   assert.doesNotMatch(activity, /events\.filter/);
 });
 
+test("production copy controls expose preview, review, latency, and execution settings", () => {
+  const api = feature("api.ts");
+  const hooks = feature("hooks.ts");
+  const safety = feature("accounts/account-safety-form.tsx");
+  const routeForm = feature("routes/copy-rule-form.tsx");
+
+  for (const path of ["/copy-trading/latency", "/copy-trading/signal-reviews", "/preview"]) {
+    assert.match(api, new RegExp(path.replaceAll("/", "\\/")));
+  }
+  assert.match(hooks, /useCopySignalReviews/);
+  assert.match(safety, /Maximum Spread/);
+  assert.match(safety, /Maximum Quote Age/);
+  assert.match(routeForm, /This never places a trade/);
+});
+
 test("one failed query does not blank the entire workspace", () => {
   const page = feature("copy-trading-page.tsx");
 

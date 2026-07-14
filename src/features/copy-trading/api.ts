@@ -11,6 +11,9 @@ import type {
   CopyTradingConnectionInput,
   CopySystemHealth,
   CopyRouteInput,
+  CopyExecutionLatency,
+  CopySignalReview,
+  CopyRoutePreview,
   TelegramAuth,
   TelegramConnection,
   TelegramDialog,
@@ -100,6 +103,18 @@ export const copyTradingApi = {
     return data;
   },
 
+  getLatency: async (token?: string): Promise<CopyExecutionLatency> =>
+    (await apiClient.get<CopyExecutionLatency>("/copy-trading/latency", withAuth(token))).data,
+
+  listSignalReviews: async (token?: string): Promise<CopySignalReview[]> =>
+    (await apiClient.get<CopySignalReview[]>("/copy-trading/signal-reviews", withAuth(token))).data,
+
+  approveSignalReview: async (reviewId: string, conversationId: string, token?: string): Promise<CopySignalReview> =>
+    (await apiClient.post<CopySignalReview>(`/copy-trading/signal-reviews/${reviewId}/approve`, { conversation_id: conversationId }, withAuth(token))).data,
+
+  ignoreSignalReview: async (reviewId: string, token?: string): Promise<CopySignalReview> =>
+    (await apiClient.post<CopySignalReview>(`/copy-trading/signal-reviews/${reviewId}/ignore`, {}, withAuth(token))).data,
+
   getHealth: async (token?: string): Promise<CopySystemHealth> =>
     (
       await apiClient.get<CopySystemHealth>(
@@ -170,6 +185,8 @@ export const copyTradingApi = {
     (await apiClient.post<CopyRoute>("/copy-trading/routes", payload, withAuth(token))).data,
   updateRoute: async (routeId: string, payload: Partial<CopyRouteInput>, token?: string): Promise<CopyRoute> =>
     (await apiClient.patch<CopyRoute>(`/copy-trading/routes/${routeId}`, payload, withAuth(token))).data,
+  previewRoute: async (routeId: string, text: string, token?: string): Promise<CopyRoutePreview> =>
+    (await apiClient.post<CopyRoutePreview>(`/copy-trading/routes/${routeId}/preview`, { text }, withAuth(token))).data,
   activateRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>
     (await apiClient.post<CopyRoute>(`/copy-trading/routes/${routeId}/activate`, {}, withAuth(token))).data,
   pauseRoute: async (routeId: string, token?: string): Promise<CopyRoute> =>

@@ -11,6 +11,8 @@ import {
   useCopyConnections,
   useCopyTradingSettings,
   useCopyTradingLiveUpdates,
+  useCopyLatency,
+  useCopySignalReviews,
   useTelegramConnections,
   useTelegramSources,
   useUpdateCopyTradingSettings,
@@ -44,6 +46,8 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   const deadLetters = useCopyDeadLetters(
     view === "overview" || view === "activity",
   );
+  const latency = useCopyLatency(view === "overview" || view === "activity");
+  const reviews = useCopySignalReviews(view === "overview" || view === "activity");
   const accounts = useCopyConnections();
   const connections = useTelegramConnections();
   const sources = useTelegramSources();
@@ -117,6 +121,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         sources={sourcesData}
         accounts={accountsData}
         deadLetters={deadLetters.data ?? []}
+        reviews={reviews.data ?? []}
       />
     );
   } else if (coreDataLoading) {
@@ -142,6 +147,8 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         systemHealth={systemHealth.data}
         launchReadiness={launchReadiness.data}
         deadLetters={deadLetters.data ?? []}
+        latency={latency.data}
+        reviews={reviews.data ?? []}
       />
     );
   }

@@ -19,6 +19,8 @@ const COPY_TRADING_KEYS = {
   health: () => ["copy-trading", "health"] as const,
   readiness: () => ["copy-trading", "launch-readiness"] as const,
   deadLetters: () => ["copy-trading", "dead-letters"] as const,
+  latency: () => ["copy-trading", "latency"] as const,
+  reviews: () => ["copy-trading", "signal-reviews"] as const,
   copyConnections: () => ["copy-trading", "copy-connections"] as const,
   connections: () => ["copy-trading", "telegram-connections"] as const,
   sources: () => ["copy-trading", "sources"] as const,
@@ -147,6 +149,24 @@ export function useCopyDeadLetters(active = true) {
   });
 }
 
+export function useCopyLatency(active = true) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({
+    queryKey: COPY_TRADING_KEYS.latency(),
+    queryFn: () => copyTradingApi.getLatency(token),
+    enabled: enabled && active,
+  });
+}
+
+export function useCopySignalReviews(active = true) {
+  const { token, enabled } = useCopyTradingAuth();
+  return useQuery({
+    queryKey: COPY_TRADING_KEYS.reviews(),
+    queryFn: () => copyTradingApi.listSignalReviews(token),
+    enabled: enabled && active,
+  });
+}
+
 export function useTelegramConnections() {
   const { token, enabled } = useCopyTradingAuth();
   return useQuery({
@@ -272,6 +292,17 @@ export function useCopyTradingActions() {
       mutationFn: (id: string) => copyTradingApi.deleteRoute(id, token),
       onSuccess: refresh,
     }),
+    previewRoute: (id: string, text: string) =>
+      copyTradingApi.previewRoute(id, text, token),
+    approveReview: useMutation({
+      mutationFn: ({ id, conversationId }: { id: string; conversationId: string }) =>
+        copyTradingApi.approveSignalReview(id, conversationId, token),
+      onSuccess: refresh,
+    }),
+    ignoreReview: useMutation({
+      mutationFn: (id: string) => copyTradingApi.ignoreSignalReview(id, token),
+      onSuccess: refresh,
+    }),
     emergency: useMutation({
       mutationFn: (payload: Parameters<typeof copyTradingApi.emergency>[0]) =>
         copyTradingApi.emergency(payload, token),
@@ -322,6 +353,12 @@ export function useUpdateCopyAccountPolicy() {
         allowed_symbols?: string[];
         blocked_symbols?: string[];
         market_signal_max_age_seconds?: number;
+        max_spread_points?: number | null;
+        max_slippage_points?: number | null;
+        max_quote_age_seconds?: number;
+        high_spread_behavior?: "reject" | "wait";
+        trading_start_hour_utc?: number | null;
+        trading_end_hour_utc?: number | null;
         is_paused?: boolean;
       };
     }) => copyTradingApi.updateAccountPolicy(connectionId, payload, token),

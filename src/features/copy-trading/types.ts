@@ -47,6 +47,12 @@ export interface CopyAccountPolicy {
   allowed_symbols: string[];
   blocked_symbols: string[];
   market_signal_max_age_seconds: number;
+  max_spread_points: number | null;
+  max_slippage_points: number | null;
+  max_quote_age_seconds: number;
+  high_spread_behavior: "reject" | "wait";
+  trading_start_hour_utc: number | null;
+  trading_end_hour_utc: number | null;
   is_paused: boolean;
   created_at: string;
   updated_at: string;
@@ -67,6 +73,7 @@ export interface CopyRoute {
   process_all_group_authors: boolean;
   notify_success: boolean;
   notify_failure: boolean;
+  semantic_duplicate_window_seconds: number;
   allow_sl_tp_updates: boolean;
   allow_break_even: boolean;
   allow_additional_tp: boolean;
@@ -105,6 +112,54 @@ export interface CopyActivityFilters {
 export interface CopyActivityPage {
   items: CopyActivity[];
   next_cursor: string | null;
+}
+
+export interface CopyExecutionLatency {
+  sample_count: number;
+  p50_ms: number | null;
+  p95_ms: number | null;
+  p99_ms: number | null;
+  target_ms: number;
+  over_target_count: number;
+  recent: Array<{
+    correlation_id: string;
+    action: string;
+    symbol: string | null;
+    status: string;
+    ingestion_ms: number | null;
+    assembly_ms: number | null;
+    broker_ms: number | null;
+    total_ms: number | null;
+    created_at: string;
+  }>;
+}
+
+export interface CopySignalReview {
+  id: string;
+  route_id: string;
+  source_id: string;
+  correlation_id: string;
+  parsed_details: Record<string, unknown>;
+  candidates: Array<{
+    conversation_id: string;
+    symbol: string | null;
+    direction: string | null;
+    updated_at: string;
+  }>;
+  state: "pending" | "approved" | "ignored";
+  created_at: string;
+}
+
+export interface CopyRoutePreview {
+  accepted: boolean;
+  reason: string | null;
+  action: string;
+  signal_symbol: string | null;
+  broker_symbol: string | null;
+  direction: string | null;
+  volume: string | null;
+  take_profits: string[];
+  warnings: string[];
 }
 
 interface CopyHealthComponent {
@@ -240,6 +295,7 @@ export interface CopyRouteInput {
   process_all_group_authors: boolean;
   notify_success: boolean;
   notify_failure: boolean;
+  semantic_duplicate_window_seconds: number;
   allow_sl_tp_updates: boolean;
   allow_break_even: boolean;
   allow_additional_tp: boolean;

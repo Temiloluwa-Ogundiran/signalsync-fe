@@ -19,6 +19,7 @@ export const defaultCopyPreferences: CopyRouteInput = {
   process_all_group_authors: false,
   notify_success: true,
   notify_failure: true,
+  semantic_duplicate_window_seconds: 30,
   allow_sl_tp_updates: true,
   allow_break_even: true,
   allow_additional_tp: true,
@@ -198,6 +199,24 @@ export function PreferencesStep({
             />
           </FormSection>
 
+          <FormSection
+            title="Duplicate protection"
+            description="Ignore an identical instruction from this route for a short period."
+          >
+            <Field
+              label="Duplicate window"
+              help="Use 0 only when the channel intentionally repeats identical instructions."
+            >
+              <Input
+                type="number"
+                min="0"
+                max="3600"
+                value={value.semantic_duplicate_window_seconds}
+                onChange={(event) => update("semantic_duplicate_window_seconds", Number(event.target.value))}
+              />
+            </Field>
+          </FormSection>
+
           <FormSection title="Trade changes">
             {[
               ["allow_sl_tp_updates", "Stop-loss and take-profit changes"],
@@ -222,13 +241,13 @@ export function PreferencesStep({
           <FormSection title="Notifications">
             <Toggle
               compact
-              label="Email successful trades"
+              label="Successful trade alerts"
               checked={value.notify_success}
               onChange={(next) => update("notify_success", next)}
             />
             <Toggle
               compact
-              label="Email failures"
+              label="Failure alerts"
               checked={value.notify_failure}
               onChange={(next) => update("notify_failure", next)}
             />

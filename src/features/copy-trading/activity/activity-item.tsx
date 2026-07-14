@@ -39,6 +39,7 @@ export function ActivityItem({
   const statusState = activityStatusState(event);
   const source = sources.find((item) => item.id === event.source_id);
   const account = accounts.find((item) => item.id === event.connection_id);
+  const timing = executionTiming(event.parsed_details);
   const Icon =
     statusState === "failed" || statusState === "error"
       ? AlertCircle
@@ -119,6 +120,19 @@ export function ActivityItem({
             <Detail title="Signal details" data={event.parsed_details} />
             <Detail title="Broker result" data={event.broker_details} />
           </div>
+          {timing.length ? (
+            <div>
+              <p className="text-xs font-semibold uppercase text-text-tertiary">Execution timeline</p>
+              <ol className="mt-2 grid gap-2 sm:grid-cols-3">
+                {timing.map((stage) => (
+                  <li key={stage.label} className="border-l-2 border-success pl-3">
+                    <span className="block text-xs text-text-secondary">{stage.label}</span>
+                    <span className="text-sm font-semibold text-text-primary">{stage.duration}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
           {raw === undefined ? (
             <Button variant="outline" size="sm" onClick={reveal}>
               Reveal source message
@@ -152,6 +166,22 @@ export function ActivityItem({
       ) : null}
     </article>
   );
+}
+
+function executionTiming(details: Record<string, unknown>) {
+  const raw = details?._telemetry;
+  if (!raw || typeof raw !== "object") return [];
+  const timing = raw as Record<string, unknown>;
+  const elapsed = (start: unknown, end: unknown) => {
+    if (typeof start !== "string" || typeof end !== "string") return null;
+    const milliseconds = Math.max(0, new Date(end).getTime() - new Date(start).getTime());
+    return milliseconds < 1000 ? `${milliseconds} ms` : `${(milliseconds / 1000).toFixed(2)} s`;
+  };
+  return [
+    { label: "Telegram to intake", duration: elapsed(timing.telegram_at, timing.ingested_at) },
+    { label: "Parsing and safety", duration: elapsed(timing.ingested_at, timing.submitted_at) },
+    { label: "Broker confirmation", duration: elapsed(timing.submitted_at, timing.resolved_at) },
+  ].filter((stage): stage is { label: string; duration: string } => Boolean(stage.duration));
 }
 
 function Detail({

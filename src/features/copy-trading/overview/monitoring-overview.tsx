@@ -8,11 +8,15 @@ import type {
   TelegramSource,
   CopySystemHealth,
   CopyLaunchReadiness,
+  CopyExecutionLatency,
+  CopySignalReview,
 } from "../types";
 import { ActivityFeed } from "../activity/activity-feed";
 import { AttentionList } from "./attention-list";
 import { HealthStrip } from "./health-strip";
 import { CopySystemStatus } from "../health/copy-system-status";
+import { LatencyStrip } from "./latency-strip";
+import { SignalReviewList } from "../activity/signal-review-list";
 
 export function MonitoringOverview({
   routes,
@@ -23,6 +27,8 @@ export function MonitoringOverview({
   systemHealth,
   launchReadiness,
   deadLetters,
+  latency,
+  reviews,
 }: {
   routes: CopyRoute[];
   connections: TelegramConnection[];
@@ -32,6 +38,8 @@ export function MonitoringOverview({
   systemHealth?: CopySystemHealth;
   launchReadiness?: CopyLaunchReadiness;
   deadLetters: CopyDeadLetter[];
+  latency?: CopyExecutionLatency;
+  reviews: CopySignalReview[];
 }) {
   return (
     <div className="space-y-6">
@@ -47,6 +55,8 @@ export function MonitoringOverview({
         accounts={accounts}
         activity={activity}
       />
+      <LatencyStrip latency={latency} />
+      <SignalReviewList items={reviews} sources={sources} />
       <CopySystemStatus
         health={systemHealth}
         launchReadiness={launchReadiness}

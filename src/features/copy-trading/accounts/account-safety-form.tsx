@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import type { CopyAccountPolicy } from "../types";
 import { useUpdateCopyAccountPolicy } from "../hooks";
 import { apiError } from "../utils";
+import { Field, Select } from "../shared/form-controls";
 
 function symbolList(value: string) {
   return [
@@ -38,6 +39,12 @@ export function AccountSafetyForm({
   const [signalAge, setSignalAge] = useState(
     String(policy.market_signal_max_age_seconds),
   );
+  const [spread, setSpread] = useState(policy.max_spread_points?.toString() ?? "");
+  const [slippage, setSlippage] = useState(policy.max_slippage_points?.toString() ?? "");
+  const [quoteAge, setQuoteAge] = useState(String(policy.max_quote_age_seconds));
+  const [spreadBehavior, setSpreadBehavior] = useState(policy.high_spread_behavior);
+  const [startHour, setStartHour] = useState(policy.trading_start_hour_utc?.toString() ?? "");
+  const [endHour, setEndHour] = useState(policy.trading_end_hour_utc?.toString() ?? "");
   const [allowed, setAllowed] = useState(policy.allowed_symbols.join(", "));
   const [blocked, setBlocked] = useState(policy.blocked_symbols.join(", "));
   const invalid =
@@ -46,6 +53,11 @@ export function AccountSafetyForm({
     Number(positions) < 1 ||
     Number(signalAge) < 1 ||
     Number(signalAge) > 3600 ||
+    Number(quoteAge) < 1 ||
+    Number(quoteAge) > 300 ||
+    (spread !== "" && Number(spread) < 0) ||
+    (slippage !== "" && Number(slippage) < 0) ||
+    ((startHour === "") !== (endHour === "")) ||
     (dailyLoss !== "" && Number(dailyLoss) <= 0) ||
     (drawdown !== "" && (Number(drawdown) <= 0 || Number(drawdown) > 100));
 
@@ -61,6 +73,12 @@ export function AccountSafetyForm({
           daily_loss_limit: dailyLoss || null,
           max_drawdown_percent: drawdown || null,
           market_signal_max_age_seconds: Number(signalAge),
+          max_spread_points: spread === "" ? null : Number(spread),
+          max_slippage_points: slippage === "" ? null : Number(slippage),
+          max_quote_age_seconds: Number(quoteAge),
+          high_spread_behavior: spreadBehavior,
+          trading_start_hour_utc: startHour === "" ? null : Number(startHour),
+          trading_end_hour_utc: endHour === "" ? null : Number(endHour),
           allowed_symbols: symbolList(allowed),
           blocked_symbols: symbolList(blocked),
         },
@@ -160,6 +178,67 @@ export function AccountSafetyForm({
           value={blocked}
           onChange={setBlocked}
           placeholder="No blocked symbols"
+        />
+        <SafetyNumber
+          id={`${connectionId}-spread`}
+          label="Maximum Spread"
+          help="Block a market entry when the broker spread is wider. Leave blank to disable."
+          value={spread}
+          onChange={setSpread}
+          min="0"
+          step="1"
+          suffix="points"
+          optional
+        />
+        <SafetyNumber
+          id={`${connectionId}-slippage`}
+          label="Maximum Price Movement"
+          help="Block an entry when price moved too far from a supplied signal entry."
+          value={slippage}
+          onChange={setSlippage}
+          min="0"
+          step="1"
+          suffix="points"
+          optional
+        />
+        <SafetyNumber
+          id={`${connectionId}-quote-age`}
+          label="Maximum Quote Age"
+          help="Never submit using an old broker quote."
+          value={quoteAge}
+          onChange={setQuoteAge}
+          min="1"
+          max="300"
+          step="1"
+          suffix="seconds"
+        />
+        <Field label="When spread is too wide" help="Wait retries once with a fresh quote; reject stops immediately.">
+          <Select value={spreadBehavior} onChange={(value) => setSpreadBehavior(value as "reject" | "wait")}>
+            <option value="reject">Reject this instruction</option>
+            <option value="wait">Wait once for a better quote</option>
+          </Select>
+        </Field>
+        <SafetyNumber
+          id={`${connectionId}-start-hour`}
+          label="Trading Starts (UTC)"
+          help="Use both start and end, or leave both blank for all hours."
+          value={startHour}
+          onChange={setStartHour}
+          min="0"
+          max="23"
+          step="1"
+          optional
+        />
+        <SafetyNumber
+          id={`${connectionId}-end-hour`}
+          label="Trading Ends (UTC)"
+          help="Overnight windows such as 22 to 6 are supported."
+          value={endHour}
+          onChange={setEndHour}
+          min="0"
+          max="23"
+          step="1"
+          optional
         />
       </div>
       <div className="mt-5 flex flex-col gap-3 border-t border-border-primary pt-4 sm:flex-row sm:items-center sm:justify-between">
