@@ -350,6 +350,7 @@ function Mt5ServerCombobox({
       <PopoverAnchor asChild>
         <Input
           ref={inputRef}
+          aria-label="Server"
           value={searchValue}
           disabled={disabled}
           onFocus={() => setOpen(true)}
@@ -366,6 +367,7 @@ function Mt5ServerCombobox({
         />
       </PopoverAnchor>
       <PopoverContent
+        portalled={false}
         align="start"
         // Positioning only — keep focus in the input so it types like a
         // normal field; don't yank focus when the list opens or closes.
@@ -412,6 +414,7 @@ function Mt5ServerCombobox({
                     "flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-bg-tertiary",
                     isSelected && "bg-bg-tertiary text-text-primary",
                   )}
+                  onPointerDown={(event) => event.preventDefault()}
                   onClick={() => {
                     onChange(server.server_name);
                     setSearchValue(server.server_name);
