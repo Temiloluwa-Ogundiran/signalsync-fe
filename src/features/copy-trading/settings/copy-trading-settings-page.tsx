@@ -107,6 +107,8 @@ export function CopyTradingSettingsPage({
                 <p className="mt-1 text-xs text-text-secondary">
                   {connection.state === "reauthentication_required"
                     ? "Telegram must be reconnected before new signals can be copied."
+                    : connection.state === "disconnected"
+                    ? "Connection interrupted. TradePartna is reconnecting automatically."
                     : connection.last_heartbeat_at
                     ? `Last checked ${relativeTime(connection.last_heartbeat_at)}`
                     : "Waiting for the first connection check"}

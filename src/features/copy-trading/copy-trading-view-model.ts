@@ -49,8 +49,8 @@ export function deriveSystemHealth(input: {
     };
   }
   if (
-    input.connections?.some((connection) =>
-      ["reauthentication_required", "disconnected"].includes(connection.state),
+    input.connections?.some(
+      (connection) => connection.state === "reauthentication_required",
     )
   ) {
     return {
@@ -58,6 +58,18 @@ export function deriveSystemHealth(input: {
       label: "Reconnect Telegram",
       description:
         "Signal reading is stopped. Open Connections & Safety and reconnect Telegram to resume copying.",
+    };
+  }
+  if (
+    input.connections?.some(
+      (connection) => connection.state === "disconnected",
+    )
+  ) {
+    return {
+      tone: "warning",
+      label: "Telegram is reconnecting",
+      description:
+        "Signal reading will resume automatically. You do not need to reconnect your account.",
     };
   }
   if (input.launch && !input.launch.ready) {
@@ -98,9 +110,9 @@ export function deriveSystemHealth(input: {
   if (staleConnection) {
     return {
       tone: "warning",
-      label: "Telegram connection is stale",
+      label: "Telegram is reconnecting",
       description:
-        "No Telegram heartbeat was received recently. Reconnect Telegram before relying on new signals.",
+        "No recent Telegram heartbeat was received. TradePartna is recovering the saved session automatically.",
     };
   }
   return {

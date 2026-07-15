@@ -8,6 +8,7 @@ const labels: Record<string, string> = {
   enabled: "Enabled",
   success: "Completed",
   reauthentication_required: "Reconnect needed",
+  disconnected: "Reconnecting",
   target_unavailable: "Account unavailable",
   needs_attention: "Needs attention",
   failed: "Failed",
@@ -26,7 +27,7 @@ export function StatusLabel({ state }: { state: string }) {
             "paused",
             "pending",
             "warning",
-            "needs_attention", "processing",
+            "needs_attention", "processing", "disconnected",
           ].includes(state)
         ? "warn"
         : ["failed", "error", "target_unavailable"].includes(state)
