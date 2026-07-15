@@ -7,7 +7,7 @@ const labels: Record<string, string> = {
   pending: "Connecting",
   enabled: "Enabled",
   success: "Completed",
-  reauthentication_required: "Reconnect",
+  reauthentication_required: "Reconnect needed",
   target_unavailable: "Account unavailable",
   needs_attention: "Needs attention",
   failed: "Failed",

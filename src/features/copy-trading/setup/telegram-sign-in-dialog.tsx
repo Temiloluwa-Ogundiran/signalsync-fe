@@ -20,9 +20,11 @@ import { Field } from "../shared/form-controls";
 
 export function TelegramSignInDialog({
   open,
+  reconnect = false,
   onOpenChange,
 }: {
   open: boolean;
+  reconnect?: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const actions = useCopyTradingActions();
@@ -78,9 +80,13 @@ export function TelegramSignInDialog({
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Connect Telegram</DialogTitle>
+          <DialogTitle>
+            {reconnect ? "Reconnect Telegram" : "Connect Telegram"}
+          </DialogTitle>
           <DialogDescription>
-            Connect the account that receives your trading signals.
+            {reconnect
+              ? "Sign in again to resume reading signals from your existing channels."
+              : "Connect the account that receives your trading signals."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-1 rounded-md bg-bg-tertiary p-1">

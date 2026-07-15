@@ -138,6 +138,8 @@ test("monitoring, rules, activity, and settings use the approved hierarchy", () 
   assert.match(feature("activity/copy-activity-page.tsx"), /Copy Activity/);
   const settings = feature("settings/copy-trading-settings-page.tsx");
   assert.match(settings, /Telegram Connections/);
+  assert.match(settings, /Reconnect Telegram/);
+  assert.match(settings, /reauthentication_required/);
   assert.match(settings, /Signal Channels/);
   assert.match(settings, /Trading Accounts & Risk Limits/);
 });

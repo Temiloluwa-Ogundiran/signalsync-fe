@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Smartphone, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, Smartphone, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ export function CopyTradingSettingsPage({
 }) {
   const actions = useCopyTradingActions();
   const [telegramOpen, setTelegramOpen] = useState(false);
+  const [telegramReconnect, setTelegramReconnect] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
   const [copyAccountOpen, setCopyAccountOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<
@@ -71,7 +72,13 @@ export function CopyTradingSettingsPage({
         title="Telegram Connections"
         description="TradePartna reads signals from these Telegram accounts. It never sends messages."
         action={
-          <Button variant="outline" onClick={() => setTelegramOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setTelegramReconnect(false);
+              setTelegramOpen(true);
+            }}
+          >
             <Plus className="size-4" />
             {connections.length
               ? "Connect another Telegram"
@@ -96,32 +103,49 @@ export function CopyTradingSettingsPage({
                   />
                 </div>
                 <p className="mt-1 text-xs text-text-secondary">
-                  {connection.last_heartbeat_at
+                  {connection.state === "reauthentication_required"
+                    ? "Telegram must be reconnected before new signals can be copied."
+                    : connection.last_heartbeat_at
                     ? `Last checked ${relativeTime(connection.last_heartbeat_at)}`
                     : "Waiting for the first connection check"}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs text-text-secondary">
-                  {connection.is_paused ? "Resume reading" : "Pause reading"}
-                </span>
-                <Switch
-                  aria-label={`${connection.is_paused ? "Resume" : "Pause"} Telegram reading for ${connectionName(connection)}`}
-                  checked={!connection.is_paused}
-                  onCheckedChange={(enabled) =>
-                    run(
-                      () =>
-                        actions.pauseConnection.mutateAsync({
-                          id: connection.id,
-                          paused: !enabled,
-                        }),
-                      enabled
-                        ? "Telegram reading resumed"
-                        : "Telegram reading paused",
-                      "Telegram setting could not be changed",
-                    )
-                  }
-                />
+                {connection.state === "reauthentication_required" ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTelegramReconnect(true);
+                      setTelegramOpen(true);
+                    }}
+                  >
+                    <RefreshCw className="size-4" />
+                    Reconnect Telegram
+                  </Button>
+                ) : (
+                  <>
+                    <span className="text-xs text-text-secondary">
+                      {connection.is_paused ? "Resume reading" : "Pause reading"}
+                    </span>
+                    <Switch
+                      aria-label={`${connection.is_paused ? "Resume" : "Pause"} Telegram reading for ${connectionName(connection)}`}
+                      checked={!connection.is_paused}
+                      onCheckedChange={(enabled) =>
+                        run(
+                          () =>
+                            actions.pauseConnection.mutateAsync({
+                              id: connection.id,
+                              paused: !enabled,
+                            }),
+                          enabled
+                            ? "Telegram reading resumed"
+                            : "Telegram reading paused",
+                          "Telegram setting could not be changed",
+                        )
+                      }
+                    />
+                  </>
+                )}
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -238,7 +262,11 @@ export function CopyTradingSettingsPage({
 
       <TelegramSignInDialog
         open={telegramOpen}
-        onOpenChange={setTelegramOpen}
+        reconnect={telegramReconnect}
+        onOpenChange={(open) => {
+          setTelegramOpen(open);
+          if (!open) setTelegramReconnect(false);
+        }}
       />
       <ChannelPicker
         open={channelOpen}
