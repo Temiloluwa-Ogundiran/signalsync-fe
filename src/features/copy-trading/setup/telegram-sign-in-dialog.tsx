@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCopyTradingActions } from "../hooks";
+import { useCopyTradingActions, useTelegramConnections } from "../hooks";
 import type { TelegramAuth } from "../types";
 import { apiError } from "../utils";
 import { Field } from "../shared/form-controls";
@@ -21,13 +21,16 @@ import { Field } from "../shared/form-controls";
 export function TelegramSignInDialog({
   open,
   reconnect = false,
+  reconnectConnectionId,
   onOpenChange,
 }: {
   open: boolean;
   reconnect?: boolean;
+  reconnectConnectionId?: string;
   onOpenChange: (open: boolean) => void;
 }) {
   const actions = useCopyTradingActions();
+  const { refetch: refetchConnections } = useTelegramConnections();
   const [method, setMethod] = useState<"phone" | "qr">("qr");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -46,12 +49,43 @@ export function TelegramSignInDialog({
         } else if (next.state === "failed") {
           toast.error(next.message);
         }
-      } catch {
+      } catch (error) {
         window.clearInterval(timer);
+        if (reconnectConnectionId) {
+          const latest = await refetchConnections();
+          const reconnected = latest.data?.some(
+            (connection) =>
+              connection.id === reconnectConnectionId &&
+              connection.state === "ready",
+          );
+          if (reconnected) {
+            toast.success("Telegram connected");
+            onOpenChange(false);
+            return;
+          }
+        }
+        setAuth((current) =>
+          current
+            ? {
+                ...current,
+                state: "failed",
+                message: "Telegram sign-in could not be confirmed. Try again.",
+              }
+            : current,
+        );
+        toast.error("Could not confirm Telegram sign-in", {
+          description: apiError(error),
+        });
       }
     }, 1200);
     return () => window.clearInterval(timer);
-  }, [actions, auth, onOpenChange]);
+  }, [
+    actions,
+    auth,
+    onOpenChange,
+    refetchConnections,
+    reconnectConnectionId,
+  ]);
 
   const start = async () => {
     try {

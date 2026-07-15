@@ -63,6 +63,8 @@ test("Telegram phone sign-in explains code delivery and offers QR fallback", () 
   assert.match(dialog, /Use QR instead/);
   assert.match(dialog, /one-time-code/);
   assert.match(dialog, /changeMethod/);
+  assert.match(dialog, /reconnectConnectionId/);
+  assert.match(dialog, /connection.state === "ready"/);
 });
 
 test("copy trading navigation uses the approved information architecture", () => {

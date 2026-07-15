@@ -34,7 +34,9 @@ export function CopyTradingSettingsPage({
 }) {
   const actions = useCopyTradingActions();
   const [telegramOpen, setTelegramOpen] = useState(false);
-  const [telegramReconnect, setTelegramReconnect] = useState(false);
+  const [telegramReconnectId, setTelegramReconnectId] = useState<string | null>(
+    null,
+  );
   const [channelOpen, setChannelOpen] = useState(false);
   const [copyAccountOpen, setCopyAccountOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<
@@ -75,7 +77,7 @@ export function CopyTradingSettingsPage({
           <Button
             variant="outline"
             onClick={() => {
-              setTelegramReconnect(false);
+              setTelegramReconnectId(null);
               setTelegramOpen(true);
             }}
           >
@@ -115,7 +117,7 @@ export function CopyTradingSettingsPage({
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setTelegramReconnect(true);
+                      setTelegramReconnectId(connection.id);
                       setTelegramOpen(true);
                     }}
                   >
@@ -262,10 +264,11 @@ export function CopyTradingSettingsPage({
 
       <TelegramSignInDialog
         open={telegramOpen}
-        reconnect={telegramReconnect}
+        reconnect={telegramReconnectId !== null}
+        reconnectConnectionId={telegramReconnectId ?? undefined}
         onOpenChange={(open) => {
           setTelegramOpen(open);
-          if (!open) setTelegramReconnect(false);
+          if (!open) setTelegramReconnectId(null);
         }}
       />
       <ChannelPicker
