@@ -76,6 +76,15 @@ export function TelegramSignInDialog({
     onOpenChange(value);
   };
 
+  const changeMethod = (nextMethod: "phone" | "qr") => {
+    setMethod(nextMethod);
+    if (auth) {
+      setAuth(null);
+      setCode("");
+      setPassword("");
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogContent className="sm:max-w-md">
@@ -92,14 +101,14 @@ export function TelegramSignInDialog({
         <div className="grid grid-cols-2 gap-1 rounded-md bg-bg-tertiary p-1">
           <Button
             variant={method === "qr" ? "secondary" : "ghost"}
-            onClick={() => setMethod("qr")}
+            onClick={() => changeMethod("qr")}
           >
             <QrCode className="size-4" />
             QR code
           </Button>
           <Button
             variant={method === "phone" ? "secondary" : "ghost"}
-            onClick={() => setMethod("phone")}
+            onClick={() => changeMethod("phone")}
           >
             <Smartphone className="size-4" />
             Phone number
@@ -152,19 +161,35 @@ export function TelegramSignInDialog({
               </div>
             ) : null}
             {auth.state === "code_required" ? (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Telegram code"
-                  value={code}
-                  onChange={(event) => setCode(event.target.value)}
-                />
-                <Button
-                  onClick={async () =>
-                    setAuth(await actions.submitCode(auth.auth_id, code))
-                  }
-                >
-                  Verify
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    aria-label="Telegram login code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="Telegram code"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                  />
+                  <Button
+                    disabled={code.trim().length < 3}
+                    onClick={async () =>
+                      setAuth(await actions.submitCode(auth.auth_id, code))
+                    }
+                  >
+                    Verify
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-xs text-text-tertiary">
+                  <span>Still no code? QR sign-in does not need one.</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => changeMethod("qr")}
+                  >
+                    Use QR instead
+                  </Button>
+                </div>
               </div>
             ) : null}
             {auth.state === "password_required" ? (

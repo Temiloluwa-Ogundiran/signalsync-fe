@@ -58,6 +58,13 @@ test("Telegram source search refreshes the live dialog list", () => {
   assert.match(picker, /Refresh channels and groups/);
 });
 
+test("Telegram phone sign-in explains code delivery and offers QR fallback", () => {
+  const dialog = feature("setup/telegram-sign-in-dialog.tsx");
+  assert.match(dialog, /Use QR instead/);
+  assert.match(dialog, /one-time-code/);
+  assert.match(dialog, /changeMethod/);
+});
+
 test("copy trading navigation uses the approved information architecture", () => {
   const nav = readFileSync(
     join(ROOT, "src/components/layout/nav-registry.ts"),
