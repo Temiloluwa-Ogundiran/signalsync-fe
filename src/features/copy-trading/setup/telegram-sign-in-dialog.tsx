@@ -245,6 +245,11 @@ export function TelegramSignInDialog({
                 </Button>
               </div>
             ) : null}
+            {auth.state === "failed" ? (
+              <Button className="w-full" onClick={() => setAuth(null)}>
+                Try again
+              </Button>
+            ) : null}
           </div>
         )}
         <p className="text-xs leading-5 text-text-tertiary">
