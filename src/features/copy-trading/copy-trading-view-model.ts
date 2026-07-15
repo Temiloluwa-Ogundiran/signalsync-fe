@@ -48,6 +48,18 @@ export function deriveSystemHealth(input: {
       description: "Worker status is being refreshed.",
     };
   }
+  if (
+    input.connections?.some((connection) =>
+      ["reauthentication_required", "disconnected"].includes(connection.state),
+    )
+  ) {
+    return {
+      tone: "warning",
+      label: "Reconnect Telegram",
+      description:
+        "Signal reading is stopped. Open Connections & Safety and reconnect Telegram to resume copying.",
+    };
+  }
   if (input.launch && !input.launch.ready) {
     return {
       tone: "danger",

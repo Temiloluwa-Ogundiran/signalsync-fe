@@ -145,6 +145,29 @@ test("stale Telegram heartbeat is not presented as operational", () => {
   assert.equal(health.label, "Telegram connection is stale");
 });
 
+test("disconnected Telegram session gives an actionable reconnect status", () => {
+  const health = deriveSystemHealth({
+    globallyPaused: false,
+    system: {
+      status: "ready",
+      ready: true,
+      issues: [],
+      components: [],
+    },
+    connections: [
+      {
+        state: "reauthentication_required",
+        is_paused: false,
+        last_heartbeat_at: null,
+      },
+    ],
+  });
+
+  assert.equal(health.tone, "warning");
+  assert.equal(health.label, "Reconnect Telegram");
+  assert.match(health.description, /Connections & Safety/);
+});
+
 test("launch blockers are never presented as ready", () => {
   const health = deriveSystemHealth({
     globallyPaused: false,
