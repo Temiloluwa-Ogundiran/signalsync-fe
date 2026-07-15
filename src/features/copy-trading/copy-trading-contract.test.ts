@@ -161,14 +161,14 @@ test("copy routes are graphical and account safety is configurable", () => {
   assert.match(types, /market_signal_max_age_seconds/);
 });
 
-test("failed copy events expose a controlled single retry", () => {
-  const recovery = feature("activity/failed-event-recovery.tsx");
+test("internal recovery records are not exposed as customer actions", () => {
   const activity = feature("activity/copy-activity-page.tsx");
+  const page = feature("copy-trading-page.tsx");
+  const api = feature("api.ts");
 
-  assert.match(activity, /FailedEventRecovery/);
-  assert.match(recovery, /Review & Retry/);
-  assert.match(recovery, /1 automatic retry/i);
-  assert.match(recovery, /ConfirmActionDialog/);
+  assert.doesNotMatch(activity, /FailedEventRecovery|Review & Retry/);
+  assert.doesNotMatch(page, /useCopyDeadLetters|deadLetters/);
+  assert.doesNotMatch(api, /listDeadLetters|replayDeadLetter/);
 });
 
 test("copy trading page is thin orchestration after decomposition", () => {
@@ -178,15 +178,14 @@ test("copy trading page is thin orchestration after decomposition", () => {
   assert.ok(page.split("\n").length < 220);
 });
 
-test("runtime health and recovery APIs are exposed", () => {
+test("runtime health APIs are exposed without customer dead-letter controls", () => {
   const api = feature("api.ts");
   const hooks = feature("hooks.ts");
 
   assert.match(api, /getHealth/);
   assert.match(api, /\/copy-trading\/health/);
   assert.match(api, /\/copy-trading\/launch-readiness/);
-  assert.match(api, /listDeadLetters/);
-  assert.match(api, /replayDeadLetter/);
+  assert.doesNotMatch(api, /DeadLetter/);
   assert.match(hooks, /useCopySystemHealth/);
   assert.match(hooks, /refetchInterval: active \? 15_000 : false/);
   assert.match(hooks, /useCopyLaunchReadiness/);

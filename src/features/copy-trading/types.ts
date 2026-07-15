@@ -190,18 +190,6 @@ export interface CopyLaunchReadiness {
   global_paused: boolean;
 }
 
-export interface CopyDeadLetter {
-  id: string;
-  source_stream: string;
-  event_type: string;
-  correlation_id: string;
-  attempts: number;
-  error_code: string;
-  error_message: string;
-  state: "pending" | "replayed" | string;
-  created_at: string;
-}
-
 type CopyTradingConnectionState =
   | "submitted"
   | "provisioning"

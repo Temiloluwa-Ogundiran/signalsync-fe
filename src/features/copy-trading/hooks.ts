@@ -18,7 +18,6 @@ const COPY_TRADING_KEYS = {
     ["copy-trading", "activity", filters] as const,
   health: () => ["copy-trading", "health"] as const,
   readiness: () => ["copy-trading", "launch-readiness"] as const,
-  deadLetters: () => ["copy-trading", "dead-letters"] as const,
   latency: () => ["copy-trading", "latency"] as const,
   reviews: () => ["copy-trading", "signal-reviews"] as const,
   copyConnections: () => ["copy-trading", "copy-connections"] as const,
@@ -136,16 +135,6 @@ export function useCopyLaunchReadiness(active = true) {
     queryFn: () => copyTradingApi.getLaunchReadiness(token),
     enabled: enabled && active,
     refetchInterval: active ? 15_000 : false,
-  });
-}
-
-export function useCopyDeadLetters(active = true) {
-  const { token, enabled } = useCopyTradingAuth();
-  return useQuery({
-    queryKey: COPY_TRADING_KEYS.deadLetters(),
-    queryFn: () => copyTradingApi.listDeadLetters(token),
-    enabled: enabled && active,
-    refetchInterval: active ? 60_000 : false,
   });
 }
 
@@ -307,17 +296,6 @@ export function useCopyTradingActions() {
       mutationFn: (payload: Parameters<typeof copyTradingApi.emergency>[0]) =>
         copyTradingApi.emergency(payload, token),
       onSuccess: refresh,
-    }),
-    replayDeadLetter: useMutation({
-      mutationFn: (id: string) => copyTradingApi.replayDeadLetter(id, token),
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: COPY_TRADING_KEYS.deadLetters(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["copy-trading", "activity"],
-        });
-      },
     }),
   };
 }

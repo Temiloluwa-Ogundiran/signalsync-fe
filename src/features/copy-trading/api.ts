@@ -3,7 +3,6 @@ import type {
   CopyAccountPolicy,
   CopyActivityFilters,
   CopyActivityPage,
-  CopyDeadLetter,
   CopyLaunchReadiness,
   CopyRoute,
   CopyTradingSettings,
@@ -127,26 +126,6 @@ export const copyTradingApi = {
     (
       await apiClient.get<CopyLaunchReadiness>(
         "/copy-trading/launch-readiness",
-        withAuth(token),
-      )
-    ).data,
-
-  listDeadLetters: async (token?: string): Promise<CopyDeadLetter[]> =>
-    (
-      await apiClient.get<CopyDeadLetter[]>(
-        "/copy-trading/dead-letters",
-        withAuth(token),
-      )
-    ).data,
-
-  replayDeadLetter: async (
-    deadLetterId: string,
-    token?: string,
-  ): Promise<CopyDeadLetter> =>
-    (
-      await apiClient.post<CopyDeadLetter>(
-        `/copy-trading/dead-letters/${deadLetterId}/replay`,
-        {},
         withAuth(token),
       )
     ).data,

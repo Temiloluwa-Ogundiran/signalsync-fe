@@ -69,14 +69,6 @@ export function deriveSystemHealth(input: {
       description: `${humanizeHealthIssue(input.system.issues[0])} Healthy rules continue processing.`,
     };
   }
-  if (input.launch?.warnings.includes("dead_letters_need_review")) {
-    return {
-      tone: "warning",
-      label: "Some actions need review",
-      description:
-        "A failed action is waiting in Copy Activity. Healthy copy rules continue processing.",
-    };
-  }
   const staleConnection = input.connections?.some((connection) => {
     if (
       connection.state !== "ready" ||

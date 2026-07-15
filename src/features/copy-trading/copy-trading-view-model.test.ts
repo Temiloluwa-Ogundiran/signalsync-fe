@@ -172,7 +172,7 @@ test("launch blockers are never presented as ready", () => {
   assert.match(health.description, /broker confirmation/i);
 });
 
-test("a pending recovery action warns without blocking healthy copying", () => {
+test("internal recovery records do not ask the customer to intervene", () => {
   const health = deriveSystemHealth({
     globallyPaused: false,
     system: {
@@ -194,7 +194,6 @@ test("a pending recovery action warns without blocking healthy copying", () => {
     },
   });
 
-  assert.equal(health.tone, "warning");
-  assert.equal(health.label, "Some actions need review");
-  assert.match(health.description, /continue processing/i);
+  assert.equal(health.tone, "success");
+  assert.equal(health.label, "Copying is operational");
 });

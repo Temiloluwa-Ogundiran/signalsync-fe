@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type {
   CopyActivity,
-  CopyDeadLetter,
   CopyRoute,
   CopyTradingConnection,
   TelegramConnection,
@@ -26,7 +25,6 @@ export function MonitoringOverview({
   activity,
   systemHealth,
   launchReadiness,
-  deadLetters,
   latency,
   reviews,
 }: {
@@ -37,7 +35,6 @@ export function MonitoringOverview({
   activity: CopyActivity[];
   systemHealth?: CopySystemHealth;
   launchReadiness?: CopyLaunchReadiness;
-  deadLetters: CopyDeadLetter[];
   latency?: CopyExecutionLatency;
   reviews: CopySignalReview[];
 }) {
@@ -60,7 +57,6 @@ export function MonitoringOverview({
       <CopySystemStatus
         health={systemHealth}
         launchReadiness={launchReadiness}
-        deadLetters={deadLetters}
       />
       <AttentionList
         routes={routes}

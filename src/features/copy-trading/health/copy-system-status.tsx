@@ -1,10 +1,7 @@
 "use client";
 
-import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import type {
-  CopyDeadLetter,
   CopyLaunchReadiness,
   CopySystemHealth,
 } from "../types";
@@ -21,14 +18,10 @@ const roleLabels: Record<string, string> = {
 export function CopySystemStatus({
   health,
   launchReadiness,
-  deadLetters,
 }: {
   health?: CopySystemHealth;
   launchReadiness?: CopyLaunchReadiness;
-  deadLetters: CopyDeadLetter[];
 }) {
-  const pending = deadLetters.filter((item) => item.state === "pending");
-
   if (!health) return null;
   return (
     <section className="rounded-lg border border-border-primary bg-card-bg">
@@ -56,21 +49,7 @@ export function CopySystemStatus({
           <p className="mt-1 text-xs text-text-secondary">
             {launchReadiness.blockers.includes("uncertain_intents")
               ? "A broker confirmation is unresolved."
-              : launchReadiness.blockers.includes("dead_letters")
-                ? "A failed action needs review. Other healthy copy rules continue running."
-                : "One or more automation services are not ready for new signals."}
-          </p>
-        </div>
-      ) : null}
-      {launchReadiness?.ready &&
-      launchReadiness.warnings.includes("dead_letters_need_review") ? (
-        <div className="border-b border-warning-text/30 bg-warning-text/5 px-4 py-3">
-          <p className="text-sm font-semibold text-warning-text">
-            Some Actions Need Review
-          </p>
-          <p className="mt-1 text-xs text-text-secondary">
-            Healthy copy rules are still running. Review the failed action in
-            Copy Activity before retrying it.
+              : "One or more automation services are not ready for new signals."}
           </p>
         </div>
       ) : null}
@@ -104,27 +83,6 @@ export function CopySystemStatus({
           </div>
         ))}
       </div>
-      {pending.length ? (
-        <div className="border-t border-border-primary px-4 py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                {pending.length} failed event{pending.length === 1 ? "" : "s"}{" "}
-                available for recovery
-              </p>
-              <p className="mt-0.5 text-xs text-text-secondary">
-                Replay only after the service issue has been resolved.
-              </p>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/copy-trading/activity">
-                Review Failed Actions
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      ) : null}
     </section>
   );
 }

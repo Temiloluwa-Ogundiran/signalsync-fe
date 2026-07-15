@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import {
   useCopyAccountPolicies,
   useCopyActivity,
-  useCopyDeadLetters,
   useCopyLaunchReadiness,
   useCopyRoutes,
   useCopySystemHealth,
@@ -43,9 +42,6 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
   );
   const systemHealth = useCopySystemHealth(true);
   const launchReadiness = useCopyLaunchReadiness(true);
-  const deadLetters = useCopyDeadLetters(
-    view === "overview" || view === "activity",
-  );
   const latency = useCopyLatency(view === "overview" || view === "activity");
   const reviews = useCopySignalReviews(view === "overview" || view === "activity");
   const accounts = useCopyConnections();
@@ -120,7 +116,6 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
       <CopyActivityPage
         sources={sourcesData}
         accounts={accountsData}
-        deadLetters={deadLetters.data ?? []}
         reviews={reviews.data ?? []}
       />
     );
@@ -146,7 +141,6 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         activity={activityData}
         systemHealth={systemHealth.data}
         launchReadiness={launchReadiness.data}
-        deadLetters={deadLetters.data ?? []}
         latency={latency.data}
         reviews={reviews.data ?? []}
       />
