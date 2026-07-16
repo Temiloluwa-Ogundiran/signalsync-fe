@@ -74,7 +74,7 @@ function Overview({ token }: { token?: string }) {
       </section>
       <section>
         <h2 className="text-base font-semibold text-text-primary">Activation funnel</h2><p className="mb-4 text-sm text-text-secondary">Distinct sessions reaching each product milestone.</p>
-        <div className="divide-y divide-border-primary border-y border-border-primary">{funnel.map((item, index) => { const max = funnel[0]?.sessions || 1; return <div key={item.stage} className="py-3"><div className="mb-2 flex justify-between text-sm"><span className="capitalize text-text-secondary">{item.stage.replaceAll("_", " ")}</span><span className="font-medium text-text-primary">{item.sessions}</span></div><div className="h-1.5 bg-bg-tertiary"><div className="h-full bg-success" style={{ width: `${Math.max(2, item.sessions / max * 100)}%` }}/></div>{index === 0 ? null : <span className="sr-only">Funnel stage {index + 1}</span>}</div>})}</div>
+        <div className="divide-y divide-border-primary border-y border-border-primary">{funnel.map((item, index) => { const max = Math.max(...funnel.map((stage) => stage.sessions), 1); return <div key={item.stage} className="py-3"><div className="mb-2 flex justify-between text-sm"><span className="capitalize text-text-secondary">{item.stage.replaceAll("_", " ")}</span><span className="font-medium text-text-primary">{item.sessions}</span></div><div className="h-1.5 bg-bg-tertiary"><div className="h-full bg-success" style={{ width: item.sessions === 0 ? 0 : `${Math.max(2, item.sessions / max * 100)}%` }}/></div>{index === 0 ? null : <span className="sr-only">Funnel stage {index + 1}</span>}</div>})}</div>
       </section>
     </div>
   </div>;

@@ -226,7 +226,7 @@ export function buildNavRegistry(actionFns: {
     },
     {
       id: "administration",
-      name: "Administration",
+      name: "Admin",
       icon: SecurityCheckIcon,
       route: "/admin",
       groups: [
