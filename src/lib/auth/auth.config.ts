@@ -197,6 +197,7 @@ export const authConfig = {
         token.email = user.email;
         token.isEmailVerified = user.isEmailVerified;
         token.onboardingCompleted = user.onboardingCompleted ?? false;
+        token.platformRole = user.platformRole ?? "user";
         return token;
       }
 
@@ -249,6 +250,12 @@ export const authConfig = {
           avatarUrl: (token.avatarUrl as string) ?? null,
           isEmailVerified: token.isEmailVerified as boolean,
           onboardingCompleted: (token.onboardingCompleted as boolean) ?? false,
+          platformRole: (token.platformRole as
+            | "user"
+            | "admin"
+            | "technical_admin"
+            | "super_admin"
+            | undefined) ?? "user",
           emailVerified: null,
         };
         session.accessToken = token.accessToken as string;

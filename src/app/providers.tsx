@@ -14,6 +14,7 @@ import {
   resetAuthSensitiveQueries,
 } from "@/features/auth/lib/auth-query-state";
 import { hasUsableSession } from "@/lib/auth/auth-session";
+import { ProductAnalytics } from "@/features/admin/product-analytics";
 
 function SessionQuerySync() {
   const { data: session, status } = useSession();
@@ -70,6 +71,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <NuqsAdapter>
           <SessionQuerySync />
+          <ProductAnalytics />
           {children}
           <Toaster
             position="bottom-right"

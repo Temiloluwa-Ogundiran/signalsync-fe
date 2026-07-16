@@ -77,6 +77,7 @@ export const { handlers, auth } = NextAuth({
                 avatar_url?: string | null;
                 is_email_verified: boolean;
                 onboarding_completed?: boolean;
+                platform_role?: "user" | "admin" | "technical_admin" | "super_admin";
               };
             };
             if (!p?.accessToken || !p?.user?.id) return null;
@@ -88,6 +89,7 @@ export const { handlers, auth } = NextAuth({
               name: p.user.display_name || p.user.email,
               isEmailVerified: p.user.is_email_verified,
               onboardingCompleted: p.user.onboarding_completed ?? false,
+              platformRole: p.user.platform_role ?? "user",
               accessToken: p.accessToken,
               refreshToken: p.refreshToken ?? "",
               expiresAt:
@@ -152,6 +154,7 @@ export const { handlers, auth } = NextAuth({
             name: user.display_name || user.email,
             isEmailVerified: user.is_email_verified,
             onboardingCompleted: user.onboarding_completed ?? false,
+            platformRole: user.platform_role ?? "user",
             accessToken: access_token,
             refreshToken: refreshToken,
             expiresAt: Date.now() + access_token_expiry_minutes * 60 * 1000,

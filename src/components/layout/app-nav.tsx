@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Settings, HelpCircle, Plus } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Sparkles } from "lucide-react";
@@ -76,6 +77,7 @@ function RailIcon({
  */
 export function AppNav() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
   const closeMobileNav = useNavUiStore((s) => s.closeMobileNav);
 
@@ -92,8 +94,9 @@ export function AppNav() {
         onNewBacktest: () => {
           // Placeholder until Backtesting ships its create flow.
         },
+        platformRole: session?.user.platformRole,
       }).filter((app) => !app.flag || FEATURE_FLAGS[app.flag]),
-    [],
+    [session?.user.platformRole],
   );
 
   const activeApp = useMemo(

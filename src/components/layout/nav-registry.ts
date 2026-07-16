@@ -86,8 +86,9 @@ export interface NavApp {
  */
 export function buildNavRegistry(actionFns: {
   onNewBacktest?: () => void;
+  platformRole?: "user" | "admin" | "technical_admin" | "super_admin";
 }): NavApp[] {
-  return [
+  const apps: NavApp[] = [
     {
       id: "partna-ai",
       name: "Partna AI",
@@ -224,6 +225,22 @@ export function buildNavRegistry(actionFns: {
       ],
     },
     {
+      id: "administration",
+      name: "Administration",
+      icon: SecurityCheckIcon,
+      route: "/admin",
+      groups: [
+        {
+          items: [
+            { icon: Analytics01Icon, label: "Overview", route: "/admin" },
+            { icon: UserIcon, label: "Users", route: "/admin/users" },
+            { icon: ChartLineData01Icon, label: "System", route: "/admin/system" },
+            { icon: Clock01Icon, label: "Audit log", route: "/admin/audit" },
+          ],
+        },
+      ],
+    },
+    {
       id: "settings",
       name: "Settings",
       icon: Settings01Icon,
@@ -260,6 +277,28 @@ export function buildNavRegistry(actionFns: {
       ],
     },
   ];
+
+  if (!actionFns.platformRole || actionFns.platformRole === "user") {
+    return apps.filter((app) => app.id !== "administration");
+  }
+  if (actionFns.platformRole === "admin") {
+    const adminApp = apps.find((app) => app.id === "administration");
+    if (adminApp) {
+      adminApp.groups[0].items = adminApp.groups[0].items.filter(
+        (item) => item.route !== "/admin/system",
+      );
+    }
+  }
+  if (actionFns.platformRole === "technical_admin") {
+    const adminApp = apps.find((app) => app.id === "administration");
+    if (adminApp) {
+      adminApp.groups[0].items = adminApp.groups[0].items.filter(
+        (item) => item.route === "/admin/system" || item.route === "/admin/audit",
+      );
+      adminApp.route = "/admin/system";
+    }
+  }
+  return apps;
 }
 
 function routeMatches(route: string, pathname: string): boolean {
