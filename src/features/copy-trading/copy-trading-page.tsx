@@ -107,6 +107,7 @@ export function CopyTradingPage({ view }: { view: CopyTradingView }) {
         routes={routesData}
         sources={sourcesData}
         accounts={accountsData}
+        connections={connectionsData}
         activity={activityData}
         loading={routes.isLoading || sources.isLoading || accounts.isLoading}
       />

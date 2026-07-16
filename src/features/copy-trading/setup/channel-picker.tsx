@@ -13,7 +13,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCopyTradingActions, useTelegramDialogs } from "../hooks";
+import {
+  useCopyTradingActions,
+  useRefreshTelegramDialogs,
+  useTelegramDialogs,
+} from "../hooks";
 import type {
   TelegramConnection,
   TelegramSource,
@@ -26,11 +30,13 @@ export function ChannelPicker({
   onOpenChange,
   connections,
   sources,
+  onAdded,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   connections: TelegramConnection[];
   sources: TelegramSource[];
+  onAdded?: (source: TelegramSource) => void;
 }) {
   const ready = connections.filter(
     (connection) => connection.state === "ready" && !connection.is_paused,
@@ -39,6 +45,7 @@ export function ChannelPicker({
   const [search, setSearch] = useState("");
   const connectionId = selectedId || ready[0]?.id || "";
   const dialogs = useTelegramDialogs(connectionId, open);
+  const refreshDialogs = useRefreshTelegramDialogs(connectionId);
   const actions = useCopyTradingActions();
   const existing = useMemo(
     () =>
@@ -61,7 +68,7 @@ export function ChannelPicker({
     const dialog = dialogs.data?.find((item) => item.chat_id === chatId);
     if (!dialog) return;
     try {
-      await actions.createSource.mutateAsync({
+      const source = await actions.createSource.mutateAsync({
         connection_id: connectionId,
         telegram_chat_id: dialog.chat_id,
         title: dialog.title,
@@ -71,6 +78,7 @@ export function ChannelPicker({
       toast.success("Signal channel added", {
         description: "New messages from this channel can now be processed.",
       });
+      onAdded?.(source);
       onOpenChange(false);
     } catch (error) {
       toast.error("Could not add this signal channel", {
@@ -80,13 +88,13 @@ export function ChannelPicker({
   };
 
   const refresh = async () => {
-    const result = await dialogs.refetch();
-    if (result.error) {
-      toast.error("Could not refresh Telegram", {
-        description: apiError(result.error),
-      });
-    } else {
+    try {
+      await refreshDialogs.mutateAsync();
       toast.success("Telegram channels refreshed");
+    } catch (error) {
+      toast.error("Could not refresh Telegram", {
+        description: apiError(error),
+      });
     }
   };
 
@@ -125,12 +133,12 @@ export function ChannelPicker({
               variant="outline"
               size="icon"
               onClick={refresh}
-              disabled={dialogs.isFetching}
+              disabled={dialogs.isFetching || refreshDialogs.isPending}
               aria-label="Refresh channels and groups"
               title="Refresh channels and groups"
             >
               <RefreshCw
-                className={`size-4 ${dialogs.isFetching ? "animate-spin" : ""}`}
+                className={`size-4 ${dialogs.isFetching || refreshDialogs.isPending ? "animate-spin" : ""}`}
               />
             </Button>
           </div>

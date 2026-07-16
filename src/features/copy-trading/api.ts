@@ -147,8 +147,21 @@ export const copyTradingApi = {
   },
   pauseConnection: async (connectionId: string, isPaused: boolean, token?: string): Promise<TelegramConnection> =>
     (await apiClient.patch<TelegramConnection>(`/copy-trading/telegram/connections/${connectionId}`, { is_paused: isPaused }, withAuth(token))).data,
-  listDialogs: async (connectionId: string, token?: string): Promise<TelegramDialog[]> =>
-    (await apiClient.get<TelegramDialog[]>(`/copy-trading/telegram/connections/${connectionId}/dialogs`, withAuth(token))).data,
+  listDialogs: async (
+    connectionId: string,
+    token?: string,
+    refresh = false,
+  ): Promise<TelegramDialog[]> =>
+    (
+      await apiClient.get<TelegramDialog[]>(
+        `/copy-trading/telegram/connections/${connectionId}/dialogs`,
+        {
+          ...withAuth(token),
+          params: { refresh },
+          timeout: refresh ? 60_000 : undefined,
+        },
+      )
+    ).data,
   listSources: async (token?: string): Promise<TelegramSource[]> =>
     (await apiClient.get<TelegramSource[]>("/copy-trading/sources", withAuth(token))).data,
   createSource: async (payload: Omit<TelegramSource, "id" | "state" | "is_paused">, token?: string): Promise<TelegramSource> =>

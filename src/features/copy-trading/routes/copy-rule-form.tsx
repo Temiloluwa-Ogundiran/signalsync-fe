@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical } from "lucide-react";
+import { FlaskConical, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import type {
   CopyRoute,
   CopyRouteInput,
   CopyTradingConnection,
+  TelegramConnection,
   TelegramSource,
 } from "../types";
 import { useCopyTradingActions } from "../hooks";
@@ -26,6 +27,7 @@ import {
   defaultCopyPreferences,
   PreferencesStep,
 } from "../setup/preferences-step";
+import { ChannelPicker } from "../setup/channel-picker";
 
 export function CopyRuleForm({
   open,
@@ -33,12 +35,14 @@ export function CopyRuleForm({
   route,
   sources,
   accounts,
+  connections,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   route?: CopyRoute;
   sources: TelegramSource[];
   accounts: CopyTradingConnection[];
+  connections: TelegramConnection[];
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,6 +62,7 @@ export function CopyRuleForm({
             route={route}
             sources={sources}
             accounts={accounts}
+            connections={connections}
             onSaved={() => onOpenChange(false)}
           />
         ) : null}
@@ -70,15 +75,23 @@ function CopyRuleFormBody({
   route,
   sources,
   accounts,
+  connections,
   onSaved,
 }: {
   route?: CopyRoute;
   sources: TelegramSource[];
   accounts: CopyTradingConnection[];
+  connections: TelegramConnection[];
   onSaved: () => void;
 }) {
   const actions = useCopyTradingActions();
-  const readySources = sources.filter((item) => !item.is_paused);
+  const [addedSources, setAddedSources] = useState<TelegramSource[]>([]);
+  const [channelPickerOpen, setChannelPickerOpen] = useState(false);
+  const readySources = [...sources, ...addedSources]
+    .filter(
+      (item, index, items) =>
+        !item.is_paused && items.findIndex((source) => source.id === item.id) === index,
+    );
   const readyAccounts = accounts.filter((item) => item.state === "ready");
   const [value, setValue] = useState<CopyRouteInput>(() =>
     route
@@ -147,6 +160,22 @@ function CopyRuleFormBody({
               </option>
             ))}
           </Select>
+          {!route ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="mt-2 px-0"
+              disabled={!connections.some(
+                (connection) =>
+                  connection.state === "ready" && !connection.is_paused,
+              )}
+              onClick={() => setChannelPickerOpen(true)}
+            >
+              <Plus className="size-4" />
+              Add another channel
+            </Button>
+          ) : null}
         </Field>
         <Field label="Trading account">
           <Select
@@ -202,6 +231,16 @@ function CopyRuleFormBody({
           ) : null}
         </section>
       ) : null}
+      <ChannelPicker
+        open={channelPickerOpen}
+        onOpenChange={setChannelPickerOpen}
+        connections={connections}
+        sources={[...sources, ...addedSources]}
+        onAdded={(source) => {
+          setAddedSources((current) => [...current, source]);
+          setValue((current) => ({ ...current, source_id: source.id }));
+        }}
+      />
     </>
   );
 }

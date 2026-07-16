@@ -53,8 +53,10 @@ test("Telegram source search refreshes the live dialog list", () => {
     /useTelegramDialogs\(connectionId\?: string, active = true\)/,
   );
   assert.match(hooks, /enabled: enabled && active && !!connectionId/);
-  assert.match(hooks, /refetchInterval: active \? 3_000 : false/);
+  assert.match(hooks, /useRefreshTelegramDialogs/);
+  assert.doesNotMatch(hooks, /refetchInterval: active \? 3_000 : false/);
   assert.match(picker, /useTelegramDialogs\(connectionId, open\)/);
+  assert.match(picker, /refreshDialogs\.mutateAsync/);
   assert.match(picker, /Refresh channels and groups/);
 });
 
@@ -151,6 +153,19 @@ test("monitoring, rules, activity, and settings use the approved hierarchy", () 
   assert.match(settings, /reauthentication_required/);
   assert.match(settings, /Signal Channels/);
   assert.match(settings, /Trading Accounts & Risk Limits/);
+});
+
+test("new copy routes can discover and select a newly added Telegram channel", () => {
+  const form = feature("routes/copy-rule-form.tsx");
+  const picker = feature("setup/channel-picker.tsx");
+  const hooks = feature("hooks.ts");
+
+  assert.match(form, /ChannelPicker/);
+  assert.match(form, /Add another channel/);
+  assert.match(form, /onAdded/);
+  assert.match(picker, /onAdded\?\.\(source\)/);
+  assert.match(hooks, /useRefreshTelegramDialogs/);
+  assert.doesNotMatch(hooks, /refetchInterval: active \? 3_000/);
 });
 
 test("copy routes are graphical and account safety is configurable", () => {

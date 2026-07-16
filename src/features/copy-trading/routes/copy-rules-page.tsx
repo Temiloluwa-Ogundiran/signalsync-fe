@@ -8,6 +8,7 @@ import type {
   CopyActivity,
   CopyRoute,
   CopyTradingConnection,
+  TelegramConnection,
   TelegramSource,
 } from "../types";
 import { useCopyTradingActions } from "../hooks";
@@ -21,12 +22,14 @@ export function CopyRulesPage({
   routes,
   sources,
   accounts,
+  connections,
   activity,
   loading,
 }: {
   routes: CopyRoute[];
   sources: TelegramSource[];
   accounts: CopyTradingConnection[];
+  connections: TelegramConnection[];
   activity: CopyActivity[];
   loading: boolean;
 }) {
@@ -146,6 +149,7 @@ export function CopyRulesPage({
         route={editing}
         sources={sources}
         accounts={accounts}
+        connections={connections}
       />
       <ConfirmActionDialog
         open={deleting !== null}

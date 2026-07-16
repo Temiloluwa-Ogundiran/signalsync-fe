@@ -184,7 +184,21 @@ export function useTelegramDialogs(connectionId?: string, active = true) {
     enabled: enabled && active && !!connectionId,
     staleTime: 0,
     refetchOnMount: "always",
-    refetchInterval: active ? 3_000 : false,
+  });
+}
+
+export function useRefreshTelegramDialogs(connectionId?: string) {
+  const { token } = useCopyTradingAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => copyTradingApi.listDialogs(connectionId!, token, true),
+    onSuccess: (dialogs) => {
+      queryClient.setQueryData(
+        COPY_TRADING_KEYS.dialogs(connectionId ?? ""),
+        dialogs,
+      );
+    },
   });
 }
 
