@@ -168,6 +168,17 @@ test("new copy routes can discover and select a newly added Telegram channel", (
   assert.doesNotMatch(hooks, /refetchInterval: active \? 3_000/);
 });
 
+test("saving a new copy route starts copying immediately", () => {
+  const form = feature("routes/copy-rule-form.tsx");
+
+  assert.match(form, /const createdRoute = await actions\.createRoute\.mutateAsync\(value\)/);
+  assert.match(
+    form,
+    /await actions\.routeAction\.mutateAsync\(\{\s*id: createdRoute\.id,\s*action: "activate",\s*\}\)/,
+  );
+  assert.match(form, /submitLabel=\{route \? "Save Changes" : "Start Copying"\}/);
+});
+
 test("copy routes are graphical and account safety is configurable", () => {
   const routeMap = feature("routes/copy-route-map.tsx");
   const safety = feature("accounts/account-safety-form.tsx");

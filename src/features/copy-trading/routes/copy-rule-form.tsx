@@ -128,8 +128,12 @@ function CopyRuleFormBody({
         });
         toast.success("Copy route updated");
       } else {
-        await actions.createRoute.mutateAsync(value);
-        toast.success("Copy route created");
+        const createdRoute = await actions.createRoute.mutateAsync(value);
+        await actions.routeAction.mutateAsync({
+          id: createdRoute.id,
+          action: "activate",
+        });
+        toast.success("Copying started");
       }
       onSaved();
     } catch (error) {
@@ -201,8 +205,12 @@ function CopyRuleFormBody({
         value={value}
         onChange={setValue}
         onContinue={save}
-        busy={actions.createRoute.isPending || actions.updateRoute.isPending}
-        submitLabel="Save Copy Route"
+        busy={
+          actions.createRoute.isPending ||
+          actions.updateRoute.isPending ||
+          actions.routeAction.isPending
+        }
+        submitLabel={route ? "Save Changes" : "Start Copying"}
       />
       {route ? (
         <section className="mt-5 border-t border-border-primary pt-5" aria-labelledby="route-test-title">
