@@ -47,6 +47,10 @@ export type QueuedSyncWaitResult =
 const sleep = (ms: number) =>
   new Promise((resolve) => window.setTimeout(resolve, ms));
 
+export function getJournalSyncPollIntervalMs(elapsedMs: number) {
+  return elapsedMs < 10_000 ? 500 : 2_000;
+}
+
 function getTimeMs(value: string | null | undefined) {
   if (!value) return null;
   const timeMs = new Date(value).getTime();
@@ -57,8 +61,8 @@ export async function waitForQueuedJournalSyncCompletion({
   accountId,
   baselineLastSyncedAt,
   refetchAccounts,
-  intervalMs = 4_000,
-  maxAttempts = 45,
+  intervalMs,
+  maxAttempts = 105,
 }: {
   accountId: string;
   baselineLastSyncedAt?: string | null;
@@ -67,9 +71,12 @@ export async function waitForQueuedJournalSyncCompletion({
   maxAttempts?: number;
 }): Promise<QueuedSyncWaitResult> {
   const baselineMs = getTimeMs(baselineLastSyncedAt);
+  const startedAtMs = Date.now();
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    await sleep(intervalMs);
+    await sleep(
+      intervalMs ?? getJournalSyncPollIntervalMs(Date.now() - startedAtMs),
+    );
     const refreshed = await refetchAccounts();
     const account = (refreshed.data ?? []).find((item) => item.id === accountId);
     if (!account) return { status: "missing" };

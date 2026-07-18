@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +23,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { JournalAccount } from "../types";
 import { getAccountSyncStatus } from "../lib/account-sync-status";
+import { dashboardPathForAccount } from "../lib/account-navigation";
 
 export function ConnectAccountModal() {
   const connectModalOpen = useJournalUiStore((s) => s.connectModalOpen);
@@ -73,6 +75,8 @@ const METHODS: {
 ];
 
 function ConnectAccountFlow() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const setConnectModalOpen = useJournalUiStore((s) => s.setConnectModalOpen);
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const csvReimportAccountId = useJournalUiStore((s) => s.csvReimportAccountId);
@@ -89,6 +93,9 @@ function ConnectAccountFlow() {
 
   const handleSuccess = (account: JournalAccount) => {
     setActiveAccountId(account.id);
+    if (searchParams.has("accountId")) {
+      router.replace(dashboardPathForAccount(searchParams, account.id));
+    }
     setConnectModalOpen(false);
 
     if (selected === "csv") {

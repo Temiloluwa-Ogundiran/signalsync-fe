@@ -45,7 +45,7 @@ export function useJournalAccounts(options?: { includeArchived?: boolean }) {
       const hasImportingAccount = accounts?.some((account) =>
         IMPORTING_CONNECTION_STATES.has(account.connection_state ?? ""),
       );
-      return hasImportingAccount ? 3000 : false;
+      return hasImportingAccount ? 750 : false;
     },
     // Archived accounts are hidden everywhere by default; the accounts page
     // opts in to show them muted.

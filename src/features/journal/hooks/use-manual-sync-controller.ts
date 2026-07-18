@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiException } from "@/lib/api/types";
-import { refreshJournalQueriesAfterManualSync } from "@/features/journal/lib/manual-sync-refresh";
+import {
+  getJournalSyncPollIntervalMs,
+  refreshJournalQueriesAfterManualSync,
+} from "@/features/journal/lib/manual-sync-refresh";
 import type {
   useJournalAccounts,
   useSyncJournalAccount,
@@ -367,7 +370,7 @@ export function useManualSyncController({
       return;
     }
 
-    const intervalMs = elapsedMs < 90_000 ? 4_000 : 20_000;
+    const intervalMs = elapsedMs < 90_000 ? 750 : 20_000;
     const timer = window.setInterval(() => {
       void refetchAccounts();
     }, intervalMs);
@@ -423,7 +426,7 @@ export function useManualSyncController({
         // View pick up the newly-ingested trades without a manual refresh.
         void refreshJournalQueriesAfterManualSync(queryClient);
       }
-    }, 4_000);
+    }, getJournalSyncPollIntervalMs(elapsedMs));
 
     return () => {
       window.clearTimeout(expiryTimer);

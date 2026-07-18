@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
-import { refreshJournalQueriesAfterManualSync } from "./manual-sync-refresh";
+import {
+  getJournalSyncPollIntervalMs,
+  refreshJournalQueriesAfterManualSync,
+} from "./manual-sync-refresh";
 
 const journalPrefixes = [
   "journal-accounts",
@@ -47,4 +50,10 @@ test("manual sync refresh covers every trade-derived journal query", async () =>
   assert.ok(activeRefetchPredicate);
   assert.equal(activeRefetchPredicate({ queryKey: ["journal-curve"] }), true);
   assert.equal(activeRefetchPredicate({ queryKey: ["unrelated"] }), false);
+});
+
+test("journal sync polls quickly while the worker normally completes", () => {
+  assert.equal(getJournalSyncPollIntervalMs(0), 500);
+  assert.equal(getJournalSyncPollIntervalMs(9_999), 500);
+  assert.equal(getJournalSyncPollIntervalMs(10_000), 2_000);
 });
