@@ -28,7 +28,6 @@ export async function getSubscription(token?: string): Promise<Subscription> {
     await apiClient.get<Subscription>("/billing/me", withAuth(token))
   ).data;
 }
-
 export async function startCheckout(
   payload: { plan: BillingPlan; copy_accounts: number },
   token?: string,
@@ -50,4 +49,3 @@ export async function cancelSubscription(token?: string) {
     }>("/billing/subscription", withAuth(token))
   ).data;
 }
-

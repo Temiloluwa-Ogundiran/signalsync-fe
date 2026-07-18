@@ -17,7 +17,6 @@ export function useSubscription() {
     staleTime: 15_000,
   });
 }
-
 export function useStartCheckout() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -46,4 +45,3 @@ export function useCancelSubscription() {
     },
   });
 }
-

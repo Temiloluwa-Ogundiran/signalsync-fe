@@ -14,4 +14,3 @@ export function planRequest(plan: BillingPlan, accountCount: number) {
         : 1,
   };
 }
-
