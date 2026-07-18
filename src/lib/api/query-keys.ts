@@ -65,4 +65,8 @@ export const queryKeys = {
     // Active refresh-token sessions (GET /users/me/sessions).
     sessions: () => ["settings-sessions"] as const,
   },
+
+  billing: {
+    subscription: () => ["billing-subscription"] as const,
+  },
 } as const;

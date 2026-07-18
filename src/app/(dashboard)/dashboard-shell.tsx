@@ -1,6 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout";
 import { AppNav } from "@/components/layout/app-nav";
@@ -9,20 +11,56 @@ import { ConnectAccountModal } from "@/features/journal/components/connect-accou
 import { AiDockProvider } from "@/features/ai/components/ai-dock-provider";
 import { DemoDataBanner } from "@/features/journal/components/demo-data-banner";
 import { useOnMountSync } from "@/features/journal/hooks/use-on-mount-sync";
+import { AppLoader } from "@/components/app-loader";
+import { Button } from "@/components/ui/button";
+import { useSubscription } from "@/features/billing/hooks";
+
+
+function EntitledDashboardEffects() {
+  useOnMountSync();
+  return null;
+}
 
 export default function DashboardShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Sync the active account once on page load (the only auto-sync).
-  useOnMountSync();
-  // While the off-canvas drawer is open, freeze the page scroller so the
-  // content behind the backdrop can't scroll on touch.
+  const pathname = usePathname();
+  const router = useRouter();
   const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
+  const subscription = useSubscription();
+  const isSubscriptionPage = pathname.startsWith("/settings/subscription");
+  const needsCopyAccess = pathname.startsWith("/copy-trading");
+  const hasRequiredAccess =
+    isSubscriptionPage ||
+    (needsCopyAccess
+      ? subscription.data?.has_copy_access || subscription.data?.plan === "copy"
+      : subscription.data?.has_journal_access || subscription.data?.plan !== null);
 
+  useEffect(() => {
+    if (!subscription.isLoading && !subscription.isError && !hasRequiredAccess) {
+      router.replace("/settings/subscription");
+    }
+  }, [hasRequiredAccess, router, subscription.isError, subscription.isLoading]);
+
+  if (subscription.isLoading || (!hasRequiredAccess && !subscription.isError)) {
+    return <AppLoader fullScreen label="Checking subscription" />;
+  }
+
+  if (subscription.isError && !isSubscriptionPage) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-6 text-center">
+        <p className="text-sm font-semibold text-text-primary">Subscription status is unavailable</p>
+        <Button variant="outline" onClick={() => subscription.refetch()}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
   return (
     <AiDockProvider>
+      {subscription.data?.has_journal_access && <EntitledDashboardEffects />}
       <a
         href="#main-content"
         className="fixed left-4 top-4 z-[9999] -translate-y-20 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-lg transition-transform focus:translate-y-0"
@@ -57,11 +95,21 @@ export default function DashboardShell({
             )}
           >
             <DemoDataBanner />
+            {subscription.data?.plan && !subscription.data.has_journal_access && (
+              <div className="flex flex-col justify-between gap-3 border-b border-warning/30 bg-warning-light px-4 py-3 text-sm sm:flex-row sm:items-center sm:px-6">
+                <span className="font-medium text-warning-text">
+                  Your subscription is inactive. Your records are available in read-only mode.
+                </span>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/settings/subscription">Renew subscription</Link>
+                </Button>
+              </div>
+            )}
             {children}
           </main>
         </div>
 
-        <ConnectAccountModal />
+        {subscription.data?.has_journal_access && <ConnectAccountModal />}
       </div>
     </AiDockProvider>
   );

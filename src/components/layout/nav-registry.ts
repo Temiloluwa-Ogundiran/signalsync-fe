@@ -270,7 +270,6 @@ export function buildNavRegistry(actionFns: {
               icon: CreditCardIcon,
               label: "Subscription",
               route: "/settings/subscription",
-              comingSoon: true,
             },
           ],
         },
