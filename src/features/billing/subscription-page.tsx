@@ -149,6 +149,8 @@ export function SubscriptionPage() {
 
   const renewalDate = formatDate(subscription?.current_period_end ?? null);
   const pendingDate = formatDate(subscription?.pending_effective_at ?? null);
+  const isAdministrativeAccess =
+    Boolean(subscription?.has_journal_access) && !subscription?.current_period_end;
   const confirming =
     searchParams.get("checkout") === "success" && !subscription?.has_journal_access;
 
@@ -198,9 +200,11 @@ export function SubscriptionPage() {
                 {subscription.plan === "copy" ? "Copy Trading" : "Journal"} is active
               </p>
               <p className="mt-1 text-sm text-text-secondary">
-                {subscription.cancel_at_period_end
-                  ? `Access ends ${renewalDate}.`
-                  : `Renews ${renewalDate}.`}
+                {isAdministrativeAccess
+                  ? "Your administrator role includes all plan features."
+                  : subscription.cancel_at_period_end
+                    ? `Access ends ${renewalDate}.`
+                    : `Renews ${renewalDate}.`}
                 {pendingDate ? ` Your plan changes ${pendingDate}.` : ""}
               </p>
             </div>
@@ -241,13 +245,16 @@ export function SubscriptionPage() {
               className="w-full"
               variant={subscription?.plan === "journal" ? "outline" : "default"}
               disabled={
+                isAdministrativeAccess ||
                 checkout.isPending ||
                 (subscription?.plan === "journal" && !subscription.pending_plan)
               }
               onClick={() => choosePlan("journal")}
             >
               {checkout.isPending && <Loader2 className="size-4 animate-spin" />}
-              {subscription?.plan === "journal"
+              {isAdministrativeAccess
+                ? "Included with admin access"
+                : subscription?.plan === "journal"
                 ? "Current plan"
                 : subscription?.plan === "copy"
                   ? "Switch at renewal"
@@ -287,6 +294,7 @@ export function SubscriptionPage() {
             <Button
               className="w-full"
               disabled={
+                isAdministrativeAccess ||
                 checkout.isPending ||
                 (subscription?.plan === "copy" &&
                   subscription.copy_account_limit === copyAccounts &&
@@ -295,7 +303,9 @@ export function SubscriptionPage() {
               onClick={() => choosePlan("copy")}
             >
               {checkout.isPending && <Loader2 className="size-4 animate-spin" />}
-              {subscription?.plan === "copy"
+              {isAdministrativeAccess
+                ? "Included with admin access"
+                : subscription?.plan === "copy"
                 ? subscription.copy_account_limit === copyAccounts
                   ? "Current plan"
                   : copyAccounts > subscription.copy_account_limit
@@ -313,7 +323,9 @@ export function SubscriptionPage() {
         Recurring card payments are charged in USD. Your card issuer may show the local currency equivalent.
       </p>
 
-      {subscription?.has_journal_access && !subscription.cancel_at_period_end && (
+      {subscription?.has_journal_access &&
+        !isAdministrativeAccess &&
+        !subscription.cancel_at_period_end && (
         <div className="flex items-center justify-between gap-4 border-t border-border-primary pt-5">
           <div>
             <p className="text-sm font-semibold">Cancel subscription</p>

@@ -156,8 +156,8 @@ export function LoginForm({
                     Forgot password?
                   </Link>
                 </div>
-                <FormControl>
-                  <div className="relative">
+                <div className="relative">
+                  <FormControl>
                     <Input
                       placeholder="••••••••"
                       type={showPassword ? "text" : "password"}
@@ -165,6 +165,7 @@ export function LoginForm({
                       disabled={isPending}
                       className="focus-visible:ring-auth-accent"
                     />
+                  </FormControl>
                     <Button
                       type="button"
                       variant="ghost"
@@ -187,8 +188,7 @@ export function LoginForm({
                         {showPassword ? "Hide password" : "Show password"}
                       </span>
                     </Button>
-                  </div>
-                </FormControl>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
