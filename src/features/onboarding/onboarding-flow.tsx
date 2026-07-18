@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { ArrowLeft, ArrowRight, Check, Loader2, LogOut } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -21,6 +20,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { completeOnboarding } from "@/features/settings/api/user.api";
+import { completeOnboardingNavigation } from "./onboarding-completion";
 
 type OptionId = string;
 
@@ -62,7 +62,6 @@ type StepKey = "welcome" | "experience" | "goal" | "referral";
 const STEP_ORDER: StepKey[] = ["welcome", "experience", "goal", "referral"];
 
 export function OnboardingFlow({ firstName }: { firstName: string }) {
-  const router = useRouter();
   const { data: session, update } = useSession();
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -106,10 +105,10 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
         },
         session?.accessToken,
       );
-      // Flip the session flag so the auth gate lets us into the dashboard
-      // without a full re-login.
-      await update({ onboardingCompleted: true });
-      router.replace("/dashboard");
+      await completeOnboardingNavigation(
+        () => update({ onboardingCompleted: true }),
+        () => window.location.replace("/dashboard"),
+      );
     } catch (err) {
       console.error("Failed to complete onboarding", err);
       setError("Couldn't save that just now — please try again.");

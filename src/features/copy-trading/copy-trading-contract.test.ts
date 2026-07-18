@@ -168,6 +168,17 @@ test("new copy routes can discover and select a newly added Telegram channel", (
   assert.doesNotMatch(hooks, /refetchInterval: active \? 3_000/);
 });
 
+test("new copy routes can connect and select another trading account", () => {
+  const form = feature("routes/copy-rule-form.tsx");
+  const accountForm = feature("accounts/metaapi-account-form.tsx");
+
+  assert.match(form, /MetaApiAccountForm/);
+  assert.match(form, /Connect another account/);
+  assert.match(form, /accountFormOpen/);
+  assert.match(form, /readyAccounts\[0\]\?\.id/);
+  assert.match(accountForm, /onCreated\?\.\(connection\)/);
+});
+
 test("saving a new copy route starts copying immediately", () => {
   const form = feature("routes/copy-rule-form.tsx");
 

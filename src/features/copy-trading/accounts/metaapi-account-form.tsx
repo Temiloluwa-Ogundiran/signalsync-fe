@@ -16,13 +16,16 @@ import { Input } from "@/components/ui/input";
 import { useCopyTradingActions } from "../hooks";
 import { apiError } from "../utils";
 import { Field } from "../shared/form-controls";
+import type { CopyTradingConnection } from "../types";
 
 export function MetaApiAccountForm({
   open,
   onOpenChange,
+  onCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: (connection: CopyTradingConnection) => void;
 }) {
   const actions = useCopyTradingActions();
   const [displayName, setDisplayName] = useState("");
@@ -33,13 +36,14 @@ export function MetaApiAccountForm({
 
   const submit = async () => {
     try {
-      await actions.createCopyConnection.mutateAsync({
+      const connection = await actions.createCopyConnection.mutateAsync({
         display_name: displayName.trim(),
         broker_login: login,
         broker_server: server.trim(),
         trader_password: password,
         platform: "mt5",
       });
+      onCreated?.(connection);
       setPassword("");
       onOpenChange(false);
       toast.success("Copy account connection started");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlaskConical, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,6 +28,7 @@ import {
   PreferencesStep,
 } from "../setup/preferences-step";
 import { ChannelPicker } from "../setup/channel-picker";
+import { MetaApiAccountForm } from "../accounts/metaapi-account-form";
 
 export function CopyRuleForm({
   open,
@@ -87,12 +88,14 @@ function CopyRuleFormBody({
   const actions = useCopyTradingActions();
   const [addedSources, setAddedSources] = useState<TelegramSource[]>([]);
   const [channelPickerOpen, setChannelPickerOpen] = useState(false);
+  const [accountFormOpen, setAccountFormOpen] = useState(false);
   const readySources = [...sources, ...addedSources]
     .filter(
       (item, index, items) =>
         !item.is_paused && items.findIndex((source) => source.id === item.id) === index,
     );
   const readyAccounts = accounts.filter((item) => item.state === "ready");
+  const firstReadyAccountId = readyAccounts[0]?.id;
   const [value, setValue] = useState<CopyRouteInput>(() =>
     route
       ? routeInput(route)
@@ -106,6 +109,15 @@ function CopyRuleFormBody({
   const [sample, setSample] = useState("");
   const [preview, setPreview] = useState<CopyRoutePreview>();
   const [previewing, setPreviewing] = useState(false);
+
+  useEffect(() => {
+    if (!route && !value.target_connection_id && firstReadyAccountId) {
+      setValue((current) => ({
+        ...current,
+        target_connection_id: firstReadyAccountId,
+      }));
+    }
+  }, [firstReadyAccountId, route, value.target_connection_id]);
 
   const testSignal = async () => {
     if (!route || !sample.trim()) return;
@@ -199,6 +211,18 @@ function CopyRuleFormBody({
               </option>
             ))}
           </Select>
+          {!route ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="mt-2 px-0"
+              onClick={() => setAccountFormOpen(true)}
+            >
+              <Plus className="size-4" />
+              Connect another account
+            </Button>
+          ) : null}
         </Field>
       </div>
       <PreferencesStep
@@ -247,6 +271,18 @@ function CopyRuleFormBody({
         onAdded={(source) => {
           setAddedSources((current) => [...current, source]);
           setValue((current) => ({ ...current, source_id: source.id }));
+        }}
+      />
+      <MetaApiAccountForm
+        open={accountFormOpen}
+        onOpenChange={setAccountFormOpen}
+        onCreated={(connection) => {
+          if (connection.state === "ready") {
+            setValue((current) => ({
+              ...current,
+              target_connection_id: connection.id,
+            }));
+          }
         }}
       />
     </>
