@@ -1,0 +1,35 @@
+name: Frontend checks
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://api.example.test
+      AUTH_BACKEND_URL: https://api.example.test
+      AUTH_SECRET: ci-only-auth-secret-with-at-least-32-bytes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Smoke test production server
+        run: |
+          npm run start &
+          server_pid=$!
+          trap 'kill $server_pid' EXIT
+          curl --fail --retry 15 --retry-delay 1 --retry-connrefused http://127.0.0.1:3000/login >/dev/null

@@ -1,9 +1,5 @@
 import type { NextConfig } from "next";
 
-// Security headers applied to every route (#20/#21).
-// CSP runs in report-only mode first — promote to enforcing after confirming
-// no violations in production logs (tighten connect-src/img-src to your
-// actual storage host once confirmed).
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -16,20 +12,6 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), geolocation=(), microphone=(self)",
   },
-  {
-    // Report-only for the first deployment week — switch key to
-    // "Content-Security-Policy" once logs show no violations.
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' blob: data: https:",
-      "media-src 'self' blob: https:",
-      "connect-src 'self' https:",
-      "frame-ancestors 'none'",
-    ].join("; "),
-  },
 ];
 
 const nextConfig: NextConfig = {
@@ -38,12 +20,7 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: securityHeaders,
-      },
-    ];
+    return [{ source: "/(.*)", headers: securityHeaders }];
   },
 };
 

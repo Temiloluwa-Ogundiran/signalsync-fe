@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -39,11 +40,7 @@ export default function RootLayout({
          * Blocking script: resolves the theme before hydration (no flash).
          * Auth routes follow the OS; signed-in routes use the saved preference.
          */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var p=location.pathname;var AUTH=/^\\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\\/|$)/.test(p);var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var s=localStorage.getItem('syncgram-theme');var t=s?JSON.parse(s).state?.theme:'system';var dark=AUTH?m:(p==='/'?false:(t==='dark'||(t==='system'&&m)));document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`,
-          }}
-        />
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
       <body className={`${geist.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>

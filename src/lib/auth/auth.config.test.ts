@@ -1,6 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { authConfig } from "./auth.config.ts";
+
+test("request security policy remains wrapped by the NextAuth gate", () => {
+  const proxySource = readFileSync(join(process.cwd(), "src/proxy.ts"), "utf8");
+
+  assert.match(proxySource, /NextAuth\(authConfig\)/);
+  assert.match(proxySource, /auth\(\(request\)/);
+  assert.match(proxySource, /Content-Security-Policy/);
+});
 
 test("session callback does not expose the refresh token to the client session", async () => {
   const session = await authConfig.callbacks.session({
