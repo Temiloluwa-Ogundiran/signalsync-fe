@@ -51,13 +51,13 @@ export function TraderAccessDialog({
             </div>
             <DialogTitle>Enable full account access</DialogTitle>
             <DialogDescription>
-              Enter the trading password for {accountLabel}. Your existing
+              Enter the MT5 master password for {accountLabel}. Your existing
               investor password remains available for journal imports.
             </DialogDescription>
           </DialogHeader>
           <label className="mt-5 grid gap-1.5 text-sm">
             <span className="font-medium text-text-primary">
-              Trading password
+              MT5 master password
             </span>
             <Input
               autoFocus
@@ -65,7 +65,7 @@ export function TraderAccessDialog({
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter the full trading password"
+              placeholder="Enter the master password"
               className="h-11 bg-bg-input"
             />
           </label>

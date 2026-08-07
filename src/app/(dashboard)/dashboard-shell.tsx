@@ -14,6 +14,8 @@ import { useOnMountSync } from "@/features/journal/hooks/use-on-mount-sync";
 import { AppLoader } from "@/components/app-loader";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/features/billing/hooks";
+import { resolveSubscriptionGate } from "@/features/billing/subscription-gate";
+import { useSession } from "next-auth/react";
 
 
 function EntitledDashboardEffects() {
@@ -29,26 +31,28 @@ export default function DashboardShell({
   const pathname = usePathname();
   const router = useRouter();
   const mobileNavOpen = useNavUiStore((s) => s.mobileNavOpen);
+  const { status: sessionStatus } = useSession();
   const subscription = useSubscription();
   const isSubscriptionPage = pathname.startsWith("/settings/subscription");
-  const needsCopyAccess = pathname.startsWith("/copy-trading");
-  const hasRequiredAccess =
-    isSubscriptionPage ||
-    (needsCopyAccess
-      ? subscription.data?.has_copy_access || subscription.data?.plan === "copy"
-      : subscription.data?.has_journal_access || subscription.data?.plan !== null);
+  const gate = resolveSubscriptionGate({
+    pathname,
+    sessionStatus,
+    queryPending: subscription.isPending,
+    queryError: subscription.isError,
+    subscription: subscription.data,
+  });
 
   useEffect(() => {
-    if (!subscription.isLoading && !subscription.isError && !hasRequiredAccess) {
+    if (gate === "redirect") {
       router.replace("/settings/subscription");
     }
-  }, [hasRequiredAccess, router, subscription.isError, subscription.isLoading]);
+  }, [gate, router]);
 
-  if (subscription.isLoading || (!hasRequiredAccess && !subscription.isError)) {
+  if (gate === "loading" || gate === "redirect") {
     return <AppLoader fullScreen label="Checking subscription" />;
   }
 
-  if (subscription.isError && !isSubscriptionPage) {
+  if (gate === "error" && !isSubscriptionPage) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-6 text-center">
         <p className="text-sm font-semibold text-text-primary">Subscription status is unavailable</p>

@@ -46,7 +46,9 @@ export function MetaApiAccountForm({
       onCreated?.(connection);
       setPassword("");
       onOpenChange(false);
-      toast.success("Copy account connection started");
+      toast.success("Copy account connection started", {
+        description: "You can leave this page. Setup will continue automatically.",
+      });
     } catch (error) {
       toast.error("Copy account could not be connected", {
         description: apiError(error),
@@ -60,7 +62,7 @@ export function MetaApiAccountForm({
         <DialogHeader>
           <DialogTitle>Connect copy account</DialogTitle>
           <DialogDescription>
-            Use the MT5 trader password for the account that will receive copied trades.
+            Use the MT5 master password for the account that will receive copied trades. Investor passwords cannot place trades.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
@@ -73,15 +75,15 @@ export function MetaApiAccountForm({
           <Field label="Broker server">
             <Input value={server} onChange={(event) => setServer(event.target.value)} placeholder="Broker-MT5-Demo" />
           </Field>
-          <Field label="Trader password">
-            <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
+          <Field label="MT5 master password">
+            <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" placeholder="Enter the master password" />
           </Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button disabled={!valid || actions.createCopyConnection.isPending} onClick={submit}>
             {actions.createCopyConnection.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-            Connect
+            {actions.createCopyConnection.isPending ? "Starting connection..." : "Connect account"}
           </Button>
         </DialogFooter>
       </DialogContent>

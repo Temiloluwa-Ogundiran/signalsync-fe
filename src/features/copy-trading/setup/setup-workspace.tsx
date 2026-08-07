@@ -24,6 +24,7 @@ import {
 import { SetupStep } from "./setup-step";
 import { TelegramSignInDialog } from "./telegram-sign-in-dialog";
 import { MetaApiAccountForm } from "../accounts/metaapi-account-form";
+import { MetaApiAccountStatus } from "../accounts/metaapi-account-status";
 
 export function SetupWorkspace({
   connections,
@@ -53,11 +54,14 @@ export function SetupWorkspace({
   const [accountId, setAccountId] = useState(
     routes[0]?.target_connection_id ?? readyAccounts[0]?.id ?? "",
   );
-  const account = accounts.find((item) => item.id === accountId);
+  const selectedAccountId = accountId || readyAccounts[0]?.id || "";
+  const account = accounts.find((item) => item.id === selectedAccountId);
+  const readyAccount = account?.state === "ready" ? account : undefined;
+
   const existingRoute = routes.find(
     (item) =>
       item.source_id === source?.id &&
-      item.target_connection_id === accountId &&
+      item.target_connection_id === selectedAccountId &&
       item.state !== "active",
   );
   const [preferences, setPreferences] = useState<CopyRouteInput>(() =>
@@ -66,19 +70,18 @@ export function SetupWorkspace({
       : {
           ...defaultCopyPreferences,
           source_id: source?.id ?? "",
-          target_connection_id: accountId,
+          target_connection_id: selectedAccountId,
           assembly_window_seconds: 90,
         },
   );
   const [savedRoute, setSavedRoute] = useState<CopyRoute | null>(
     existingRoute ?? null,
   );
-
   const currentStep = !readyConnection
     ? 1
     : !source
       ? 2
-      : !account
+      : !readyAccount
         ? 3
         : !savedRoute
           ? 4
@@ -256,10 +259,6 @@ export function SetupWorkspace({
                   </button>
                 ))}
               </div>
-              <Button variant="outline" onClick={() => setChannelOpen(true)}>
-                <Plus className="size-4" />
-                Add signal channel
-              </Button>
             </div>
           ) : (
             <EmptyState
@@ -303,7 +302,7 @@ export function SetupWorkspace({
                     }));
                   }}
                   className={`flex items-center justify-between gap-4 rounded-md border px-3 py-3 text-left disabled:opacity-50 ${
-                    accountId === item.id
+                    selectedAccountId === item.id
                       ? "border-border-secondary bg-bg-tertiary"
                       : "border-border-primary"
                   }`}
@@ -322,10 +321,17 @@ export function SetupWorkspace({
                 </button>
               );
             })}
-            <Button variant="outline" onClick={() => setCopyAccountOpen(true)}>
-              <Plus className="size-4" />
-              Connect copy account
-            </Button>
+            {account && account.state !== "ready" ? (
+              <div className="border-l-2 border-accent/50 py-1 pl-3">
+                <MetaApiAccountStatus account={account} />
+              </div>
+            ) : null}
+            {!accounts.some((item) => item.state !== "deleted") ? (
+              <Button variant="outline" onClick={() => setCopyAccountOpen(true)}>
+                <Plus className="size-4" />
+                Connect copy account
+              </Button>
+            ) : null}
           </div>
         </SetupStep>
 
@@ -355,7 +361,7 @@ export function SetupWorkspace({
           <div className="space-y-5">
             <div>
               <p className="text-lg font-semibold text-text-primary">
-                {source?.title} to {accountLabel(account, accountId)}
+                {source?.title} to {accountLabel(account, selectedAccountId)}
               </p>
               {selectedPolicy?.is_paused ? (
                 <p className="mt-1 text-sm text-warning-text">
@@ -401,7 +407,17 @@ export function SetupWorkspace({
         connections={connections}
         sources={sources}
       />
-      <MetaApiAccountForm open={copyAccountOpen} onOpenChange={setCopyAccountOpen} />
+      <MetaApiAccountForm
+        open={copyAccountOpen}
+        onOpenChange={setCopyAccountOpen}
+        onCreated={(connection) => {
+          setAccountId(connection.id);
+          setPreferences((current) => ({
+            ...current,
+            target_connection_id: connection.id,
+          }));
+        }}
+      />
     </>
   );
 }

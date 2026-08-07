@@ -134,6 +134,7 @@ export function CopyTradingSettingsPage({
                     <Switch
                       aria-label={`${connection.is_paused ? "Resume" : "Pause"} Telegram reading for ${connectionName(connection)}`}
                       checked={!connection.is_paused}
+                      disabled={actions.pauseConnection.isPending}
                       onCheckedChange={(enabled) =>
                         run(
                           () =>
@@ -206,6 +207,7 @@ export function CopyTradingSettingsPage({
                   <Switch
                     aria-label={`${source.is_paused ? "Resume" : "Pause"} signal channel ${source.title}`}
                     checked={!source.is_paused}
+                    disabled={actions.pauseSource.isPending}
                     onCheckedChange={(enabled) =>
                       run(
                         () =>

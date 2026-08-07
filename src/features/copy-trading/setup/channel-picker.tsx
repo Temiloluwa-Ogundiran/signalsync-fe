@@ -43,6 +43,7 @@ export function ChannelPicker({
   );
   const [selectedId, setSelectedId] = useState("");
   const [search, setSearch] = useState("");
+  const [addingChatId, setAddingChatId] = useState<number | null>(null);
   const connectionId = selectedId || ready[0]?.id || "";
   const dialogs = useTelegramDialogs(connectionId, open);
   const refreshDialogs = useRefreshTelegramDialogs(connectionId);
@@ -67,6 +68,7 @@ export function ChannelPicker({
   const add = async (chatId: number) => {
     const dialog = dialogs.data?.find((item) => item.chat_id === chatId);
     if (!dialog) return;
+    setAddingChatId(chatId);
     try {
       const source = await actions.createSource.mutateAsync({
         connection_id: connectionId,
@@ -84,6 +86,8 @@ export function ChannelPicker({
       toast.error("Could not add this signal channel", {
         description: apiError(error),
       });
+    } finally {
+      setAddingChatId(null);
     }
   };
 
@@ -142,10 +146,32 @@ export function ChannelPicker({
               />
             </Button>
           </div>
+          {dialogs.isFetching && dialogs.data ? (
+            <div
+              className="flex items-center gap-2 rounded-md bg-bg-tertiary px-3 py-2 text-xs text-text-secondary"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+              Refreshing channels from Telegram...
+            </div>
+          ) : null}
           <div className="max-h-[52vh] divide-y divide-border-primary overflow-y-auto rounded-md border border-border-primary">
             {dialogs.isLoading || (dialogs.isFetching && !dialogs.data) ? (
-              <div className="flex min-h-48 items-center justify-center">
-                <Loader2 className="size-5 animate-spin text-text-secondary" />
+              <div
+                className="flex min-h-48 flex-col items-center justify-center gap-3 px-6 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2 className="size-5 animate-spin text-accent motion-reduce:animate-none" />
+                <div>
+                  <p className="text-sm font-medium text-text-primary">
+                    Fetching Telegram channels
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    This can take a moment when Telegram has many conversations.
+                  </p>
+                </div>
               </div>
             ) : dialogs.isError ? (
               <div className="space-y-3 px-6 py-10 text-center">
@@ -164,7 +190,7 @@ export function ChannelPicker({
                     key={dialog.chat_id}
                     type="button"
                     onClick={() => add(dialog.chat_id)}
-                    disabled={added || actions.createSource.isPending}
+                    disabled={added || addingChatId !== null}
                     className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-bg-tertiary disabled:cursor-default disabled:opacity-50"
                   >
                     <span className="min-w-0">
@@ -179,6 +205,11 @@ export function ChannelPicker({
                     </span>
                     {added ? (
                       <Badge variant="neutral">Added</Badge>
+                    ) : addingChatId === dialog.chat_id ? (
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-text-secondary">
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                        Adding...
+                      </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-xs font-medium text-text-primary">
                         <Plus className="size-4" />
@@ -189,9 +220,22 @@ export function ChannelPicker({
                 );
               })
             ) : (
-              <p className="py-10 text-center text-sm text-text-secondary">
-                No channels match your search.
-              </p>
+              <div className="space-y-3 px-6 py-10 text-center">
+                <p className="text-sm font-medium text-text-primary">
+                  {term ? "No channels match your search" : "No channels found yet"}
+                </p>
+                <p className="text-xs leading-5 text-text-secondary">
+                  {term
+                    ? "Try a different channel name or username."
+                    : "Join the channel in Telegram, then refresh this list."}
+                </p>
+                {!term ? (
+                  <Button variant="outline" size="sm" onClick={refresh}>
+                    <RefreshCw className="size-4" />
+                    Refresh channels
+                  </Button>
+                ) : null}
+              </div>
             )}
           </div>
         </div>

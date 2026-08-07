@@ -571,7 +571,7 @@ export function JournalAccountsPage() {
                 ? String(error.response?.data?.detail ?? error.message)
                 : error instanceof Error
                   ? error.message
-                  : "The trading password could not be verified.",
+                  : "The MT5 master password could not be verified.",
             );
           }
         }}

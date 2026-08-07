@@ -36,6 +36,7 @@ export function TelegramSignInDialog({
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [auth, setAuth] = useState<TelegramAuth | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!auth || ["ready", "failed"].includes(auth.state)) return;
@@ -98,6 +99,34 @@ export function TelegramSignInDialog({
       toast.error("Could not connect Telegram", {
         description: apiError(error),
       });
+    }
+  };
+
+  const submitCode = async () => {
+    if (!auth) return;
+    setSubmitting(true);
+    try {
+      setAuth(await actions.submitCode(auth.auth_id, code));
+    } catch (error) {
+      toast.error("Telegram code could not be verified", {
+        description: apiError(error),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitPassword = async () => {
+    if (!auth) return;
+    setSubmitting(true);
+    try {
+      setAuth(await actions.submitPassword(auth.auth_id, password));
+    } catch (error) {
+      toast.error("Telegram password could not be verified", {
+        description: apiError(error),
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -176,7 +205,11 @@ export function TelegramSignInDialog({
               {actions.startPhone.isPending || actions.startQr.isPending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : null}
-              {method === "qr" ? "Connect with QR code" : "Use phone number"}
+              {actions.startPhone.isPending || actions.startQr.isPending
+                ? "Connecting to Telegram..."
+                : method === "qr"
+                  ? "Connect with QR code"
+                  : "Use phone number"}
             </Button>
           </div>
         ) : (
@@ -206,12 +239,11 @@ export function TelegramSignInDialog({
                     onChange={(event) => setCode(event.target.value)}
                   />
                   <Button
-                    disabled={code.trim().length < 3}
-                    onClick={async () =>
-                      setAuth(await actions.submitCode(auth.auth_id, code))
-                    }
+                    disabled={code.trim().length < 3 || submitting}
+                    onClick={submitCode}
                   >
-                    Verify
+                    {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+                    {submitting ? "Verifying..." : "Verify"}
                   </Button>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-xs text-text-tertiary">
@@ -235,13 +267,11 @@ export function TelegramSignInDialog({
                   onChange={(event) => setPassword(event.target.value)}
                 />
                 <Button
-                  onClick={async () =>
-                    setAuth(
-                      await actions.submitPassword(auth.auth_id, password),
-                    )
-                  }
+                  disabled={!password || submitting}
+                  onClick={submitPassword}
                 >
-                  Verify
+                  {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {submitting ? "Verifying..." : "Verify"}
                 </Button>
               </div>
             ) : null}

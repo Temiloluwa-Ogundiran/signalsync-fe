@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { CopyAccountPolicy, CopyTradingConnection } from "../types";
@@ -81,6 +81,18 @@ function MetaApiAccountRow({
 }) {
   const actions = useCopyTradingActions();
   const ready = account.state === "ready";
+  const retry = async () => {
+    try {
+      await actions.retryCopyConnection.mutateAsync(account.id);
+      toast.success("Connection check restarted", {
+        description: "TradePartna will keep this status updated automatically.",
+      });
+    } catch (error) {
+      toast.error("Connection could not be retried", {
+        description: apiError(error),
+      });
+    }
+  };
   return (
     <div className="px-4 py-5 sm:px-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -98,11 +110,15 @@ function MetaApiAccountRow({
         {!ready && RETRYABLE.has(account.state) ? (
           <Button
             variant="outline"
-            onClick={() => actions.retryCopyConnection.mutate(account.id)}
+            onClick={retry}
             disabled={actions.retryCopyConnection.isPending}
           >
-            <RefreshCw aria-hidden="true" className="size-4" />
-            Retry Connection
+            {actions.retryCopyConnection.isPending ? (
+              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+            ) : (
+              <RefreshCw aria-hidden="true" className="size-4" />
+            )}
+            {actions.retryCopyConnection.isPending ? "Retrying..." : "Try again"}
           </Button>
         ) : null}
         <Button
