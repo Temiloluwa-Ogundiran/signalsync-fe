@@ -54,10 +54,30 @@ test("Telegram source search refreshes the live dialog list", () => {
   );
   assert.match(hooks, /enabled: enabled && active && !!connectionId/);
   assert.match(hooks, /useRefreshTelegramDialogs/);
+  assert.match(hooks, /invalidateQueries/);
   assert.doesNotMatch(hooks, /refetchInterval: active \? 3_000 : false/);
   assert.match(picker, /useTelegramDialogs\(connectionId, open\)/);
   assert.match(picker, /refreshDialogs\.mutateAsync/);
   assert.match(picker, /Refresh channels and groups/);
+});
+
+test("frontend security policy and trade actions do not expose dead controls", () => {
+  const nextConfig = readFileSync(join(ROOT, "next.config.ts"), "utf8");
+  const rootLayout = readFileSync(join(ROOT, "src/app/layout.tsx"), "utf8");
+  const history = readFileSync(
+    join(ROOT, "src/features/journal/components/journal-trade-history-page.tsx"),
+    "utf8",
+  );
+  const tradePanel = readFileSync(
+    join(ROOT, "src/features/journal/components/trade-detail-panel.tsx"),
+    "utf8",
+  );
+
+  assert.match(nextConfig, /Content-Security-Policy/);
+  assert.match(nextConfig, /frame-ancestors 'none'/);
+  assert.doesNotMatch(rootLayout, /next\/font\/google/);
+  assert.doesNotMatch(history, /console\.log\("share trade"/);
+  assert.doesNotMatch(tradePanel, /Share Trade/);
 });
 
 test("Telegram phone sign-in explains code delivery and offers QR fallback", () => {

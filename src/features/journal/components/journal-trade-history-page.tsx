@@ -277,8 +277,6 @@ export function JournalTradeHistoryPage() {
         accountId={activeAccountId || ""}
         open={!!selectedTrade}
         onClose={closeTradePanel}
-        // TODO(share): wire to real share flow once the backend share endpoint exists.
-        onShare={(t) => console.log("share trade", t.id)}
       />
     </div>
   );

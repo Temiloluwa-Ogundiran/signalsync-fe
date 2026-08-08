@@ -158,7 +158,7 @@ export const copyTradingApi = {
         {
           ...withAuth(token),
           params: { refresh },
-          timeout: refresh ? 60_000 : undefined,
+          timeout: refresh ? 10_000 : undefined,
         },
       )
     ).data,

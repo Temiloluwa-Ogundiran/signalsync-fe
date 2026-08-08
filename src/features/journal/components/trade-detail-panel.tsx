@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Sparkles, Star } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/format/money";
 import {
@@ -13,7 +13,6 @@ import {
   SheetBody,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { JournalTrade, Tag } from "../types";
 import {
   useJournalTagsConfig,
@@ -241,14 +240,11 @@ export function TradeDetailPanel({
   accountId,
   open,
   onClose,
-  onShare,
 }: {
   trade: JournalTrade | null;
   accountId: string;
   open: boolean;
   onClose: () => void;
-  /** Optional — when provided, a "Share Trade" action shows in the footer. */
-  onShare?: (trade: JournalTrade) => void;
 }) {
   const currency = useActiveAccountCurrency();
   const tradeId = trade?.id;
@@ -493,14 +489,6 @@ export function TradeDetailPanel({
         </SheetBody>
         )}
 
-        {onShare && (
-          <div className="flex items-center justify-end gap-2 border-t border-hairline px-5 py-3">
-            <Button variant="outline" onClick={() => onShare(trade)}>
-              <Share2 className="size-4" />
-              Share Trade
-            </Button>
-          </div>
-        )}
       </SheetContent>
     </Sheet>
   );

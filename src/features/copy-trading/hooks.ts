@@ -198,6 +198,11 @@ export function useRefreshTelegramDialogs(connectionId?: string) {
         COPY_TRADING_KEYS.dialogs(connectionId ?? ""),
         dialogs,
       );
+      window.setTimeout(() => {
+        void queryClient.invalidateQueries({
+          queryKey: COPY_TRADING_KEYS.dialogs(connectionId ?? ""),
+        });
+      }, 1_500);
     },
   });
 }

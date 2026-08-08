@@ -27,6 +27,7 @@
 
 /* ===== Light Theme (default) ===== */
 :root {
+  --font-geist: "Segoe UI";
   color-scheme: light;
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
   --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
