@@ -35,7 +35,7 @@ declare global {
  * session via the existing pre-issued-session path. No auth logic lives here
  * beyond wiring; the backend remains the token authority.
  */
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ referralCode }: { referralCode?: string }) {
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
   const [scriptReady, setScriptReady] = useState(false);
@@ -48,7 +48,10 @@ export function GoogleSignInButton() {
       setPending(true);
       setError(null);
       try {
-        const data = await googleAuth(resp.credential);
+        const data = await googleAuth(resp.credential, referralCode ? {
+          referral_code: referralCode,
+          referral_source_detail: "affiliate_link",
+        } : undefined);
         const result = await signIn("credentials", {
           prelogin: JSON.stringify({
             accessToken: data.access_token,
@@ -74,7 +77,7 @@ export function GoogleSignInButton() {
         setPending(false);
       }
     },
-    [router]
+    [router, referralCode]
   );
 
   useEffect(() => {

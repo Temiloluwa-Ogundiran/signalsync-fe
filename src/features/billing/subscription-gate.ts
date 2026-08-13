@@ -19,7 +19,10 @@ export function resolveSubscriptionGate({
     "plan" | "has_journal_access" | "has_copy_access"
   >;
 }): GateDecision {
-  if (pathname.startsWith("/settings/subscription")) return "allow";
+  if (
+    pathname.startsWith("/settings/subscription") ||
+    pathname.startsWith("/settings/affiliate")
+  ) return "allow";
   if (sessionStatus !== "authenticated" || queryPending) return "loading";
   if (queryError) return "error";
 

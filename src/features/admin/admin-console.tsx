@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -8,9 +8,9 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { AlertTriangle, ExternalLink, RefreshCw, Search, ShieldOff, UserRoundCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { adminApi } from "./api";
-import type { AdminUser, PlatformRole } from "./types";
+import type { AdminAffiliate, AdminAffiliateSettings, AdminUser, PlatformRole } from "./types";
 
-type View = "overview" | "users" | "system" | "audit";
+type View = "overview" | "users" | "system" | "audit" | "affiliates";
 
 const roleLabel: Record<PlatformRole, string> = {
   user: "User",
@@ -39,7 +39,7 @@ export function AdminConsole({ view }: { view: View }) {
           <p className="mt-1 text-sm text-text-secondary">Users, product adoption, system health, and accountable actions.</p>
         </div>
         <nav aria-label="Administration sections" className="flex gap-1 rounded-md border border-border-primary bg-bg-secondary p-1 text-sm">
-          {["overview", "users", "system", "audit"].map((item) => (
+          {["overview", "users", "system", "audit", ...(session?.user.platformRole === "super_admin" ? ["affiliates"] : [])].map((item) => (
             <Link key={item} href={item === "overview" ? "/admin" : `/admin/${item}`} className={`rounded px-3 py-2 capitalize ${view === item ? "bg-bg-primary font-semibold text-text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"}`}>{item}</Link>
           ))}
         </nav>
@@ -48,6 +48,7 @@ export function AdminConsole({ view }: { view: View }) {
       {view === "users" ? <Users token={token} canChangeRole={session?.user.platformRole === "super_admin"} /> : null}
       {view === "system" ? <System token={token} /> : null}
       {view === "audit" ? <Audit token={token} /> : null}
+      {view === "affiliates" ? <Affiliates token={token} /> : null}
     </div>
   );
 }
@@ -113,6 +114,30 @@ function System({ token }: { token?: string }) {
 }
 
 function Audit({ token }: { token?: string }) { const query = useQuery({ queryKey: ["admin", "audit"], queryFn: () => adminApi.audit(token), enabled: !!token }); if (query.isLoading) return <Loading/>; return <div className="overflow-x-auto border-y border-border-primary"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-bg-secondary text-xs uppercase text-text-muted"><tr>{["Time", "Administrator", "Action", "User", "Reason"].map((h)=><th key={h} className="px-4 py-3">{h}</th>)}</tr></thead><tbody className="divide-y divide-border-primary">{query.data?.items.map((item)=><tr key={item.id}><td className="px-4 py-4 text-text-secondary">{formatDate(item.created_at)}</td><td className="px-4 py-4 text-text-primary">{item.actor_email}</td><td className="px-4 py-4 text-text-secondary">{item.action.replaceAll(".", " ")}</td><td className="px-4 py-4 text-text-secondary">{item.target_email || "System"}</td><td className="px-4 py-4 text-text-muted">{item.reason || "Not required"}</td></tr>)}</tbody></table>{query.data?.items.length === 0 ? <p className="p-8 text-center text-sm text-text-muted">No administrative actions recorded yet.</p> : null}</div>; }
+
+function Affiliates({ token }: { token?: string }) {
+  const client = useQueryClient();
+  const settings = useQuery({ queryKey: ["admin", "affiliates", "settings"], queryFn: () => adminApi.affiliateSettings(token), enabled: !!token });
+  const affiliates = useQuery({ queryKey: ["admin", "affiliates"], queryFn: () => adminApi.affiliates(token), enabled: !!token });
+  const [rate, setRate] = useState(""); const [holdDays, setHoldDays] = useState(30); const [months, setMonths] = useState(12); const [minimum, setMinimum] = useState("25"); const [reason, setReason] = useState(""); const [clearOverrides, setClearOverrides] = useState(false); const [selected, setSelected] = useState<AdminAffiliate | null>(null);
+  useEffect(() => { if (!settings.data) return; setRate(settings.data.default_commission_rate); setHoldDays(settings.data.commission_hold_days); setMonths(settings.data.recurring_months); setMinimum(settings.data.minimum_payout); }, [settings.data]);
+  const saveGlobal = useMutation({ mutationFn: () => { if (reason.trim().length < 3) throw new Error("Enter a reason for this affiliate policy change."); return adminApi.updateAffiliateSettings(token, { default_commission_rate: rate, commission_hold_days: holdDays, recurring_months: months, minimum_payout: minimum, clear_individual_overrides: clearOverrides, reason }); }, onSuccess: () => { toast.success("Affiliate policy updated for future commissions"); client.invalidateQueries({ queryKey: ["admin", "affiliates"] }); setReason(""); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Affiliate policy could not be updated.") });
+  if (settings.isLoading || affiliates.isLoading) return <Loading/>;
+  if (!settings.data || !affiliates.data) return <ErrorState retry={() => { settings.refetch(); affiliates.refetch(); }} />;
+  return <div className="space-y-8">
+    <section className="border-y border-border-primary py-5"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-base font-semibold text-text-primary">Global commission policy</h2><p className="mt-1 text-sm text-text-secondary">Changes apply only to future paid invoices. Existing commission records retain their recorded rate.</p></div><p className="text-sm text-text-muted">{settings.data.custom_rate_users} users have custom rates</p></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><NumberField label="Default rate (%)" value={rate} onChange={setRate} step="0.01" min="0" max="50"/><NumberField label="Holding days" value={String(holdDays)} onChange={(value) => setHoldDays(Number(value))} min="0" max="180"/><NumberField label="Eligible paid months" value={String(months)} onChange={(value) => setMonths(Number(value))} min="1" max="60"/><NumberField label="Minimum payout (USD)" value={minimum} onChange={setMinimum} step="0.01" min="0"/></div><label className="mt-4 flex items-center gap-2 text-sm text-text-secondary"><input type="checkbox" checked={clearOverrides} onChange={(e) => setClearOverrides(e.target.checked)} className="size-4 accent-accent"/>Also remove every individual rate override</label><div className="mt-4 flex flex-col gap-3 sm:flex-row"><input aria-label="Reason for global affiliate policy change" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for this change" className="h-10 flex-1 rounded-md border border-border-primary bg-bg-input px-3 text-sm text-text-primary"/><button type="button" disabled={saveGlobal.isPending} onClick={() => saveGlobal.mutate()} className="h-10 rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground disabled:opacity-60">{saveGlobal.isPending ? "Saving..." : "Save policy"}</button></div></section>
+    <section><div className="mb-3"><h2 className="text-base font-semibold text-text-primary">Affiliate rate overrides</h2><p className="mt-1 text-sm text-text-secondary">A custom rate takes precedence over the global rate until you remove it.</p></div><div className="overflow-x-auto border-y border-border-primary"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-bg-secondary text-xs uppercase text-text-muted"><tr>{["Affiliate", "Code", "Referrals", "Effective rate", "Override", ""].map((item) => <th key={item || "action"} className="px-4 py-3">{item}</th>)}</tr></thead><tbody className="divide-y divide-border-primary">{affiliates.data.items.map((item) => <tr key={item.user_id}><td className="px-4 py-4"><p className="font-medium text-text-primary">{item.display_name || "Unnamed user"}</p><p className="text-text-muted">{item.email}</p></td><td className="px-4 py-4 font-mono text-text-secondary">{item.code}</td><td className="px-4 py-4 text-text-secondary">{item.referrals}</td><td className="px-4 py-4 font-medium text-text-primary">{item.effective_commission_rate}%</td><td className="px-4 py-4 text-text-secondary">{item.commission_rate_override ? `${item.commission_rate_override}%` : "Global"}</td><td className="px-4 py-4 text-right"><button type="button" onClick={() => setSelected(item)} className="rounded-md border border-border-primary px-3 py-2 text-sm font-semibold hover:bg-bg-hover">Edit rate</button></td></tr>)}</tbody></table>{!affiliates.data.items.length ? <p className="p-8 text-center text-sm text-text-muted">No affiliate profiles yet.</p> : null}</div></section>
+    {selected ? <AffiliateRatePanel affiliate={selected} token={token} close={() => setSelected(null)} refresh={() => client.invalidateQueries({ queryKey: ["admin", "affiliates"] })} /> : null}
+  </div>;
+}
+
+function NumberField({ label, value, onChange, ...input }: { label: string; value: string; onChange: (value: string) => void; step?: string; min?: string; max?: string }) { return <label className="grid gap-1.5 text-sm font-medium text-text-primary"><span>{label}</span><input type="number" value={value} onChange={(e) => onChange(e.target.value)} className="h-10 rounded-md border border-border-primary bg-bg-input px-3 text-sm text-text-primary" {...input}/></label>; }
+
+function AffiliateRatePanel({ affiliate, token, close, refresh }: { affiliate: AdminAffiliate; token?: string; close: () => void; refresh: () => Promise<unknown> }) {
+  const [rate, setRate] = useState(affiliate.commission_rate_override || ""); const [reason, setReason] = useState("");
+  const mutation = useMutation({ mutationFn: () => { if (reason.trim().length < 3) throw new Error("Enter a reason for this rate change."); return adminApi.updateAffiliateRate(token, affiliate.user_id, { commission_rate: rate ? rate : null, reason }); }, onSuccess: async () => { toast.success(rate ? "Individual affiliate rate updated" : "Affiliate now uses the global rate"); await refresh(); close(); }, onError: (error) => toast.error(error instanceof Error ? error.message : "Rate could not be updated.") });
+  return <div className="fixed inset-0 z-modal flex justify-end bg-overlay" role="dialog" aria-modal="true" aria-label="Edit affiliate rate"><button type="button" className="flex-1" aria-label="Close edit affiliate rate" onClick={close}/><div className="h-full w-full max-w-md overflow-y-auto border-l border-border-primary bg-bg-primary p-6 shadow-xl"><div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-semibold text-text-primary">Affiliate rate</h2><p className="mt-1 text-sm text-text-secondary">{affiliate.display_name || affiliate.email}</p></div><button type="button" onClick={close} aria-label="Close" className="rounded p-2 hover:bg-bg-hover"><X className="size-5"/></button></div><div className="mt-6 space-y-4"><NumberField label="Custom rate (%)" value={rate} onChange={setRate} step="0.01" min="0" max="50"/><p className="text-xs leading-5 text-text-muted">Leave empty to remove the override and use the global rate. This affects future paid invoices only.</p><label className="grid gap-1.5 text-sm font-medium text-text-primary"><span>Reason</span><textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} className="rounded-md border border-border-primary bg-bg-input p-3 text-sm text-text-primary" placeholder="Why is this rate changing?"/></label><button type="button" onClick={() => mutation.mutate()} disabled={mutation.isPending} className="h-10 w-full rounded-md bg-accent text-sm font-semibold text-accent-foreground disabled:opacity-60">{mutation.isPending ? "Saving..." : "Save rate"}</button></div></div></div>;
+}
 
 function Loading() { return <div className="flex items-center gap-2 p-8 text-sm text-text-muted"><RefreshCw className="h-4 w-4 animate-spin"/>Loading current data</div>; }
 function ErrorState({ retry }: { retry: () => void }) { return <div className="flex items-center justify-between border-y border-warning py-5 text-sm"><span className="flex items-center gap-2 text-warning-text"><AlertTriangle className="h-4 w-4"/>This data could not be loaded.</span><button type="button" onClick={retry} className="font-semibold underline">Try again</button></div>; }

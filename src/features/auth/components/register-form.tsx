@@ -35,9 +35,11 @@ const registerSchema = z.object({
 
 export function RegisterForm({
   onSuccess,
+  referralCode,
 }: {
   /** Called with the email once the account is created. */
   onSuccess?: (email: string) => void;
+  referralCode?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +55,11 @@ export function RegisterForm({
 
   function onSubmit(values: z.infer<typeof registerSchema>) {
     startTransition(async () => {
-      const res = await registerAction(values);
+      const res = await registerAction({
+        ...values,
+        referral_code: referralCode,
+        referral_source_detail: referralCode ? "affiliate_link" : undefined,
+      });
       form.clearErrors("root");
 
       if (res?.fieldErrors) {
@@ -87,6 +93,7 @@ export function RegisterForm({
                 <FormControl>
                   <Input
                     placeholder="John Doe"
+                    autoComplete="name"
                     {...field}
                     disabled={isPending}
                   />
@@ -105,6 +112,7 @@ export function RegisterForm({
                   <Input
                     placeholder="name@example.com"
                     type="email"
+                    autoComplete="email"
                     {...field}
                     disabled={isPending}
                   />
@@ -124,6 +132,7 @@ export function RegisterForm({
                     <Input
                       placeholder="••••••••"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
                       {...field}
                       disabled={isPending}
                     />

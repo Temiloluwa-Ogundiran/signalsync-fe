@@ -55,3 +55,25 @@ export interface AuditPage {
   }>;
   next_cursor: string | null;
 }
+
+export interface AdminAffiliateSettings {
+  default_commission_rate: string;
+  commission_hold_days: number;
+  recurring_months: number;
+  minimum_payout: string;
+  custom_rate_users: number;
+}
+
+export interface AdminAffiliate {
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  code: string;
+  status: string;
+  commission_rate_override: string | null;
+  effective_commission_rate: string;
+  referrals: number;
+  created_at: string;
+}
+
+export interface AdminAffiliatePage { items: AdminAffiliate[]; }

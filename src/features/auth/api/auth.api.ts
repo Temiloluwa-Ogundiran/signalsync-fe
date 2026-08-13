@@ -12,6 +12,9 @@ export interface RegisterPayload {
   display_name: string;
   email: string;
   password: string;
+  referral_code?: string;
+  referral_source_detail?: string;
+  referral_campaign?: string;
 }
 
 export interface RegisterResponse {
@@ -61,11 +64,16 @@ export interface GoogleAuthResponse {
 
 /** Exchange a Google ID token for a backend session (sign in or sign up). */
 export async function googleAuth(
-  idToken: string
+  idToken: string,
+  referral?: {
+    referral_code?: string;
+    referral_source_detail?: string;
+    referral_campaign?: string;
+  },
 ): Promise<GoogleAuthResponse> {
   const res: AxiosResponse<GoogleAuthResponse> = await apiClient.post(
     "/auth/google",
-    { id_token: idToken }
+    { id_token: idToken, ...referral }
   );
   return res.data;
 }

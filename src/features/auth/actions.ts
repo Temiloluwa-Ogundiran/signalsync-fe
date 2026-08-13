@@ -7,6 +7,9 @@ export async function registerAction(data: {
   display_name: string;
   email: string;
   password: string;
+  referral_code?: string;
+  referral_source_detail?: string;
+  referral_campaign?: string;
 }) {
   try {
     await registerUser(data);

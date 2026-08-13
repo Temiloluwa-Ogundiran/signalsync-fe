@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { MailCheck } from "lucide-react";
@@ -15,6 +16,7 @@ import { resendVerificationEmail } from "../api/auth.api";
  * which signs them in and lands them in the app.
  */
 export function RegisterCard() {
+  const searchParams = useSearchParams();
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
 
@@ -93,7 +95,7 @@ export function RegisterCard() {
         </div>
       </div>
 
-      <RegisterForm onSuccess={setSentTo} />
+      <RegisterForm onSuccess={setSentTo} referralCode={searchParams.get("ref")?.trim().toUpperCase() || undefined} />
 
       {/* Divider */}
       <div className="my-6 flex items-center gap-3">
@@ -102,7 +104,7 @@ export function RegisterCard() {
         <span className="h-px flex-1 bg-border-secondary" />
       </div>
 
-      <GoogleSignInButton />
+      <GoogleSignInButton referralCode={searchParams.get("ref")?.trim().toUpperCase() || undefined} />
 
       <p className="mt-6 text-center text-sm text-text-secondary">
         Already have an account?{" "}

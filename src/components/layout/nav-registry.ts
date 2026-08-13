@@ -21,6 +21,7 @@ import {
   CreditCardIcon,
   Tag01Icon,
   Exchange01Icon,
+  LinkSquare01Icon,
 } from "@hugeicons/core-free-icons";
 import type { FeatureFlag } from "@/config/feature-flags";
 
@@ -234,6 +235,7 @@ export function buildNavRegistry(actionFns: {
           items: [
             { icon: Analytics01Icon, label: "Overview", route: "/admin" },
             { icon: UserIcon, label: "Users", route: "/admin/users" },
+            { icon: Wallet01Icon, label: "Affiliates", route: "/admin/affiliates" },
             { icon: ChartLineData01Icon, label: "System", route: "/admin/system" },
             { icon: Clock01Icon, label: "Audit log", route: "/admin/audit" },
           ],
@@ -270,6 +272,11 @@ export function buildNavRegistry(actionFns: {
               icon: CreditCardIcon,
               label: "Subscription",
               route: "/settings/subscription",
+            },
+            {
+              icon: LinkSquare01Icon,
+              label: "Affiliate program",
+              route: "/settings/affiliate",
             },
           ],
         },
