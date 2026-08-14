@@ -23,11 +23,16 @@ export default async function ResendVerificationPage({
           Resend verification email
         </h1>
         <p className="text-sm text-text-secondary">
-          Enter your email address and we&apos;ll send a fresh verification link.
+          {params.email
+            ? "We'll send a fresh verification link to this address."
+            : "Enter your email address and we'll send a fresh verification link."}
         </p>
       </div>
 
-      <ResendVerificationForm initialEmail={params.email ?? ""} />
+      <ResendVerificationForm
+        initialEmail={params.email ?? ""}
+        lockedEmail={Boolean(params.email)}
+      />
 
       <p className="mt-8 text-center text-sm text-text-secondary">
         Already verified?{" "}

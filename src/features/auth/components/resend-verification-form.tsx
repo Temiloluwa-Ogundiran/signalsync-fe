@@ -14,8 +14,10 @@ const RESEND_COOLDOWN_SECONDS = 60;
 
 export function ResendVerificationForm({
   initialEmail = "",
+  lockedEmail = false,
 }: {
   initialEmail?: string;
+  lockedEmail?: boolean;
 }) {
   const [email, setEmail] = useState(initialEmail);
   const [isPending, setIsPending] = useState(false);
@@ -69,13 +71,21 @@ export function ResendVerificationForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <Input
-        type="email"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        placeholder="name@example.com"
-        disabled={isPending}
-      />
+      {lockedEmail ? (
+        <div className="rounded-md border border-border-primary bg-bg-secondary px-3 py-2.5">
+          <p className="text-xs font-medium text-text-tertiary">Verification email</p>
+          <p className="mt-0.5 truncate text-sm font-medium text-text-primary">{email}</p>
+        </div>
+      ) : (
+        <Input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="name@example.com"
+          disabled={isPending}
+          autoComplete="email"
+        />
+      )}
       {error ? (
         <p className="text-sm font-medium text-destructive">{error}</p>
       ) : null}
