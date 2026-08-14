@@ -1,7 +1,11 @@
 export type BillingPlan = "journal" | "copy";
 
+export function normalizeCopyAccountCount(accountCount: number): number {
+  return Math.min(10, Math.max(1, Math.trunc(accountCount)));
+}
+
 export function copyMonthlyPrice(accountCount: number): number {
-  const safeCount = Math.min(10, Math.max(1, Math.trunc(accountCount)));
+  const safeCount = normalizeCopyAccountCount(accountCount);
   return 30 + (safeCount - 1) * 20;
 }
 
@@ -10,7 +14,7 @@ export function planRequest(plan: BillingPlan, accountCount: number) {
     plan,
     copy_accounts:
       plan === "copy"
-        ? Math.min(10, Math.max(1, Math.trunc(accountCount)))
+        ? normalizeCopyAccountCount(accountCount)
         : 1,
   };
 }

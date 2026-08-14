@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useCancelSubscription, useStartCheckout, useSubscription } from "./hooks";
 import {
   copyMonthlyPrice,
+  normalizeCopyAccountCount,
   planRequest,
   type BillingPlan,
 } from "./subscription-pricing";
@@ -95,7 +96,9 @@ export function SubscriptionPage() {
   const cancellation = useCancelSubscription();
   const subscription = subscriptionQuery.data;
   const [selectedCopyAccounts, setSelectedCopyAccounts] = useState<number | null>(null);
-  const copyAccounts = selectedCopyAccounts ?? subscription?.copy_account_limit ?? 1;
+  const copyAccounts = normalizeCopyAccountCount(
+    selectedCopyAccounts ?? subscription?.copy_account_limit ?? 1,
+  );
 
   useEffect(() => {
     if (searchParams.get("checkout") !== "success") return;

@@ -49,7 +49,7 @@ export default function DashboardShell({
   }, [gate, router]);
 
   if (gate === "loading" || gate === "redirect") {
-    return <AppLoader fullScreen label="Checking subscription" />;
+    return <AppLoader fullScreen />;
   }
 
   if (gate === "error" && !isSubscriptionPage) {
