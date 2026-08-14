@@ -20,29 +20,11 @@ export const proxy = auth((request) => {
     }
   }
 
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' https://accounts.google.com`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' blob: data: https://lh3.googleusercontent.com https://*.amazonaws.com",
-    "media-src 'self' blob: https://*.amazonaws.com",
-    "font-src 'self' data:",
-    "connect-src 'self' https://accounts.google.com",
-    "frame-src https://accounts.google.com",
-    "worker-src 'self' blob:",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
-  ].join("; ");
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Content-Security-Policy", csp);
-  return response;
+  // The static policy from next.config.ts must own CSP. This proxy also runs for
+  // prerendered routes, whose inline Next.js hydration scripts cannot receive a
+  // request-specific nonce. A nonce policy here leaves those pages permanently
+  // suspended in the browser.
+  return NextResponse.next();
 });
 
 export const config = {

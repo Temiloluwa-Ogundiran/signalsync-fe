@@ -9,7 +9,7 @@ test("request security policy remains wrapped by the NextAuth gate", () => {
 
   assert.match(proxySource, /NextAuth\(authConfig\)/);
   assert.match(proxySource, /auth\(\(request\)/);
-  assert.match(proxySource, /Content-Security-Policy/);
+  assert.doesNotMatch(proxySource, /Content-Security-Policy/);
 });
 
 test("session callback does not expose the refresh token to the client session", async () => {
