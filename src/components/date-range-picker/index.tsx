@@ -29,6 +29,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { ChevronDown } from "lucide-react";
 import { DEFAULT_PRESETS, type DateRange, type Preset } from "./presets";
+import { getCurrentMonthDateRange } from "@/lib/date-range";
 
 export type { Preset } from "./presets";
 
@@ -66,16 +67,23 @@ export function DateRangePicker({
   const [draft, setDraft] = useState<RdpRange | undefined>(undefined);
   const [hovered, setHovered] = useState<Date | undefined>(undefined);
 
-  const hasRange = !!value?.from && !!value?.to;
+  // A date control is always meaningful on journal surfaces. Consumers may
+  // omit a value during hydration, but the visible/default range remains this
+  // month instead of falling back to an unbounded all-time query.
+  const effectiveValue =
+    value?.from && value.to
+      ? { from: value.from, to: value.to }
+      : getCurrentMonthDateRange();
+  const hasRange = !!effectiveValue.from && !!effectiveValue.to;
   const triggerLabel = hasRange
-    ? `${format(value.from, "MMM d, yyyy")} – ${format(value.to as Date, "MMM d, yyyy")}`
-    : "Date range";
+    ? `${format(effectiveValue.from, "MMM d, yyyy")} – ${format(effectiveValue.to, "MMM d, yyyy")}`
+    : "This month";
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
       setDraft(undefined);
       setHovered(undefined);
-      setMonth(value?.from ?? new Date());
+      setMonth(effectiveValue.from ?? new Date());
     }
     setOpen(next);
   };
@@ -110,8 +118,8 @@ export function DateRangePicker({
   const activePresetId = presets.find(
     (p) =>
       hasRange &&
-      sameDay(p.getRange().from, value?.from) &&
-      sameDay(p.getRange().to, value?.to),
+      sameDay(p.getRange().from, effectiveValue.from) &&
+      sameDay(p.getRange().to, effectiveValue.to),
   )?.id;
 
   return (

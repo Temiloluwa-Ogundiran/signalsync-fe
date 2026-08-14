@@ -20,25 +20,11 @@ import { JournalEmptyState } from "./journal-empty-state";
 import { useJournalUiStore } from "../store/journal-ui-store";
 import type { TradeHistoryRow } from "./journal-trade-history.types";
 import { buildAccountLabel } from "../lib/account-label";
-
-function formatDateParam(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateParam(value: string | null) {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const parsed = new Date(year, month - 1, day);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
+import {
+  formatDateParam,
+  getCurrentMonthDateRange,
+  getDateRangeFromParams,
+} from "../lib/date-window";
 
 function mapTradeRows(items: JournalTrade[]): TradeHistoryRow[] {
   return items.map((item) => ({
@@ -74,13 +60,15 @@ export function JournalTradeHistoryPage() {
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
 
-  const queryFromDate = parseDateParam(searchParams.get("fromDate"));
-  const queryToDate = parseDateParam(searchParams.get("toDate"));
-  const hasCustomRange = !!queryFromDate && !!queryToDate;
-  // No default range: fetch ALL trades (paginated). Date is an optional filter
-  // the user can apply via the date picker.
-  const fromDate = hasCustomRange ? formatDateParam(queryFromDate) : undefined;
-  const toDate = hasCustomRange ? formatDateParam(queryToDate) : undefined;
+  const resolvedDateRange = useMemo(
+    () => getDateRangeFromParams(
+      searchParams.get("fromDate"),
+      searchParams.get("toDate"),
+    ),
+    [searchParams],
+  );
+  const fromDate = formatDateParam(resolvedDateRange.from);
+  const toDate = formatDateParam(resolvedDateRange.to);
   const [tradeQuery, setTradeQuery] = useQueryState("q", {
     defaultValue: "",
     history: "replace",
@@ -100,23 +88,16 @@ export function JournalTradeHistoryPage() {
       .withOptions({ history: "replace", shallow: true, clearOnDefault: true }),
   );
 
-  const parsedDateRange = useMemo<DateRange | undefined>(() => {
-    const from = parseDateParam(searchParams.get("fromDate"));
-    if (!from) return undefined;
-    const to = parseDateParam(searchParams.get("toDate"));
-    return to ? { from, to } : { from };
-  }, [searchParams]);
+  const parsedDateRange: DateRange = resolvedDateRange;
 
   const applyDateRange = (next: DateRange | undefined) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (!next?.from) {
-      params.delete("fromDate");
-      params.delete("toDate");
-    } else {
-      params.set("fromDate", formatDateParam(next.from));
-      if (next.to) params.set("toDate", formatDateParam(next.to));
-      else params.delete("toDate");
-    }
+    const range =
+      next?.from && next.to
+        ? { from: next.from, to: next.to }
+        : getCurrentMonthDateRange();
+    params.set("fromDate", formatDateParam(range.from));
+    params.set("toDate", formatDateParam(range.to));
     const q = params.toString();
     router.replace(q ? `/trade-history?${q}` : "/trade-history");
   };
@@ -198,6 +179,8 @@ export function JournalTradeHistoryPage() {
     const params = new URLSearchParams();
     params.set("accountId", activeAccountId);
     params.set("focusDate", row.tradingDate);
+    params.set("fromDate", formatDateParam(resolvedDateRange.from));
+    params.set("toDate", formatDateParam(resolvedDateRange.to));
     router.push(`/journal?${params.toString()}`);
   };
 

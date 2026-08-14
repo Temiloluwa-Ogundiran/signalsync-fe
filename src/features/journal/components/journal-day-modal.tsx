@@ -11,6 +11,12 @@ import { JournalDayModalOverview } from "./journal-day-modal-overview";
 import { JournalDayModalTradesTable } from "./journal-day-modal-trades-table";
 import type { JournalDayTradeRow } from "./journal-day-modal.types";
 import {
+  formatDateParam,
+  getCalendarMonthDateRange,
+  getCurrentMonthDateRange,
+  parseDateParam,
+} from "../lib/date-window";
+import {
   buildDaySummary,
   computeNetRoiPercent,
 } from "./journal-day-modal.utils";
@@ -36,6 +42,12 @@ export function JournalDayModal({
     const params = new URLSearchParams();
     params.set("accountId", accountId);
     params.set("focusDate", tradingDate);
+    const targetDate = parseDateParam(tradingDate);
+    const range = targetDate
+      ? getCalendarMonthDateRange(targetDate)
+      : getCurrentMonthDateRange();
+    params.set("fromDate", formatDateParam(range.from));
+    params.set("toDate", formatDateParam(range.to));
     router.push(`/journal?${params.toString()}`);
   };
 

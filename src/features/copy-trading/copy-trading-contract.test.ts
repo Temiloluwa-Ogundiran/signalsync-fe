@@ -82,6 +82,8 @@ test("frontend security policy and trade actions do not expose dead controls", (
 
 test("Telegram phone sign-in explains code delivery and offers QR fallback", () => {
   const dialog = feature("setup/telegram-sign-in-dialog.tsx");
+  assert.match(dialog, /useState<"phone" \| "qr">\("phone"\)/);
+  assert.ok(dialog.indexOf('onClick={() => changeMethod("phone")}') < dialog.indexOf('onClick={() => changeMethod("qr")}'));
   assert.match(dialog, /Use QR instead/);
   assert.match(dialog, /one-time-code/);
   assert.match(dialog, /changeMethod/);

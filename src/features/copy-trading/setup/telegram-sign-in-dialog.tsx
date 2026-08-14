@@ -31,7 +31,8 @@ export function TelegramSignInDialog({
 }) {
   const actions = useCopyTradingActions();
   const { refetch: refetchConnections } = useTelegramConnections();
-  const [method, setMethod] = useState<"phone" | "qr">("qr");
+  // Phone sign-in is the primary flow. QR remains available as a fallback.
+  const [method, setMethod] = useState<"phone" | "qr">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +47,7 @@ export function TelegramSignInDialog({
         setAuth(next);
         if (next.state === "ready") {
           toast.success("Telegram connected");
+          setMethod("phone");
           onOpenChange(false);
         } else if (next.state === "failed") {
           toast.error(next.message);
@@ -61,6 +63,7 @@ export function TelegramSignInDialog({
           );
           if (reconnected) {
             toast.success("Telegram connected");
+            setMethod("phone");
             onOpenChange(false);
             return;
           }
@@ -135,6 +138,7 @@ export function TelegramSignInDialog({
       setAuth(null);
       setCode("");
       setPassword("");
+      setMethod("phone");
     }
     onOpenChange(value);
   };
@@ -163,18 +167,18 @@ export function TelegramSignInDialog({
         </DialogHeader>
         <div className="grid grid-cols-2 gap-1 rounded-md bg-bg-tertiary p-1">
           <Button
-            variant={method === "qr" ? "secondary" : "ghost"}
-            onClick={() => changeMethod("qr")}
-          >
-            <QrCode className="size-4" />
-            QR code
-          </Button>
-          <Button
             variant={method === "phone" ? "secondary" : "ghost"}
             onClick={() => changeMethod("phone")}
           >
             <Smartphone className="size-4" />
             Phone number
+          </Button>
+          <Button
+            variant={method === "qr" ? "secondary" : "ghost"}
+            onClick={() => changeMethod("qr")}
+          >
+            <QrCode className="size-4" />
+            QR code
           </Button>
         </div>
         {!auth ? (

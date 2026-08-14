@@ -1,9 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
 import {
+  getCurrentMonthDateRange,
+  getDateRangeFromParams,
   formatDateParam,
   parseDateParam,
 } from "@/features/journal/lib/date-window";
@@ -96,25 +98,6 @@ function JournalPageContent() {
     [accounts, activeAccountId],
   );
 
-  // Demo-only: the seeded demo trades sit in a fixed past range, so opening the
-  // calendar on today's (empty) month is a bad first impression. When a demo
-  // account becomes active, jump the calendar to its latest traded month
-  // (`last_synced_at`, which the backend pins to the last demo trade day) — once
-  // per account, so the user can still navigate freely afterward. Real accounts
-  // are untouched: they stay on the current month.
-  const demoPositionedFor = useRef<string | null>(null);
-  useEffect(() => {
-    if (!activeAccount?.is_demo || !activeAccount.last_synced_at) return;
-    if (demoPositionedFor.current === activeAccount.id) return;
-    const d = new Date(activeAccount.last_synced_at);
-    if (Number.isNaN(d.getTime())) return;
-    demoPositionedFor.current = activeAccount.id;
-    const timeout = window.setTimeout(() => {
-      setCurrentMonth(new Date(d.getFullYear(), d.getMonth(), 1));
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, [activeAccount?.id, activeAccount?.is_demo, activeAccount?.last_synced_at]);
   const isConnectionPending = useMemo(
     () =>
       accounts.some(
@@ -158,42 +141,25 @@ function JournalPageContent() {
 
   const fromDateParam = searchParams.get("fromDate");
   const toDateParam = searchParams.get("toDate");
-  const { fromDate, toDate } = useMemo(() => {
-    // No date params → no filter (show ALL trades). Only apply a window when
-    // the user picks a custom range.
-    const queryFromDate = parseDateParam(fromDateParam);
-    const queryToDate = parseDateParam(toDateParam);
-    const hasCustomRange = !!queryFromDate && !!queryToDate;
-    return {
-      fromDate: hasCustomRange ? formatDateParam(queryFromDate) : "",
-      toDate: hasCustomRange ? formatDateParam(queryToDate) : "",
-    };
-  }, [fromDateParam, toDateParam]);
+  const resolvedDateRange = useMemo(
+    () => getDateRangeFromParams(fromDateParam, toDateParam),
+    [fromDateParam, toDateParam],
+  );
+  const fromDate = formatDateParam(resolvedDateRange.from);
+  const toDate = formatDateParam(resolvedDateRange.to);
 
-  // Date-range control state for the page header (moved out of the global chrome).
-  const parsedDateRange = useMemo<DateRange | undefined>(() => {
-    const from = parseDateParam(fromDateParam);
-    if (!from) return undefined;
-    const to = parseDateParam(toDateParam);
-    return to ? { from, to } : { from };
-  }, [fromDateParam, toDateParam]);
+  // Date-range control state for the page header.
+  const parsedDateRange: DateRange = resolvedDateRange;
 
   const applyDateRange = (nextRange: DateRange | undefined) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (!nextRange?.from) {
-      params.delete("fromDate");
-      params.delete("toDate");
-      router.replace(
-        params.toString() ? `/dashboard?${params.toString()}` : "/dashboard",
-      );
-      return;
-    }
-    params.set("fromDate", formatDateParam(nextRange.from));
-    if (nextRange.to) {
-      params.set("toDate", formatDateParam(nextRange.to));
-    } else {
-      params.delete("toDate");
-    }
+    const range =
+      nextRange?.from && nextRange.to
+        ? { from: nextRange.from, to: nextRange.to }
+        : getCurrentMonthDateRange();
+    setCurrentMonth(new Date(range.from.getFullYear(), range.from.getMonth(), 1));
+    params.set("fromDate", formatDateParam(range.from));
+    params.set("toDate", formatDateParam(range.to));
     router.replace(
       params.toString() ? `/dashboard?${params.toString()}` : "/dashboard",
     );

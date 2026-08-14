@@ -24,37 +24,12 @@ import {
   type PeriodSummary,
 } from "./journal-period-summary";
 import { buildAccountLabel } from "../lib/account-label";
-
-function formatDateParam(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateParam(value: string | null) {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-  const parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function getLastDaysInclusiveRange(days: number, anchor?: Date) {
-  // Window of `days` ending at `anchor` (default today). Anchoring lets the
-  // default view follow an account's most recent activity, not just "now".
-  const to = anchor ? new Date(anchor) : new Date();
-  const from = new Date(to);
-  from.setDate(from.getDate() - (days - 1));
-  return { fromDate: formatDateParam(from), toDate: formatDateParam(to) };
-}
-
-function startOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function endOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
-}
+import {
+  formatDateParam,
+  getCalendarMonthDateRange,
+  getCurrentMonthDateRange,
+  getDateRangeFromParams,
+} from "../lib/date-window";
 
 export function JournalFeedPage() {
   const router = useRouter();
@@ -67,49 +42,26 @@ export function JournalFeedPage() {
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openAi = useAiDockStore((s) => s.open);
 
-  // Once the user pages the calendar, this holds their chosen month; the fetch
-  // window and calendar then follow it. Until then both follow the default
-  // (last 30 days anchored to the account's latest activity).
-  const [pickedMonth, setPickedMonth] = useState<Date | null>(null);
+  const resolvedDateRange = useMemo(
+    () => getDateRangeFromParams(
+      searchParams.get("fromDate"),
+      searchParams.get("toDate"),
+    ),
+    [searchParams],
+  );
+  const fromDate = formatDateParam(resolvedDateRange.from);
+  const toDate = formatDateParam(resolvedDateRange.to);
 
-  const queryFrom = parseDateParam(searchParams.get("fromDate"));
-  const queryTo = parseDateParam(searchParams.get("toDate"));
-  const hasCustomRange = !!queryFrom && !!queryTo;
-  // Default view: last 30 days. Anchored to the account's most recent activity
-  // (last_synced_at) rather than "today", so accounts whose latest trades aren't
-  // in the current month (e.g. seeded demo data) still open on a populated range.
-  const anchorTo = activeAccount?.last_synced_at
-    ? new Date(activeAccount.last_synced_at)
-    : undefined;
-  const rolling = getLastDaysInclusiveRange(30, anchorTo);
-  const fromDate = hasCustomRange
-    ? formatDateParam(queryFrom)
-    : pickedMonth
-      ? formatDateParam(startOfMonth(pickedMonth))
-      : rolling.fromDate;
-  const toDate = hasCustomRange
-    ? formatDateParam(queryTo)
-    : pickedMonth
-      ? formatDateParam(endOfMonth(pickedMonth))
-      : rolling.toDate;
-
-  const parsedDateRange = useMemo<DateRange | undefined>(() => {
-    const from = parseDateParam(searchParams.get("fromDate"));
-    if (!from) return undefined;
-    const to = parseDateParam(searchParams.get("toDate"));
-    return to ? { from, to } : { from };
-  }, [searchParams]);
+  const parsedDateRange: DateRange = resolvedDateRange;
 
   const applyDateRange = (next: DateRange | undefined) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (!next?.from) {
-      params.delete("fromDate");
-      params.delete("toDate");
-    } else {
-      params.set("fromDate", formatDateParam(next.from));
-      if (next.to) params.set("toDate", formatDateParam(next.to));
-      else params.delete("toDate");
-    }
+    const range =
+      next?.from && next.to
+        ? { from: next.from, to: next.to }
+        : getCurrentMonthDateRange();
+    params.set("fromDate", formatDateParam(range.from));
+    params.set("toDate", formatDateParam(range.to));
     const q = params.toString();
     router.replace(q ? `/journal?${q}` : "/journal");
   };
@@ -161,10 +113,8 @@ export function JournalFeedPage() {
   const days = allDays;
 
   // ----- Right rail: month calendar + period summary -----
-  // The calendar follows the picked month; before any navigation it follows the
-  // fetch window's end (anchored to the account's latest activity), so the
-  // calendar/summary match the feed even when the account loads after render.
-  const monthAnchor = pickedMonth ?? parseDateParam(toDate) ?? new Date();
+  // The calendar and period summary follow the same range used by the feed.
+  const monthAnchor = resolvedDateRange.to;
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   const calMonth = monthAnchor.getMonth();
@@ -210,9 +160,14 @@ export function JournalFeedPage() {
 
   const shiftMonth = (delta: number) => {
     setSelectedDay(null);
-    setPickedMonth(
-      new Date(monthAnchor.getFullYear(), monthAnchor.getMonth() + delta, 1),
+    const nextMonth = new Date(
+      monthAnchor.getFullYear(),
+      monthAnchor.getMonth() + delta,
+      1,
     );
+    const currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    if (nextMonth > currentMonth) return;
+    applyDateRange(getCalendarMonthDateRange(nextMonth));
   };
 
   // Accordion: at most one day card is expanded at a time.
