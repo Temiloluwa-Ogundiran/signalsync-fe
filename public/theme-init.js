@@ -1,7 +1,7 @@
 (function () {
   try {
     var path = location.pathname;
-    var isAuthRoute = /^\/(login|register|verify-email|forgot-password|reset-password|resend-verification)(\/|$)/.test(path);
+    var isAuthRoute = /^\/(login|register|verify-email|forgot-password|reset-password|resend-verification|privacy|terms)(\/|$)/.test(path);
     var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     var saved = localStorage.getItem("syncgram-theme");
     var theme = saved ? JSON.parse(saved).state?.theme : "system";
