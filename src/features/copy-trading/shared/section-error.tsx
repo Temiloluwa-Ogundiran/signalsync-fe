@@ -13,8 +13,11 @@ export function SectionError({
   onRetry?: () => void;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-danger/20 bg-danger/5 px-4 py-3">
-      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-danger" />
+    <div
+      role="alert"
+      className="flex items-start gap-3 rounded-lg border border-danger/20 bg-danger/5 px-4 py-3"
+    >
+      <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-danger" />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-text-primary">{title}</p>
         <p className="mt-0.5 text-xs leading-5 text-text-secondary">
@@ -23,7 +26,7 @@ export function SectionError({
       </div>
       {onRetry ? (
         <Button variant="ghost" size="sm" onClick={onRetry}>
-          <RefreshCw className="size-4" />
+          <RefreshCw aria-hidden="true" className="size-4" />
           Retry
         </Button>
       ) : null}

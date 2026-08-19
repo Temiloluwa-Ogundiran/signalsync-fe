@@ -16,6 +16,7 @@ interface JournalCalendarHeaderProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   currency: string;
+  nextDisabled?: boolean;
 }
 
 export function JournalCalendarHeader({
@@ -25,23 +26,31 @@ export function JournalCalendarHeader({
   onPrevMonth,
   onNextMonth,
   currency,
+  nextDisabled = false,
 }: JournalCalendarHeaderProps) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
       <div className="flex items-center rounded-lg border border-border-primary">
         <button
+          type="button"
           onClick={onPrevMonth}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
           aria-label="Previous month"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="min-w-[7.5rem] border-x border-border-primary px-4 py-1.5 text-center text-sm font-semibold text-text-primary">
+        <span
+          aria-live="polite"
+          className="min-w-[7.5rem] border-x border-border-primary px-4 py-1.5 text-center text-sm font-semibold text-text-primary"
+        >
           {monthLabel}
         </span>
         <button
+          type="button"
           onClick={onNextMonth}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
+          disabled={nextDisabled}
+          aria-disabled={nextDisabled}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Next month"
         >
           <ChevronRight className="h-4 w-4" />
@@ -86,7 +95,7 @@ function CalendarSettings() {
         align="end"
         className="w-64 rounded-xl border border-hairline bg-popover p-1.5"
       >
-        <p className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercaser text-text-tertiary">
+        <p className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase text-text-tertiary">
           Calendar settings
         </p>
         <div className="flex items-center justify-between gap-3 rounded-lg px-2 py-2">

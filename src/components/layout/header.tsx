@@ -30,6 +30,7 @@ export function Header() {
             onClick={toggleMobileNav}
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileNavOpen}
+            aria-controls="mobile-navigation"
             // z-tooltip keeps the toggle above the open drawer's backdrop so it
             // stays tappable to close the drawer.
             className="relative z-tooltip -ml-1 shrink-0 rounded-lg p-2 text-text-secondary transition-colors hover:bg-sidebar-nav-active-bg hover:text-text-primary lg:hidden"

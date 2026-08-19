@@ -131,7 +131,7 @@ function NavGroupBlock({
               type="button"
               onClick={() => toggleGroup(groupKey)}
               aria-expanded={!collapsed}
-              className="group/hdr flex flex-1 items-center gap-1.5 text-xs font-semibold uppercaser text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer"
+              className="group/hdr flex flex-1 items-center gap-1.5 text-xs font-semibold uppercase text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <ChevronDown
                 className={cn(
@@ -142,7 +142,7 @@ function NavGroupBlock({
               <span className="truncate">{group.header}</span>
             </button>
           ) : (
-            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercaser text-text-tertiary">
+            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercase text-text-tertiary">
               {group.headerIcon ? (
                 <HugeiconsIcon
                   icon={group.headerIcon}
@@ -306,7 +306,7 @@ function AppSwitcher({
         sideOffset={6}
         className="w-[200px] border-chrome-control-border bg-card-bg p-1"
       >
-        <p className="px-2 py-1.5 text-[11px] font-semibold uppercaser text-text-tertiary">
+        <p className="px-2 py-1.5 text-[11px] font-semibold uppercase text-text-tertiary">
           Switch app
         </p>
         {apps.map((entry) => {

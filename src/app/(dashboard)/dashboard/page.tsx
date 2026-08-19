@@ -273,6 +273,13 @@ function JournalPageContent() {
     selectedDay && selectedDay <= daysInMonth ? selectedDay : 1;
 
   const handleMonthShift = (direction: -1 | 1) => {
+    if (direction === 1) {
+      const today = new Date();
+      const isCurrentMonth =
+        currentMonth.getFullYear() === today.getFullYear() &&
+        currentMonth.getMonth() === today.getMonth();
+      if (isCurrentMonth) return;
+    }
     setCurrentMonth(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() + direction, 1),
     );

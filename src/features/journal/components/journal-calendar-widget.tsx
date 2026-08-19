@@ -49,6 +49,10 @@ export function JournalCalendarWidget({
   );
   const monthlyPnl = Object.values(dayStats).reduce((acc, day) => acc + day.pnl, 0);
   const activeDays = Object.values(dayStats).filter((day) => day.trades > 0).length;
+  const today = new Date();
+  const nextDisabled =
+    currentMonth.getFullYear() === today.getFullYear() &&
+    currentMonth.getMonth() === today.getMonth();
 
   return (
     <section className="min-w-0 rounded-xl bg-card-bg">
@@ -59,6 +63,7 @@ export function JournalCalendarWidget({
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
         currency={currency}
+        nextDisabled={nextDisabled}
       />
       <div
         className={cn(

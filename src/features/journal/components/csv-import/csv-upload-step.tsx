@@ -113,7 +113,7 @@ export function CSVUploadStep({
         </p>
         
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-text-secondary uppercaser">
+          <label className="text-xs font-bold text-text-secondary uppercase">
             Timezone
           </label>
           <select
@@ -133,7 +133,7 @@ export function CSVUploadStep({
 
       {/* Drag & Drop Area */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-text-secondary uppercaser">
+        <label className="text-xs font-bold text-text-secondary uppercase">
           Upload Report
         </label>
         
@@ -169,7 +169,7 @@ export function CSVUploadStep({
             or click to browse your files
           </p>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-border-primary bg-bg-secondary px-3 py-1 text-[10px] font-bold text-text-secondary uppercaser">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border-primary bg-bg-secondary px-3 py-1 text-[10px] font-bold text-text-secondary uppercase">
             <FileCode className="h-3 w-3 text-accent" />
             MetaTrader 5 (.xlsx) • Max 10MB
           </div>

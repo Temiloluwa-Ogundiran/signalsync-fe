@@ -74,7 +74,7 @@ export default function DashboardShell({
       {/* Column layout: a full-width header on top (logo + global actions), then
           a row of nav + content below. The header owns the logo so its size is
           independent of the nav column width. */}
-      <div className="flex h-screen flex-col overflow-hidden bg-bg-primary">
+      <div className="flex h-[100dvh] flex-col overflow-hidden bg-bg-primary">
         <Suspense
           fallback={
             <div

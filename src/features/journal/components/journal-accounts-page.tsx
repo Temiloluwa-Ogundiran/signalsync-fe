@@ -387,7 +387,7 @@ export function JournalAccountsPage() {
                           ) : null}
                         </div>
                       </div>
-                      <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercaser text-text-secondary">
+                      <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-tertiary px-2.5 py-1 text-[10px] font-bold uppercase text-text-secondary">
                         <span
                           className={cn(
                             "h-1.5 w-1.5 rounded-full",
@@ -406,7 +406,7 @@ export function JournalAccountsPage() {
 
                     {/* Balance — the hero metric */}
                     <div>
-                      <p className="text-[10px] font-bold uppercaser text-text-tertiary">
+                      <p className="text-[10px] font-bold uppercase text-text-tertiary">
                         Balance
                       </p>
                       <p className="mt-1 text-[28px] font-semibold leading-none text-text-primary tabular-nums">

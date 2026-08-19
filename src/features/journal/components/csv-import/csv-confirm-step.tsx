@@ -38,7 +38,7 @@ export function CSVConfirmStep({
 
         <div className="border-t border-border-primary/60 pt-4 flex justify-around text-left">
           <div className="space-y-0.5">
-            <span className="text-[10px] text-text-tertiary uppercaser block font-bold">
+            <span className="text-[10px] text-text-tertiary uppercase block font-bold">
               Account Name
             </span>
             <span className="text-sm font-bold text-text-primary">
@@ -47,7 +47,7 @@ export function CSVConfirmStep({
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-[10px] text-text-tertiary uppercaser block font-bold">
+            <span className="text-[10px] text-text-tertiary uppercase block font-bold">
               Trades To Scan
             </span>
             <span className="text-sm font-bold text-text-primary tabular-nums">
@@ -59,7 +59,7 @@ export function CSVConfirmStep({
 
       {/* Rules list */}
       <div className="space-y-4 rounded-xl border border-border-primary bg-bg-secondary/20 p-4">
-        <h4 className="text-xs font-bold text-text-secondary uppercaser">
+        <h4 className="text-xs font-bold text-text-secondary uppercase">
           Import Guidelines
         </h4>
         

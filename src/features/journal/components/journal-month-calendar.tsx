@@ -52,6 +52,9 @@ export function JournalMonthCalendar({
 }: JournalMonthCalendarProps) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
+  const today = new Date();
+  const isCurrentMonth =
+    year === today.getFullYear() && month === today.getMonth();
 
   const monthLabel = monthDate
     .toLocaleDateString("en-US", { month: "long", year: "numeric" })
@@ -76,7 +79,10 @@ export function JournalMonthCalendar({
   return (
     <div className="rounded-2xl bg-card-bg p-4 ring-1 ring-hairline">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm font-semibold text-text-secondary">
+        <span
+          className="text-sm font-semibold text-text-secondary"
+          aria-live="polite"
+        >
           {monthLabel}
         </span>
         <div className="flex items-center gap-1">
@@ -84,7 +90,7 @@ export function JournalMonthCalendar({
             type="button"
             onClick={onPrevMonth}
             aria-label="Previous month"
-            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
           </button>
@@ -92,7 +98,9 @@ export function JournalMonthCalendar({
             type="button"
             onClick={onNextMonth}
             aria-label="Next month"
-            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer"
+            disabled={isCurrentMonth}
+            aria-disabled={isCurrentMonth}
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-subtle hover:text-text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
           </button>
@@ -103,6 +111,17 @@ export function JournalMonthCalendar({
         {DAY_INITIALS.map((d, i) => (
           <div
             key={`dow-${i}`}
+            aria-label={
+              [
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ][i]
+            }
             className="text-center text-xs font-medium text-text-tertiary"
           >
             {d}
@@ -118,12 +137,26 @@ export function JournalMonthCalendar({
           const stats = dayStats[day];
           const isSelected = day === selectedDay;
           const tone = stats ? (stats.pnl >= 0 ? "win" : "loss") : "neutral";
+          const dateLabel = new Date(year, month, day).toLocaleDateString(
+            "en-US",
+            {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            },
+          );
+          const statsLabel = stats
+            ? `, ${stats.trades} trade${stats.trades === 1 ? "" : "s"}, net ${stats.pnl >= 0 ? "profit" : "loss"} ${Math.abs(stats.pnl).toFixed(2)}`
+            : ", no trades";
 
           return (
             <button
               key={`day-${day}`}
               type="button"
               onClick={() => onSelectDay(day)}
+              aria-label={`${dateLabel}${statsLabel}`}
+              aria-pressed={isSelected}
               style={stats ? heatStyle(stats.pnl, maxAbs) : undefined}
               className={cn(
                 "flex aspect-square items-center justify-center rounded-lg text-sm font-medium transition-[color,background-color,box-shadow]",

@@ -45,7 +45,7 @@ export function CopySafetyBar({
   accounts: CopyTradingConnection[];
   routes: CopyRoute[];
   sources: TelegramSource[];
-  onPauseChange: (enabled: boolean) => Promise<void>;
+  onPauseChange: (currentlyPaused: boolean) => Promise<void>;
 }) {
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const Icon = icons[health.tone];

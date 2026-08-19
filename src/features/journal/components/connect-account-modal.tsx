@@ -196,7 +196,7 @@ function ConnectAccountFlow() {
                   <span className="text-[13px] font-semibold text-[#15151C] dark:text-[#ECECF1]">
                     MetaTrader 5
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercaser text-[#6C4DF2] dark:text-[#8E72FF]">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase text-[#6C4DF2] dark:text-[#8E72FF]">
                     <BadgeCheck className="h-3 w-3" />
                     Supported
                   </span>
@@ -326,7 +326,7 @@ function MethodSelector({
                   </span>
                 )}
                 {method.disabled && (
-                  <span className="rounded-full border border-[#DCDCE5] bg-[#F6F6F9] px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercaser text-[#8E8E9A] dark:border-[#30303C] dark:bg-[#1E1E27] dark:text-[#67677A]">
+                  <span className="rounded-full border border-[#DCDCE5] bg-[#F6F6F9] px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-[#8E8E9A] dark:border-[#30303C] dark:bg-[#1E1E27] dark:text-[#67677A]">
                     Soon
                   </span>
                 )}

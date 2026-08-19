@@ -35,7 +35,7 @@ function RailIcon({
         aria-label={app.name}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors",
+          "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-rail-icon-active focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg",
           active
             ? // Bright active icon on the deep-indigo rail.
               "bg-nav-rail-icon-hover-bg text-nav-rail-icon-active"
@@ -60,7 +60,7 @@ function RailIcon({
       {/* Tooltip */}
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100"
       >
         {app.name}
       </span>
@@ -139,6 +139,8 @@ export function AppNav() {
       ) : null}
 
       <div
+        id="mobile-navigation"
+        aria-label="Main navigation"
         className={cn(
           activeApp.isAI
             ? // Partna AI: rail-only, always an in-flow static column (even on
@@ -272,13 +274,13 @@ function RailPinned({
       <a
         href={href}
         aria-label={label}
-        className="flex size-11 items-center justify-center rounded-xl text-nav-rail-icon transition-colors hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active"
+        className="flex size-11 items-center justify-center rounded-xl text-nav-rail-icon transition-colors hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-rail-icon-active focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg"
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </a>
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 z-tooltip ml-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-sidebar-divider bg-card-bg px-2 py-1 text-xs font-medium text-text-primary opacity-0 shadow-lg transition-opacity duration-100 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100"
       >
         {label}
       </span>

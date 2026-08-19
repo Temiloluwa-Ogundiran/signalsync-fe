@@ -268,8 +268,18 @@ export function JournalFeedPage() {
           {dashboardQuery.isLoading ? (
             <AppLoader label="Loading journal" />
           ) : dashboardQuery.isError ? (
-            <div className="flex h-[40vh] items-center justify-center text-sm text-danger">
-              Failed to load journal. Please retry.
+            <div
+              role="alert"
+              className="flex h-[40vh] flex-col items-center justify-center gap-3 text-center text-sm text-danger"
+            >
+              <p>Failed to load journal.</p>
+              <button
+                type="button"
+                onClick={() => void dashboardQuery.refetch()}
+                className="rounded-md border border-danger/30 px-3 py-2 font-semibold text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/40"
+              >
+                Try again
+              </button>
             </div>
           ) : days.length === 0 ? (
             <div className="flex h-[40vh] items-center justify-center text-sm text-text-secondary">

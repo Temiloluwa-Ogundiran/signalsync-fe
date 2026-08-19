@@ -241,7 +241,8 @@ export function SetupWorkspace({
                         source_id: item.id,
                       }));
                     }}
-                    className={`flex items-center justify-between rounded-md border px-3 py-3 text-left ${
+                    aria-pressed={source?.id === item.id}
+                    className={`flex items-center justify-between rounded-md border px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       source?.id === item.id
                         ? "border-border-secondary bg-bg-tertiary"
                         : "border-border-primary"
@@ -301,6 +302,7 @@ export function SetupWorkspace({
                       target_connection_id: item.id,
                     }));
                   }}
+                  aria-pressed={selectedAccountId === item.id}
                   className={`flex items-center justify-between gap-4 rounded-md border px-3 py-3 text-left disabled:opacity-50 ${
                     selectedAccountId === item.id
                       ? "border-border-secondary bg-bg-tertiary"

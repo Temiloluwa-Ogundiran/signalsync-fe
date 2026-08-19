@@ -186,6 +186,9 @@ export function TelegramSignInDialog({
             {method === "phone" ? (
               <Field label="Telegram phone number">
                 <Input
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   placeholder="+234..."
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
@@ -233,7 +236,7 @@ export function TelegramSignInDialog({
             ) : null}
             {auth.state === "code_required" ? (
               <div className="space-y-3">
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     aria-label="Telegram login code"
                     inputMode="numeric"
@@ -243,6 +246,7 @@ export function TelegramSignInDialog({
                     onChange={(event) => setCode(event.target.value)}
                   />
                   <Button
+                    className="sm:shrink-0"
                     disabled={code.trim().length < 3 || submitting}
                     onClick={submitCode}
                   >
@@ -263,14 +267,16 @@ export function TelegramSignInDialog({
               </div>
             ) : null}
             {auth.state === "password_required" ? (
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   type="password"
+                  aria-label="Telegram two-step password"
+                  autoComplete="current-password"
                   placeholder="Two-step password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
-                <Button
+                <Button className="sm:shrink-0"
                   disabled={!password || submitting}
                   onClick={submitPassword}
                 >

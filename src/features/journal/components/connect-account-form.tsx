@@ -137,17 +137,12 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-5">
-            {/* Start date — UI placeholder; not sent to the backend yet. */}
+            {/* The API currently imports the full history; present this as an
+                informational scope rather than a disabled date control. */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-text-primary">
-                Start date
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly
-                  value="Import all records"
-                  className="h-12 cursor-default bg-bg-input pr-10 text-text-secondary"
-                />
+              <p className="text-sm font-medium text-text-primary">Import scope</p>
+              <div className="relative flex h-12 items-center rounded-md border border-border-primary bg-bg-input px-3 pr-10 text-sm text-text-secondary">
+                Import all records
                 <Calendar className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
               </div>
             </div>
@@ -351,6 +346,10 @@ function Mt5ServerCombobox({
         <Input
           ref={inputRef}
           aria-label="Server"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls="mt5-server-options"
           value={searchValue}
           disabled={disabled}
           onFocus={() => setOpen(true)}
@@ -382,7 +381,11 @@ function Mt5ServerCombobox({
         onWheel={(e) => e.stopPropagation()}
         className="w-[var(--radix-popover-trigger-width)] overflow-hidden border-border-primary bg-card-bg p-0 text-text-primary shadow-xl"
       >
-        <div className="scrollbar-thin max-h-64 overflow-y-auto overscroll-contain p-1">
+        <div
+          id="mt5-server-options"
+          role="listbox"
+          className="scrollbar-thin max-h-64 overflow-y-auto overscroll-contain p-1"
+        >
           {tooShort && !isFetching && (
             <div className="px-3 py-3 text-sm text-text-secondary">
               Start typing at least 4 letters to see available servers
@@ -410,6 +413,8 @@ function Mt5ServerCombobox({
                 <button
                   key={server.server_name}
                   type="button"
+                  role="option"
+                  aria-selected={isSelected}
                   className={cn(
                     "flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-bg-tertiary",
                     isSelected && "bg-bg-tertiary text-text-primary",
