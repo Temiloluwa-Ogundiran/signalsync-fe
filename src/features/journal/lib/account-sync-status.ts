@@ -94,3 +94,15 @@ export function isAccountSyncBusy(status: JournalAccountSyncStatus) {
 export function isAccountSyncFailed(status: JournalAccountSyncStatus) {
   return status.severity === "warning" || status.severity === "error";
 }
+
+/** Recovery sync is only needed for a connected MT5 account in a failed state.
+ * Healthy accounts are kept current automatically while the app is active. */
+export function shouldOfferManualJournalResync(
+  account: JournalAccount | undefined,
+) {
+  return Boolean(
+    account &&
+      account.import_method === "auto_sync" &&
+      isAccountSyncFailed(getAccountSyncStatus(account)),
+  );
+}

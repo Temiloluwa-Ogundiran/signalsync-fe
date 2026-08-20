@@ -2,9 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import type { DateRange } from "react-day-picker";
 import { AppLoader } from "@/components/app-loader";
-import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
+import {
+  useJournalAccounts,
+  useSyncJournalAccount,
+} from "@/features/journal/hooks/use-journal-accounts";
+import { useManualSyncController } from "@/features/journal/hooks/use-manual-sync-controller";
 import { useResolvedJournalAccountId } from "@/features/journal/hooks/use-resolved-journal-account-id";
 import { useJournalDashboardAnalytics } from "@/features/journal/hooks/use-journal-analytics";
 import { useCurve } from "../hooks/use-curve";
@@ -25,6 +30,11 @@ import {
 } from "./journal-period-summary";
 import { buildAccountLabel } from "../lib/account-label";
 import {
+  getAccountSyncStatus,
+  isAccountSyncBusy,
+} from "../lib/account-sync-status";
+import { JournalSyncProgressBanner } from "./journal-sync-progress-banner";
+import {
   formatDateParam,
   getCalendarMonthDateRange,
   getCurrentMonthDateRange,
@@ -34,10 +44,22 @@ import {
 export function JournalFeedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: accounts = [] } = useJournalAccounts();
+  const queryClient = useQueryClient();
+  const {
+    data: accounts = [],
+    refetch: refetchAccounts,
+  } = useJournalAccounts();
+  const syncAccountMutation = useSyncJournalAccount();
   const resolvedAccountId = useResolvedJournalAccountId();
   const activeAccountId = resolvedAccountId || accounts[0]?.id || "";
   const activeAccount = accounts.find((a) => a.id === activeAccountId);
+  const isConnectionPending = accounts.some(
+    (account) =>
+      account.connection_state === "pending_verification" ||
+      account.connection_state === "bootstrapping",
+  );
+  const activeAccountConnectionBusy =
+    !!activeAccount && isAccountSyncBusy(getAccountSyncStatus(activeAccount));
   const setActiveAccountId = useJournalUiStore((s) => s.setActiveAccountId);
   const openConnectModal = useJournalUiStore((s) => s.openConnectModal);
   const openAi = useAiDockStore((s) => s.open);
@@ -78,6 +100,25 @@ export function JournalFeedPage() {
     accountId: activeAccountId || undefined,
     fromDate,
     toDate,
+  });
+
+  const {
+    handleRefreshAccounts,
+    isSyncBusy,
+    manualSyncAvailable,
+    showJournalSyncProgress,
+    journalSyncProgressMessage,
+    userSyncRateLimitedUntilMs,
+  } = useManualSyncController({
+    accounts,
+    activeAccountId: activeAccountId || null,
+    activeAccount,
+    isConnectionPending,
+    activeAccountConnectionBusy,
+    syncAccountMutation,
+    refetchAccounts,
+    refetchDashboard: dashboardQuery.refetch,
+    queryClient,
   });
 
   // One intraday fetch covers every day's curve + stats → date → day map.
@@ -241,13 +282,20 @@ export function JournalFeedPage() {
 
   return (
     <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+      <JournalSyncProgressBanner
+        open={showJournalSyncProgress}
+        message={journalSyncProgressMessage}
+      />
       <JournalPageHeader
-        showSyncMeta={false}
-        leftContent={
-          <h1 className="text-xl font-semibold text-text-primary">
-            Day Journal
-          </h1>
-        }
+        title="Day Journal"
+        isSyncPending={isSyncBusy}
+        manualSyncAvailable={manualSyncAvailable}
+        lastSyncedAt={activeAccount?.last_synced_at}
+        nextSyncNotBefore={activeAccount?.next_sync_not_before}
+        userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
+        connectionState={activeAccount?.connection_state}
+        syncStatus={activeAccount?.sync_status}
+        onSyncAccount={() => void handleRefreshAccounts()}
         accounts={accounts}
         activeAccountId={activeAccountId}
         activeAccountLabel={

@@ -23,7 +23,7 @@ export function AppLoader({
       }
     >
       <BladeMark />
-      <span className="tp-loader-label text-xs font-medium uppercase text-text-tertiary">
+      <span className="sr-only">
         {label}
       </span>
     </div>

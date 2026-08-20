@@ -26,6 +26,7 @@ interface JournalPageHeaderProps {
   /** Optional page title (h1) rendered above the left content / sync line. */
   title?: string;
   isSyncPending?: boolean;
+  manualSyncAvailable?: boolean;
   lastSyncedAt?: string | null;
   nextSyncNotBefore?: string | null;
   userSyncRateLimitedUntilMs?: number | null;
@@ -90,6 +91,7 @@ export function JournalPageHeader({
   leftContent,
   title,
   isSyncPending = false,
+  manualSyncAvailable = true,
   lastSyncedAt,
   nextSyncNotBefore,
   userSyncRateLimitedUntilMs,
@@ -164,24 +166,31 @@ export function JournalPageHeader({
               <span aria-hidden className="text-text-tertiary/60">
                 ·
               </span>
-              <button
-                onClick={onSyncAccount}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ai-soft-bg px-2.5 py-1 text-xs font-semibold text-ai-accent transition-colors hover:bg-ai-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-ai-soft-bg disabled:hover:text-ai-accent"
-                aria-label={
-                  isSyncPending
-                    ? "Syncing account"
-                    : syncCooldownLabel || "Sync active account"
-                }
-                title={
-                  isSyncPending
-                    ? "Syncing account"
-                    : syncCooldownLabel || "Sync active account"
-                }
-                disabled={isSyncPending || isCooldownActive}
-              >
-                <RefreshCw className={`h-3 w-3 ${isSyncPending ? "animate-spin" : ""}`} />
-                {isSyncPending ? "Syncing…" : "Resync"}
-              </button>
+              {manualSyncAvailable ? (
+                <button
+                  onClick={onSyncAccount}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ai-soft-bg px-2.5 py-1 text-xs font-semibold text-ai-accent transition-colors hover:bg-ai-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-ai-soft-bg disabled:hover:text-ai-accent"
+                  aria-label={
+                    isSyncPending
+                      ? "Syncing account"
+                      : syncCooldownLabel || "Sync account"
+                  }
+                  title={
+                    isSyncPending
+                      ? "Syncing account"
+                      : syncCooldownLabel || "Sync account"
+                  }
+                  disabled={isSyncPending || isCooldownActive}
+                >
+                  <RefreshCw
+                    aria-hidden
+                    className={`h-3 w-3 ${isSyncPending ? "motion-safe:animate-spin" : ""}`}
+                  />
+                  <span className={isSyncPending ? "sr-only" : undefined}>
+                    {isSyncPending ? "Syncing" : "Resync"}
+                  </span>
+                </button>
+              ) : null}
             </div>
             {connectionLabel ? (
               <p className="text-[13px] text-text-secondary">

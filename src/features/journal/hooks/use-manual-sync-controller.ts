@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { ApiException } from "@/lib/api/types";
 import {
   getJournalSyncPollIntervalMs,
   refreshJournalQueriesAfterManualSync,
@@ -14,19 +12,9 @@ import type { JournalAccount } from "@/features/journal/types";
 import {
   getAccountSyncStatus,
   isAccountSyncFailed,
+  shouldOfferManualJournalResync,
 } from "@/features/journal/lib/account-sync-status";
-
-function formatSyncTimestamp(dateString: string | null | undefined) {
-  if (!dateString) return null;
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
+import { useAutomaticJournalSync } from "@/features/journal/hooks/use-automatic-journal-sync";
 
 const MANUAL_SYNC_BURST_WINDOW_MS = 60_000;
 const MANUAL_SYNC_BURST_MAX_ATTEMPTS = 5;
@@ -43,16 +31,6 @@ function getBurstRateLimitUntilMs(attempts: number[], nowMs: number) {
     return null;
   }
   return recentAttempts[0] + MANUAL_SYNC_BURST_WINDOW_MS;
-}
-
-function formatRetryCountdown(retryAfterSeconds: number) {
-  const totalSeconds = Math.max(1, Math.ceil(retryAfterSeconds));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes <= 0) {
-    return `${seconds}s`;
-  }
-  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
 type RefetchAccounts = ReturnType<typeof useJournalAccounts>["refetch"];
@@ -94,10 +72,13 @@ export function useManualSyncController({
   const wasConnectionPendingRef = useRef(false);
   const pollingWindowStartedAtRef = useRef<number | null>(null);
 
-  // The full-width progress banner is reserved for the initial account
-  // bootstrap/verification. Manual resync surfaces only the spinner next to the
-  // "Resync" control (via `isSyncBusy`), so don't show the banner for it.
-  const showJournalSyncProgress = activeAccountConnectionBusy;
+  const isSyncBusy =
+    activeAccountConnectionBusy ||
+    syncAccountMutation.isPending ||
+    !!syncUiState;
+  // The Journal pages own the visible, icon-only sync indicator. It covers
+  // both an initial account bootstrap and each automatic/background resync.
+  const showJournalSyncProgress = isSyncBusy;
 
   const journalSyncProgressMessage = useMemo(() => {
     if (syncAccountMutation.isPending) return "Contacting server...";
@@ -114,10 +95,8 @@ export function useManualSyncController({
   ]);
 
   const handleRefreshAccounts = async (options?: {
-    silent?: boolean;
     accountId?: string;
   }) => {
-    const silent = options?.silent ?? false;
     const targetAccountId = options?.accountId ?? activeAccountId;
     const nowMs = Date.now();
     const prunedAttempts = pruneRecentSyncAttempts(
@@ -127,11 +106,6 @@ export function useManualSyncController({
     setRecentManualSyncAttemptMs(prunedAttempts);
 
     if (syncAccountMutation.isPending || syncUiState) {
-      if (!silent) {
-        toast.info("Processing", {
-          description: "Sync is already running. We'll refresh your stats shortly.",
-        });
-      }
       return;
     }
 
@@ -140,12 +114,6 @@ export function useManualSyncController({
     }
 
     if (!targetAccountId) {
-      if (!silent) {
-        toast.info("Select an account to sync", {
-          description:
-            "Manual sync runs for a specific account. Choose one from your account filter.",
-        });
-      }
       await refetchAccounts();
       return;
     }
@@ -156,13 +124,6 @@ export function useManualSyncController({
       userSyncRateLimitedUntilMs &&
       userSyncRateLimitedUntilMs > nowMs
     ) {
-      if (!silent) {
-        toast.info("Manual sync limit reached", {
-          description: `Retry in ${formatRetryCountdown(
-            (userSyncRateLimitedUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
       return;
     }
 
@@ -172,13 +133,6 @@ export function useManualSyncController({
     );
     if (localBurstRateLimitUntilMs && localBurstRateLimitUntilMs > nowMs) {
       setUserSyncRateLimitedUntilMs(localBurstRateLimitUntilMs);
-      if (!silent) {
-        toast.info("Manual sync limit reached", {
-          description: `Retry in ${formatRetryCountdown(
-            (localBurstRateLimitUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
       return;
     }
 
@@ -190,13 +144,6 @@ export function useManualSyncController({
       !Number.isNaN(targetAccountCooldownUntilMs) &&
       targetAccountCooldownUntilMs > nowMs
     ) {
-      if (!silent) {
-        toast.info("Sync is already up to date", {
-          description: `Retry in ${formatRetryCountdown(
-            (targetAccountCooldownUntilMs - nowMs) / 1000,
-          )}.`,
-        });
-      }
       await refetchAccounts();
       return;
     }
@@ -216,58 +163,20 @@ export function useManualSyncController({
 
     try {
       const result = await syncAccountMutation.mutateAsync(targetAccountId);
-      const refreshed = await refetchAccounts();
-      const refreshedAccount = (refreshed.data ?? []).find(
-        (account) => account.id === targetAccountId,
-      );
-      const refreshedLastSyncedAtMs = refreshedAccount?.last_synced_at
-        ? new Date(refreshedAccount.last_synced_at).getTime()
-        : null;
-      const refreshedSyncLabel = formatSyncTimestamp(
-        refreshedAccount?.last_synced_at ?? null,
-      );
-      const didSyncTimestampAdvance =
-        !!refreshedLastSyncedAtMs &&
-        !Number.isNaN(refreshedLastSyncedAtMs) &&
-        (!baselineLastSyncedAtMs ||
-          refreshedLastSyncedAtMs > baselineLastSyncedAtMs);
+      await refetchAccounts();
       if ("inserted_trades" in result) {
         await refreshJournalQueriesAfterManualSync(queryClient);
         setSyncUiState(null);
-        if (!silent) {
-          if (result.inserted_trades === 0) {
-            toast.info("Account already up to date", {
-              description:
-                didSyncTimestampAdvance
-                  ? `Sync completed${refreshedSyncLabel ? ` at ${refreshedSyncLabel}` : ""}. There were no additional closed trades to ingest.`
-                  : "There were no additional closed trades to ingest yet. Live open positions are shown separately in the Open Positions tab.",
-            });
-          } else {
-            toast.success("Account sync complete", {
-              description: `Inserted ${result.inserted_trades} trade(s) across ${result.touched_trading_dates} day(s).`,
-            });
-          }
-        }
         return;
       }
 
       if (result.status === "in_progress") {
-        if (!silent) {
-          toast.info("Sync already in progress", {
-            description:
-              result.message ||
-              "This account is already syncing. We'll refresh the dashboard when it finishes.",
-          });
-        }
         return;
       }
 
       if (result.status === "queued") {
-        if (!silent) {
-          toast.info("Processing", {
-            description: "Sync started. We'll refresh your stats when it's ready.",
-          });
-        }
+        // The animated sync control is the visual acknowledgement. Keep the
+        // queued state quiet so automatic and manual syncs share one surface.
         return;
       }
 
@@ -287,65 +196,22 @@ export function useManualSyncController({
             Date.now() + result.retry_after_seconds * 1000,
           );
         }
-
-        if (!silent) {
-          const title =
-            result.status === "cooldown"
-              ? "Sync is already up to date"
-              : result.status === "rate_limited"
-                ? "Manual sync limit reached"
-                : "Sync deferred";
-          const description =
-            result.retry_after_seconds && result.retry_after_seconds > 0
-              ? `${result.message || "Please retry shortly."} Retry in ${formatRetryCountdown(
-                  result.retry_after_seconds,
-                )}.`
-              : result.message || "Please retry shortly.";
-          toast.info(title, { description });
-        }
         return;
       }
-
-      if (!silent) {
-        toast.error("Account sync failed", {
-          description:
-            result.message || "Unable to sync this account right now.",
-        });
-      }
-    } catch (error) {
+    } catch {
       setSyncUiState(null);
       await refetchAccounts();
-      if (!silent) {
-        if (
-          error instanceof ApiException &&
-          (error.status === 409 || error.status === 429)
-        ) {
-          if (error.status === 429 && error.retryAfterSeconds) {
-            setUserSyncRateLimitedUntilMs(
-              Date.now() + error.retryAfterSeconds * 1000,
-            );
-          }
-          const retryDescription =
-            error.retryAfterSeconds && error.retryAfterSeconds > 0
-              ? ` Retry in ${formatRetryCountdown(error.retryAfterSeconds)}.`
-              : "";
-          toast.info("Sync unavailable right now", {
-            description: `${error.message}${retryDescription}`,
-          });
-        } else if (error instanceof ApiException && error.status === 503) {
-          toast.error("Sync failed (MetaAPI timeout)", {
-            description: error.message,
-          });
-        } else {
-          const description =
-            error instanceof ApiException
-              ? error.message
-              : "Unable to sync this account right now.";
-          toast.error("Account sync failed", { description });
-        }
-      }
     }
   };
+
+  useAutomaticJournalSync({
+    activeAccount,
+    activeAccountId,
+    isConnectionPending,
+    isSyncBusy,
+    refetchAccounts,
+    requestSync: handleRefreshAccounts,
+  });
 
   useEffect(() => {
     if (isConnectionPending) {
@@ -434,9 +300,12 @@ export function useManualSyncController({
     };
   }, [refetchDashboard, refetchAccounts, syncUiState, queryClient]);
 
+  const manualSyncAvailable = shouldOfferManualJournalResync(activeAccount);
+
   return {
     handleRefreshAccounts,
-    isSyncBusy: syncAccountMutation.isPending || !!syncUiState,
+    isSyncBusy,
+    manualSyncAvailable,
     showJournalSyncProgress,
     journalSyncProgressMessage,
     userSyncRateLimitedUntilMs,

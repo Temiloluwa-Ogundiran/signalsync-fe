@@ -18,8 +18,8 @@ import { resolveSubscriptionGate } from "@/features/billing/subscription-gate";
 import { useSession } from "next-auth/react";
 
 
-function EntitledDashboardEffects() {
-  useOnMountSync();
+function EntitledDashboardEffects({ enabled }: { enabled: boolean }) {
+  useOnMountSync({ enabled });
   return null;
 }
 
@@ -64,7 +64,11 @@ export default function DashboardShell({
   }
   return (
     <AiDockProvider>
-      {subscription.data?.has_journal_access && <EntitledDashboardEffects />}
+      {subscription.data?.has_journal_access && (
+        <EntitledDashboardEffects
+          enabled={pathname !== "/dashboard" && pathname !== "/journal"}
+        />
+      )}
       <a
         href="#main-content"
         className="fixed left-4 top-4 z-[9999] -translate-y-20 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-lg transition-transform focus:translate-y-0"

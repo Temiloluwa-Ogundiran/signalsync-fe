@@ -11,69 +11,138 @@ import {
   useSyncJournalAccount,
 } from "@/features/journal/hooks/use-journal-accounts";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
-import type { JournalAccount } from "@/features/journal/types";
+import {
+  JOURNAL_AUTO_SYNC_INTERVAL_MS,
+  shouldStartAutomaticJournalSync,
+} from "@/features/journal/lib/automatic-journal-sync";
 
-function isSyncable(account: JournalAccount): boolean {
-  // Demo accounts are synthetic — never sync them (the backend no-ops too).
-  if (account.is_demo) return false;
-  if (account.import_method === "csv_upload") return false;
-  if (account.connection_state !== "ready") return false;
-  // Respect the backend cooldown — a sync within next_sync_not_before would be
-  // rejected anyway, so skip silently on a quick reload.
-  if (account.next_sync_not_before) {
-    const nextMs = new Date(account.next_sync_not_before).getTime();
-    if (!Number.isNaN(nextMs) && nextMs > Date.now()) return false;
-  }
-  return true;
+interface UseOnMountSyncOptions {
+  enabled?: boolean;
 }
 
 /**
- * Sync the active account ONCE when the dashboard shell mounts (i.e. on page
- * load / reload). This is the only form of auto-sync — there is no interval or
- * activity-based syncing. Skips silently for CSV / not-ready / in-cooldown
- * accounts.
+ * Keeps the selected account current on dashboard pages that do not render the
+ * Journal's visible sync control. Dashboard and Journal own their own visible
+ * scheduler so this hook is disabled there to prevent duplicate requests.
  */
-export function useOnMountSync() {
+export function useOnMountSync({ enabled = true }: UseOnMountSyncOptions = {}) {
   const queryClient = useQueryClient();
   const activeAccountId = useJournalUiStore((s) => s.activeAccountId);
   const { data: accounts = [], refetch: refetchAccounts } = useJournalAccounts();
   const syncAccount = useSyncJournalAccount();
-
-  // Guard so we fire at most once per mount, even under StrictMode double-mount
-  // or re-renders once accounts load in.
-  const hasSyncedRef = useRef(false);
+  const lastAttemptAtByAccountRef = useRef(new Map<string, number>());
+  const syncInFlightRef = useRef(false);
+  const latestStateRef = useRef({
+    activeAccountId,
+    accounts,
+    refetchAccounts,
+    syncAccount,
+    queryClient,
+  });
+  latestStateRef.current = {
+    activeAccountId,
+    accounts,
+    refetchAccounts,
+    syncAccount,
+    queryClient,
+  };
 
   useEffect(() => {
-    if (hasSyncedRef.current) return;
-    if (!activeAccountId || accounts.length === 0) return;
+    if (!enabled || typeof document === "undefined") return;
 
-    const account = accounts.find((a) => a.id === activeAccountId);
-    if (!account || !isSyncable(account)) return;
+    const runIfDue = async () => {
+      if (document.visibilityState !== "visible" || syncInFlightRef.current) {
+        return;
+      }
 
-    hasSyncedRef.current = true;
+      const initial = latestStateRef.current;
+      const initialAccount = initial.accounts.find(
+        (account) => account.id === initial.activeAccountId,
+      );
+      const initialAttemptAtMs = initialAccount
+        ? lastAttemptAtByAccountRef.current.get(initialAccount.id) ?? null
+        : null;
+      if (
+        !shouldStartAutomaticJournalSync({
+          account: initialAccount,
+          nowMs: Date.now(),
+          lastAutomaticSyncAtMs: initialAttemptAtMs,
+          isVisible: true,
+          isSyncBusy: initial.syncAccount.isPending,
+          isConnectionPending: false,
+        })
+      ) {
+        return;
+      }
 
-    (async () => {
+      syncInFlightRef.current = true;
       try {
-        const result = await syncAccount.mutateAsync(account.id);
+        const refreshed = await initial.refetchAccounts();
+        const latest = latestStateRef.current;
+        const account =
+          (refreshed.data ?? []).find(
+            (candidate) => candidate.id === latest.activeAccountId,
+          ) ??
+          latest.accounts.find(
+            (candidate) => candidate.id === latest.activeAccountId,
+          );
+        if (!account) return;
+
+        const nowMs = Date.now();
+        const lastAttemptAtMs =
+          lastAttemptAtByAccountRef.current.get(account.id) ?? null;
+        if (
+          !shouldStartAutomaticJournalSync({
+            account,
+            nowMs,
+            lastAutomaticSyncAtMs: lastAttemptAtMs,
+            isVisible: document.visibilityState === "visible",
+            isSyncBusy: latest.syncAccount.isPending,
+            isConnectionPending: false,
+          })
+        ) {
+          return;
+        }
+
+        lastAttemptAtByAccountRef.current.set(account.id, nowMs);
+        const result = await latest.syncAccount.mutateAsync(account.id);
         if ("inserted_trades" in result) {
-          await refreshJournalQueriesAfterManualSync(queryClient);
+          await refreshJournalQueriesAfterManualSync(latest.queryClient);
           return;
         }
         if (result.status === "queued") {
           const waitResult = await waitForQueuedJournalSyncCompletion({
             accountId: account.id,
             baselineLastSyncedAt: account.last_synced_at,
-            refetchAccounts,
+            refetchAccounts: latest.refetchAccounts,
           });
           if (waitResult.status === "completed" || waitResult.status === "failed") {
-            await refreshJournalQueriesAfterManualSync(queryClient);
+            await refreshJournalQueriesAfterManualSync(latest.queryClient);
           }
-          return;
         }
-        // cooldown / rate_limited / backpressure — silently ignore.
       } catch {
-        // Network/transient error — leave the UI as-is; the user can Resync.
+        // A later focus event or five-minute interval safely retries.
+      } finally {
+        syncInFlightRef.current = false;
       }
-    })();
-  }, [activeAccountId, accounts, syncAccount, refetchAccounts, queryClient]);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void runIfDue();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", runIfDue);
+    const interval = window.setInterval(
+      () => void runIfDue(),
+      JOURNAL_AUTO_SYNC_INTERVAL_MS,
+    );
+    void runIfDue();
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", runIfDue);
+      window.clearInterval(interval);
+    };
+  }, [activeAccountId, enabled]);
 }

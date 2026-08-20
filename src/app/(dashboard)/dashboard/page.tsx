@@ -213,6 +213,7 @@ function JournalPageContent() {
   const {
     handleRefreshAccounts,
     isSyncBusy,
+    manualSyncAvailable,
     showJournalSyncProgress,
     journalSyncProgressMessage,
     userSyncRateLimitedUntilMs,
@@ -383,6 +384,7 @@ function JournalPageContent() {
         // Resync" line for them.
         showSyncMeta={!activeAccount?.is_demo}
         isSyncPending={isSyncBusy}
+        manualSyncAvailable={manualSyncAvailable}
         lastSyncedAt={activeAccount?.last_synced_at}
         nextSyncNotBefore={activeAccount?.next_sync_not_before}
         userSyncRateLimitedUntilMs={userSyncRateLimitedUntilMs}
