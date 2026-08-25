@@ -1,39 +1,36 @@
 import { AuthReviewsPanel } from "./auth-reviews-panel";
+import Image from "next/image";
 
 /**
- * The right-half brand panel (desktop only): layered indigo background —
- * concentric rings + glow + noise grain — with the rotating reviews carousel.
+ * The right-half brand panel (desktop only). Keep this surface quiet so the
+ * product message and proof points carry the page.
  * Fixed to the right half of the viewport so the page's centered card sits in
  * the remaining left half.
  */
 export function AuthBrandPanel() {
   return (
-    <div className="fixed inset-y-0 right-0 hidden w-1/2 overflow-hidden bg-gradient-to-br from-auth-brand-from via-auth-brand-via to-auth-brand-to text-white lg:flex lg:flex-col lg:justify-center lg:px-14">
-      {/* Layer 1: concentric rings */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-1/4 top-[-10%] h-[140%] w-[140%] rounded-full opacity-[0.18]"
-        style={{
-          background:
-            "repeating-radial-gradient(circle at 60% 30%, transparent 0, transparent 78px, rgba(255,255,255,0.6) 79px, transparent 80px)",
-        }}
-      />
-      {/* Layer 2: soft glow orb */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-white/15 blur-[120px]"
-      />
-      {/* Layer 3: noise grain */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        }}
-      />
-
-      <AuthReviewsPanel />
+    <div className="fixed inset-y-0 right-0 hidden w-1/2 overflow-hidden border-l border-border-secondary bg-bg-primary text-text-primary lg:flex lg:flex-col lg:justify-center lg:px-14">
+      <div className="relative z-10 max-w-lg">
+        <Image
+          src="/brand/signalsync-mark-cobalt.png"
+          alt="SignalSync"
+          width={96}
+          height={96}
+          className="mb-10 h-20 w-20 object-contain"
+        />
+        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+          SignalSync
+        </p>
+        <h2 className="max-w-md font-heading text-4xl font-semibold tracking-tight text-text-primary">
+          Review the signal. Improve the decision.
+        </h2>
+        <p className="mt-5 max-w-md text-base leading-7 text-text-secondary">
+          Keep your trades, patterns, and progress in one clear workspace.
+        </p>
+        <div className="mt-10 border-t border-border-secondary pt-6">
+          <AuthReviewsPanel />
+        </div>
+      </div>
     </div>
   );
 }

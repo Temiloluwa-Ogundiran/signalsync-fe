@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   },
   description:
     "An AI coach that reviews every trade — journal, tag, and improve with systematic confidence.",
+  icons: {
+    icon: "/brand/signalsync-mark-cobalt.png",
+    apple: "/brand/signalsync-mark-cobalt.png",
+  },
 };
 
 // viewport-fit=cover lets env(safe-area-inset-*) resolve on notched/home-

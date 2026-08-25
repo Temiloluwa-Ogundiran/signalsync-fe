@@ -102,12 +102,8 @@
   --modal-overlay: rgba(0, 0, 0, 0.3);
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #315cff, #315cff);
-  --gradient-card: linear-gradient(
-    135deg,
-    rgba(37, 99, 235, 0.06),
-    rgba(59, 130, 246, 0.03)
-  );
+  --gradient-accent: var(--accent);
+  --gradient-card: var(--card-bg);
 
   /* Calendar surfaces (light) — neutral empty days; tints only for P&L. */
   --calendar-cell-neutral: #edeff3; /* empty cell — a step darker than canvas so the grid reads */
@@ -139,7 +135,7 @@
   --nav-hairline: rgba(20, 24, 29, 0.06);
   --nav-seam: rgba(20, 24, 29, 0.05);
   --chrome-control-border: #e4e8ee;
-  --ask-sync-gradient: linear-gradient(262.75deg, #e4e8ee 1.94%, #f7f8fa 97.07%);
+  --ask-sync-gradient: var(--surface-subtle);
 
   /* Theme-adaptive primitives (replace hardcoded white/black/hex in components) */
   --surface-subtle: #eef1f4; /* raised chip/inset */
@@ -279,7 +275,7 @@
   --modal-overlay: rgba(0, 0, 0, 0.7);
 
   /* No lit-from-above gradients — cards are a flat dark fill (recessed wells) */
-  --gradient-accent: linear-gradient(135deg, #8ea7ff, #8ea7ff);
+  --gradient-accent: var(--accent);
   --gradient-card: var(--card-bg);
 
   /* Calendar — cells sit LIFTED above the dark panel (panel #0A0A0A);
@@ -346,11 +342,7 @@
      never reads as a line on its own. */
   --nav-seam: rgba(255, 255, 255, 0.03);
   --chrome-control-border: rgba(255, 255, 255, 0.06);
-  --ask-sync-gradient: linear-gradient(
-    262.75deg,
-    #3f3f46 1.94%,
-    #27272a 97.07%
-  );
+  --ask-sync-gradient: var(--surface-subtle);
   --footnote-online: #71717a;
 
   /* Journal KPI row — card surface darker than canvas (recessed) */

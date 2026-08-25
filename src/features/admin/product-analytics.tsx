@@ -13,7 +13,7 @@ type EventName =
   | "registration_started";
 
 function sessionId() {
-  const key = "tradepartna.product-session";
+  const key = "signalsync.product-session";
   const existing = sessionStorage.getItem(key);
   if (existing) return existing;
   const created = crypto.randomUUID();
@@ -58,7 +58,7 @@ export function ProductAnalytics() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    const key = "tradepartna.login-succeeded";
+    const key = "signalsync.login-succeeded";
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
     void apiClient.post(

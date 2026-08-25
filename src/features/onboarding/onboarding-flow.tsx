@@ -126,35 +126,20 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-auth-bg">
-      {/* Soft brand gradient bleeding from the top — only on the welcome screen,
-          where it adds warmth without distracting from the question lists. */}
-      {step === "welcome" && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[55vh]"
-          style={{
-            background:
-              "radial-gradient(120% 75% at 50% 0%, color-mix(in srgb, var(--color-ai-accent) 28%, transparent) 0%, transparent 60%)",
-          }}
-        />
-      )}
       {/* Top bar: logo left, logout right (progress lives at the bottom). */}
       <header className="relative z-10 flex items-center justify-between px-5 py-4 sm:px-8">
-        <span className="flex items-center">
+          <span className="flex items-center gap-2">
           {/* Dark wordmark on light, white wordmark on dark — same swap the app
               header uses. Plain <img> (SVGs don't need next/image). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/signalsync-mark.png"
+            src="/brand/signalsync-mark-cobalt.png"
             alt="SignalSync"
-            className="h-5 w-auto dark:hidden"
+            className="h-7 w-7 object-contain"
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/signalsync-mark.png"
-            alt="SignalSync"
-            className="hidden h-5 w-auto dark:block"
-          />
+          <span className="font-heading text-base font-semibold tracking-tight text-text-primary">
+            SignalSync
+          </span>
         </span>
         <button
           type="button"
@@ -183,8 +168,8 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               {/* Our logo mark — no background tile. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-            src="/brand/signalsync-mark.png"
-            alt="SignalSync"
+                src="/brand/signalsync-mark-cobalt.png"
+                alt="SignalSync"
                 className="mb-6 h-12 w-auto"
               />
               <h1 className="font-heading text-3xl font-bold text-text-primary">
@@ -199,7 +184,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               <button
                 type="button"
                 onClick={next}
-                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-accent-foreground transition-[background-color,transform] hover:bg-ai-accent-bright active:scale-[0.98]"
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-7 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover"
               >
                 Let&apos;s go
                 <ArrowRight className="h-4 w-4" />
