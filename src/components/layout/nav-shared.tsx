@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/popover";
 
 /**
- * One contextual-sidebar item. Active items get the violet left-accent + lifted
- * bg + white text — the same active language as the rail. `comingSoon` items
+ * One contextual-sidebar item. Active items use the same quiet accent language
+ * as the rail. `comingSoon` items
  * render muted with a "Soon" tag and do not navigate.
  */
 function NavItemRow({
@@ -61,7 +61,7 @@ function NavItemRow({
   );
 
   const baseClass = cn(
-    "group/navitem relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium leading-snug transition-colors",
+    "group/navitem relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium leading-snug transition-colors",
   );
 
   if (item.comingSoon) {
@@ -88,11 +88,8 @@ function NavItemRow({
       className={cn(
         baseClass,
         active
-          ? // Neutral grey pill (no purple — purple is reserved for AI).
-            "bg-surface-subtle text-text-primary"
-          : // Hover stays lighter than the switcher's resting fill so a hovered
-            // item never reads as the switcher.
-            "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
+          ? "border-l-2 border-accent bg-surface-subtle text-text-primary"
+          : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
       )}
     >
       {inner}
@@ -131,7 +128,7 @@ function NavGroupBlock({
               type="button"
               onClick={() => toggleGroup(groupKey)}
               aria-expanded={!collapsed}
-              className="group/hdr flex flex-1 items-center gap-1.5 text-xs font-semibold uppercase text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="group/hdr flex flex-1 items-center gap-1.5 text-[11px] font-semibold tracking-wide text-text-tertiary transition-colors hover:text-text-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <ChevronDown
                 className={cn(
@@ -142,7 +139,7 @@ function NavGroupBlock({
               <span className="truncate">{group.header}</span>
             </button>
           ) : (
-            <span className="flex flex-1 items-center gap-1.5 truncate text-xs font-semibold uppercase text-text-tertiary">
+            <span className="flex flex-1 items-center gap-1.5 truncate text-[11px] font-semibold tracking-wide text-text-tertiary">
               {group.headerIcon ? (
                 <HugeiconsIcon
                   icon={group.headerIcon}
@@ -290,7 +287,7 @@ function AppSwitcher({
         <button
           type="button"
           aria-label={`Current app: ${app.name}. Switch app`}
-          className="group/switch mb-2 flex items-center gap-3 rounded-lg bg-surface-subtle px-3 py-3 text-left transition-colors hover:bg-surface-subtle-hover"
+          className="group/switch mb-3 flex items-center gap-3 border-b border-border-secondary px-1 pb-3 pt-1 text-left transition-colors"
         >
           <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-secondary">
             <HugeiconsIcon icon={app.icon} size={20} strokeWidth={1.5} />

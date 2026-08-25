@@ -22,7 +22,7 @@ export function Header() {
   const isAiPage = pathname?.startsWith("/ai");
 
   return (
-    <header className="relative z-header flex h-header shrink-0 items-center bg-chrome-bar-bg px-chrome font-sans border-b border-nav-hairline">
+    <header className="relative z-header flex h-header shrink-0 items-center border-b border-nav-hairline bg-chrome-bar-bg px-chrome font-sans">
       <div className="flex w-full min-w-0 items-center gap-3">
         {!isAiPage && (
           <button

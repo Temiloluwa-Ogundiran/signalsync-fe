@@ -98,7 +98,7 @@ export default function DashboardShell({
             id="main-content"
             tabIndex={-1}
             className={cn(
-              "scrollbar-thin min-w-0 flex-1 overflow-x-hidden bg-bg-canvas dark:bg-bg-primary",
+              "scrollbar-thin min-w-0 flex-1 overflow-x-hidden bg-bg-canvas",
               mobileNavOpen ? "overflow-y-hidden" : "overflow-y-auto",
             )}
           >

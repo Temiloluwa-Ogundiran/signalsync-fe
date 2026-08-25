@@ -125,10 +125,10 @@
      Rail < sidebar < content step in tone via subtle off-whites. */
   --chrome-bar-bg: #ffffff; /* header bar — white edge-to-edge */
   --sidebar-chrome-bg: #ffffff;
-  --nav-rail-bg: #102027; /* graphite instrument rail */
-  --nav-rail-icon: #9eb6b8; /* rail icons — muted */
-  --nav-rail-icon-active: #ffffff; /* rail active icon — bright white */
-  --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.08); /* rail hover wash */
+  --nav-rail-bg: #ffffff; /* quiet rail surface */
+  --nav-rail-icon: #6f8187; /* rail icons - muted */
+  --nav-rail-icon-active: #087f82; /* Signal Mint active state */
+  --nav-rail-icon-hover-bg: #f1f3f7; /* quiet rail hover */
   --nav-sidebar-bg: #ffffff; /* contextual sidebar — white */
   --sidebar-nav-active-bg: #f1f3f7; /* grey pill (reads on white sidebar) */
   --sidebar-nav-active-border: #e4e8ee;
@@ -328,10 +328,10 @@
      boundaries from contrast, not from hard dividers. */
   --chrome-bar-bg: #0b1117;
   --sidebar-chrome-bg: #0b1117;
-  --nav-rail-bg: #071015; /* tier 1 — icon rail */
-  --nav-rail-icon: #789096; /* rail icons — muted (inactive) */
-  --nav-rail-icon-active: #edf5f5; /* rail active icon — bright */
-  --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.06); /* rail hover wash */
+  --nav-rail-bg: #0f1921; /* quiet rail surface */
+  --nav-rail-icon: #789096; /* rail icons - muted */
+  --nav-rail-icon-active: #55d6ce; /* Signal Mint active state */
+  --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.06); /* quiet rail hover */
   --nav-sidebar-bg: #0f1921; /* tier 2 — contextual sidebar */
   --sidebar-nav-active-bg: #172b34;
   --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
@@ -602,7 +602,7 @@
 
   /* Layout dimensions — single source of truth for chrome sizing.
      Use as utilities: h-header, w-sidebar, w-sidebar-collapsed, px-chrome, etc. */
-  --spacing-header: 60px; /* header + sidebar header height */
+  --spacing-header: 56px; /* header + sidebar header height */
   --spacing-sidebar: 240px; /* expanded sidebar width */
   --spacing-sidebar-collapsed: 72px; /* collapsed sidebar width */
   --spacing-rail: 31%; /* journal right rail (trades panel) width */

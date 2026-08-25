@@ -13,6 +13,7 @@ import { useNavUiStore } from "./nav-ui-store";
 import { useJournalUiStore } from "@/features/journal/store/journal-ui-store";
 import { useJournalAccounts } from "@/features/journal/hooks/use-journal-accounts";
 import { formatMoney } from "@/lib/format/money";
+import { Button } from "@/components/ui/button";
 import {
   buildNavRegistry,
   findActiveApp,
@@ -20,7 +21,7 @@ import {
 } from "./nav-registry";
 import { ContextualNav } from "./nav-shared";
 
-/** A single rail icon (tier 1) with hover tooltip + active violet treatment. */
+/** A single rail icon with a restrained active state. */
 function RailIcon({
   app,
   active,
@@ -35,10 +36,9 @@ function RailIcon({
         aria-label={app.name}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group/rail relative flex size-11 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-rail-icon-active focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg",
+          "group/rail relative flex size-10 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg",
           active
-            ? // Bright active icon on the deep-indigo rail.
-              "bg-nav-rail-icon-hover-bg text-nav-rail-icon-active"
+            ? "border-l-2 border-accent text-nav-rail-icon-active"
             : "text-nav-rail-icon hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active",
         )}
       >
@@ -146,7 +146,7 @@ export function AppNav() {
             ? // SignalSync AI: rail-only, always an in-flow static column (even on
               // mobile) — there's nothing to put in a drawer, so the rail just
               // stays pinned and the hamburger is hidden (see Header).
-              "static flex h-full w-16 shrink-0 flex-col bg-nav-sidebar-bg"
+              "static flex h-full w-14 shrink-0 flex-col bg-nav-sidebar-bg"
             : cn(
                 // Other apps — below lg: fixed off-canvas drawer below the header
                 // (dvh keeps the pinned icons clear of Safari's bottom toolbar).
@@ -162,9 +162,9 @@ export function AppNav() {
       {/* No brand bar here — the full-width Header owns the logo now, so the nav
           column starts directly with the rail/sidebar below the header. */}
       <div className="flex min-h-0 flex-1">
-        {/* TIER 1 — icon rail (slightly darkest tone) */}
-        <div className="flex h-full w-16 shrink-0 flex-col items-center bg-nav-rail-bg">
-          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto overscroll-contain py-5">
+        {/* TIER 1 - quiet icon rail */}
+        <div className="flex h-full w-14 shrink-0 flex-col items-center bg-nav-rail-bg">
+          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto overscroll-contain py-4">
             {topApps.map((app) => (
               <RailIcon
                 key={app.id}
@@ -249,13 +249,12 @@ function JournalNavFooter() {
         </div>
       ) : null}
 
-      <Link
-        href="/accounts"
-        className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-nav-rail-bg px-3.5 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 dark:hover:opacity-100"
-      >
-        <Plus className="h-4 w-4" />
-        Manage accounts
-      </Link>
+      <Button asChild className="w-full justify-center" size="sm">
+        <Link href="/accounts">
+          <Plus data-icon="inline-start" />
+          Manage accounts
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -274,7 +273,7 @@ function RailPinned({
       <a
         href={href}
         aria-label={label}
-        className="flex size-11 items-center justify-center rounded-xl text-nav-rail-icon transition-colors hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nav-rail-icon-active focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg"
+        className="flex size-10 items-center justify-center rounded-md text-nav-rail-icon transition-colors hover:bg-nav-rail-icon-hover-bg hover:text-nav-rail-icon-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-nav-rail-bg"
       >
         <Icon className="h-5 w-5" strokeWidth={1.75} />
       </a>
