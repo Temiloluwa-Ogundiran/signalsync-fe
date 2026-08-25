@@ -54,7 +54,7 @@ const REFERRAL: Option[] = [
   { id: "x", label: "X (Twitter)", icon: NewTwitterIcon, tint: "bg-zinc-900/8 text-zinc-900" },
   { id: "youtube", label: "YouTube", icon: YoutubeIcon, tint: "bg-red-600/10 text-red-600" },
   { id: "friend", label: "A friend or colleague", icon: UserMultiple02Icon, tint: "bg-teal-500/12 text-teal-600" },
-  { id: "community", label: "A trading community", icon: UserGroup02Icon, tint: "bg-indigo-500/12 text-indigo-600" },
+  { id: "community", label: "A trading community", icon: UserGroup02Icon, tint: "bg-accent-light text-accent" },
   { id: "other", label: "Other", icon: MoreHorizontalCircle01Icon, tint: "bg-zinc-500/10 text-zinc-500" },
 ];
 

@@ -41,7 +41,7 @@ const GROUP_COLORS = [
   "#eab308", // yellow
   "#22c55e", // green
   "#3b82f6", // blue
-  "#8b5cf6", // purple
+  "#315cff", // cobalt
   "#ec4899", // pink
   "#0ea5e9", // sky
   "#64748b", // slate
