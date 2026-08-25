@@ -69,7 +69,7 @@ export interface NavApp {
   icon: IconSvgElement;
   /** Route the rail icon points at (usually the app's first page). */
   route: string;
-  /** Partna AI gets the violet sparkle treatment even at rest. */
+  /** SignalSync AI gets the mint accent treatment even at rest. */
   isAI?: boolean;
   /** Hidden entirely when the flag is off. */
   flag?: FeatureFlag;
@@ -92,7 +92,7 @@ export function buildNavRegistry(actionFns: {
   const apps: NavApp[] = [
     {
       id: "partna-ai",
-      name: "Partna AI",
+      name: "SignalSync AI",
       icon: AiMagicIcon,
       route: "/ai",
       isAI: true,

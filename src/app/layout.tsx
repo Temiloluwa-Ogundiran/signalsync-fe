@@ -5,8 +5,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "TradePartna",
-    template: "%s | TradePartna",
+    default: "SignalSync",
+    template: "%s | SignalSync",
   },
   description:
     "An AI coach that reviews every trade — journal, tag, and improve with systematic confidence.",

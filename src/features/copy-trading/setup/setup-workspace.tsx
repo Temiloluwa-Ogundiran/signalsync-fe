@@ -209,7 +209,7 @@ export function SetupWorkspace({
         >
           <div className="space-y-4">
             <p className="text-sm leading-6 text-text-secondary">
-              TradePartna uses a read-only session. It can read channels you
+              SignalSync uses a read-only session. It can read channels you
               select but cannot send messages or change your Telegram account.
             </p>
             <Button onClick={() => setTelegramOpen(true)}>

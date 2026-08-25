@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { buildAccountLabel } from "@/features/journal/lib/account-label";
 
 /**
- * Full-screen Partna AI surface. History lives IN this page now (not the global
+ * Full-screen SignalSync AI surface. History lives IN this page now (not the global
  * nav): a persistent left pane on desktop, and a slide-in drawer (toggled by a
  * History button) on mobile, where the persistent pane is hidden.
  */
@@ -101,7 +101,7 @@ export function AiChatPage() {
 
   return (
     <div className="flex h-full min-w-0">
-      <h1 className="sr-only">Partna AI</h1>
+      <h1 className="sr-only">SignalSync AI</h1>
       {/* Desktop history pane — persistent left column, hidden on mobile. */}
       <aside className="hidden w-[280px] shrink-0 flex-col border-r border-border-secondary/40 bg-bg-secondary lg:flex">
         {historyPane}

@@ -3,7 +3,7 @@ import { LegalDocument, LegalSection } from "@/features/legal/legal-document";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How TradePartna handles personal and trading information.",
+  description: "How SignalSync handles personal and trading information.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
     <LegalDocument title="Privacy Policy" updatedAt="August 13, 2026">
       <LegalSection title="Information we handle">
         <p>
-          Trade Partna handles the information needed to create and secure your
+          SignalSync handles the information needed to create and secure your
           account, connect supported trading accounts, deliver copy-trading
           workflows, and provide journal and analytics features.
         </p>

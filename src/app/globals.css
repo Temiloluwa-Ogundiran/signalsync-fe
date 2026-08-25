@@ -30,22 +30,22 @@
   --font-geist: "Segoe UI";
   color-scheme: light;
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
-  --bg-primary: #e6e7ef; /* tier 0 — app frame / outermost gutter (grey-lavender) */
-  --bg-canvas: #f7f8fa; /* tier 1 — content canvas (neutral grey) */
+  --bg-primary: #e7eeee; /* Graphite Instrument light frame */
+  --bg-canvas: #f4f7f7; /* calm instrument canvas */
   --bg-secondary: #ffffff; /* tier 2 — surface (cards, sidebar) */
-  --bg-tertiary: #f1f3f7; /* surface-2 — raised chip/inset (reads on white sidebar) */
-  --bg-hover: #e4e8ee; /* border-weight hover (one step deeper, same hue) */
+  --bg-tertiary: #eaf1f1; /* raised surface */
+  --bg-hover: #dce8e8; /* hover surface */
   --bg-input: #ffffff;
 
   /* Borders */
-  --border-primary: #e4e8ee; /* hairline */
-  --border-secondary: #d3d9e1;
+  --border-primary: #d8e3e4; /* hairline */
+  --border-secondary: #c8d6d8;
 
   /* Text */
-  --text-primary: #14181d; /* text-1 — primary */
-  --text-secondary: #586271; /* text-2 — secondary (>=4.5:1 on white) */
-  --text-tertiary: #667180; /* text-3 — readable metadata */
-  --text-muted: #b4bcc7;
+  --text-primary: #102027; /* text-1 — primary */
+  --text-secondary: #52666d; /* text-2 — secondary */
+  --text-tertiary: #6f8187; /* text-3 — readable metadata */
+  --text-muted: #aab9bc;
   --footnote-online: #586271;
 
   /* Profit (ONE emerald family) / Loss (matched weight) — used everywhere */
@@ -78,10 +78,10 @@
   --kpi-legend-loss-fg: #be3030;
 
   /* Brand / Accent — monochrome (dark primary on light surfaces) */
-  --accent: #0f172a; /* near-black primary fill */
-  --accent-hover: #1e293b;
-  --accent-foreground: #f8fafc; /* light text on dark fill */
-  --accent-light: rgba(15, 23, 42, 0.06);
+  --accent: #087f82; /* Signal Mint */
+  --accent-hover: #06686a;
+  --accent-foreground: #ffffff;
+  --accent-light: rgba(8, 127, 130, 0.1);
 
   /* Semantic — single emerald/red family (see ramps above) */
   --success: #0ba66a;
@@ -91,8 +91,8 @@
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --warning-text: #a16207;
-  --info: #3b82f6;
-  --info-light: rgba(59, 130, 246, 0.08);
+  --info: #087f82;
+  --info-light: rgba(8, 127, 130, 0.08);
 
   /* Specific surfaces */
   --sidebar-bg: #ffffff;
@@ -102,7 +102,7 @@
   --modal-overlay: rgba(0, 0, 0, 0.3);
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #2563eb, #1d4ed8);
+  --gradient-accent: linear-gradient(135deg, #087f82, #087f82);
   --gradient-card: linear-gradient(
     135deg,
     rgba(37, 99, 235, 0.06),
@@ -125,8 +125,8 @@
      Rail < sidebar < content step in tone via subtle off-whites. */
   --chrome-bar-bg: #ffffff; /* header bar — white edge-to-edge */
   --sidebar-chrome-bg: #ffffff;
-  --nav-rail-bg: #1e1b4b; /* icon rail — deep indigo, anchors the left edge */
-  --nav-rail-icon: #a5a3c7; /* rail icons — muted lavender (inactive) */
+  --nav-rail-bg: #102027; /* graphite instrument rail */
+  --nav-rail-icon: #9eb6b8; /* rail icons — muted */
   --nav-rail-icon-active: #ffffff; /* rail active icon — bright white */
   --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.08); /* rail hover wash */
   --nav-sidebar-bg: #ffffff; /* contextual sidebar — white */
@@ -149,21 +149,21 @@
   --star: #d97706; /* rating star (amber, darker for light bg) */
 
   /* AI accent (violet) — tuned per theme; darker in light for contrast */
-  --ai-accent: #6b5bf2; /* the only purple in the app */
-  --ai-accent-bright: #5847e8; /* hover */
-  --ai-soft-bg: #ece9fe;
-  --ai-soft-border: rgba(107, 91, 242, 0.28);
+  --ai-accent: #087f82;
+  --ai-accent-bright: #06686a;
+  --ai-soft-bg: #dff3f2;
+  --ai-soft-border: rgba(8, 127, 130, 0.28);
 
   /* Auth screen — neutral page field behind the form column (light only). */
   --auth-bg: #f5f7fa;
   /* Auth accent — the indigo on the login button + links. */
-  --auth-accent: #5b6cf0;
-  --auth-accent-hover: #4c5de8;
+  --auth-accent: #087f82;
+  --auth-accent-hover: #06686a;
   /* Brand/AI field for the auth panel: a refined deep-indigo in the --ai
      family (not a muddy blue-purple). Used as a single flat gradient. */
-  --auth-brand-from: #5a4bd4;
-  --auth-brand-via: #5345c8;
-  --auth-brand-to: #463aa6;
+  --auth-brand-from: #102027;
+  --auth-brand-via: #172e36;
+  --auth-brand-to: #0b1117;
 
   /* Status badge pairs (chips: pending / demo / live / info) */
   --badge-warn-bg: rgba(217, 119, 6, 0.12);
@@ -226,29 +226,29 @@
   color-scheme: dark;
   /* Premium-restrained spec (RECESSED model): canvas is a lighter charcoal,
      cards are DARKER and inset (wells, not tiles). Borders almost invisible. */
-  --bg-primary: #141518; /* canvas — lighter charcoal */
-  --bg-canvas: #141518; /* dark keeps a single canvas tone (unchanged visuals) */
-  --bg-secondary: #0a0a0a; /* card surface — DARKER than canvas (recessed) */
-  --bg-tertiary: #26272b; /* hover / pill / raised controls (above canvas) */
-  --bg-hover: #2d2e33;
-  --bg-input: #0a0a0a;
+  --bg-primary: #071015; /* deepest graphite */
+  --bg-canvas: #0f171e; /* content canvas */
+  --bg-secondary: #111a23; /* card surface */
+  --bg-tertiary: #17232f; /* raised controls */
+  --bg-hover: #1b2a36;
+  --bg-input: #111a23;
 
   /* Borders: almost invisible hairlines (white @ 6%) */
-  --border-primary: rgba(255, 255, 255, 0.06);
-  --border-secondary: rgba(255, 255, 255, 0.06);
+  --border-primary: #263642;
+  --border-secondary: #314551;
 
   /* Text: primary / secondary / tertiary per spec */
-  --text-primary: #f4f4f5; /* number / primary */
-  --text-secondary: #a1a1aa; /* label / secondary */
-  --text-tertiary: #8b95a2; /* readable metadata */
-  --text-muted: #3f3f46;
+  --text-primary: #edf5f5; /* number / primary */
+  --text-secondary: #a1b4b9; /* label / secondary */
+  --text-tertiary: #8fa3aa; /* readable metadata */
+  --text-muted: #52656b;
 
   /* Accent: monochrome — primary actions are subtle-surface, not colored.
      Color is rationed to green/red data only. */
-  --accent: #f4f4f5; /* white primary fill */
-  --accent-hover: #e4e4e7;
-  --accent-foreground: #0a0a0b; /* dark text on white fill */
-  --accent-light: rgba(244, 244, 245, 0.08);
+  --accent: #55d6ce; /* Signal Mint */
+  --accent-hover: #78e4dd;
+  --accent-foreground: #062324;
+  --accent-light: rgba(85, 214, 206, 0.12);
 
   /* Semantic: exact green/red per spec, desaturated */
   --success: #22c55e;
@@ -268,17 +268,17 @@
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --warning-text: #fbbf24;
-  --info: #71717a;
-  --info-light: rgba(113, 113, 122, 0.1);
+  --info: #55d6ce;
+  --info-light: rgba(85, 214, 206, 0.1);
 
-  --sidebar-bg: #0a0a0a;
-  --card-bg: #0a0a0a;
-  --card-bg-hover: #121214;
-  --modal-bg: #0a0a0a;
+  --sidebar-bg: #0e161d;
+  --card-bg: #111a23;
+  --card-bg-hover: #17232f;
+  --modal-bg: #111a23;
   --modal-overlay: rgba(0, 0, 0, 0.7);
 
   /* No lit-from-above gradients — cards are a flat dark fill (recessed wells) */
-  --gradient-accent: linear-gradient(135deg, #2a2b2f, #18191c);
+  --gradient-accent: linear-gradient(135deg, #55d6ce, #55d6ce);
   --gradient-card: var(--card-bg);
 
   /* Calendar — cells sit LIFTED above the dark panel (panel #0A0A0A);
@@ -302,15 +302,15 @@
   --overlay: rgba(0, 0, 0, 0.6);
   --star: #f59e0b;
 
-  --ai-accent: #a78bfa; /* violet-400 — reads on dark */
-  --ai-accent-bright: #c4b5fd;
-  --ai-soft-bg: rgba(139, 92, 246, 0.14);
-  --ai-soft-border: rgba(139, 92, 246, 0.32);
+  --ai-accent: #55d6ce;
+  --ai-accent-bright: #78e4dd;
+  --ai-soft-bg: rgba(85, 214, 206, 0.14);
+  --ai-soft-border: rgba(85, 214, 206, 0.32);
 
   /* Auth screens follow the OS theme before a user session exists. */
-  --auth-bg: #141518;
-  --auth-accent: #8b7cf6;
-  --auth-accent-hover: #9f91ff;
+  --auth-bg: #0f171e;
+  --auth-accent: #55d6ce;
+  --auth-accent-hover: #78e4dd;
 
   --badge-warn-bg: rgba(245, 158, 11, 0.14);
   --badge-warn-fg: #f59e0b;
@@ -326,17 +326,17 @@
   /* Dashboard chrome — sidebar/topbar are DARKER than the lighter canvas.
      Nav zones step in tone (rail < sidebar < content) so the eye reads the
      boundaries from contrast, not from hard dividers. */
-  --chrome-bar-bg: #0a0a0a;
-  --sidebar-chrome-bg: #0a0a0a;
-  --nav-rail-bg: #0a0a0b; /* tier 1 — icon rail (darkest, deepest layer) */
-  --nav-rail-icon: #71717a; /* rail icons — muted (inactive) */
-  --nav-rail-icon-active: #f4f4f5; /* rail active icon — bright */
+  --chrome-bar-bg: #0b1117;
+  --sidebar-chrome-bg: #0b1117;
+  --nav-rail-bg: #071015; /* tier 1 — icon rail */
+  --nav-rail-icon: #789096; /* rail icons — muted (inactive) */
+  --nav-rail-icon-active: #edf5f5; /* rail active icon — bright */
   --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.06); /* rail hover wash */
-  --nav-sidebar-bg: #0f1012; /* tier 2 — contextual sidebar (clear step lighter) */
-  --sidebar-nav-active-bg: #2a2b2f;
+  --nav-sidebar-bg: #0f1921; /* tier 2 — contextual sidebar */
+  --sidebar-nav-active-bg: #172b34;
   --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
-  --sidebar-nav-inactive-text: #71717a;
-  --sidebar-nav-active-text: #f4f4f5;
+  --sidebar-nav-inactive-text: #8fa3aa;
+  --sidebar-nav-active-text: #edf5f5;
   --sidebar-divider: rgba(255, 255, 255, 0.06);
   --sidebar-bottom-border: rgba(255, 255, 255, 0.06);
   /* Barely-there hairline — if you can clearly see it, it's too strong. */
@@ -440,7 +440,7 @@
   --color-brand-hover: var(--accent-hover);
   --color-brand-foreground: var(--accent-foreground);
 
-  /* Partna AI — RESERVED violet accent. Theme-adaptive (darker in light).
+  /* SignalSync AI accent. Theme-adaptive for light and dark themes.
      Use ai-accent / ai-soft-bg / ai-soft-border in components; the -deep / -glow
      consts below stay fixed for the AI dock's gradient identity. */
   --color-ai-accent: var(--ai-accent);
@@ -794,49 +794,36 @@ body {
   }
 }
 
-/* ===== Partna AI trigger ("Ask Partna AI") =====
-   The entry point to the AI assistant — the one place violet should feel
-   premium and alive. Reserved AI accent; must not appear elsewhere. */
+/* ===== SignalSync AI trigger ===== */
 .ai-trigger {
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%) !important;
-  color: #ffffff !important;
+  background: var(--ai-accent) !important;
+  color: var(--accent-foreground) !important;
   font-weight: 600;
   border: none !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 20px rgba(139, 92, 246, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none !important;
   transition:
     background 150ms ease,
     box-shadow 150ms ease;
 }
 .ai-trigger:hover {
-  background: linear-gradient(135deg, #b794f6 0%, #8b5cf6 100%) !important;
-  color: #ffffff !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 28px rgba(139, 92, 246, 0.5),
-    0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  background: var(--ai-accent-bright) !important;
+  color: var(--accent-foreground) !important;
+  box-shadow: none !important;
 }
 
 /* Dimmed variant — a quieter AI accent for in-card CTAs (e.g. the day card's
-   "Review with Partna AI"), so it doesn't out-shout the primary entry point. */
+   "Review with SignalSync AI"), so it doesn't out-shout the primary entry point. */
 .ai-trigger--dim {
-  background: linear-gradient(135deg, #5b4a8f 0%, #43308a 100%) !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 1px 4px rgba(0, 0, 0, 0.3) !important;
+  background: var(--ai-soft-bg) !important;
+  color: var(--ai-accent) !important;
+  box-shadow: none !important;
 }
 .ai-trigger--dim:hover {
-  background: linear-gradient(135deg, #6a589f 0%, #503a9c 100%) !important;
-  color: #ffffff !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 10px rgba(139, 92, 246, 0.2),
-    0 1px 4px rgba(0, 0, 0, 0.3) !important;
+  background: var(--ai-soft-border) !important;
+  color: var(--ai-accent-bright) !important;
+  box-shadow: none !important;
 }
-/* Light mode: drop all glow/shadow from the Ask Partna AI trigger — the violet
+/* Light mode: drop all glow/shadow from the Ask SignalSync AI trigger — the mint
    gradient carries it; the glow reads as noise on the light canvas. Dark mode
    keeps its glow (defined above). */
 :root:not(.dark) .ai-trigger,
@@ -865,35 +852,22 @@ body {
   }
 }
 
-/* ===== Branded app loader — the TradePartna blade mark, staggered rise ===== */
-.tp-blade {
-  fill: #635bff;
-  /* scale/translate each blade about its own center */
-  transform-box: fill-box;
-  transform-origin: center;
+/* ===== SignalSync loader ===== */
+.signalsync-loader-mark {
+  animation: signalsync-pulse 2.4s ease-in-out infinite;
 }
-.tp-blade-b {
-  animation: tp-rise 2.1s ease infinite;
-}
-.tp-blade-a {
-  animation: tp-rise 2.1s ease infinite 0.16s;
-}
-@keyframes tp-rise {
+@keyframes signalsync-pulse {
   0% {
-    opacity: 0;
-    transform: translateY(14px) scale(0.94);
+    opacity: 0.68;
+    transform: scale(0.94);
   }
-  30% {
+  50% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  82% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
   100% {
-    opacity: 0;
-    transform: translateY(-7px) scale(0.97);
+    opacity: 0.68;
+    transform: scale(0.94);
   }
 }
 
@@ -901,17 +875,14 @@ body {
   animation: tp-label-fade 2.1s ease-in-out infinite;
 }
 @keyframes tp-label-fade {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
+  0%, 100% { opacity: 0.45; }
   50% {
     opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tp-blade,
+  .signalsync-loader-mark,
   .tp-loader-label {
     animation: none;
     opacity: 1;

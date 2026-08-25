@@ -66,7 +66,7 @@ const presentations: Record<AccountState, CopyAccountPresentation> = {
   },
   broker_disconnected: {
     label: "Broker connection interrupted",
-    description: "TradePartna will retry. Check the account if this continues.",
+    description: "SignalSync will retry. Check the account if this continues.",
     progress: null,
     tone: "action",
   },

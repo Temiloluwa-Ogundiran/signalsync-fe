@@ -117,7 +117,7 @@ export function AppNav() {
   const sidebarWidth = isSettings
     ? "flex-1 lg:flex-none lg:w-[248px]"
     : "flex-1 lg:flex-none lg:w-[200px]";
-  // Partna AI has no tier-2 panel, so its column is just the icon rail (64px).
+  // SignalSync AI has no tier-2 panel, so its column is just the icon rail (64px).
   // On mobile we still let the drawer take the standard width for tappability.
   const drawerWidth = activeApp.isAI
     ? "lg:w-16"
@@ -143,7 +143,7 @@ export function AppNav() {
         aria-label="Main navigation"
         className={cn(
           activeApp.isAI
-            ? // Partna AI: rail-only, always an in-flow static column (even on
+            ? // SignalSync AI: rail-only, always an in-flow static column (even on
               // mobile) — there's nothing to put in a drawer, so the rail just
               // stays pinned and the hamburger is hidden (see Header).
               "static flex h-full w-16 shrink-0 flex-col bg-nav-sidebar-bg"
@@ -186,14 +186,14 @@ export function AppNav() {
             <RailPinned
               icon={HelpCircle}
               label="Support"
-              href="mailto:hello@tradepartna.com"
+              href="mailto:support@signalsync.com"
             />
           </div>
         </div>
 
         {/* TIER 2 — contextual sidebar (clear tonal step lighter than the rail).
             A near-subliminal seam sharpens the boundary without reading as a line.
-            Partna AI is the exception: it has NO tier-2 here — its history lives
+            SignalSync AI is the exception: it has NO tier-2 here — its history lives
             in the full-screen /ai page — so the AI app shows the rail only. */}
         {!activeApp.isAI ? (
           <aside

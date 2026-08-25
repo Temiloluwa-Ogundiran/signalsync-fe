@@ -195,7 +195,7 @@ export function ProfileSettingsPage() {
   return (
     <SettingsPageShell
       title="Profile"
-      description="Manage how you appear across SyncTrades."
+      description="Manage how you appear across SignalSync."
     >
       {/* Avatar */}
       <Card className="border-border-secondary bg-card-bg shadow-sm">

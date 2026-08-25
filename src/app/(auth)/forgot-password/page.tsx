@@ -15,8 +15,8 @@ export default function ForgotPasswordPage() {
     <div className="rounded-2xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <Image
-          src="/brand/tradepartna-mark.svg"
-          alt="TradePartna"
+          src="/brand/signalsync-mark.png"
+          alt="SignalSync"
           width={56}
           height={47}
           priority

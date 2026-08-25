@@ -43,7 +43,7 @@ interface JournalDayCardProps {
   lossCount: number;
   hasNote: boolean;
   onNote: (date: string) => void;
-  /** Open the Partna AI coach scoped to this day ("Continue with coach"). */
+  /** Open the SignalSync AI coach scoped to this day ("Continue with coach"). */
   onContinueCoach: (date: string) => void;
 }
 
@@ -323,7 +323,7 @@ export function JournalDayCard({
           ) : (
             <>
               {/* Coach's Read — an AI narrative of the day, generated on expand
-                  and cached server-side. "Continue with coach" opens the Partna
+                  and cached server-side. "Continue with coach" opens the SignalSync
                   AI dock scoped to this day for follow-up. */}
               <JournalCoachsRead
                 read={coachRead.data?.read ?? ""}

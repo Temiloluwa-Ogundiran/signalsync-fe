@@ -42,7 +42,7 @@ export function AttentionList({
   if (sources.some((item) => item.is_paused)) {
     items.push({
       title: "A signal channel is paused",
-      detail: "Resume it when you want TradePartna to process new messages.",
+      detail: "Resume it when you want SignalSync to process new messages.",
       href: "/copy-trading/settings",
       action: "Review channels",
     });

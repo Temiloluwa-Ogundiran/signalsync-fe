@@ -293,7 +293,7 @@ export function TelegramSignInDialog({
           </div>
         )}
         <p className="text-xs leading-5 text-text-tertiary">
-          TradePartna uses a read-only session. It can read channels you select
+          SignalSync uses a read-only session. It can read channels you select
           but cannot send messages or change your Telegram account. Your
           two-step password is never stored.
         </p>

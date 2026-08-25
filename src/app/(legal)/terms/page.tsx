@@ -3,7 +3,7 @@ import { LegalDocument, LegalSection } from "@/features/legal/legal-document";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms for using TradePartna's trading journal and copy-trading tools.",
+  description: "Terms for using SignalSync's trading journal and copy-trading tools.",
 };
 
 export default function TermsOfServicePage() {
@@ -11,7 +11,7 @@ export default function TermsOfServicePage() {
     <LegalDocument title="Terms of Service" updatedAt="August 13, 2026">
       <LegalSection title="Acceptance of these terms">
         <p>
-          By creating an account or using TradePartna, you agree to these Terms
+          By creating an account or using SignalSync, you agree to these Terms
           of Service and our Privacy Policy. Do not use the service if you do
           not agree with them.
         </p>
@@ -26,9 +26,9 @@ export default function TermsOfServicePage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="What TradePartna provides">
+      <LegalSection title="What SignalSync provides">
         <p>
-          TradePartna provides trading-journal, analytics, account-connection,
+          SignalSync provides trading-journal, analytics, account-connection,
           and copy-trading tools. It is not a broker, investment adviser, fund
           manager, or provider of investment recommendations. The service does
           not guarantee a trade, price, fill, profit, or trading outcome.
@@ -110,7 +110,7 @@ export default function TermsOfServicePage() {
 
       <LegalSection title="Liability">
         <p>
-          To the extent permitted by applicable law, TradePartna is not liable
+          To the extent permitted by applicable law, SignalSync is not liable
           for trading losses, missed signals, broker execution, market movement,
           or third-party service failures. Nothing in these terms limits rights
           or liability that cannot legally be limited.

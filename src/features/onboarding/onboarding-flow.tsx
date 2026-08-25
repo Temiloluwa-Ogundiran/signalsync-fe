@@ -44,7 +44,7 @@ const EXPERIENCE: Option[] = [
 const GOAL: Option[] = [
   { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: Notebook01Icon, tint: "bg-blue-500/12 text-blue-600" },
   { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: Analytics01Icon, tint: "bg-violet-500/12 text-violet-600" },
-  { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from Partna AI", icon: AiMagicIcon, tint: "bg-ai-soft-bg text-ai-accent" },
+  { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from SignalSync AI", icon: AiMagicIcon, tint: "bg-ai-soft-bg text-ai-accent" },
   { id: "backtest", label: "Backtest strategies", hint: "Test ideas against historical data", icon: TestTubeIcon, tint: "bg-emerald-500/12 text-emerald-600" },
   { id: "funded", label: "Track a prop-firm funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-amber-500/15 text-amber-600" },
 ];
@@ -145,14 +145,14 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               header uses. Plain <img> (SVGs don't need next/image). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/tradpartnalight.svg"
-            alt="TradePartna"
+            src="/brand/signalsync-mark.png"
+            alt="SignalSync"
             className="h-5 w-auto dark:hidden"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/tradepartna-logo-full.svg"
-            alt="TradePartna"
+            src="/brand/signalsync-mark.png"
+            alt="SignalSync"
             className="hidden h-5 w-auto dark:block"
           />
         </span>
@@ -183,12 +183,12 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               {/* Our logo mark — no background tile. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/brand/tradepartna-mark.svg"
-                alt="TradePartna"
+            src="/brand/signalsync-mark.png"
+            alt="SignalSync"
                 className="mb-6 h-12 w-auto"
               />
               <h1 className="font-heading text-3xl font-bold text-text-primary">
-                Welcome to TradePartna{firstName ? `, ${firstName}` : ""} 👋
+                Welcome to SignalSync{firstName ? `, ${firstName}` : ""} 👋
               </h1>
               <p className="mt-3 max-w-md text-[15px] leading-relaxed text-text-secondary">
                 Your AI trading partner. Journal every trade, uncover your
@@ -219,7 +219,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
 
           {step === "goal" && (
             <Question
-              title="What do you want from TradePartna?"
+              title="What do you want from SignalSync?"
               subtitle="Select all that apply."
               options={GOAL}
               selectedIds={goals}

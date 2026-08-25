@@ -7,7 +7,7 @@ import { hasUsableSession } from "@/lib/auth/auth-session";
 
 export const metadata: Metadata = {
   title: "Create an Account",
-  description: "Join TradePartna today",
+  description: "Join SignalSync today",
 };
 
 export default async function RegisterPage() {

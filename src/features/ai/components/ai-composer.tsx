@@ -21,7 +21,7 @@ export function AiComposer({
   isStreaming = false,
   onStop,
   disabled = false,
-  placeholder = "Message Partna AI…",
+  placeholder = "Message SignalSync AI…",
 }: AiComposerProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -62,7 +62,7 @@ export function AiComposer({
         {/* Typing is ALWAYS allowed — even mid-response — so users can line up
             their next question. Only sending is gated (see canSend). */}
         <textarea
-          aria-label="Message Partna AI"
+          aria-label="Message SignalSync AI"
           ref={textareaRef}
           rows={1}
           value={value}
@@ -101,7 +101,7 @@ export function AiComposer({
         )}
       </div>
       <p className="mt-2 text-center text-[10px] text-text-tertiary">
-        Partna AI can make mistakes. Not financial advice.
+        SignalSync AI can make mistakes. Not financial advice.
       </p>
     </div>
   );

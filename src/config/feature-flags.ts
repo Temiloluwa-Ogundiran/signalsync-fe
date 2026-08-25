@@ -10,7 +10,7 @@
  *  - No page component mounts → no API calls are ever fired
  */
 export const FEATURE_FLAGS = {
-  /** /ai  — Partna AI copilot (dock + full page) */
+  /** /ai  — SignalSync AI copilot (dock + full page) */
   AI: true,
 } as const;
 

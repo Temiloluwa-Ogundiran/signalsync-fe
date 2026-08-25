@@ -19,23 +19,16 @@ export default function AuthLayout({
 
       {/* Wordmark — top-left */}
       <div className="relative z-10 px-6 py-6 sm:px-10">
-        <Link href="/login" aria-label="TradePartna home" className="inline-flex">
+        <Link href="/login" aria-label="SignalSync home" className="inline-flex items-center gap-2">
           <Image
-            src="/brand/tradpartnalight.svg"
-            alt="TradePartna"
-            width={184}
-            height={24}
+            src="/brand/signalsync-mark.png"
+            alt="SignalSync"
+            width={32}
+            height={32}
             priority
-            className="h-7 w-auto dark:hidden"
+            className="h-8 w-8 object-contain"
           />
-          <Image
-            src="/brand/tradepartna-logo-full.svg"
-            alt="TradePartna"
-            width={184}
-            height={24}
-            priority
-            className="hidden h-7 w-auto dark:block"
-          />
+          <span className="font-heading text-lg font-bold tracking-tight text-text-primary">SignalSync</span>
         </Link>
       </div>
 

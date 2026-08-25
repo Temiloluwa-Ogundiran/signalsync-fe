@@ -1,6 +1,6 @@
 import { AiChatPage } from "@/features/ai/components/ai-chat-page";
 
-export const metadata = { title: "Partna AI" };
+export const metadata = { title: "SignalSync AI" };
 
 export default function AiPage() {
   return (

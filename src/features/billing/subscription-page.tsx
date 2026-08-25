@@ -227,7 +227,7 @@ export function SubscriptionPage() {
         >
           <CardHeader>
             <CardTitle className="text-lg">Journal</CardTitle>
-            <CardDescription>Trading records, analytics, reviews, and Partna AI.</CardDescription>
+            <CardDescription>Trading records, analytics, reviews, and SignalSync AI.</CardDescription>
             <div className="pt-3">
               <span className="text-3xl font-bold tabular-nums">$17</span>
               <span className="text-sm text-text-secondary"> / month</span>

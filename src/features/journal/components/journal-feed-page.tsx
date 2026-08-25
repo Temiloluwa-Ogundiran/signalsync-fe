@@ -257,7 +257,7 @@ export function JournalFeedPage() {
 
   // "Write" expands the day's card and focuses the inline session note.
   const openDayNote = (date: string) => requestFocus(date);
-  // "Continue with coach" opens the Partna AI dock in a day-scoped session and
+  // "Continue with coach" opens the SignalSync AI dock in a day-scoped session and
   // drops a seed message so the coach starts reviewing that day right away.
   const openCoach = (date: string) =>
     openAi({
@@ -273,7 +273,7 @@ export function JournalFeedPage() {
       <JournalEmptyState
         icon={BookOpen01Icon}
         title="No account connected yet"
-        description="Connect a trading account to start journaling your days. Your trades sync automatically so Partna AI can read your behavior and coach you."
+        description="Connect a trading account to start journaling your days. Your trades sync automatically so SignalSync AI can read your behavior and coach you."
         actionLabel="Connect an account"
         onAction={openConnectModal}
       />

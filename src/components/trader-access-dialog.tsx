@@ -70,7 +70,7 @@ export function TraderAccessDialog({
             />
           </label>
           <p className="mt-2 text-xs leading-5 text-text-secondary">
-            TradePartna verifies that this password can place trades before
+            SignalSync verifies that this password can place trades before
             saving it.
           </p>
           {error ? (

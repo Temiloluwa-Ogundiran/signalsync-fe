@@ -48,34 +48,28 @@ export function Header() {
             the space is free). */}
         <Link
           href="/dashboard"
-          aria-label="TradePartna home"
+          aria-label="SignalSync home"
           className={cn(
             "shrink-0 items-center lg:flex",
             isAiPage ? "flex" : "hidden",
           )}
         >
-          {/* Light vs dark wordmark — toggled by `.dark` on <html>, no flash. */}
           <Image
-            src="/brand/tradpartnalight.svg"
-            alt="TradePartna"
-            width={156}
-            height={20}
+            src="/brand/signalsync-mark.png"
+            alt="SignalSync"
+            width={32}
+            height={32}
             priority
-            className="h-5 w-auto dark:hidden"
+            className="h-8 w-8 object-contain"
           />
-          <Image
-            src="/brand/tradepartna-logo-full.svg"
-            alt="TradePartna"
-            width={156}
-            height={20}
-            priority
-            className="hidden h-5 w-auto dark:block"
-          />
+          <span className="font-heading text-base font-bold tracking-tight text-text-primary">
+            SignalSync
+          </span>
         </Link>
 
         <div className="min-w-0 flex-1" />
 
-        {/* Right group — global chrome: Ask Partna AI → avatar.
+        {/* Right group — global chrome: Ask SignalSync AI → avatar.
             Account selector + date range live in the page header (ROW 2). */}
         <div className="ml-auto flex min-w-0 shrink-0 items-center justify-end gap-2">
           {/* Hidden on the AI page itself — you're already there. */}
@@ -87,7 +81,7 @@ export function Header() {
               className="ai-trigger flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[10px] text-xs px-3 py-2 h-9"
             >
               <Sparkles className="ai-trigger__spark h-3.5 w-3.5" />
-              Ask Partna AI
+              Ask SignalSync AI
             </Button>
           )}
 

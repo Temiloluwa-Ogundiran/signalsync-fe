@@ -72,7 +72,7 @@ export function CopyTradingSettingsPage({
 
       <SettingsSection
         title="Telegram Connections"
-        description="TradePartna reads signals from these Telegram accounts. It never sends messages."
+        description="SignalSync reads signals from these Telegram accounts. It never sends messages."
         action={
           <Button
             variant="outline"
@@ -108,7 +108,7 @@ export function CopyTradingSettingsPage({
                   {connection.state === "reauthentication_required"
                     ? "Telegram must be reconnected before new signals can be copied."
                     : connection.state === "disconnected"
-                    ? "Connection interrupted. TradePartna is reconnecting automatically."
+                    ? "Connection interrupted. SignalSync is reconnecting automatically."
                     : connection.last_heartbeat_at
                     ? `Last checked ${relativeTime(connection.last_heartbeat_at)}`
                     : "Waiting for the first connection check"}
@@ -293,7 +293,7 @@ export function CopyTradingSettingsPage({
         }
         description={
           confirmation?.kind === "connection"
-            ? `TradePartna will stop reading every channel through ${confirmation.label}. Existing broker trades are not changed.`
+            ? `SignalSync will stop reading every channel through ${confirmation.label}. Existing broker trades are not changed.`
             : `${confirmation?.label ?? "This channel"} will stop feeding every copy rule that uses it. Existing broker trades are not changed.`
         }
         confirmLabel={

@@ -67,7 +67,7 @@ export function PreferencesStep({
         </Field>
         <Field
           label="Take-profit handling"
-          help="Choose whether TradePartna places one or several positions when a signal has multiple targets."
+          help="Choose whether SignalSync places one or several positions when a signal has multiple targets."
         >
           <Select
             value={value.take_profit_mode}
@@ -110,7 +110,7 @@ export function PreferencesStep({
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="When to enter"
-          help="Choose which signal details must arrive before TradePartna places the trade."
+          help="Choose which signal details must arrive before SignalSync places the trade."
         >
           <Select
             value={value.minimum_fields}

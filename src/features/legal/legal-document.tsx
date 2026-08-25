@@ -11,7 +11,7 @@ export function LegalDocument({
 }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
-      <p className="text-sm font-medium text-ai-accent">TradePartna</p>
+      <p className="text-sm font-medium text-ai-accent">SignalSync</p>
       <h1 className="mt-3 text-3xl font-bold tracking-normal text-text-primary sm:text-4xl">
         {title}
       </h1>

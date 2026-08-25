@@ -32,7 +32,7 @@ export function CSVConfirmStep({
             Ready to Ingest Trade History
           </h3>
           <p className="text-xs text-text-secondary leading-relaxed">
-            You are importing trade history into your Synctrades journal.
+            You are importing trade history into your SignalSync journal.
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export function CSVConfirmStep({
                 Analytics Rebuild
               </h5>
               <p className="text-xs text-text-secondary leading-relaxed">
-                Synctrades will recalculate your daily statistics, calendar metrics, and equity curve based on the newly imported history.
+                SignalSync will recalculate your daily statistics, calendar metrics, and equity curve based on the newly imported history.
               </p>
             </div>
           </div>

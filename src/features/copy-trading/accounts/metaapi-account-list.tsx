@@ -85,7 +85,7 @@ function MetaApiAccountRow({
     try {
       await actions.retryCopyConnection.mutateAsync(account.id);
       toast.success("Connection check restarted", {
-        description: "TradePartna will keep this status updated automatically.",
+        description: "SignalSync will keep this status updated automatically.",
       });
     } catch (error) {
       toast.error("Connection could not be retried", {

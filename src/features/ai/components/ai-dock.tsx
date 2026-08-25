@@ -180,7 +180,7 @@ export function AiDock() {
               <Sparkles className="h-3.5 w-3.5 text-white" />
             </div>
             <span className="font-heading text-sm font-bold text-ai-accent">
-              Partna AI
+              SignalSync AI
             </span>
             <span className="rounded-full bg-ai-soft-bg px-1.5 py-0.5 text-[9px] font-bold uppercase text-ai-accent">
               Beta

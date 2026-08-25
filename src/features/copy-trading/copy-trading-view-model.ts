@@ -112,7 +112,7 @@ export function deriveSystemHealth(input: {
       tone: "warning",
       label: "Telegram is reconnecting",
       description:
-        "No recent Telegram heartbeat was received. TradePartna is recovering the saved session automatically.",
+        "No recent Telegram heartbeat was received. SignalSync is recovering the saved session automatically.",
     };
   }
   return {
