@@ -30,23 +30,23 @@
   --font-geist: "Segoe UI";
   color-scheme: light;
   /* Backgrounds — 3-tier surface separation (app frame > canvas > surface) */
-  --bg-primary: #e7eeee; /* Graphite Instrument light frame */
-  --bg-canvas: #f4f7f7; /* calm instrument canvas */
+  --bg-primary: #f1f3f5; /* Paper frame */
+  --bg-canvas: #f8f9fa; /* Paper canvas */
   --bg-secondary: #ffffff; /* tier 2 — surface (cards, sidebar) */
-  --bg-tertiary: #eaf1f1; /* raised surface */
-  --bg-hover: #dce8e8; /* hover surface */
+  --bg-tertiary: #eef1f4; /* raised surface */
+  --bg-hover: #e5e9ed; /* hover surface */
   --bg-input: #ffffff;
 
   /* Borders */
-  --border-primary: #d8e3e4; /* hairline */
-  --border-secondary: #c8d6d8;
+  --border-primary: #dde3e7; /* hairline */
+  --border-secondary: #cbd3d8;
 
   /* Text */
-  --text-primary: #102027; /* text-1 — primary */
-  --text-secondary: #52666d; /* text-2 — secondary */
-  --text-tertiary: #6f8187; /* text-3 — readable metadata */
-  --text-muted: #aab9bc;
-  --footnote-online: #586271;
+  --text-primary: #171a1d; /* ink primary */
+  --text-secondary: #59636b; /* slate secondary */
+  --text-tertiary: #737d85; /* readable metadata */
+  --text-muted: #a5afb6;
+  --footnote-online: #667078;
 
   /* Profit (ONE emerald family) / Loss (matched weight) — used everywhere */
   --green-strong: #0ba66a; /* numbers + text */
@@ -78,10 +78,10 @@
   --kpi-legend-loss-fg: #be3030;
 
   /* Brand / Accent — monochrome (dark primary on light surfaces) */
-  --accent: #087f82; /* Signal Mint */
-  --accent-hover: #06686a;
+  --accent: #315cff; /* Cobalt */
+  --accent-hover: #2447d8;
   --accent-foreground: #ffffff;
-  --accent-light: rgba(8, 127, 130, 0.1);
+  --accent-light: rgba(49, 92, 255, 0.1);
 
   /* Semantic — single emerald/red family (see ramps above) */
   --success: #0ba66a;
@@ -91,8 +91,8 @@
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --warning-text: #a16207;
-  --info: #087f82;
-  --info-light: rgba(8, 127, 130, 0.08);
+  --info: #315cff;
+  --info-light: rgba(49, 92, 255, 0.08);
 
   /* Specific surfaces */
   --sidebar-bg: #ffffff;
@@ -102,7 +102,7 @@
   --modal-overlay: rgba(0, 0, 0, 0.3);
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #087f82, #087f82);
+  --gradient-accent: linear-gradient(135deg, #315cff, #315cff);
   --gradient-card: linear-gradient(
     135deg,
     rgba(37, 99, 235, 0.06),
@@ -127,7 +127,7 @@
   --sidebar-chrome-bg: #ffffff;
   --nav-rail-bg: #ffffff; /* quiet rail surface */
   --nav-rail-icon: #6f8187; /* rail icons - muted */
-  --nav-rail-icon-active: #087f82; /* Signal Mint active state */
+  --nav-rail-icon-active: #315cff; /* Cobalt active state */
   --nav-rail-icon-hover-bg: #f1f3f7; /* quiet rail hover */
   --nav-sidebar-bg: #ffffff; /* contextual sidebar — white */
   --sidebar-nav-active-bg: #f1f3f7; /* grey pill (reads on white sidebar) */
@@ -142,28 +142,28 @@
   --ask-sync-gradient: linear-gradient(262.75deg, #e4e8ee 1.94%, #f7f8fa 97.07%);
 
   /* Theme-adaptive primitives (replace hardcoded white/black/hex in components) */
-  --surface-subtle: #f1f3f7; /* surface-2 — raised chip/inset (reads on white) */
-  --surface-subtle-hover: #e6e9ef;
-  --hairline: #e2e8f0; /* subtle border / divider / ring */
+  --surface-subtle: #eef1f4; /* raised chip/inset */
+  --surface-subtle-hover: #e5e9ed;
+  --hairline: #e2e6e9; /* subtle border / divider / ring */
   --overlay: rgba(15, 23, 42, 0.35); /* modal / drawer backdrop */
   --star: #d97706; /* rating star (amber, darker for light bg) */
 
-  /* Signal Mint AI accent — tuned per theme for contrast */
-  --ai-accent: #087f82;
-  --ai-accent-bright: #06686a;
-  --ai-soft-bg: #dff3f2;
-  --ai-soft-border: rgba(8, 127, 130, 0.28);
+  /* Cobalt AI accent - tuned per theme for contrast */
+  --ai-accent: #315cff;
+  --ai-accent-bright: #2447d8;
+  --ai-soft-bg: #e8edff;
+  --ai-soft-border: rgba(49, 92, 255, 0.28);
 
   /* Auth screen — neutral page field behind the form column (light only). */
   --auth-bg: #f5f7fa;
   /* Auth accent — the indigo on the login button + links. */
-  --auth-accent: #087f82;
-  --auth-accent-hover: #06686a;
+  --auth-accent: #315cff;
+  --auth-accent-hover: #2447d8;
   /* Brand/AI field for the auth panel: a refined deep-indigo in the --ai
      family. Used as a single flat gradient. */
-  --auth-brand-from: #102027;
-  --auth-brand-via: #172e36;
-  --auth-brand-to: #0b1117;
+  --auth-brand-from: #171a1d;
+  --auth-brand-via: #252b31;
+  --auth-brand-to: #101316;
 
   /* Status badge pairs (chips: pending / demo / live / info) */
   --badge-warn-bg: rgba(217, 119, 6, 0.12);
@@ -192,17 +192,18 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.488 0.243 264.376); /* blue-600 */
+  --primary: oklch(0.53 0.24 264); /* Cobalt */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.53 0.24 264); /* Cobalt */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.488 0.243 264.376); /* blue-600 */
+  --ring: oklch(0.53 0.24 264); /* Cobalt */
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
@@ -221,34 +222,34 @@
 
 /* ===== Dark Theme (Edgewonk-style reference — sampled from dashboard screenshot) =====
    Flat & dark: near-black canvas, barely-lifted cards, near-invisible borders,
-   slightly cool neutrals, mint/coral accents. */
+   neutral paper/charcoal surfaces with cobalt and coral accents. */
 .dark {
   color-scheme: dark;
   /* Premium-restrained spec (RECESSED model): canvas is a lighter charcoal,
      cards are DARKER and inset (wells, not tiles). Borders almost invisible. */
-  --bg-primary: #071015; /* deepest graphite */
-  --bg-canvas: #0f171e; /* content canvas */
-  --bg-secondary: #111a23; /* card surface */
-  --bg-tertiary: #17232f; /* raised controls */
-  --bg-hover: #1b2a36;
-  --bg-input: #111a23;
+  --bg-primary: #0f1114; /* charcoal frame */
+  --bg-canvas: #15181c; /* charcoal canvas */
+  --bg-secondary: #191d21; /* card surface */
+  --bg-tertiary: #20252a; /* raised controls */
+  --bg-hover: #282f35;
+  --bg-input: #191d21;
 
   /* Borders: almost invisible hairlines (white @ 6%) */
-  --border-primary: #263642;
-  --border-secondary: #314551;
+  --border-primary: #2b343c;
+  --border-secondary: #38434c;
 
   /* Text: primary / secondary / tertiary per spec */
-  --text-primary: #edf5f5; /* number / primary */
-  --text-secondary: #a1b4b9; /* label / secondary */
-  --text-tertiary: #8fa3aa; /* readable metadata */
-  --text-muted: #52656b;
+  --text-primary: #f0f2f4; /* number / primary */
+  --text-secondary: #a8b0b7; /* label / secondary */
+  --text-tertiary: #89939c; /* readable metadata */
+  --text-muted: #5f6972;
 
   /* Accent: monochrome — primary actions are subtle-surface, not colored.
      Color is rationed to green/red data only. */
-  --accent: #55d6ce; /* Signal Mint */
-  --accent-hover: #78e4dd;
-  --accent-foreground: #062324;
-  --accent-light: rgba(85, 214, 206, 0.12);
+  --accent: #8ea7ff; /* Cobalt */
+  --accent-hover: #b1c2ff;
+  --accent-foreground: #101316;
+  --accent-light: rgba(142, 167, 255, 0.14);
 
   /* Semantic: exact green/red per spec, desaturated */
   --success: #22c55e;
@@ -268,17 +269,17 @@
   --warning: #eab308;
   --warning-light: rgba(234, 179, 8, 0.1);
   --warning-text: #fbbf24;
-  --info: #55d6ce;
-  --info-light: rgba(85, 214, 206, 0.1);
+  --info: #8ea7ff;
+  --info-light: rgba(142, 167, 255, 0.12);
 
-  --sidebar-bg: #0e161d;
-  --card-bg: #111a23;
-  --card-bg-hover: #17232f;
-  --modal-bg: #111a23;
+  --sidebar-bg: #13161a;
+  --card-bg: #191d21;
+  --card-bg-hover: #20252a;
+  --modal-bg: #191d21;
   --modal-overlay: rgba(0, 0, 0, 0.7);
 
   /* No lit-from-above gradients — cards are a flat dark fill (recessed wells) */
-  --gradient-accent: linear-gradient(135deg, #55d6ce, #55d6ce);
+  --gradient-accent: linear-gradient(135deg, #8ea7ff, #8ea7ff);
   --gradient-card: var(--card-bg);
 
   /* Calendar — cells sit LIFTED above the dark panel (panel #0A0A0A);
@@ -302,15 +303,15 @@
   --overlay: rgba(0, 0, 0, 0.6);
   --star: #f59e0b;
 
-  --ai-accent: #55d6ce;
-  --ai-accent-bright: #78e4dd;
-  --ai-soft-bg: rgba(85, 214, 206, 0.14);
-  --ai-soft-border: rgba(85, 214, 206, 0.32);
+  --ai-accent: #8ea7ff;
+  --ai-accent-bright: #b1c2ff;
+  --ai-soft-bg: rgba(142, 167, 255, 0.14);
+  --ai-soft-border: rgba(142, 167, 255, 0.32);
 
   /* Auth screens follow the OS theme before a user session exists. */
-  --auth-bg: #0f171e;
-  --auth-accent: #55d6ce;
-  --auth-accent-hover: #78e4dd;
+  --auth-bg: #15181c;
+  --auth-accent: #8ea7ff;
+  --auth-accent-hover: #b1c2ff;
 
   --badge-warn-bg: rgba(245, 158, 11, 0.14);
   --badge-warn-fg: #f59e0b;
@@ -328,15 +329,15 @@
      boundaries from contrast, not from hard dividers. */
   --chrome-bar-bg: #0b1117;
   --sidebar-chrome-bg: #0b1117;
-  --nav-rail-bg: #0f1921; /* quiet rail surface */
-  --nav-rail-icon: #789096; /* rail icons - muted */
-  --nav-rail-icon-active: #55d6ce; /* Signal Mint active state */
+  --nav-rail-bg: #191d21; /* quiet rail surface */
+  --nav-rail-icon: #89939c; /* rail icons - muted */
+  --nav-rail-icon-active: #8ea7ff; /* Cobalt active state */
   --nav-rail-icon-hover-bg: rgba(255, 255, 255, 0.06); /* quiet rail hover */
-  --nav-sidebar-bg: #0f1921; /* tier 2 — contextual sidebar */
-  --sidebar-nav-active-bg: #172b34;
+  --nav-sidebar-bg: #191d21; /* contextual sidebar */
+  --sidebar-nav-active-bg: #20252a;
   --sidebar-nav-active-border: rgba(255, 255, 255, 0.06);
-  --sidebar-nav-inactive-text: #8fa3aa;
-  --sidebar-nav-active-text: #edf5f5;
+  --sidebar-nav-inactive-text: #a8b0b7;
+  --sidebar-nav-active-text: #f0f2f4;
   --sidebar-divider: rgba(255, 255, 255, 0.06);
   --sidebar-bottom-border: rgba(255, 255, 255, 0.06);
   /* Barely-there hairline — if you can clearly see it, it's too strong. */
@@ -388,18 +389,18 @@
   --card-foreground: oklch(0.96 0 0);
   --popover: oklch(0.135 0 0);
   --popover-foreground: oklch(0.96 0 0);
-  --primary: oklch(0.96 0 0); /* neutral white primary */
-  --primary-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.75 0.15 264); /* Cobalt */
+  --primary-foreground: oklch(0.16 0.02 264);
   --secondary: oklch(0.25 0 0);
   --secondary-foreground: oklch(0.96 0 0);
   --muted: oklch(0.25 0 0);
   --muted-foreground: oklch(0.55 0 0); /* #71717a */
-  --accent: oklch(0.25 0 0);
-  --accent-foreground: oklch(0.96 0 0);
+  --accent: oklch(0.75 0.15 264); /* Cobalt */
+  --accent-foreground: oklch(0.16 0.02 264);
   --destructive: oklch(0.637 0.208 25.3); /* #ef4444 red */
   --border: oklch(1 0 0 / 6%); /* white @ 6% */
   --input: oklch(1 0 0 / 8%);
-  --ring: oklch(0.55 0 0);
+  --ring: oklch(0.75 0.15 264); /* Cobalt */
   --chart-1: oklch(0.723 0.193 149.6); /* #22c55e green */
   --chart-2: oklch(0.637 0.208 25.3); /* #ef4444 red */
   --chart-3: oklch(0.55 0 0); /* grey */
@@ -442,12 +443,12 @@
 
   /* SignalSync AI accent. Theme-adaptive for light and dark themes.
      Use ai-accent / ai-soft-bg / ai-soft-border in components; the -deep / -glow
-     constants below use the Signal Mint accent consistently. */
+     constants below use the Cobalt accent consistently. */
   --color-ai-accent: var(--ai-accent);
   --color-ai-accent-bright: var(--ai-accent-bright);
-  --color-ai-accent-deep: #087f82;
-  --color-ai-glow: rgba(85, 214, 206, 0.15);
-  --color-ai-border: rgba(85, 214, 206, 0.3);
+  --color-ai-accent-deep: var(--accent);
+  --color-ai-glow: color-mix(in srgb, var(--accent) 15%, transparent);
+  --color-ai-border: color-mix(in srgb, var(--accent) 30%, transparent);
   --color-ai-soft-bg: var(--ai-soft-bg);
   --color-ai-soft-border: var(--ai-soft-border);
   --color-auth-bg: var(--auth-bg);
@@ -823,8 +824,8 @@ body {
   color: var(--ai-accent-bright) !important;
   box-shadow: none !important;
 }
-/* Light mode: drop all glow/shadow from the Ask SignalSync AI trigger — the mint
-   gradient carries it; the glow reads as noise on the light canvas. Dark mode
+/* Light mode: drop all glow/shadow from the Ask SignalSync AI trigger. The
+   cobalt treatment should stay quiet on the light canvas. Dark mode
    keeps its glow (defined above). */
 :root:not(.dark) .ai-trigger,
 :root:not(.dark) .ai-trigger:hover {
@@ -832,7 +833,7 @@ body {
 }
 
 .ai-trigger__spark {
-  color: #78e4dd; /* bright mint — catches the eye */
+  color: var(--ai-accent);
   animation: ai-trigger-breathe 3s ease-in-out infinite;
 }
 @keyframes ai-trigger-breathe {

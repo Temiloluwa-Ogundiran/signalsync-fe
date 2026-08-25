@@ -285,7 +285,7 @@ function MethodSelector({
               "group relative grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-card-bg p-4 pl-5 text-left shadow-[0_1px_2px_rgba(20,20,40,0.04),0_6px_20px_rgba(20,20,40,0.04)] transition-[background-color,border-color,box-shadow] duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/20",
               !method.disabled && "cursor-pointer",
               isSelected
-                ? "border-accent/55 bg-accent-light shadow-[0_0_0_1px_rgba(85,214,206,0.22),0_10px_34px_rgba(85,214,206,0.12)]"
+                ? "border-accent/55 bg-accent-light shadow-[0_0_0_1px_rgba(49,92,255,0.22),0_10px_34px_rgba(49,92,255,0.12)]"
                 : "border-border-secondary hover:-translate-y-px hover:border-accent/50 hover:bg-bg-tertiary",
               method.disabled &&
                 "cursor-not-allowed opacity-60 shadow-none hover:translate-y-0 hover:border-border-secondary hover:bg-card-bg",

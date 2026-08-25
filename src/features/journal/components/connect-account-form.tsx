@@ -1,8 +1,5 @@
 "use client";
 
-/* eslint-disable no-restricted-syntax -- intentional brand violet accents
-   (#6C4DF2 / #8E72FF) to match the Add-trades step-1 design. */
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -229,7 +226,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           )}
 
           <Button
-            className="h-12 w-full cursor-pointer bg-[#6C4DF2] text-sm font-semibold text-white hover:bg-[#5A3CE0] dark:bg-[#8E72FF] dark:text-white dark:hover:bg-[#7E61F5]"
+            className="h-12 w-full cursor-pointer bg-accent text-sm font-semibold text-accent-foreground hover:bg-accent-hover"
             type="submit"
             disabled={isPending}
           >
@@ -296,7 +293,7 @@ export function ConnectAccountForm({ onSuccess }: ConnectAccountFormProps) {
           <ol className="space-y-3">
             {LINKING_STEPS.map((step, i) => (
               <li key={i} className="flex gap-3 text-sm text-text-secondary">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6C4DF2] dark:bg-[#8E72FF]" />
+                <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" />
                 <span className="leading-relaxed">
                   {i + 1}. {step}
                 </span>
