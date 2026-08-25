@@ -1,8 +1,5 @@
 "use client";
 
-/* eslint-disable no-restricted-syntax -- intentional brand violet→blue gradient
-   (matches the Add-trades design); the app's tokens don't express this gradient. */
-
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -140,8 +137,8 @@ function ConnectAccountFlow() {
   return (
     <DialogContent
       showCloseButton={false}
-      overlayClassName="bg-[#F6F6F9] dark:bg-[#0B0B11]"
-      className="fixed inset-0 left-0 top-0 z-modal grid h-screen w-screen max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr] gap-0 rounded-none border-0 bg-[#F6F6F9] p-0 ring-0 sm:max-w-none dark:bg-[#0B0B11]"
+      overlayClassName="bg-bg-primary"
+      className="fixed inset-0 left-0 top-0 z-modal grid h-screen w-screen max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr] gap-0 rounded-none border-0 bg-bg-primary p-0 ring-0 sm:max-w-none"
     >
       {/* Top bar: back + close */}
       <div className="flex items-center justify-between px-4 pt-4">
@@ -149,7 +146,7 @@ function ConnectAccountFlow() {
           type="button"
           onClick={goBack}
           aria-label="Back"
-          className="rounded-lg p-2 text-[#8E8E9A] transition-colors hover:bg-[#EAEAF0] hover:text-[#15151C] dark:text-[#67677A] dark:hover:bg-[#1E1E27] dark:hover:text-[#ECECF1]"
+          className="rounded-lg p-2 text-text-tertiary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -157,7 +154,7 @@ function ConnectAccountFlow() {
           type="button"
           onClick={close}
           aria-label="Close"
-          className="rounded-lg p-2 text-[#8E8E9A] transition-colors hover:bg-[#EAEAF0] hover:text-[#15151C] dark:text-[#67677A] dark:hover:bg-[#1E1E27] dark:hover:text-[#ECECF1]"
+          className="rounded-lg p-2 text-text-tertiary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
         >
           <X className="h-5 w-5" />
         </button>
@@ -167,22 +164,22 @@ function ConnectAccountFlow() {
       <div className="overflow-y-auto scrollbar-thin">
         {step === "method" ? (
           <div className="mx-auto flex w-full max-w-[548px] flex-col px-6 pb-16 pt-6">
-            <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-[#8E8E9A] dark:text-[#67677A]">
+            <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-text-tertiary">
               <span>Step 1 of 2</span>
             </div>
 
-            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-[#15151C] dark:text-[#ECECF1]">
+            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-text-primary">
               Add trades
             </DialogTitle>
-            <p className="mt-1.5 text-[15px] text-[#5A5A67] dark:text-[#9C9CAB]">
+            <p className="mt-1.5 text-[15px] text-text-secondary">
               Choose how you&apos;d like to bring your trades into the app.
             </p>
 
             {/* Platform support note — informational, not an option.
                 Flat on the canvas (no card chrome) so it reads apart from the
                 selectable rows below. */}
-            <div className="mt-5 flex items-center gap-3 border-b border-[#EAEAF0] pb-5 dark:border-[#23232C]">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#F2F2F6] dark:bg-[#1E1E27]">
+            <div className="mt-5 flex items-center gap-3 border-b border-border-secondary pb-5">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-bg-tertiary">
                 <Image
                   src="/brand/mt5.jpeg"
                   alt="MetaTrader 5"
@@ -193,15 +190,15 @@ function ConnectAccountFlow() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-[#15151C] dark:text-[#ECECF1]">
+                  <span className="text-[13px] font-semibold text-text-primary">
                     MetaTrader 5
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase text-[#6C4DF2] dark:text-[#8E72FF]">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase text-accent">
                     <BadgeCheck className="h-3 w-3" />
                     Supported
                   </span>
                 </div>
-                <p className="mt-0.5 text-[12px] leading-snug text-[#8E8E9A] dark:text-[#67677A]">
+                <p className="mt-0.5 text-[12px] leading-snug text-text-tertiary">
                   Connect your MetaTrader 5 account — more platforms are on the
                   way.
                 </p>
@@ -214,7 +211,7 @@ function ConnectAccountFlow() {
               <button
                 type="button"
                 onClick={() => setStep("form")}
-                className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#6C4DF2] px-5 py-3 text-[14.5px] font-semibold text-white transition-[background-color,transform] hover:-translate-y-px hover:bg-[#5A3CE0] focus-visible:outline-none dark:bg-[#8E72FF] dark:hover:bg-[#7E61F5]"
+                className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[14.5px] font-semibold text-accent-foreground transition-[background-color,transform] hover:-translate-y-px hover:bg-accent-hover focus-visible:outline-none"
               >
                 Continue
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -229,12 +226,12 @@ function ConnectAccountFlow() {
             )}
           >
             {!csvReimportAccountId && (
-              <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-[#8E8E9A] dark:text-[#67677A]">
+              <div className="mb-[18px] flex items-center gap-2.5 font-mono text-[11px] font-semibold uppercase text-text-tertiary">
                 <span>Step 2 of 2</span>
               </div>
             )}
 
-            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-[#15151C] dark:text-[#ECECF1]">
+            <DialogTitle className="text-[27px] font-semibold leading-[1.15] text-text-primary">
               {selected === "api"
                 ? "Connect account"
                 : csvReimportAccountId
@@ -285,19 +282,19 @@ function MethodSelector({
             disabled={method.disabled}
             onClick={() => !method.disabled && onSelect(method.id)}
             className={cn(
-              "group relative grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-[#FFFFFF] p-4 pl-5 text-left shadow-[0_1px_2px_rgba(20,20,40,0.04),0_6px_20px_rgba(20,20,40,0.04)] transition-[background-color,border-color,box-shadow] duration-150 focus-visible:border-[#6C4DF2] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(108,77,242,0.16)] dark:bg-[#141419] dark:shadow-none dark:focus-visible:border-[#8E72FF] dark:focus-visible:ring-[rgba(142,114,255,0.26)]",
+              "group relative grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border bg-card-bg p-4 pl-5 text-left shadow-[0_1px_2px_rgba(20,20,40,0.04),0_6px_20px_rgba(20,20,40,0.04)] transition-[background-color,border-color,box-shadow] duration-150 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/20",
               !method.disabled && "cursor-pointer",
               isSelected
-                ? "border-[#6C4DF2]/55 bg-[#FFFFFF] shadow-[0_2px_4px_rgba(108,77,242,0.10),0_12px_32px_rgba(108,77,242,0.12)] dark:border-[#8E72FF]/55 dark:bg-[#17151F] dark:shadow-[0_0_0_1px_rgba(142,114,255,0.35),0_10px_34px_rgba(108,90,230,0.20)]"
-                : "border-[#EAEAF0] hover:-translate-y-px hover:border-[#DCDCE5] hover:bg-[#FCFCFE] dark:border-[#23232C] dark:hover:border-[#30303C] dark:hover:bg-[#191920]",
+                ? "border-accent/55 bg-accent-light shadow-[0_0_0_1px_rgba(85,214,206,0.22),0_10px_34px_rgba(85,214,206,0.12)]"
+                : "border-border-secondary hover:-translate-y-px hover:border-accent/50 hover:bg-bg-tertiary",
               method.disabled &&
-                "cursor-not-allowed opacity-60 shadow-none hover:translate-y-0 hover:border-[#EAEAF0] hover:bg-[#FFFFFF] dark:hover:border-[#23232C] dark:hover:bg-[#141419]",
+                "cursor-not-allowed opacity-60 shadow-none hover:translate-y-0 hover:border-border-secondary hover:bg-card-bg",
             )}
           >
             {/* Left accent bar */}
             <span
               className={cn(
-                "absolute inset-y-3.5 left-0 w-[3px] rounded-full bg-[#6C4DF2] transition-opacity duration-200 dark:bg-[#8E72FF]",
+                "absolute inset-y-3.5 left-0 w-[3px] rounded-full bg-accent transition-opacity duration-200",
                 isSelected ? "scale-y-100 opacity-100" : "scale-y-50 opacity-0",
               )}
             />
@@ -307,8 +304,8 @@ function MethodSelector({
               className={cn(
                 "flex h-[42px] w-[42px] items-center justify-center rounded-[11px] transition-colors",
                 isSelected
-                  ? "bg-[#6C4DF2] text-white dark:bg-[#8E72FF]"
-                  : "bg-[#F2F2F6] text-[#5A5A67] dark:bg-[#1E1E27] dark:text-[#9C9CAB]",
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-bg-tertiary text-text-secondary",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -317,21 +314,21 @@ function MethodSelector({
             {/* Text */}
             <span className="min-w-0">
               <span className="flex flex-wrap items-center gap-2">
-                <span className="text-[15.5px] font-semibold text-[#15151C] dark:text-[#ECECF1]">
+                <span className="text-[15.5px] font-semibold text-text-primary">
                   {method.title}
                 </span>
                 {method.recommended && (
-                  <span className="rounded-md bg-[#2E7CF6] px-2 py-0.5 text-[11px] font-semibold text-white">
+                  <span className="rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground">
                     Recommended
                   </span>
                 )}
                 {method.disabled && (
-                  <span className="rounded-full border border-[#DCDCE5] bg-[#F6F6F9] px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-[#8E8E9A] dark:border-[#30303C] dark:bg-[#1E1E27] dark:text-[#67677A]">
+                  <span className="rounded-full border border-border-secondary bg-bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-text-tertiary">
                     Soon
                   </span>
                 )}
               </span>
-              <span className="mt-1 block text-[13px] leading-snug text-[#5A5A67] dark:text-[#9C9CAB]">
+                  <span className="mt-1 block text-[13px] leading-snug text-text-secondary">
                 {method.description}
               </span>
             </span>
@@ -341,8 +338,8 @@ function MethodSelector({
               className={cn(
                 "relative h-[21px] w-[21px] shrink-0 rounded-full border-[1.5px] transition-colors",
                 isSelected
-                  ? "border-transparent bg-[#6C4DF2] dark:bg-[#8E72FF]"
-                  : "border-[#DCDCE5] dark:border-[#30303C]",
+                  ? "border-transparent bg-accent"
+                  : "border-border-secondary",
                 method.disabled && "border-dashed",
               )}
             >
