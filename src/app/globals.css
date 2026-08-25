@@ -148,7 +148,7 @@
   --overlay: rgba(15, 23, 42, 0.35); /* modal / drawer backdrop */
   --star: #d97706; /* rating star (amber, darker for light bg) */
 
-  /* AI accent (violet) — tuned per theme; darker in light for contrast */
+  /* Signal Mint AI accent — tuned per theme for contrast */
   --ai-accent: #087f82;
   --ai-accent-bright: #06686a;
   --ai-soft-bg: #dff3f2;
@@ -160,7 +160,7 @@
   --auth-accent: #087f82;
   --auth-accent-hover: #06686a;
   /* Brand/AI field for the auth panel: a refined deep-indigo in the --ai
-     family (not a muddy blue-purple). Used as a single flat gradient. */
+     family. Used as a single flat gradient. */
   --auth-brand-from: #102027;
   --auth-brand-via: #172e36;
   --auth-brand-to: #0b1117;
@@ -442,12 +442,12 @@
 
   /* SignalSync AI accent. Theme-adaptive for light and dark themes.
      Use ai-accent / ai-soft-bg / ai-soft-border in components; the -deep / -glow
-     consts below stay fixed for the AI dock's gradient identity. */
+     constants below use the Signal Mint accent consistently. */
   --color-ai-accent: var(--ai-accent);
   --color-ai-accent-bright: var(--ai-accent-bright);
-  --color-ai-accent-deep: #6d28d9; /* violet-700 — gradient end (fixed) */
-  --color-ai-glow: rgba(139, 92, 246, 0.15); /* low-opacity wash (fixed) */
-  --color-ai-border: rgba(139, 92, 246, 0.3); /* accent border (fixed) */
+  --color-ai-accent-deep: #087f82;
+  --color-ai-glow: rgba(85, 214, 206, 0.15);
+  --color-ai-border: rgba(85, 214, 206, 0.3);
   --color-ai-soft-bg: var(--ai-soft-bg);
   --color-ai-soft-border: var(--ai-soft-border);
   --color-auth-bg: var(--auth-bg);
@@ -832,7 +832,7 @@ body {
 }
 
 .ai-trigger__spark {
-  color: #c4b5fd; /* bright violet — catches the eye */
+  color: #78e4dd; /* bright mint — catches the eye */
   animation: ai-trigger-breathe 3s ease-in-out infinite;
 }
 @keyframes ai-trigger-breathe {

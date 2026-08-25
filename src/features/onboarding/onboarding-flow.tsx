@@ -42,11 +42,11 @@ const EXPERIENCE: Option[] = [
 ];
 
 const GOAL: Option[] = [
-  { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: Notebook01Icon, tint: "bg-blue-500/12 text-blue-600" },
-  { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: Analytics01Icon, tint: "bg-violet-500/12 text-violet-600" },
+  { id: "journal", label: "Journal my trades", hint: "Log and review every trade", icon: Notebook01Icon, tint: "bg-bg-tertiary text-text-secondary" },
+  { id: "analyze", label: "Analyze my performance", hint: "Dive into stats and patterns", icon: Analytics01Icon, tint: "bg-bg-tertiary text-text-secondary" },
   { id: "ai_coaching", label: "Get AI coaching", hint: "Personalised feedback from SignalSync AI", icon: AiMagicIcon, tint: "bg-ai-soft-bg text-ai-accent" },
-  { id: "backtest", label: "Backtest strategies", hint: "Test ideas against historical data", icon: TestTubeIcon, tint: "bg-emerald-500/12 text-emerald-600" },
-  { id: "funded", label: "Track a prop-firm funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-amber-500/15 text-amber-600" },
+  { id: "backtest", label: "Backtest strategies", hint: "Test ideas against historical data", icon: TestTubeIcon, tint: "bg-bg-tertiary text-text-secondary" },
+  { id: "funded", label: "Track a prop-firm funded challenge", hint: "Prop-firm evaluations", icon: ChampionIcon, tint: "bg-bg-tertiary text-text-secondary" },
 ];
 
 const REFERRAL: Option[] = [
@@ -199,7 +199,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               <button
                 type="button"
                 onClick={next}
-                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-ai-accent-bright active:scale-[0.98]"
+                className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-ai-accent px-7 py-3 text-sm font-semibold text-accent-foreground transition-[background-color,transform] hover:bg-ai-accent-bright active:scale-[0.98]"
               >
                 Let&apos;s go
                 <ArrowRight className="h-4 w-4" />
@@ -279,7 +279,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
             className={cn(
               "inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-[color,background-color,transform] active:scale-[0.98]",
               canContinue && !submitting
-                ? "bg-ai-accent text-white hover:bg-ai-accent-bright"
+                ? "bg-ai-accent text-accent-foreground hover:bg-ai-accent-bright"
                 : "cursor-not-allowed bg-bg-tertiary text-text-tertiary",
             )}
           >
@@ -374,7 +374,7 @@ function Question(props: QuestionProps) {
                   "flex h-5 w-5 shrink-0 items-center justify-center border transition-colors",
                   props.multi ? "rounded-md" : "rounded-full",
                   isSelected
-                    ? "border-ai-accent bg-ai-accent text-white"
+                    ? "border-ai-accent bg-ai-accent text-accent-foreground"
                     : "border-border-secondary",
                 )}
               >
