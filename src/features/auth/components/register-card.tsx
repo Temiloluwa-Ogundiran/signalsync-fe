@@ -37,7 +37,7 @@ export function RegisterCard() {
 
   if (sentTo) {
     return (
-      <div className="rounded-2xl border border-border-secondary/70 bg-card-bg p-8 text-center shadow-sm sm:p-10">
+      <div className="rounded-xl border border-border-secondary/70 bg-card-bg p-8 text-center shadow-sm sm:p-10">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-auth-accent/10 text-auth-accent">
           <MailCheck className="h-7 w-7" />
         </div>
@@ -74,7 +74,7 @@ export function RegisterCard() {
   }
 
   return (
-    <div className="rounded-2xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
+    <div className="rounded-xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
       {/* Logo mark + heading */}
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <Image

@@ -27,7 +27,7 @@ export default async function LoginPage({
 
   return (
     <AuthCardShell>
-    <div className="rounded-2xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
+    <div className="rounded-xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
       {/* Logo mark + heading */}
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <Image

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ResetPasswordPage() {
   return (
     <AuthCardShell>
-    <div className="rounded-2xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
+    <div className="rounded-xl border border-border-secondary/70 bg-card-bg p-8 shadow-sm sm:p-10">
       <h2 className="text-center text-lg font-bold text-text-primary">
         Reset Password
       </h2>
