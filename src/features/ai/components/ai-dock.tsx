@@ -163,7 +163,7 @@ export function AiDock() {
         className={cn(
           // h-[100dvh] (not h-full/100vh) so the panel doesn't run behind mobile
           // Safari's bottom toolbar, which was cutting off the composer input.
-          "fixed right-0 top-0 z-modal flex h-[100dvh] w-full flex-col bg-sidebar-chrome-bg shadow-2xl border-l border-border-secondary/40 transition-transform duration-200",
+          "fixed right-0 top-0 z-modal flex h-[100dvh] w-full flex-col border-l border-border-secondary bg-sidebar-chrome-bg shadow-lg transition-transform duration-200",
           "sm:h-full sm:w-[420px]",
         )}
       >
@@ -273,16 +273,6 @@ export function AiDock() {
           />
         ) : (
           <div className="relative flex-1 min-h-0">
-            {/* Header moment: a single soft violet glow bleeding from the top,
-                behind the greeting. The one expressive accent in the panel. */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 z-0 h-48"
-              style={{
-                background:
-                  "radial-gradient(120% 80% at 50% 0%, var(--color-ai-glow), transparent 70%)",
-              }}
-            />
             <div className="relative z-10 h-full">
               <AiChatCore
                 sessionId={activeSessionId}

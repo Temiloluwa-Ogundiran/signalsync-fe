@@ -69,7 +69,7 @@ export interface NavApp {
   icon: IconSvgElement;
   /** Route the rail icon points at (usually the app's first page). */
   route: string;
-  /** SignalSync AI gets the mint accent treatment even at rest. */
+  /** SignalSync AI keeps the cobalt accent treatment even at rest. */
   isAI?: boolean;
   /** Hidden entirely when the flag is off. */
   flag?: FeatureFlag;

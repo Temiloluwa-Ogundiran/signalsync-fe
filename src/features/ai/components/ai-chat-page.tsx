@@ -172,7 +172,7 @@ export function AiChatPage() {
           backdrop (or pick/start a chat) to close. */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-nav-drawer flex w-[80%] max-w-[300px] flex-col overscroll-contain bg-bg-secondary shadow-2xl transition-transform duration-200 ease-out lg:hidden",
+          "fixed inset-y-0 left-0 z-nav-drawer flex w-[80%] max-w-[300px] flex-col overscroll-contain border-r border-border-primary bg-bg-secondary shadow-lg transition-transform duration-200 ease-out lg:hidden",
           historyOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

@@ -151,7 +151,7 @@ export function AppNav() {
                 // Other apps — below lg: fixed off-canvas drawer below the header
                 // (dvh keeps the pinned icons clear of Safari's bottom toolbar).
                 // At lg+: a static in-flow full-height column at the desktop width.
-                "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col overscroll-contain bg-nav-sidebar-bg shadow-2xl transition-transform duration-200 ease-out",
+                "fixed bottom-0 left-0 top-header z-drawer flex h-[calc(100dvh-var(--spacing-header))] shrink-0 flex-col overscroll-contain border-r border-nav-seam bg-nav-sidebar-bg shadow-lg transition-transform duration-200 ease-out",
                 "w-[80%] max-w-[300px]",
                 "lg:static lg:z-auto lg:h-full lg:shadow-none lg:transition-none lg:max-w-none",
                 mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
