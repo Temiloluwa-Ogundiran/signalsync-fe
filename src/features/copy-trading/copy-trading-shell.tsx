@@ -29,7 +29,7 @@ export function CopyTradingShell({
 }) {
   return (
     <Tooltip.Provider delayDuration={200}>
-      <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
         <CopySafetyBar
           health={health}
           isPaused={isPaused}
@@ -39,7 +39,7 @@ export function CopyTradingShell({
           sources={sources}
           onPauseChange={onPauseChange}
         />
-        <div className="pt-6">{children}</div>
+        <div className="border-t border-border-primary pt-7">{children}</div>
       </div>
     </Tooltip.Provider>
   );

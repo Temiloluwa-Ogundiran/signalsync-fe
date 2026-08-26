@@ -268,7 +268,7 @@ export function JournalAccountsPage() {
             <Button
               type="button"
               onClick={openConnectModal}
-              className="flex items-center justify-center gap-2 rounded-lg bg-nav-rail-bg px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90 cursor-pointer shrink-0 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 dark:hover:opacity-100"
+              className="flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover cursor-pointer shrink-0"
             >
               <Plus className="h-4 w-4" />
               Add new account
@@ -296,7 +296,7 @@ export function JournalAccountsPage() {
               </div>
               <Button
                 onClick={openConnectModal}
-                className="bg-brand text-brand-foreground hover:bg-brand-hover text-sm font-bold h-10 px-6 rounded-full shadow-lg hover:shadow-brand/20 transition-[background-color,box-shadow]"
+                className="bg-accent text-accent-foreground hover:bg-accent-hover text-sm font-semibold h-10 px-6 rounded-lg transition-colors"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Connect MT5 Account
