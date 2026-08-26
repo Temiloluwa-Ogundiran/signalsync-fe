@@ -40,7 +40,7 @@ export function AdminConsole({ view }: { view: View }) {
         </div>
         <nav aria-label="Administration sections" className="flex gap-1 rounded-md border border-border-primary bg-bg-secondary p-1 text-sm">
           {["overview", "users", "system", "audit", ...(session?.user.platformRole === "super_admin" ? ["affiliates"] : [])].map((item) => (
-            <Link key={item} href={item === "overview" ? "/admin" : `/admin/${item}`} className={`rounded px-3 py-2 capitalize ${view === item ? "bg-bg-primary font-semibold text-text-primary shadow-sm" : "text-text-secondary hover:text-text-primary"}`}>{item}</Link>
+            <Link key={item} href={item === "overview" ? "/admin" : `/admin/${item}`} className={`rounded px-3 py-2 capitalize ${view === item ? "bg-accent-light font-semibold text-accent" : "text-text-secondary hover:text-text-primary"}`}>{item}</Link>
           ))}
         </nav>
       </div>

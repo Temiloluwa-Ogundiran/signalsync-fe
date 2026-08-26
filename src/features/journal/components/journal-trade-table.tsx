@@ -315,7 +315,7 @@ export function JournalTradeTable({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-hairline bg-nav-sidebar-bg">
+    <section className="overflow-hidden rounded-xl border border-border-primary bg-card-bg">
       <div className="flex flex-col gap-3 border-b border-hairline px-4 py-3 sm:flex-row sm:items-center">
         <label className="relative min-w-0 flex-1 sm:max-w-sm">
           <span className="sr-only">Search trades by instrument</span>

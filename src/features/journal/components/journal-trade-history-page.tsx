@@ -197,11 +197,11 @@ export function JournalTradeHistoryPage() {
   }
 
   return (
-    <div className="space-y-4 p-4 pb-20 font-sans md:p-8 md:pb-8">
+    <div className="mx-auto max-w-[1680px] space-y-5 p-4 pb-20 font-sans md:p-8 md:pb-8">
       <JournalPageHeader
         showSyncMeta={false}
         leftContent={
-          <h1 className="text-xl font-semibold text-text-primary">
+          <h1 className="font-heading text-xl font-semibold tracking-tight text-text-primary">
             Trade View
           </h1>
         }
