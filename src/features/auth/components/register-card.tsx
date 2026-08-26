@@ -78,7 +78,7 @@ export function RegisterCard() {
       {/* Logo mark + heading */}
       <div className="mb-8 flex flex-col items-center gap-4 text-center">
         <Image
-          src="/brand/signalsync-mark.png"
+          src="/brand/signalsync-mark.svg"
           alt="SignalSync"
           width={56}
           height={47}

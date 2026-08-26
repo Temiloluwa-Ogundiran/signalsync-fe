@@ -30,7 +30,7 @@ export function AppLoader({
 function SignalSyncMark() {
   return (
     <Image
-      src="/brand/signalsync-mark.png"
+      src="/brand/signalsync-mark.svg"
       alt="SignalSync"
       width={128}
       height={128}

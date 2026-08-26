@@ -12,7 +12,7 @@ export function AuthBrandPanel() {
     <div className="fixed inset-y-0 right-0 hidden w-1/2 overflow-hidden border-l border-border-secondary bg-bg-primary text-text-primary lg:flex lg:flex-col lg:justify-center lg:px-14">
       <div className="relative z-10 max-w-lg">
         <Image
-          src="/brand/signalsync-mark-cobalt.png"
+          src="/brand/signalsync-mark.svg"
           alt="SignalSync"
           width={96}
           height={96}

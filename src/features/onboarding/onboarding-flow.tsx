@@ -133,7 +133,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               header uses. Plain <img> (SVGs don't need next/image). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/signalsync-mark-cobalt.png"
+            src="/brand/signalsync-mark.svg"
             alt="SignalSync"
             className="h-7 w-7 object-contain"
           />
@@ -168,7 +168,7 @@ export function OnboardingFlow({ firstName }: { firstName: string }) {
               {/* Our logo mark — no background tile. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/brand/signalsync-mark-cobalt.png"
+                src="/brand/signalsync-mark.svg"
                 alt="SignalSync"
                 className="mb-6 h-12 w-auto"
               />

@@ -21,7 +21,7 @@ export default function AuthLayout({
       <div className="relative z-10 px-6 py-6 sm:px-10">
         <Link href="/login" aria-label="SignalSync home" className="inline-flex items-center gap-2">
           <Image
-            src="/brand/signalsync-mark.png"
+            src="/brand/signalsync-mark.svg"
             alt="SignalSync"
             width={32}
             height={32}

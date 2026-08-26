@@ -55,7 +55,7 @@ export function Header() {
           )}
         >
           <Image
-            src="/brand/signalsync-mark.png"
+            src="/brand/signalsync-mark.svg"
             alt="SignalSync"
             width={32}
             height={32}
