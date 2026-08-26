@@ -169,7 +169,7 @@ export function JournalPageHeader({
               {manualSyncAvailable ? (
                 <button
                   onClick={onSyncAccount}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-ai-soft-bg px-2.5 py-1 text-xs font-semibold text-ai-accent transition-colors hover:bg-ai-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-ai-soft-bg disabled:hover:text-ai-accent"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-accent/20 bg-accent-light px-2.5 py-1 text-xs font-semibold text-accent transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-accent-light disabled:hover:text-accent"
                   aria-label={
                     isSyncPending
                       ? "Syncing account"

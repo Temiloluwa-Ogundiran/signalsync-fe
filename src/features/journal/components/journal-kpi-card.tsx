@@ -17,7 +17,7 @@ interface JournalKpiCardProps {
 
 /**
  * Shared KPI card shell per the premium spec:
- * - recessed dark surface (#0A0A0A) on the lighter canvas, faint border, 12px radius
+ * - quiet card surface on the canvas, with a faint border and 12px radius
  * - 20px padding, label+number stacked LEFT, chart flush RIGHT, vertically centered
  * - number white #F4F4F5 (30px / 600), label grey #A1A1AA (14px / 500)
  */
@@ -33,7 +33,7 @@ export function JournalKpiCard({
   return (
     <article
       className={cn(
-        "flex min-h-[6.875rem] min-w-0 items-center justify-between gap-3 rounded-xl bg-kpi-card-bg p-5",
+        "flex min-h-[6.875rem] min-w-0 items-center justify-between gap-3 rounded-xl border border-border-primary bg-kpi-card-bg p-5",
         className,
       )}
     >

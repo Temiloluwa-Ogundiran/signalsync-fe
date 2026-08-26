@@ -215,7 +215,7 @@ export function JournalDayCard({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl bg-card-bg ring-1 ring-hairline"
+      className="overflow-hidden rounded-xl border border-border-primary bg-card-bg"
       onMouseEnter={hasTrades ? prefetch : undefined}
     >
       {/* Collapsed row — click anywhere to toggle expand */}

@@ -30,7 +30,7 @@ function JournalTradesPanelImpl({
     !isRecentLoading && !recentErrorMessage && recentRows.length === 0;
 
   return (
-    <section className="flex h-full min-h-[22rem] flex-col rounded-xl bg-card-bg">
+    <section className="flex h-full min-h-[22rem] flex-col rounded-xl border border-border-primary bg-card-bg">
       <div className="px-5 pt-5 pb-1">
         <h2 className="text-sm font-semibold text-text-primary">
           Recent Trades

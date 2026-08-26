@@ -22,7 +22,7 @@ function money(value: number, currency: string): string {
 export function JournalPeriodSummary({ summary }: { summary: PeriodSummary }) {
   const currency = useActiveAccountCurrency();
   return (
-    <div className="rounded-2xl bg-card-bg p-5 ring-1 ring-hairline">
+    <div className="rounded-xl border border-border-primary bg-card-bg p-5">
       <h3 className="mb-4 text-sm font-semibold text-text-secondary">
         {summary.title}
       </h3>
