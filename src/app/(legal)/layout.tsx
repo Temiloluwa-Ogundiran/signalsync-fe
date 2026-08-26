@@ -7,7 +7,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-auth-bg text-text-primary">
       <FollowSystemTheme />
       <header className="border-b border-border-primary">
-        <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-8">
           <Link href="/login" aria-label="SignalSync home" className="inline-flex items-center gap-2">
             <Image
               src="/brand/signalsync-mark.svg"

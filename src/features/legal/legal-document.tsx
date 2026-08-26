@@ -11,12 +11,12 @@ export function LegalDocument({
 }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
-      <p className="text-sm font-medium text-ai-accent">SignalSync</p>
-      <h1 className="mt-3 text-3xl font-bold tracking-normal text-text-primary sm:text-4xl">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">SignalSync</p>
+      <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
         {title}
       </h1>
-      <p className="mt-3 text-sm text-text-secondary">Last updated: {updatedAt}</p>
-      <div className="mt-10 space-y-9 text-base leading-7 text-text-secondary">{children}</div>
+      <p className="mt-3 text-sm text-text-tertiary">Last updated: {updatedAt}</p>
+      <div className="mt-10 space-y-9 border-t border-border-primary pt-8 text-base leading-7 text-text-secondary">{children}</div>
     </main>
   );
 }
