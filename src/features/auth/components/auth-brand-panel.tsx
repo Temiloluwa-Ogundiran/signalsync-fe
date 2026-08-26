@@ -1,9 +1,8 @@
-import { AuthReviewsPanel } from "./auth-reviews-panel";
 import Image from "next/image";
 
 /**
  * The right-half brand panel (desktop only). Keep this surface quiet so the
- * product message and proof points carry the page.
+ * product message carries the page.
  * Fixed to the right half of the viewport so the page's centered card sits in
  * the remaining left half.
  */
@@ -27,9 +26,6 @@ export function AuthBrandPanel() {
         <p className="mt-5 max-w-md text-base leading-7 text-text-secondary">
           Keep your trades, patterns, and progress in one clear workspace.
         </p>
-        <div className="mt-10 border-t border-border-secondary pt-6">
-          <AuthReviewsPanel />
-        </div>
       </div>
     </div>
   );
