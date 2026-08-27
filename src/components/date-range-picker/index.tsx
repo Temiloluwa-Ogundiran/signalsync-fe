@@ -158,9 +158,8 @@ export function DateRangePicker({
               captionLayout="dropdown"
               startMonth={new Date(2015, 0)}
               endMonth={new Date(2035, 11)}
-              // min=2 → first click sets `from` only (no same-day collapse), so
-              // the hover preview shows until the second click completes.
-              min={2}
+              // Do not set a minimum number of nights. Users must be able to
+              // select the same day or two adjacent dates as a valid range.
               disabled={max ? { after: max } : undefined}
               onDayMouseEnter={(day) => setHovered(day)}
               onDayMouseLeave={() => setHovered(undefined)}
